@@ -3,6 +3,7 @@ Resolution itself lives in `_Resolver`, its base."""
 
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 from collections import Counter
@@ -258,6 +259,23 @@ class Model(_Resolver):
                     f" both claim (vendor {answer.vendor_id}, code {answer.code});"
                     " two names on one identity are no dictionary"
                 )
+
+    def obsoletes(self, reference: str) -> tuple[str, ...]:
+        """The documents `reference`'s header says it obsoletes, held or not:
+        `("RFC4005",)` for RFC 7155."""
+        return self._view(reference).entry.spec.obsoletes
+
+    def obsoleted_by(self, reference: str) -> tuple[str, ...]:
+        """The documents of the corpus whose headers obsolete `reference`, in
+        reference order: `("RFC7155",)` for RFC 4005. `reference` itself need
+        not be held."""
+        with contextlib.suppress(ModelError):
+            reference = self.canonical(reference)
+        return tuple(
+            each
+            for each in self.references()
+            if reference in self._view(each).entry.spec.obsoletes
+        )
 
     def version(self, reference: str) -> str | None:
         """The version of the copy of `reference` that reference-level queries

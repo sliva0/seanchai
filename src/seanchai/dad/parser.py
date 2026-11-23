@@ -955,6 +955,7 @@ _HEADER_PATHS: dict[str, ast.TreePath] = {
     "Version": ("version",),
     "Vendor-ID": ("vendor_id",),
     "Bases": ("bases",),
+    "Obsoletes": ("obsoletes",),
     "Link": ("link",),
     "Transcribed": ("transcribed",),
 }
@@ -1128,6 +1129,22 @@ def parse_with_comments(text: str) -> tuple[ast.Specification, formatter.Comment
     return spec, formatter.Comments(trailing, standing, detached)
 
 
+def _references(directive: _Directive | None, key: str) -> tuple[str, ...]:
+    """A header directive listing documents, `; Bases:` or `; Obsoletes:`:
+    spec-refs separated by commas."""
+    if directive is None:
+        return ()
+    references = tuple(part.strip() for part in directive.value.split(","))
+    for reference in references:
+        if not ast.SPEC_REF_RE.match(reference):
+            raise DadParseError(
+                directive.lineno,
+                f"{key} entry {reference!r} does not name a supported"
+                " document (expected e.g. 'RFC6733' or 'TS29.272')",
+            )
+    return references
+
+
 def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     if not blocks:
         raise DadParseError(1, "empty file")
@@ -1148,6 +1165,8 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
     # Optional: absent means the document builds on nothing — RFC 6733, the
     # base of the tree, is the file with nothing to put in it.
     bases = directives.pop("Bases", None)
+    # Optional: only a document whose header obsoletes others says so.
+    obsoletes = directives.pop("Obsoletes", None)
     link = directives.pop("Link", None)
     # Optional: only a file a person copied from a rendering carries it.
     transcribed = directives.pop("Transcribed", None)
@@ -1202,23 +1221,15 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
             )
     with _validated(vendor.lineno):
         vendor_id = _number(vendor.value, vendor.lineno, "Vendor-ID")
-    parsed_bases: tuple[str, ...] = ()
-    if bases is not None:
-        parsed_bases = tuple(part.strip() for part in bases.value.split(","))
-        with _validated(bases.lineno):
-            for base in parsed_bases:
-                if not ast.SPEC_REF_RE.match(base):
-                    raise DadParseError(
-                        bases.lineno,
-                        f"Bases entry {base!r} does not name a supported"
-                        " document (expected e.g. 'RFC6733' or 'TS29.272')",
-                    )
+    parsed_bases = _references(bases, "Bases")
+    parsed_obsoletes = _references(obsoletes, "Obsoletes")
     with _validated(specification.lineno):
         spec = ast.Specification(
             specification=specification.value,
             version=None if version is None else version.value,
             vendor_id=vendor_id,
             bases=parsed_bases,
+            obsoletes=parsed_obsoletes,
             link=parsed_link,
             transcribed=parsed_transcribed,
             sections=tuple(sections),

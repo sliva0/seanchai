@@ -1,6 +1,7 @@
 ; Specification: RFC 8506
 ; Vendor-ID: 0
 ; Bases: RFC6733
+; Obsoletes: RFC4006
 ; Link: https://www.rfc-editor.org/rfc/rfc8506.txt
 
 

@@ -1305,6 +1305,12 @@ class Specification(Node):
     # has nothing to put in it. Spelled as `SpecRef`s, the same form re-used
     # rows cite origins by, so resolution shares their machinery.
     bases: tuple[SpecRef, ...] = ()
+    # `; Obsoletes:` — the documents this one obsoletes, as its header says:
+    # RFC 7155's "Obsoletes: 4005", RFC 6733's "Obsoletes: 3588, 5719". What
+    # an obsoleted document defines is still its own; a reader preferring the
+    # current text, as the Wireshark plugin and the dictionary's conflicts
+    # do, reads which copy that is from here.
+    obsoletes: tuple[SpecRef, ...] = ()
     link: pydantic.HttpUrl | None = None
     # `; Transcribed: by hand from <url>` — the rendering a person copied
     # this file from, for a document no extractor reads: ETSI ES 283 034,

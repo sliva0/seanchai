@@ -522,6 +522,8 @@ It reads the same definitions as the docx extractor. Every file states
   `RESOURCE_FAILURE (4014)`. Every code is `Result-Code`'s. Bit masks are not
   read.
 - RFC 6733 section 7.2's `<answer-message>` becomes an `AnswerMessage`.
+- The header block's "Obsoletes: 3588, 5719" becomes
+  `; Obsoletes: RFC3588, RFC5719`.
 - Application scopes come from corrections, since no two RFCs word theirs
   alike. So do RFC 4590's Diameter types and flag rules
   ([corrections.md](corrections.md#operations)).

@@ -40,6 +40,9 @@ __all__ = [
 # title. Everything else is content.
 _FOOTER_RE = re.compile(r"\[Page (?P<page>\d+)\]$")
 _RFC_NUMBER_RE = re.compile(r"^Request for Comments:\s*(?P<number>\d+)")
+# The header block's "Obsoletes: 3588, 5719" (RFC 7322 section 4.1.4), in the
+# left column before the authors.
+_OBSOLETES_RE = re.compile(r"^Obsoletes:\s*(?P<numbers>\d+(?:,\s*\d+)*)(?P<more>,)?")
 # Section headings sit at column 0: "4.5.  Diameter Base Protocol AVPs".
 _HEADING_RE = re.compile(r"^(?P<number>\d+(?:\.\d+)*)\.?\s+(?P<title>\S.*)$")
 # A definition heading: the defined name, with or without the " AVP" suffix
@@ -2059,6 +2062,27 @@ def _specification(raw: list[str]) -> str:
     raise ExtractionError("cannot find the RFC number in the document header")
 
 
+def _obsoletes(raw: list[str]) -> tuple[str, ...]:
+    """The RFCs the first page's header block says this one obsoletes, as
+    spec-refs: `("RFC3588", "RFC5719")` for RFC 6733. The header ends at the
+    first blank line after the RFC number."""
+    numbered = False
+    for text in raw[:30]:
+        line = text.strip()
+        numbered = numbered or bool(_RFC_NUMBER_RE.match(line))
+        if numbered and not line:
+            break
+        if match := _OBSOLETES_RE.match(line):
+            if match["more"]:
+                raise ExtractionError(
+                    f"the header's Obsoletes line continues past its line: {line!r}"
+                )
+            return tuple(
+                f"RFC{number.strip()}" for number in match["numbers"].split(",")
+            )
+    return ()
+
+
 def sources_file_name(specification: str) -> str:
     """Source-declaration file name for an RFC title:
     "RFC 6733" → "RFC6733.toml"."""
@@ -2373,6 +2397,7 @@ def extract_with_comments(
             bases=()
             if ast.spec_ref(specification) == ast.BASE_PROTOCOL
             else (ast.BASE_PROTOCOL,),
+            obsoletes=_obsoletes(raw),
             link=None if link is None else pydantic.HttpUrl(link),
             sections=file_sections,
         )

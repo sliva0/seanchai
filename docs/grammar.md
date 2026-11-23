@@ -14,11 +14,12 @@ has no tabs, carriage returns or trailing spaces. A production ending in
 ```abnf
 file          = header *(2*NL section) NL
 header        = spec-line NL [version-line NL] vendor-line [NL bases-line]
-                [NL link-line] [NL transcribed-line]
+                [NL obsoletes-line] [NL link-line] [NL transcribed-line]
 spec-line     = "; Specification: " inline-text
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
 bases-line    = "; Bases: " spec-ref *(", " spec-ref)
+obsoletes-line = "; Obsoletes: " spec-ref *(", " spec-ref)
 spec-ref      = ("TS" 2DIGIT "." 3DIGIT) / ("RFC" 1*DIGIT) / external-ref
                 ; "TS29.272", "RFC6733"
 external-ref  = ("ETSI-" ("TS" / "ES") 3DIGIT "." 3DIGIT ["-" 1*DIGIT])
@@ -52,7 +53,11 @@ A `spec-ref` names a document without its version, as one token.
   beside the corpus.
 
 `; Version:` is present when the source has versions (3GPP, not RFCs).
-`; Bases:` is absent only in RFC 6733, the base of the tree. `; Transcribed:`
+`; Bases:` is absent only in RFC 6733, the base of the tree. `; Obsoletes:`
+lists the documents the header says this one obsoletes, held by the corpus
+or not: RFC 7155's "Obsoletes: 4005" is `; Obsoletes: RFC4005`. What an
+obsoleted document defines stays its own reading; the model says which
+documents obsolete it ([consumers.md](consumers.md#the-model)). `; Transcribed:`
 marks a file copied by hand for a document no extractor reads (ETSI's, 3GPP2's
 and OMA's exist only as PDF) and names the rendering
 ([extractor.md](extractor.md#transcriptions)). A header-only file is legal: an

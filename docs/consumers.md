@@ -184,7 +184,8 @@ holes[]            id, name, reference, version, missing, what it does state,
 value_tables[]     kind (result-codes, bits, features), avp, avp_ids,
                    applications, reference, version, vendor_id, section, page,
                    table, application, feature_list_id, rows[]
-conflicts[]        vendor_id, code, defining, fields, readings[]: avp, paths[]
+conflicts[]        vendor_id, code, defining, fields, obsolete,
+                   readings[]: avp, obsoleted_by, paths[]
 ```
 
 - A member has `name`, `presence` (`fixed`, `required`, `optional`),
@@ -226,7 +227,13 @@ conflicts[]        vendor_id, code, defining, fields, readings[]: avp, paths[]
   `data_type`, `members`, `values`, `name`), each reading with the paths it
   is met at: `application` (null in an error answer), `command`, `section`
   and the member `names` down to it. A backend storing one flag rule per AVP
-  chooses there.
+  chooses there. A reading's `obsoleted_by` names the documents of the corpus
+  whose headers obsolete the one it is defined in or read through
+  (`; Obsoletes:`); a conflict is `obsolete` when the other readings agree,
+  so that only an obsoleted document dissents, as RFC 4005's `NAS-Port`
+  against RFC 7155's. Such conflicts stay listed, since an application whose
+  document cites the obsoleted RFC (TS 29.061 builds on RFC 4005) means that
+  reading; a backend following the current documents skips them.
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included.
 
@@ -368,6 +375,7 @@ model.value_tables(kind=ValueKind.FEATURES)  # one kind, the whole corpus
 model.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
 model.definition("ULR-Flags").value_table  # the bits, read through resolution
 model.version("TS29.061")  # the copy queries read; version="6.15.0" an older one
+model.obsoleted_by("RFC4005")  # ("RFC7155",): what the corpus holds replacing it
 model.avps("TS29.061", version="6.15.0")  # every document query takes version=
 ```
 

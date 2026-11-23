@@ -615,6 +615,10 @@ def format_spec(spec: ast.Specification, comments: Comments = _NO_COMMENTS) -> s
     header.extend(comments.line(f"; Vendor-ID: {spec.vendor_id}", ("vendor_id",)))
     if spec.bases:
         header.extend(comments.line(f"; Bases: {', '.join(spec.bases)}", ("bases",)))
+    if spec.obsoletes:
+        header.extend(
+            comments.line(f"; Obsoletes: {', '.join(spec.obsoletes)}", ("obsoletes",))
+        )
     if spec.link is not None:
         header.extend(comments.line(f"; Link: {spec.link}", ("link",)))
     if spec.transcribed is not None:

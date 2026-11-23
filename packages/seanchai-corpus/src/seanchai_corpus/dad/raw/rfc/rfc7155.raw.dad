@@ -1,6 +1,7 @@
 ; Specification: RFC 7155
 ; Vendor-ID: 0
 ; Bases: RFC6733
+; Obsoletes: RFC4005
 ; Link: https://www.rfc-editor.org/rfc/rfc7155.txt
 
 

@@ -60,6 +60,12 @@ _GX = ("; Type: Application Scope", "; Name: Gx", "; Section: 5.1")
             id="bases-not-a-reference",
         ),
         pytest.param(
+            _HEADER + "; Obsoletes: RFC4005, 4006\n",
+            4,
+            "Obsoletes entry '4006'",
+            id="obsoletes-not-a-reference",
+        ),
+        pytest.param(
             _HEADER + "; Transcribed: https://www.etsi.org/deliver/es.pdf\n",
             4,
             "by hand from",

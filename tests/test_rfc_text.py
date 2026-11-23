@@ -357,6 +357,22 @@ def test_a_shape_it_cannot_read_faithfully_is_refused(tmp_path, body, quirks, me
         _read(tmp_path, body, *quirks)
 
 
+def test_the_header_says_which_rfcs_it_obsoletes(tmp_path):
+    """RFC 6733's header block prints "Obsoletes: 3588, 5719" beside its
+    authors; a list continued on the next line is refused."""
+    path = tmp_path / "rfc9999.txt"
+    header = _rfc(_table(_ROW)).replace(
+        "Category:",
+        "Obsoletes: 3588, 5719                                 B. Author\nCategory:",
+    )
+    path.write_text(header, encoding="utf-8")
+    assert rfc_text.extract(path).obsoletes == ("RFC3588", "RFC5719")
+
+    path.write_text(header.replace("5719 ", "5719,"), encoding="utf-8")
+    with pytest.raises(ExtractionError, match="continues past its line"):
+        rfc_text.extract(path)
+
+
 def test_a_declaration_without_a_reason_or_for_an_exclusion_is_refused(tmp_path):
     path = tmp_path / "rfc9999.txt"
     path.write_text(_rfc(_table(_ROW)), encoding="utf-8")

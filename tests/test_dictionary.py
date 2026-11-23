@@ -160,6 +160,27 @@ def test_conflicting_readings_are_listed_with_where_each_is_met(built):
     assert not build(built, application_ids=(_S6A,)).conflicts
 
 
+def test_a_conflict_only_an_obsoleted_document_dissents_from_is_marked(built):
+    """RFC 7155 obsoletes RFC 4005, whose NAS-Port flags differ: the conflict
+    is listed, marked obsolete, its RFC 4005 reading obsoleted by RFC 7155."""
+    assert built.obsoleted_by("RFC4005") == ("RFC7155",)
+    assert built.obsoletes("RFC6733") == ("RFC3588", "RFC5719")
+    assert built.obsoleted_by("RFC3588") == ("RFC6733",)
+
+    written = build(built, documents=("RFC4005", "RFC7155"))
+    (nas_port,) = [c for c in written.conflicts if (c.vendor_id, c.code) == (0, 5)]
+    by_document = {
+        avp.read_through: reading.obsoleted_by
+        for reading in nas_port.readings
+        for avp in written.avps
+        if avp.id == reading.avp
+    }
+    assert nas_port.obsolete
+    assert by_document == {"RFC4005": ("RFC7155",), "RFC7155": ()}
+    sta = build(built, application_ids=(_STA,))
+    assert sta.conflicts and not any(conflict.obsolete for conflict in sta.conflicts)
+
+
 def test_an_avp_carries_what_a_codec_needs(s6a_and_cx):
     by_name = {avp.name: avp for avp in s6a_and_cx.avps if avp.defining}
 

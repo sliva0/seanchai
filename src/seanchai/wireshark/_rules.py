@@ -11,7 +11,8 @@ and each clause, page and table a reading, command or answer-message cites.
 
 Where several documents define one command under one application id, each is
 a candidate and the plugin reports against the best match. A document that a
-newer one in the corpus obsoletes (`OBSOLETED_BY`) is not a candidate.
+newer one in the corpus obsoletes (`; Obsoletes:`, `Model.obsoleted_by`) is
+not a candidate.
 """
 
 from __future__ import annotations
@@ -36,12 +37,6 @@ BASE_SECTIONS = {
     "protocol_errors": ("7.1.3", 90),
     "error_bit": ("7.2", 95),
 }
-
-# A document the corpus holds because others cite it, which a newer RFC in the
-# corpus obsoletes: its header says so. RFC 7155: "Obsoletes: 4005"; RFC 8506:
-# "Obsoletes: 4006". Their commands are no candidates where the newer
-# document's are.
-OBSOLETED_BY = {"RFC4005": "RFC7155", "RFC4006": "RFC8506"}
 
 # RFC 6733 section 7.2's rule, for an E-bit answer to a command no document
 # defines.
@@ -459,8 +454,13 @@ def _candidates(applications: Iterable[dictionary.Application], built: model.Mod
         defaultdict(list)
     )
     for application in applications:
-        newer = OBSOLETED_BY.get(application.reference)
-        if newer is not None and newer in defining:
+        # A document the corpus holds because others cite it, which a newer
+        # one in the corpus obsoletes: RFC 7155's header says "Obsoletes:
+        # 4005", RFC 8506's "Obsoletes: 4006". Its commands are no candidates
+        # where the newer document's are.
+        if any(
+            newer in defining for newer in built.obsoleted_by(application.reference)
+        ):
             continue
         for command in application.commands:
             app = "*" if command.application_id is None else str(command.application_id)

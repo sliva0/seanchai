@@ -290,9 +290,13 @@ class Path(_Model):
 
 
 class ConflictingReading(_Model):
-    """One of a conflict's readings, by `avps` id, and where it is met."""
+    """One of a conflict's readings, by `avps` id, and where it is met.
+    `obsoleted_by` names the documents of the corpus whose headers obsolete
+    the document the reading is defined in or read through
+    (`model.Model.obsoleted_by`): RFC 7155 for a reading of RFC 4005's."""
 
     avp: str
+    obsoleted_by: tuple[str, ...]
     paths: tuple[Path, ...]
 
 
@@ -300,12 +304,16 @@ class Conflict(_Model):
     """An identity the output holds several readings of that disagree on a
     field a codec stores (`model.Reached.conflicts`): `fields` names them,
     `defining` is the defining reading's id where the output holds it. A
-    backend keeping one reading per AVP has to choose here."""
+    backend keeping one reading per AVP has to choose here. `obsolete` says
+    the readings no obsoleted document gives agree, so the conflict is only
+    with a document a newer one replaces: RFC 4005's NAS-Port against RFC
+    7155's."""
 
     vendor_id: int
     code: int
     defining: str | None
     fields: tuple[str, ...]
+    obsolete: bool
     readings: tuple[ConflictingReading, ...]
 
 
@@ -806,21 +814,40 @@ def _conflicts(
         )
         if not reached.conflicts:
             continue
+        obsoleted = {avp: _obsoleted_by(built, avp) for avp in readings}
+        current = [avp for avp in readings if not obsoleted[avp]]
         found.append(
             Conflict(
                 vendor_id=identity[0],
                 code=identity[1],
                 defining=builder.ids.get(defining) if defining is not None else None,
                 fields=reached.conflicts,
+                obsolete=bool(current)
+                and not model.Reached(
+                    vendor_id=identity[0],
+                    code=identity[1],
+                    definition=defining,
+                    readings=tuple(model.Met(avp, ()) for avp in current),
+                ).conflicts,
                 readings=tuple(
                     ConflictingReading(
-                        avp=builder.ids[avp], paths=tuple(paths.at.get(avp, ()))
+                        avp=builder.ids[avp],
+                        obsoleted_by=obsoleted[avp],
+                        paths=tuple(paths.at.get(avp, ())),
                     )
                     for avp in readings
                 ),
             )
         )
     return tuple(found)
+
+
+def _obsoleted_by(built: model.Model, avp: model.Avp) -> tuple[str, ...]:
+    """The documents obsoleting the one `avp` is defined in or read through."""
+    documents = {avp.defined_in, _SPELLED.sub(r"\g<reference>", avp.read_through)}
+    return tuple(
+        sorted({newer for each in documents for newer in built.obsoleted_by(each)})
+    )
 
 
 def _marks(

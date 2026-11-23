@@ -95,8 +95,9 @@ candidate. The message is reported against the one it breaks least, chosen by:
 3. most of its AVPs listed by the rule rather than left to `* [ AVP ]`;
 4. the document TS 29.230's registry allocates the id to.
 
-The other candidates follow with their counts. RFC 4005 and RFC 4006 are never
-candidates, since RFC 7155 and RFC 8506 obsolete them.
+The other candidates follow with their counts. A document another candidate's
+header obsoletes is none (`; Obsoletes:`): RFC 4005 and RFC 4006, which RFC
+7155 and RFC 8506 obsolete.
 
 Three preferences, under Protocols, Seanchaí in Wireshark, or with `-o` in
 tshark (`-o seanchai.pin:TS32.299`):

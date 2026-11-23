@@ -1,5 +1,6 @@
 ; Specification: RFC 6733
 ; Vendor-ID: 0
+; Obsoletes: RFC3588, RFC5719
 ; Link: https://www.rfc-editor.org/rfc/rfc6733.txt
 
 

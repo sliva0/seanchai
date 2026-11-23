@@ -349,7 +349,12 @@ def _tokens(
             pass
         elif key in ("Section", "Page") and source:
             fields["source"] = Citation(section=source.section, page=source.page)
-        elif value in links.references and key in ("Bases", "Reprints", None):
+        elif value in links.references and key in (
+            "Bases",
+            "Obsoletes",
+            "Reprints",
+            None,
+        ):
             fields["target"] = links.references[value]
             if isinstance(section, ast.ReusedAvps) and key is None:
                 fields["target"] = links.row_references.get(
