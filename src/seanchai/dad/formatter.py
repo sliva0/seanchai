@@ -37,6 +37,7 @@ __all__ = [
     "avp_line",
     "avp_table_cell",
     "commented_avp_rule",
+    "constraint_rule",
     "format_spec",
     "marks_cell",
     "value_name",
@@ -169,6 +170,15 @@ def _directives(
         ):
             if value is not None:
                 lines.extend(notes.line(f"; {key}: {value}", (*path, field)))
+    if isinstance(section, ast.InterpretedConstraints):
+        for key, field, value in (
+            ("AVP", "avp", section.avp),
+            ("Command", "command", section.command),
+            ("Application-ID", "application_id", section.application_id),
+            ("Within", "within", section.within),
+        ):
+            if value is not None:
+                lines.extend(notes.line(f"; {key}: {value}", (*path, field)))
     if name is not None:
         lines.extend(notes.line(f"; Name: {name}", (*path, "name")))
     lines.extend(
@@ -181,7 +191,8 @@ def _directives(
             | ast.ReusedAvps
             | ast.Registry
             | ast.ValueTable
-            | ast.InformationElements,
+            | ast.InformationElements
+            | ast.InterpretedConstraints,
         )
         and section.table is not None
     ):
@@ -194,6 +205,8 @@ def _directives(
         lines.extend(
             notes.line(f"; Values: {section.values_source}", (*path, "values_source"))
         )
+    if isinstance(section, ast.InterpretedConstraints):
+        lines.extend(notes.line(f"; Versions: {section.versions}", (*path, "versions")))
     return lines
 
 
@@ -609,6 +622,66 @@ def _format_information_elements(
     ]
 
 
+def _bounds(low: int | None, high: int | None) -> str:
+    if low == high:
+        return str(low)
+    return f"{'*' if low is None else low}..{'*' if high is None else high}"
+
+
+def _value_ref(value: int | str) -> str:
+    return str(value) if isinstance(value, int) else value_name(value)
+
+
+def _condition(condition: ast.Condition) -> str:
+    if condition.value is not None:
+        return f"{condition.avp} = {_value_ref(condition.value)}"
+    if condition.bit is not None:
+        return f"{condition.avp} bit {_value_ref(condition.bit)}"
+    return condition.avp
+
+
+def constraint_rule(rule: ast.ConstraintRule) -> str:
+    """A rule as an interpreted-constraints body prints it, without its
+    indentation."""
+    match rule:
+        case ast.LengthRule():
+            return f"length {_bounds(rule.low, rule.high)} {rule.unit}"
+        case ast.RangeRule():
+            return f"range {_bounds(rule.low, rule.high)}"
+        case ast.ExcludeRule():
+            return f"exclude {', '.join(str(value) for value in rule.values)}"
+        case ast.EncodingRule():
+            parts = [f"encoding {rule.codec}"]
+            parts.extend(part for part in (rule.document, rule.clause) if part)
+            if rule.element is not None:
+                parts.append(_quoted(rule.element))
+            return " ".join(parts)
+        case ast.PredicateRule():
+            conditions = " or ".join(_condition(each) for each in rule.conditions)
+            return f"{rule.kind} {conditions}"
+        case ast.TextOnly():
+            return "text-only"
+
+
+# A rule line's indentation, setting it off from the quotes it was read from.
+_RULE_INDENT = "    "
+
+
+def _format_interpreted_constraints(
+    block: ast.InterpretedConstraints, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    lines = _directives(block, None, path, notes)
+    for index, item in enumerate(block.body):
+        text = (
+            _quoted(item.text)
+            if isinstance(item, ast.Quote)
+            else _RULE_INDENT + constraint_rule(item)
+        )
+        lines.extend(notes.line(text, (*path, "body", index)))
+    lines.extend(notes.standing_at((*path, "body", len(block.body))))
+    return lines
+
+
 # Keyed by exact type, not matched by isinstance: a subclass of `Message`
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
@@ -624,6 +697,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.UndefinedAvp: _format_undefined_avp,
     ast.ValueTable: _format_value_table,
     ast.InformationElements: _format_information_elements,
+    ast.InterpretedConstraints: _format_interpreted_constraints,
 }
 
 

@@ -442,9 +442,37 @@ def _produce(
     if declared:
         spec, _, comments = corrections.apply_with_comments(spec, comments, declared)
         corrected_text = formatter.format_spec(spec, comments)
+        _check_interpretations(source, sources_dir, declared)
     else:
         corrected_text = raw_text
     return raw_text, corrected_text, spec
+
+
+def _check_interpretations(
+    source: _Source,
+    sources_dir: Path | None,
+    declared: list[corrections.Declaration],
+) -> None:
+    """Hold every interpreted constraint's quotes to the clause they were
+    read from, and its page to the PDF's outline, as a correction's `expect`
+    is held to the raw file (`interpret.check_quotes`)."""
+    interpretations = [
+        edit for edit in declared if isinstance(edit, corrections.Interpret)
+    ]
+    if not interpretations:
+        return
+    if source.transcribed or source.document.suffix == ".txt":
+        raise CorrectionError(
+            f"{interpretations[0].cited}: interpreted constraints are checked"
+            " against a 3GPP docx only"
+        )
+    from .extractor import tgpp_docx
+
+    corrections.check_quotes(
+        interpretations,
+        tgpp_docx.clause_texts(source.document, sources_dir),
+        None if source.pdf is None else tgpp_docx.clause_pages(source.pdf),
+    )
 
 
 def _sources(manifest_path: Path) -> dict[_Key, _Source]:

@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 
 from .. import corpus
 from ..dad import ast
-from ._types import Marks, ValueTable, _value_table
+from ._types import Constraint, Marks, ValueTable, _constraint, _value_table
 
 
 def _folded(reference: str) -> str:
@@ -67,6 +67,8 @@ class _View:
     answers: list[ast.AnswerMessage] = field(default_factory=list)
     # Information-element tables, in file order.
     elements: list[ast.InformationElements] = field(default_factory=list)
+    # Interpreted constraints, in file order.
+    constraints: list[Constraint] = field(default_factory=list)
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
@@ -111,6 +113,8 @@ class _View:
                 view.answers.append(section)
             elif isinstance(section, ast.InformationElements):
                 view.elements.append(section)
+            elif isinstance(section, ast.InterpretedConstraints):
+                view.constraints.append(_constraint(entry, section))
         return view
 
     def cited_in(self, name: str) -> tuple[str, ...]:

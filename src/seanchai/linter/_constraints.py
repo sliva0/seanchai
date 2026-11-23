@@ -1,0 +1,418 @@
+"""Interpreted constraints against what the documents print: the AVPs and
+commands a block names, whether its rules fit the AVP's type, the values and
+bits its conditions name, and rules that cannot all hold."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Iterable, Sequence
+from dataclasses import dataclass
+
+from .. import constraints as checks
+from ..dad import ast
+from ._elements import _application_id, _grouped
+from ._findings import Finding, Severity
+from ._index import _Index
+
+# The rules this module reports; with a corpus, the documents the file cites
+# answer for what it re-uses, and these replace the single-file findings.
+CONSTRAINT_RULES = frozenset(
+    {
+        "constraint-avp-unknown",
+        "constraint-command-unknown",
+        "constraint-not-member",
+        "constraint-type-mismatch",
+        "constraint-value-unknown",
+        "constraint-contradiction",
+    }
+)
+
+_Cited = Callable[[str], ast.Specification | None]
+
+
+def _held(spec: ast.Specification) -> set[str]:
+    """Every AVP name `spec` holds: defined, tabulated, re-used, declared
+    undefined, or named by a body or an information element."""
+    held: set[str] = set()
+    for section in spec.sections:
+        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp | ast.UndefinedAvp):
+            held.add(section.name)
+        if isinstance(section, ast.Message | ast.GroupedAvp | ast.AnswerMessage):
+            held.update(rule.name for rule in section.avps)
+        elif isinstance(section, ast.AvpTable | ast.ReusedAvps):
+            held.update(row.name for row in section.rows)
+        elif isinstance(section, ast.InformationElements):
+            held.update(name for row in section.rows for name in row.avps)
+    held.discard("AVP")
+    return held
+
+
+@dataclass
+class _Facts:
+    """What the documents print of one AVP: its type and the names of its
+    values and bits, None where no document read says."""
+
+    data_type: ast.DataType | None = None
+    values: set[str] | None = None
+    bits: dict[str, int] | None = None
+
+
+def _documents(spec: ast.Specification, name: str, cited: _Cited | None) -> list:
+    """`spec`, then the document its re-used row cites for `name`, then its
+    bases, as far as `cited` reads them."""
+    found = [spec]
+    if cited is None:
+        return found
+    origins = [
+        row.origin
+        for section in spec.sections
+        if isinstance(section, ast.ReusedAvps)
+        for row in section.rows
+        if row.name == name
+    ]
+    for reference in (*origins[:1], *spec.bases):
+        document = cited(reference)
+        if document is not None:
+            found.append(document)
+    return found
+
+
+def _facts(spec: ast.Specification, name: str, cited: _Cited | None) -> _Facts:
+    facts = _Facts()
+    for document in _documents(spec, name, cited):
+        for section in document.sections:
+            if isinstance(section, ast.EnumeratedAvp) and section.name == name:
+                facts.data_type = facts.data_type or ast.DataType.ENUMERATED
+                if section.values and facts.values is None:
+                    facts.values = {
+                        value.name
+                        for value in section.values
+                        if isinstance(value, ast.EnumValue)
+                    }
+            elif ast.defines(section) and getattr(section, "name", None) == name:
+                facts.data_type = facts.data_type or ast.DataType.GROUPED
+            elif isinstance(section, ast.AvpTable):
+                for row in section.rows:
+                    if row.name == name and row.data_type is not None:
+                        facts.data_type = facts.data_type or row.data_type
+            elif isinstance(section, ast.ValueTable) and section.avp == name:
+                if section.kind is ast.ValueKind.BITS and facts.bits is None:
+                    facts.bits = {row.name: row.value for row in section.rows}
+                elif section.kind is ast.ValueKind.RESULT_CODES:
+                    facts.values = (facts.values or set()) | {
+                        row.name for row in section.rows
+                    }
+        if facts.data_type is not None and document is not spec:
+            break
+    return facts
+
+
+def _body(
+    spec: ast.Specification, block: ast.InterpretedConstraints, cited: _Cited | None
+) -> tuple[tuple[ast.AvpRule, ...] | None, str | None]:
+    """The printed body scoping `block`, and why there is none: an unknown
+    command (a message) or none to read (None)."""
+    if block.command is not None:
+        found = [
+            section
+            for section in spec.sections
+            if isinstance(section, ast.Message)
+            and section.name == block.command
+            and block.application_id in (None, _application_id(spec, section))
+        ]
+        if len(found) == 1:
+            return found[0].avps, None
+        if not found:
+            return None, f"names command {block.command}, which the file does not print"
+        ids = sorted({_application_id(spec, each) or 0 for each in found})
+        return None, (
+            f"names command {block.command}, which the file prints under"
+            f" applications {', '.join(map(str, ids))}; Application-ID names one"
+        )
+    if block.within is not None:
+        grouped = _grouped(_documents(spec, block.within, cited), block.within)
+        return (None if grouped is None else grouped.avps), None
+    return None, None
+
+
+# Integer kinds a value or a bit can be read from.
+_INTEGERS = frozenset(
+    {
+        ast.DataType.INTEGER32,
+        ast.DataType.INTEGER64,
+        ast.DataType.UNSIGNED32,
+        ast.DataType.UNSIGNED64,
+        ast.DataType.ENUMERATED,
+    }
+)
+_BITS = {ast.DataType.UNSIGNED32: 32, ast.DataType.UNSIGNED64: 64}
+_SIZED = frozenset(
+    {
+        ast.DataType.OCTET_STRING,
+        ast.DataType.UTF8_STRING,
+        ast.DataType.DIAMETER_IDENTITY,
+        ast.DataType.DIAMETER_URI,
+        ast.DataType.ADDRESS,
+        ast.DataType.IP_FILTER_RULE,
+        ast.DataType.QOS_FILTER_RULE,
+    }
+)
+_TEXTUAL = frozenset(
+    {
+        ast.DataType.OCTET_STRING,
+        ast.DataType.UTF8_STRING,
+        ast.DataType.DIAMETER_IDENTITY,
+        ast.DataType.DIAMETER_URI,
+        ast.DataType.IP_FILTER_RULE,
+        ast.DataType.QOS_FILTER_RULE,
+    }
+)
+
+
+def _type_problems(rule: ast.ConstraintRule, data_type: ast.DataType) -> Iterable[str]:
+    """Why `rule` cannot hold of an AVP of `data_type`."""
+    match rule:
+        case ast.RangeRule() | ast.ExcludeRule():
+            bounds = checks.integer_bounds(data_type)
+            if bounds is None:
+                yield f"a {rule.kind} needs an integer, not {data_type}"
+                return
+            numbers = (
+                (rule.low, rule.high)
+                if isinstance(rule, ast.RangeRule)
+                else rule.values
+            )
+            for number in numbers:
+                if number is not None and not bounds[0] <= number <= bounds[1]:
+                    yield f"{number} is beyond what {data_type} holds"
+        case ast.LengthRule(unit=ast.LengthUnit.OCTETS):
+            if data_type not in _SIZED:
+                yield f"an octet length needs an octet string, not {data_type}"
+        case ast.LengthRule(unit=ast.LengthUnit.CHARACTERS):
+            if data_type not in _TEXTUAL:
+                yield f"a character length needs text, not {data_type}"
+        case ast.EncodingRule():
+            if data_type not in checks.CODEC_TYPES[rule.codec]:
+                yield f"{rule.codec} does not encode {data_type}"
+        case _:
+            pass
+
+
+def _intersection(
+    ranges: Iterable[tuple[int | None, int | None]],
+) -> tuple[int | None, int | None]:
+    low: int | None = None
+    high: int | None = None
+    for each_low, each_high in ranges:
+        if each_low is not None:
+            low = each_low if low is None else max(low, each_low)
+        if each_high is not None:
+            high = each_high if high is None else min(high, each_high)
+    return low, high
+
+
+def _empty(bounds: tuple[int | None, int | None]) -> bool:
+    return bounds[0] is not None and bounds[1] is not None and bounds[0] > bounds[1]
+
+
+def _contradictions(rules: Sequence[ast.ConstraintRule]) -> Iterable[str]:
+    """Why `rules`, all holding of one AVP in one place, cannot all hold."""
+    codecs = {
+        rule.codec
+        for rule in rules
+        if isinstance(rule, ast.EncodingRule) and rule.codec is not ast.Codec.ELEMENT
+    }
+    if len(codecs) > 1:
+        yield f"encodings {', '.join(sorted(codecs))} cannot both hold"
+    for unit in ast.LengthUnit:
+        bounds = [
+            (rule.low, rule.high)
+            for rule in rules
+            if isinstance(rule, ast.LengthRule) and rule.unit is unit
+        ]
+        if unit is ast.LengthUnit.OCTETS:
+            bounds += [
+                found for codec in codecs if (found := checks.codec_octets(codec))
+            ]
+        if unit is ast.LengthUnit.DIGITS:
+            carrying = [
+                found for codec in codecs if (found := checks.codec_digits(codec))
+            ]
+            if bounds and not carrying:
+                yield "a digit length with no encoding carrying digits"
+            bounds += carrying
+        if _empty(_intersection(bounds)):
+            yield f"the lengths in {unit} leave none"
+    ranges = [
+        (rule.low, rule.high) for rule in rules if isinstance(rule, ast.RangeRule)
+    ]
+    low, high = _intersection(ranges)
+    if _empty((low, high)):
+        yield "the ranges leave no value"
+    elif low is not None and high is not None and ranges:
+        excluded = {
+            value
+            for rule in rules
+            if isinstance(rule, ast.ExcludeRule)
+            for value in rule.values
+        }
+        if set(range(low, high + 1)) <= excluded:
+            yield "exclude leaves no value of the range"
+
+
+def _constraints(
+    spec: ast.Specification, index: _Index, cited: _Cited | None
+) -> list[Finding]:
+    """Check each Interpreted Constraints block of `spec`; `cited` resolves a
+    document the file cites, None for a single file.
+
+    `constraint-avp-unknown` (error): a name the block constrains, scopes or
+    conditions on that the file does not hold. `constraint-command-unknown`
+    (error): a command the file does not print, or prints for several
+    applications with no `; Application-ID:`. `constraint-not-member`
+    (error): an AVP the printed body of its command or grouped AVP does not
+    hold. `constraint-type-mismatch` (error): a rule no value of the AVP's
+    type can meet, as a range on an OctetString or a codec for another
+    type, or a condition testing a value or bit of an AVP that has none.
+    `constraint-value-unknown` (error): a condition naming a value or bit
+    the AVP's values, result codes or bit table do not name.
+    `constraint-contradiction` (error): rules on one AVP in one place that
+    cannot all hold. A type, value or bit no document read states is not
+    judged."""
+    findings: list[Finding] = []
+    held = _held(spec)
+    blocks = [
+        section
+        for section in spec.sections
+        if isinstance(section, ast.InterpretedConstraints)
+    ]
+
+    def found(rule: str, block: ast.InterpretedConstraints, message: str) -> None:
+        findings.append(
+            Finding(
+                Severity.ERROR,
+                rule,
+                f"{_scope(block)}: {message}",
+                block.source.section,
+                paths=(index.path(block),),
+            )
+        )
+
+    facts: dict[str, _Facts] = {}
+
+    def fact(name: str) -> _Facts:
+        if name not in facts:
+            facts[name] = _facts(spec, name, cited)
+        return facts[name]
+
+    for block in blocks:
+        conditions = [
+            condition
+            for rule in block.body
+            if isinstance(rule, ast.PredicateRule)
+            for condition in rule.conditions
+        ]
+        names = dict.fromkeys(
+            [block.avp, *([block.within] if block.within else [])]
+            + [condition.avp for condition in conditions]
+        )
+        for name in names:
+            if name not in held:
+                found("constraint-avp-unknown", block, f"the file holds no AVP {name}")
+        body, unknown = _body(spec, block, cited)
+        if unknown is not None:
+            found("constraint-command-unknown", block, unknown)
+        if body is not None and block.avp in held:
+            members = {rule.name for rule in body}
+            if block.avp not in members:
+                where = block.command or block.within
+                found(
+                    "constraint-not-member",
+                    block,
+                    f"the body of {where} does not hold {block.avp}",
+                )
+            for condition in conditions:
+                if condition.avp in held and condition.avp not in members:
+                    found(
+                        "constraint-not-member",
+                        block,
+                        f"a condition tests {condition.avp}, which the body of"
+                        f" {block.command or block.within} does not hold",
+                    )
+        data_type = fact(block.avp).data_type if block.avp in held else None
+        for rule in block.body:
+            if data_type is not None and not isinstance(rule, ast.Quote):
+                for problem in _type_problems(rule, data_type):
+                    found("constraint-type-mismatch", block, problem)
+        for condition in conditions:
+            if condition.avp not in held:
+                continue
+            known = fact(condition.avp)
+            if condition.value is not None:
+                if known.data_type is not None and known.data_type not in _INTEGERS:
+                    found(
+                        "constraint-type-mismatch",
+                        block,
+                        f"a condition tests a value of {condition.avp}, of type"
+                        f" {known.data_type}",
+                    )
+                elif (
+                    isinstance(condition.value, str)
+                    and known.values is not None
+                    and condition.value not in known.values
+                ):
+                    found(
+                        "constraint-value-unknown",
+                        block,
+                        f"{condition.avp} names no value {condition.value!r}",
+                    )
+            if condition.bit is not None:
+                width = None if known.data_type is None else _BITS.get(known.data_type)
+                if known.data_type is not None and width is None:
+                    found(
+                        "constraint-type-mismatch",
+                        block,
+                        f"a condition tests a bit of {condition.avp}, of type"
+                        f" {known.data_type}",
+                    )
+                elif isinstance(condition.bit, int):
+                    if width is not None and condition.bit >= width:
+                        found(
+                            "constraint-type-mismatch",
+                            block,
+                            f"{condition.avp} has no bit {condition.bit}",
+                        )
+                elif known.bits is not None and condition.bit not in known.bits:
+                    found(
+                        "constraint-value-unknown",
+                        block,
+                        f"{condition.avp} names no bit {condition.bit!r}",
+                    )
+    # Rules on one AVP in one place: its blocks there, with those holding
+    # wherever the document reads it.
+    places: dict[tuple[str, str | None, int | None, str | None], list] = {}
+    for block in blocks:
+        places.setdefault(
+            (block.avp, block.command, block.application_id, block.within), []
+        ).append(block)
+    for (avp, command, _, within), here in places.items():
+        rules = [
+            rule
+            for block in here
+            for rule in block.body
+            if not isinstance(rule, ast.Quote)
+        ]
+        if command is not None or within is not None:
+            rules += [
+                rule
+                for block in places.get((avp, None, None, None), ())
+                for rule in block.body
+                if not isinstance(rule, ast.Quote)
+            ]
+        for problem in dict.fromkeys(_contradictions(rules)):
+            found("constraint-contradiction", here[0], problem)
+    return findings
+
+
+def _scope(block: ast.InterpretedConstraints) -> str:
+    where = block.command or block.within
+    return f"{block.avp} in {where}" if where else block.avp

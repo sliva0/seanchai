@@ -8,6 +8,7 @@ from collections.abc import Sequence
 
 from .. import corpus, model
 from ..dad import ast, corrections
+from ._constraints import CONSTRAINT_RULES, _constraints
 from ._definitions import (
     _applications_agree_with_headers,
     _duplicate_definitions,
@@ -82,6 +83,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_undefined_avps(index),
         *_section_references(spec, index),
         *_elements(spec, index, None),
+        *_constraints(spec, index, None),
     ]
     return _ordered(findings)
 
@@ -107,7 +109,12 @@ def lint_with_corpus(
         resolved = origins.get(origin)
         return None if resolved is None else resolved.spec.vendor_id
 
-    superseded = {"local-and-reused", "duplicate-identity", *ELEMENT_RULES}
+    superseded = {
+        "local-and-reused",
+        "duplicate-identity",
+        *ELEMENT_RULES,
+        *CONSTRAINT_RULES,
+    }
     findings = [
         finding
         for finding in lint(spec)
@@ -129,6 +136,7 @@ def lint_with_corpus(
         *_unresolved_references(index, bases, missing_bases),
         *_against_registry(spec, index, books),
         *_elements(spec, index, lambda reference: _cited(books, spec, reference)),
+        *_constraints(spec, index, lambda reference: _cited(books, spec, reference)),
     ]
     return accept(spec, _ordered(findings), acceptances)
 

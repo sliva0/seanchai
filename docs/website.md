@@ -163,6 +163,14 @@ and in its raw mirror alike, each describing its own file's lines. Every
   `; AVP:` line links to, and `value_rows`, each `name`, `value`, a result
   code's own `section`, a feature's `mark`, and a result code's `origin` with
   the `origin_target` its token links to.
+- Interpreted Constraints: `name`, the AVP its `; AVP:` names, with the
+  `avp_target` that line links to; `interpreted`, true only here, for a block
+  a person read in the clause's prose ([constraints.md](constraints.md));
+  its scope and `Versions` in `fields`; and `readings`, each `quotes` (`line`
+  and `text`, unescaped) and `rules`, each at its `line`, with `kind` and the
+  fields of the dictionary's rule ([consumers.md](consumers.md#the-dictionary)).
+  A clause nothing printed stands in, as a simple-typed AVP's, reads
+  "Interpreted Constraints IMEI" in `sections`.
 
 `commands` gives where a block's lines name a command, as `line`, `start` and
 `end` character offsets: a Message's name, abbreviation and rule head, the

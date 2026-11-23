@@ -14,6 +14,7 @@ from seanchai.dad.corrections import (
     CorrectionError,
     Delete,
     Insert,
+    Interpret,
     Supply,
     avp_rule,
     avp_table,
@@ -86,6 +87,9 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     }
 
     for correction in declared:
+        if isinstance(correction, Interpret):
+            assert correction.node in spec.sections
+            continue
         if isinstance(correction, Insert):
             (table,) = correction.into.find(spec)
             if isinstance(table, ast.Specification):

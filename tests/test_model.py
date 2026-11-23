@@ -100,6 +100,24 @@ def test_every_model_type_has_a_one_line_repr_and_a_json_dict(built):
         model.Alias("TS29.336", "External-Identifier", "source"),
         model.Supplied(1, 2, model.DataType.UTF8_STRING, FlagRules(must=_V), "source"),
         FlagRules(must=_V),
+        model.Constraint(
+            avp="Visited-PLMN-Id",
+            reference="TS29.272",
+            version="19.6.0",
+            section="7.3.9",
+            page=103,
+            table=None,
+            command=None,
+            application_id=None,
+            within=None,
+            versions="19.6.0",
+            readings=(
+                ast.Reading(
+                    quotes=("It is a PLMN.",),
+                    rules=(ast.EncodingRule(codec=ast.Codec.PLMN_ID),),
+                ),
+            ),
+        ),
     ]
     public = {
         each

@@ -254,7 +254,14 @@ def test_commands_as_json_are_the_dictionarys_without_their_bodies(tmp_path):
     listed = json.loads(_run("commands", "TS29.229", "--json").stdout)
     written = _dictionary(tmp_path, "--document", "TS29.229")
 
-    bodies = {"members", "dropped", "walk", "answer_message", "elements"}
+    bodies = {
+        "members",
+        "dropped",
+        "walk",
+        "answer_message",
+        "elements",
+        "constraints",
+    }
     assert listed["applications"] == [
         {
             **{key: value for key, value in application.items() if key != "marks"},

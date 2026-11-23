@@ -205,6 +205,8 @@ applications[]     id, reference, version, application_id, clause, name,
                    answer_message
     elements[]     name, category, avps, either, printed, within, reference,
                    version, section, table, page: its information elements
+    constraints[]  as constraints[] below: what its document read of its
+                   members
   pairs[]          command_code, requests[], answers[]: indexes into commands
   marks[]          name, avp, table, section, marks: what the application's
                    tables mark about the names it reaches
@@ -220,6 +222,9 @@ holes[]            id, name, reference, version, missing, what it does state,
 value_tables[]     kind (result-codes, bits, features), avp, avp_ids,
                    applications, reference, version, vendor_id, section, page,
                    table, application, feature_list_id, rows[]
+constraints[]      interpreted, avp, avp_ids, command, application_id, within,
+                   reference, version, section, table, page, versions,
+                   readings[]: quotes, rules[]
 conflicts[]        vendor_id, code, defining, fields, obsolete,
                    readings[]: avp, obsoleted_by, paths[]
 ```
@@ -274,6 +279,17 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   against RFC 7155's. Such conflicts stay listed, since an application whose
   document cites the obsoleted RFC (TS 29.061 builds on RFC 4005) means that
   reading; a backend following the current documents skips them.
+- `constraints[]` holds the interpreted constraints on the AVPs the output
+  reaches, wherever the reading document reads them (`within` null) or as
+  members of a grouped AVP (`within` its name), each naming the readings
+  carrying it in `avp_ids`: the AVP's own, or the grouped AVP's. A command's
+  `constraints` are its members', `avp_ids` the members of that name.
+  `interpreted` is always true: a person read them in the clause's prose
+  ([below](#interpreted-constraints)). A rule has `kind` and the fields its
+  kind uses, the others null or empty: a length's `unit`, `low` and `high`,
+  a range's `low` and `high`, exclude's `values`, an encoding's `codec` and
+  an `element`'s `document`, `clause` and `element`, a predicate's
+  `conditions` (`avp`, and `value` or `bit`).
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included: the copy of
   the document printing an error answer that its base resolved to.
@@ -289,6 +305,7 @@ avps[]             that reading first; then the identity's other readings, by
                    id; then every AVP their bodies name, at any depth
 holes[]            what their bodies name and the corpus cannot complete
 value_tables[]     those of the identity's readings, each with its avp_ids
+constraints[]      those of the identity's readings, each with its avp_ids
 ```
 
 Entries have the dictionary's shapes and ids, and every id a member names is
@@ -317,7 +334,7 @@ in the output.
 `seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
 `seanchai_version`, `corpus_version` and `applications[]` as the dictionary
 writes them, without `marks`, each command without `members`, `dropped`,
-`walk`, `answer_message` and `elements`.
+`walk`, `answer_message`, `elements` and `constraints`.
 
 ## Installing the corpus
 
@@ -361,7 +378,8 @@ Every error the library raises derives from `seanchai.SeanchaiError`.
 `seanchai` follows semantic versioning over:
 
 - the names in the `__all__` of `seanchai`, `seanchai.model`,
-  `seanchai.corpus`, `seanchai.dictionary` and `seanchai.errors`;
+  `seanchai.corpus`, `seanchai.dictionary`, `seanchai.constraints` and
+  `seanchai.errors`;
 - the dictionary's JSON, versioned by its `format_version`;
 - the `.dad` grammar and the corpus format it reads, `corpus.FORMATS`;
 - the consumer commands' options, output and exit statuses: `show`,
@@ -413,6 +431,7 @@ model.across_releases()  # what citations resolved across releases
 model.registry(RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 model.value_tables("TS29.272", avp="ULR-Flags")  # the numbers a document names
 model.element_tables("TS29.228")  # information-element tables, with their commands
+model.constraints("TS29.272")  # what its clauses' prose says, as read
 model.value_tables(kind=ValueKind.FEATURES)  # one kind, the whole corpus
 model.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
 model.definition("ULR-Flags").value_table  # the bits, read through resolution
@@ -812,6 +831,47 @@ describes, none where it names no command or one printed for several
 applications it does not choose between; the linter reports those and where
 a category and the ABNF disagree
 ([linter.md](linter.md#information-elements)).
+
+### Interpreted constraints
+
+What a clause states in prose of an AVP's value or presence, its layout, a
+range, a condition on its siblings, is no structure a document prints. TS
+29.272's is read by hand and declared as interpreted constraints, each rule
+pinned to the sentences it was read from; [constraints.md](constraints.md)
+gives the kinds, the codecs, how far to trust them and how to add them.
+
+```python
+from seanchai.model import Codec, Grouped, Model
+
+model = Model.installed()
+plmn = model.resolve("TS29.272", "Visited-PLMN-Id")
+for constraint in plmn.constraints:  # TS 29.272 clause 7.3.9
+    print(constraint.section, constraint.readings[0].quotes)
+    print([rule.codec for rule in constraint.rules if rule.kind == "encoding"])
+apn = model.resolve("TS29.272", "APN-Configuration")
+assert isinstance(apn, Grouped)
+for constraint in apn.member_constraints:  # its members, clause 7.3.35
+    print(constraint.avp, [rule.kind for rule in constraint.rules])
+(s6a,) = model.applications("TS29.272", application_id=16777251)
+for message in s6a.messages:
+    for constraint in message.constraints:  # its members, from clause 5
+        print(message.abbreviation, constraint.avp, constraint.table)
+```
+
+- `Avp.constraints` holds what the document reading the AVP read of it
+  wherever it appears, or failing any, its origin's, as `value_tables` does;
+  like `value_tables` it is not part of the reading's identity.
+  `Grouped.member_constraints` holds what it read of the grouped AVP's
+  members, `Message.constraints` of the command's.
+- A `model.Constraint` has the `avp`, its scope (`command` and
+  `application_id`, or `within`), `reference`, `version`, `section`,
+  `table` and `page`, `versions`, the range of versions the quotes were
+  checked against, and `readings`, each an `ast.Reading` of `quotes` and
+  `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`, `EncodingRule`,
+  `PredicateRule`, `TextOnly`). `interpreted` is always True.
+- `seanchai.constraints.check(rule, payload, data_type, codec)` tells
+  whether a value rule holds of a payload, and `codec_problem` why a payload
+  is no such layout ([constraints.md](constraints.md#codecs)).
 
 ### The registry
 

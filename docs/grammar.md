@@ -39,6 +39,7 @@ version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 section       = application-scope / message / grouped-avp
               / enumerated-avp / avp-table / reused-avps / registry
               / undefined-avp / value-table / information-elements
+              / interpreted-constraints
 ```
 
 A `spec-ref` names a document without its version, as one token.
@@ -575,6 +576,100 @@ IMSI                                       User-Name            M
 - `; Table:` is absent where the table prints no caption (TS 29.234 V11.2.0
   clause 8.3.2's first).
 
+### Interpreted Constraints
+
+```abnf
+interpreted-constraints = "; Type: Interpreted Constraints" NL
+                          "; AVP: " avp-name NL
+                          ["; Command: " avp-name NL
+                           ["; Application-ID: " application-id NL]]
+                          ["; Within: " avp-name NL]
+                          "; Section: " section-number NL
+                          ["; Table: " inline-text NL]
+                          ["; Page: " 1*DIGIT NL]
+                          "; Versions: " versions NL
+                          1*reading
+versions      = version-bound [".." version-bound]
+version-bound = version / "*"
+reading       = 1*(quote-line NL) 1*(rule-line NL)
+quote-line    = DQUOTE 1*(name-char / SP) DQUOTE   ; as inline-text, escaped
+rule-line     = 4SP rule
+rule          = length / range / exclude / encoding / predicate / "text-only"
+length        = "length " bounds SP ("octets" / "digits" / "characters")
+range         = "range " bounds
+exclude       = "exclude " integer *(", " integer)
+bounds        = bound [".." bound]               ; one bound: exactly it
+bound         = integer / "*"                    ; "*": open
+integer       = ["-"] 1*DIGIT
+encoding      = "encoding " codec
+              / "encoding element " spec-ref [SP section-number]
+                [SP DQUOTE name-text DQUOTE]
+codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
+              / "labels" / "apn" / "plmn-domain" / "epc-plmn-domain"
+              / "ip-address" / "time-zone"
+predicate     = predicate-kind SP condition *(" or " condition)
+predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
+condition     = avp-name [" = " value-ref / " bit " value-ref]
+value-ref     = integer / enum-name
+```
+
+What a clause states in prose about one AVP's value or presence, as a person
+read it: the sentences read, verbatim, each followed by the rules read from
+them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
+
+```dad
+; Type: Interpreted Constraints
+; AVP: Context-Identifier
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero."
+    exclude 0
+
+
+; Type: Interpreted Constraints
+; AVP: Context-Identifier
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags."
+    requires DSR-Flags bit "PDN subscription contexts Withdrawal" or DSR-Flags bit "PDP contexts Withdrawal"
+```
+
+- The block is interpreted: no document prints it as structure, no extractor
+  writes it, and only a correction declares it
+  ([corrections.md](corrections.md#interpreted-constraints)), so only a
+  corrected file holds one. It stands in clause order after the last block
+  of its clause or one before it, beside the clause it reads.
+- `; AVP:` is the AVP the rules constrain. `; Command:`, with
+  `; Application-ID:` where the file prints the command for several
+  applications, or `; Within:`, a grouped AVP, scopes them to the AVP as a
+  member there; a predicate's conditions are its siblings. With neither, the
+  rules hold wherever the document reads the AVP.
+- A quote is one or more sentences of the clause, or an information
+  element's description where `; Table:` names its table, as printed once
+  whitespace is collapsed; `\"` and `\\` are its escapes. `; Versions:` is
+  the range of the document's versions the quotes were checked against.
+- `length` counts the payload's octets, the digits an encoding carries, or a
+  text's characters. `range` and `exclude` bound an integer value.
+- `encoding` names the layout, one of a closed set of codecs
+  ([consumers.md](consumers.md#interpreted-constraints) gives each one's
+  clause). `element` is another document's information element carried
+  whole, with the clause and name the clause gives.
+- A predicate ties the AVP's presence to conditions on its siblings, `or`
+  joining alternatives: `present-if` (present when one holds), `absent-if`
+  (absent when one holds), `requires` (one holds when it is present) and
+  `excludes` (none holds when it is present). A condition is a sibling's
+  presence, its value, a number or a name its values or result codes give
+  it, or a bit, by number or by its bit table's name.
+- `text-only` is a rule the quote states that no kind expresses: one
+  depending on an earlier message, a feature, the node or the subscriber,
+  or on more than the kinds can say. It is a reading's only rule.
+
 ## Text values
 
 ```abnf
@@ -602,6 +697,10 @@ Checked by the AST after parsing:
 - A Value Table has at least one row. A clause or origin in a row requires
   `result-codes`; a mark, `; Application:` and `; Feature-List-ID:` require
   `features`.
+- An Interpreted Constraints block's bounds are ordered and an `exclude`
+  names a value once; `; Application-ID:` needs `; Command:`, which excludes
+  `; Within:`; a condition tests a value or a bit, not both; only `element`
+  takes a document, and it needs one.
 - Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
   value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
   and at least 1.

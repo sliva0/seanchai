@@ -70,6 +70,7 @@ _VERSION = pydantic.TypeAdapter(ast.Version)
 _INLINE_TEXT = pydantic.TypeAdapter(ast.InlineText)
 _UNSIGNED32 = pydantic.TypeAdapter(ast.Unsigned32)
 _SPEC_REF = pydantic.TypeAdapter(ast.SpecRef)
+_VERSIONS_TEXT = pydantic.TypeAdapter(ast.VersionsText)
 
 
 class DadParseError(SeanchaiError, ValueError):
@@ -1015,6 +1016,165 @@ def _parse_information_elements(
         )
 
 
+_BOUND = r"-?[0-9]+|\*"
+_BOUNDS = rf"(?P<low>{_BOUND})(?:\.\.(?P<high>{_BOUND}))?"
+_NAME_OR_NUMBER = rf"-?[0-9]+|[A-Za-z0-9][A-Za-z0-9_-]*|{_QUOTED}"
+_QUOTE_LINE_RE = re.compile(r'^"(?P<text>(?:[^"\\]|\\["\\])*)"$')
+_LENGTH_RE = re.compile(rf"^length {_BOUNDS} (?P<unit>[a-z]+)$")
+_RANGE_RE = re.compile(rf"^range {_BOUNDS}$")
+_EXCLUDE_RE = re.compile(r"^exclude (?P<values>-?[0-9]+(?:, -?[0-9]+)*)$")
+_ENCODING_RE = re.compile(
+    r"^encoding (?P<codec>[a-z0-9-]+)"
+    r"(?: (?P<document>[^\s\"]+)(?: (?P<clause>[^\s\"]+))?)?"
+    rf"(?: (?P<element>{_QUOTED}))?$"
+)
+_PREDICATE_RE = re.compile(r"^(?P<kind>[a-z-]+) (?P<conditions>.+)$")
+_CONDITION_RE = re.compile(
+    r"(?P<avp>[A-Za-z0-9][A-Za-z0-9_-]*)"
+    rf"(?: = (?P<value>{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
+)
+
+
+def _bound(text: str | None) -> int | None:
+    return None if text is None or text == "*" else int(text)
+
+
+def _bounds(match: re.Match[str]) -> tuple[int | None, int | None]:
+    """`3` is exactly 3, `1..*` at least 1, `*..15` at most 15."""
+    low = _bound(match["low"])
+    if match["high"] is None:
+        return low, low
+    return low, _bound(match["high"])
+
+
+def _name_or_number(text: str | None) -> int | str | None:
+    if text is None:
+        return None
+    if text.startswith('"'):
+        return _ESCAPE_RE.sub(r"\1", text[1:-1])
+    if re.fullmatch(r"-?[0-9]+", text):
+        return int(text)
+    return text
+
+
+def _conditions(text: str, lineno: int) -> tuple[ast.Condition, ...]:
+    """Conditions joined by ` or `, each read at its own position so a quoted
+    name may hold the word."""
+    conditions = []
+    position = 0
+    while True:
+        match = _CONDITION_RE.match(text, position)
+        if match is None:
+            raise DadParseError(lineno, f"malformed condition at {text[position:]!r}")
+        with _validated(lineno):
+            conditions.append(
+                ast.Condition(
+                    avp=match["avp"],
+                    value=_name_or_number(match["value"]),
+                    bit=_name_or_number(match["bit"]),
+                )
+            )
+        position = match.end()
+        if position == len(text):
+            return tuple(conditions)
+        if not text.startswith(" or ", position):
+            raise DadParseError(lineno, f"malformed condition at {text[position:]!r}")
+        position += len(" or ")
+
+
+def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
+    """One rule line of an interpreted-constraints body, without its
+    indentation."""
+    if text == "text-only":
+        return ast.TextOnly()
+    with _validated(lineno):
+        if match := _LENGTH_RE.match(text):
+            if match["unit"] not in ast.LengthUnit:
+                known = ", ".join(unit.value for unit in ast.LengthUnit)
+                raise DadParseError(
+                    lineno, f"unknown unit {match['unit']!r} (expected one of {known})"
+                )
+            low, high = _bounds(match)
+            return ast.LengthRule(
+                unit=ast.LengthUnit(match["unit"]), low=low, high=high
+            )
+        if match := _RANGE_RE.match(text):
+            low, high = _bounds(match)
+            return ast.RangeRule(low=low, high=high)
+        if match := _EXCLUDE_RE.match(text):
+            return ast.ExcludeRule(
+                values=tuple(int(value) for value in match["values"].split(", "))
+            )
+        if match := _ENCODING_RE.match(text):
+            if match["codec"] not in ast.Codec:
+                known = ", ".join(codec.value for codec in ast.Codec)
+                raise DadParseError(
+                    lineno,
+                    f"unknown codec {match['codec']!r} (expected one of {known})",
+                )
+            element = match["element"]
+            return ast.EncodingRule(
+                codec=ast.Codec(match["codec"]),
+                document=match["document"],
+                clause=match["clause"],
+                element=None
+                if element is None
+                else _ESCAPE_RE.sub(r"\1", element[1:-1]),
+            )
+        if (match := _PREDICATE_RE.match(text)) and match["kind"] in ast.PredicateKind:
+            return ast.PredicateRule(
+                kind=ast.PredicateKind(match["kind"]),
+                conditions=_conditions(match["conditions"], lineno),
+            )
+    raise DadParseError(lineno, f"malformed rule {text!r}")
+
+
+def _parse_interpreted_constraints(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.InterpretedConstraints:
+    avp = _pop(directives, "AVP", lineno)
+    # Optional: a block holding wherever the document reads the AVP names no
+    # scope.
+    command = directives.pop("Command", None)
+    application_id = directives.pop("Application-ID", None)
+    within = directives.pop("Within", None)
+    table = directives.pop("Table", None)
+    versions = _pop(directives, "Versions", lineno)
+    source = _source_ref(directives, lineno)
+    _no_leftovers(directives, lineno)
+    number = None
+    if application_id is not None:
+        number = _number(application_id.value, application_id.lineno, "Application-ID")
+    if table is not None:
+        with _validated(table.lineno):
+            _INLINE_TEXT.validate_python(table.value)
+    items: list[ast.Quote | ast.ConstraintRule] = []
+    for item_lineno, line in body:
+        if match := _QUOTE_LINE_RE.match(line):
+            with _validated(item_lineno):
+                items.append(ast.Quote(text=_ESCAPE_RE.sub(r"\1", match["text"])))
+        elif line.startswith(" ") and line.strip():
+            items.append(_constraint_rule(line.strip(), item_lineno))
+        else:
+            raise DadParseError(
+                item_lineno,
+                f"expected a quote or an indented rule, got {line.strip()!r}",
+            )
+    with _validated(versions.lineno):
+        _VERSIONS_TEXT.validate_python(versions.value)
+    with _validated(lineno):
+        return ast.InterpretedConstraints(
+            avp=avp.value,
+            command=None if command is None else command.value,
+            application_id=number,
+            within=None if within is None else within.value,
+            table=None if table is None else table.value,
+            source=source,
+            versions=versions.value,
+            body=tuple(items),
+        )
+
+
 _SECTION_PARSERS = {
     "Application Scope": _parse_application_scope,
     "Message": _parse_message,
@@ -1027,6 +1187,7 @@ _SECTION_PARSERS = {
     "Undefined AVP": _parse_undefined_avp,
     "Value Table": _parse_value_table,
     "Information Elements": _parse_information_elements,
+    "Interpreted Constraints": _parse_interpreted_constraints,
 }
 
 # Where each line's comments attach: the path of what the line states. A
@@ -1064,6 +1225,8 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Kind": ("kind",),
     "Feature-List-ID": ("feature_list_id",),
     "Application": ("application",),
+    "Within": ("within",),
+    "Versions": ("versions",),
 }
 # An application scope and an undefined AVP have no body: a whole-line
 # comment after the last line stands at the block's own path.
@@ -1079,6 +1242,7 @@ _BODIES = {
     "Undefined AVP": ("", 0),
     "Value Table": ("rows", 0),
     "Information Elements": ("rows", 0),
+    "Interpreted Constraints": ("body", 0),
 }
 
 

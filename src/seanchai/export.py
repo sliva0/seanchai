@@ -51,6 +51,10 @@ from .export_schema import (
     Command,
     CommandIdentity,
     CommandSpan,
+    ConstraintCondition,
+    ConstraintQuote,
+    ConstraintReading,
+    ConstraintRule,
     Document,
     DocumentSummary,
     ElementRow,
@@ -147,7 +151,11 @@ def _citations(spec: ast.Specification) -> dict[str, Citation]:
 def _block_title(section: ast.Section) -> str:
     """A block's `; Type:` plus its `; Name:` (definition), `; AVP:` (value
     table) or re-used names (re-used rows from prose)."""
-    name = section.avp if isinstance(section, ast.ValueTable) else None
+    name = (
+        section.avp
+        if isinstance(section, ast.ValueTable | ast.InterpretedConstraints)
+        else None
+    )
     if isinstance(section, ast.ReusedAvps) and section.table is None:
         name = ", ".join(row.name for row in section.rows)
     name = getattr(section, "name", name)
@@ -161,8 +169,17 @@ def _sections(
     there. A clause with several blocks names each kind once; a clause only
     table rows name takes its first row's."""
     blocks: dict[str, dict[str, None]] = {}
+    # What a clause's interpreted constraints constrain, named where nothing
+    # the document prints stands in the clause: a simple-typed AVP's.
+    interpreted: dict[str, dict[str, None]] = {}
     for section in spec.sections:
+        if isinstance(section, ast.InterpretedConstraints):
+            interpreted.setdefault(section.source.section, {})[section.avp] = None
+            continue
         blocks.setdefault(section.source.section, {})[_block_title(section)] = None
+    for clause, names in interpreted.items():
+        if clause not in blocks:
+            blocks[clause] = {f"Interpreted Constraints {', '.join(names)}": None}
     rows: dict[str, list[str]] = {}
     for section in spec.sections:
         if isinstance(section, ast.AvpTable):
@@ -320,7 +337,7 @@ def _tokens(
     source = section.source if section is not None else None
     directive = _DIRECTIVE.match(line)
     key = directive[1] if directive else None
-    naming = key in (None, "Name", "AVP", "Command") and not (
+    naming = key in (None, "Name", "AVP", "Command", "Within") and not (
         isinstance(section, ast.EnumeratedAvp | ast.ValueTable) and " = " in line
     )
     # A command or application names its own clause, whatever else in the file
@@ -586,6 +603,11 @@ def _blocks(
             # What the `; AVP:` line's name links to, as `_tokens` links it.
             fields["avp_target"] = links.names.get(section.avp)
             fields["value_rows"] = _value_rows(placed, index, section)
+        elif isinstance(section, ast.InterpretedConstraints):
+            fields["name"] = section.avp
+            fields["interpreted"] = True
+            fields["avp_target"] = links.names.get(section.avp)
+            fields["readings"] = _constraint_readings(placed, index, section)
         elif not isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
             fields["name"] = getattr(section, "name", None)
         if isinstance(section, _RULED):
@@ -627,6 +649,50 @@ def _blocks(
         fields["commands"] = tuple(spans)
         blocks.append(Block(**fields))
     return tuple(blocks)
+
+
+def _constraint_readings(
+    placed: _Placed, index: int, section: ast.InterpretedConstraints
+) -> tuple[ConstraintReading, ...]:
+    """An Interpreted Constraints block's quotes and rules, each at its line."""
+    readings: list[ConstraintReading] = []
+    quotes: list[ConstraintQuote] = []
+    rules: list[ConstraintRule] = []
+    for item, node in enumerate(section.body):
+        line = placed.items[index, "body", item]
+        if isinstance(node, ast.Quote):
+            if rules:
+                readings.append(
+                    ConstraintReading(quotes=tuple(quotes), rules=tuple(rules))
+                )
+                quotes, rules = [], []
+            quotes.append(ConstraintQuote(line=line, text=node.text))
+            continue
+        fields: dict[str, Any] = {"line": line, "kind": str(node.kind)}
+        match node:
+            case ast.LengthRule():
+                fields |= {"unit": node.unit, "low": node.low, "high": node.high}
+            case ast.RangeRule():
+                fields |= {"low": node.low, "high": node.high}
+            case ast.ExcludeRule():
+                fields["values"] = node.values
+            case ast.EncodingRule():
+                fields |= {
+                    "codec": node.codec,
+                    "document": node.document,
+                    "clause": node.clause,
+                    "element": node.element,
+                }
+            case ast.PredicateRule():
+                fields["conditions"] = tuple(
+                    ConstraintCondition(avp=each.avp, value=each.value, bit=each.bit)
+                    for each in node.conditions
+                )
+            case ast.TextOnly():
+                pass
+        rules.append(ConstraintRule(**fields))
+    readings.append(ConstraintReading(quotes=tuple(quotes), rules=tuple(rules)))
+    return tuple(readings)
 
 
 def _rule(

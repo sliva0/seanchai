@@ -73,10 +73,20 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   answer.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
+- Interpreted constraints ([constraints.md](constraints.md)), what a person
+  read in the clauses' prose, each a warning saying the rule is interpreted:
+  a length in octets, digits or characters, a range, an excluded value, an
+  encoding (`constraint-length`, `-range`, `-exclude`, `-encoding`), for the
+  AVP wherever its reading's document reads it and as a member of the command
+  or grouped AVP holding it; and the predicates tying a member's presence to
+  its siblings (`constraint-present-if`, `-absent-if`, `-requires`,
+  `-excludes`). An `element` is checked no further than a length beside it,
+  `text-only` not at all, and a predicate naming a value or bit no table
+  numbers is left out.
 
-It cannot check what the documents say only in prose ("shall be present if
-..."), what an OctetString holds, what depends on negotiated features, or
-anything across messages.
+It cannot check what the documents say only in prose and no one has read as
+a constraint, what depends on negotiated features, or anything across
+messages.
 
 ## Which definition a message is held to
 
@@ -129,6 +139,7 @@ publisher's link does not depend on it.
 | the header, the AVP framing, the P bit of an AVP, an unknown AVP with the M bit | RFC 6733 section 3, or 4.1 |
 | data formats | RFC 6733 section 4.2 (the integer and float types) or 4.3.1 |
 | the E bit | RFC 6733 section 7.1.3 for a protocol error without it, 7.2 for another answer with it |
+| an interpreted constraint | the clause its quotes were read from, and the table where they are an information element's description |
 
 An unknown command or AVP cites nothing: no document defines it.
 

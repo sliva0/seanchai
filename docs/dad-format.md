@@ -43,6 +43,7 @@ blank lines. Each section starts with `; Type:`.
 | `Undefined AVP`     | a name the document uses that the corpus finds defined nowhere   |
 | `Value Table`       | the names a document gives a numeric AVP's numbers: result codes, bits of a bit mask, features of a feature list |
 | `Information Elements` | a command's information elements, the AVPs each maps to and its category, M, C or O |
+| `Interpreted Constraints` | what a clause's prose says of an AVP's value or presence, as a person read it, with the sentences read; corrected files only |
 
 ## Design
 
@@ -79,6 +80,11 @@ blank lines. Each section starts with `; Type:`.
   parser, linter and model like an extracted one. Its title names a private
   document, `; Specification: Private ACME-HSS`
   ([grammar.md](grammar.md#file)).
+- Prose is out of the extractors' scope. What a clause's prose states of an
+  AVP's value or presence (a layout, a range, a condition) is read by a
+  person and declared as an edit, which places an `Interpreted Constraints`
+  block in the corrected file beside the clause, each rule after the
+  sentences it was read from; the raw file never holds one.
 - A new `; Type:`, directive key or structural column is a format change.
   It needs a source document that cannot otherwise be recorded; consumer
   convenience belongs in the model. Mark columns are open

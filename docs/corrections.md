@@ -14,6 +14,7 @@ failure.
 | exclusions | clauses the document has not finished, left out of both files | same file, `[[exclude]]` |
 | extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |
 | corrections | data that parses but is wrong | `edits/corrections/<SpecRef>.py` |
+| interpretations | what a clause's prose says of an AVP's value or presence | same file, `Interpret` |
 | acceptances | linter notes a clause makes deliberate; no data changes | same file, `Accept` |
 
 [extractor.md](extractor.md#source-declarations) covers input patches,
@@ -136,6 +137,83 @@ row, and the file must list the AVP as re-used.
 There is no free-form edit, `move` or `split`. A new structural case gets a
 named operation with its own `expect`.
 
+## Interpreted constraints
+
+`Interpret` declares what a person read in a clause's prose about one AVP's
+value or presence, as rules of a closed set of kinds, each after the
+sentences it was read from (`src/seanchai/dad/interpret.py`). It inserts an
+`Interpreted Constraints` block
+([grammar.md](grammar.md#interpreted-constraints)) into the corrected file,
+in clause order after the last block of its clause or one before it, marked
+on its `; Type:` line:
+
+```python
+from seanchai.dad.ast import Codec
+from seanchai.dad.interpret import Interpret, encoding, exclude, reading
+
+CORRECTIONS += [
+    Interpret(
+        id="visited-plmn-id-layout",
+        avp="Visited-PLMN-Id",
+        section="7.3.9",
+        page=103,
+        readings=(
+            reading(
+                (
+                    "This AVP shall contain the concatenation of MCC and MNC.",
+                    "The content of this AVP shall be encoded as an octet"
+                    " string according to table 7.3.9-1.",
+                ),
+                encoding(Codec.PLMN_ID),
+            ),
+        ),
+        versions="19.6.0",
+    ),
+    Interpret(
+        id="apn-configuration-context-identifier",
+        avp="Context-Identifier",
+        within="APN-Configuration",
+        section="7.3.35",
+        page=128,
+        readings=(
+            reading(
+                "The Context-Identifier in the APN-Configuration AVP shall"
+                " identify that APN configuration, and it shall not have a"
+                " value of zero.",
+                exclude(0),
+            ),
+        ),
+        versions="19.6.0",
+    ),
+]
+```
+
+```dad
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#visited-plmn-id-layout)
+```
+
+- The rules are built by `octets`, `digits` and `characters` (`length`),
+  `range_of`, `exclude`, `encoding` and `element`, `present_if`,
+  `absent_if`, `requires` and `excludes` over `present`, `equals` and `bit`
+  conditions (a bare name is `present`), and `text_only`.
+- `command` (with `application_id`) or `within` scopes the rules to the AVP
+  as a member of that command or grouped AVP; `table` names the table
+  printing the quotes, an information element's description.
+- Applying it expects the corrected file to hold every AVP it names, one
+  command of the scope's name, the AVP in the command's or the grouped
+  AVP's printed body, and no other block for the same AVP, scope and
+  clause.
+- `seanchai corpus regenerate` holds every quote to the clause it cites:
+  it must be within one paragraph or table cell of the clause once
+  whitespace is collapsed, as the extractor reads it, and `page` must be the
+  clause's page in the PDF's outline. A miss fails the document, as an
+  `expect` does. Only a 3GPP docx is checked so far, so a module for an
+  RFC or a transcription is refused.
+- `reason` is not declared: the record holds the quotes.
+
+[consumers.md](consumers.md#interpreted-constraints) describes the kinds and
+codecs and how far to trust them.
+
 ## Acceptances
 
 `Accept` marks a linter note as deliberate on a clause's word, such as an
@@ -181,7 +259,8 @@ corpus's `corrections.json` next to `holes.toml`. Per document file stem it
 holds:
 
 - the document's reference and version;
-- each declaration's citation, kind and reason;
+- each declaration's citation, kind and reason (an interpretation's
+  clause and quotes);
 - what each acceptance accepts: rule, message and the tree paths its target
   reaches;
 - the name corrections, in declaration order, that `seanchai export` uses to
@@ -210,6 +289,8 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
   block's first line when it removes that line.
 - A deletion's note replaces the deleted line:
   `;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`.
+- An interpretation's block is marked `;; interpreted:` on its `; Type:`
+  line.
 - An inserted row is marked `;; inserted:`, with its source where the
   `Insert` gives one:
   `;; inserted: from clause 6.3.43 (TS29.229.py#wildcarded-impu-row-missing)`.

@@ -45,16 +45,24 @@ __all__ = [
     "AvpTableRow",
     "Category",
     "ClauseWildcard",
+    "Codec",
     "CommandFlag",
+    "Condition",
+    "ConstraintRule",
     "DataType",
     "ElementRow",
+    "EncodingRule",
     "EnumEntry",
     "EnumValue",
     "EnumValueName",
     "EnumeratedAvp",
+    "ExcludeRule",
     "GroupedAvp",
     "InformationElements",
     "InlineText",
+    "InterpretedConstraints",
+    "LengthRule",
+    "LengthUnit",
     "MBitOverride",
     "Mark",
     "MarkColumn",
@@ -62,7 +70,12 @@ __all__ = [
     "Message",
     "Node",
     "PageNumber",
+    "PredicateKind",
+    "PredicateRule",
     "Presence",
+    "Quote",
+    "RangeRule",
+    "Reading",
     "Registry",
     "RegistryColumn",
     "RegistryKind",
@@ -81,15 +94,18 @@ __all__ = [
     "SpecRefError",
     "Specification",
     "TableLabel",
+    "TextOnly",
     "TreePath",
     "UndefinedAvp",
     "Unsigned24",
     "Unsigned32",
     "ValueKind",
+    "ValueRef",
     "ValueRow",
     "ValueTable",
     "VendorSpecificValues",
     "Version",
+    "VersionsText",
     "VoidValues",
     "defines",
     "in_document_order",
@@ -1258,6 +1274,319 @@ class InformationElements(Node):
 ELEMENT_COLUMNS = ("Name", "AVP", "Cat")
 
 
+# --- interpreted constraints ------------------------------------------------
+#
+# What a clause states about an AVP's value in prose: "encoded as a
+# TBCD-string", "in the range of 0 to 255", "shall only be present when
+# Non-IP-PDN-Type-Indicator is set to TRUE (1)". No document prints these as
+# structure, so no extractor reads them: a person reads the clause and
+# declares what it says (`corrections.Interpret`), pinned to the sentence it
+# was read from, and only a corrected file holds the block. The kinds are a
+# closed set, so a reader can check every rule without an expression
+# language; anything else the clause states is kept as `text-only`.
+
+
+class LengthUnit(enum.StrEnum):
+    """What a `length` rule counts: the payload's octets, the decimal digits
+    an encoding carries (a TBCD-string's, or a digit string's), or the
+    characters of a text."""
+
+    OCTETS = "octets"
+    DIGITS = "digits"
+    CHARACTERS = "characters"
+
+
+class Codec(enum.StrEnum):
+    """The layouts a clause names for an AVP's payload, each defined in the
+    clause cited. A closed set, read from TS 29.272 Release 19's clauses: a
+    layout no clause states is not here.
+
+    - `e164-tbcd`: an international number (ITU-T E.164, at most 15 decimal
+      digits) as a TBCD-string, TS 29.002 clause 17.7.8: two digits per
+      octet, the first in bits 1-4, "1111" filling the last octet's bits 5-8
+      after an odd count, with no octet for the nature of address and the
+      numbering plan (TS 29.272 clauses 7.3.39, 7.3.85).
+    - `plmn-id`: MCC and MNC in three octets, TS 29.272 table 7.3.9/1 after
+      TS 24.008 clause 10.5.1.13: MCC digit 2 and 1 in octet 1, MNC digit 3
+      and MCC digit 3 in octet 2, MNC digit 2 and 1 in octet 3; a two-digit
+      MNC sets MNC digit 3 to "1111".
+    - `plmn-id-prefix`: a `plmn-id` in the first three octets and further
+      octets after it (TS 29.272 table 7.3.64/1, Trace-Reference).
+    - `digits`: decimal digits as text, a character each (TS 29.272 clauses
+      7.3.4, 7.3.50).
+    - `labels`: one or more non-empty labels separated by dots, as text
+      (TS 29.272 clause 7.3.32).
+    - `apn`: `labels`, or the wild card APN `*` (TS 29.272 clause 7.3.36).
+    - `plmn-domain`: `mnc<MNC>.mcc<MCC>.3gppnetwork.org` (TS 29.272 clause
+      7.3.105), MNC two or three digits and MCC three.
+    - `epc-plmn-domain`: `epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org` (TS 29.272
+      clause 7.3.43).
+    - `ip-address`: an Address of family IPv4 (1) or IPv6 (2) (RFC 6733
+      clause 4.3.1), the clause allowing no other (TS 29.272 clause 7.3.98).
+    - `time-zone`: the offset from UTC in units of 15 minutes, a sign and
+      decimal digits, `+8` (TS 29.272 clause 7.3.163).
+    - `element`: an information element another document defines, carried
+      whole: `document`, and the `clause` and `element` name where the
+      clause gives them. Checked no further than a length rule states.
+    """
+
+    E164_TBCD = "e164-tbcd"
+    PLMN_ID = "plmn-id"
+    PLMN_ID_PREFIX = "plmn-id-prefix"
+    DIGITS = "digits"
+    LABELS = "labels"
+    APN = "apn"
+    PLMN_DOMAIN = "plmn-domain"
+    EPC_PLMN_DOMAIN = "epc-plmn-domain"
+    IP_ADDRESS = "ip-address"
+    TIME_ZONE = "time-zone"
+    ELEMENT = "element"
+
+
+def _bounds_ordered(low: int | None, high: int | None, what: str) -> None:
+    if low is None and high is None:
+        raise ValueError(f"a {what} states at least one bound")
+    if low is not None and high is not None and high < low:
+        raise ValueError(f"{what} {low}..{high} is inverted")
+
+
+class LengthRule(Node):
+    """`length 3 octets`, `length 14..15 digits`, `length 1..* characters`:
+    inclusive bounds on what `unit` counts, None for an open one."""
+
+    kind: Literal["length"] = "length"
+    unit: LengthUnit
+    low: Annotated[int, Field(ge=0)] | None = None
+    high: Annotated[int, Field(ge=0)] | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> LengthRule:
+        _bounds_ordered(self.low, self.high, "length")
+        return self
+
+
+class RangeRule(Node):
+    """`range 0..255`, `range -1..*`: inclusive bounds on an integer
+    value."""
+
+    kind: Literal["range"] = "range"
+    low: int | None = None
+    high: int | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> RangeRule:
+        _bounds_ordered(self.low, self.high, "range")
+        return self
+
+
+class ExcludeRule(Node):
+    """`exclude 0`: integer values the clause forbids ("it shall not have a
+    value of zero", TS 29.272 clause 7.3.35)."""
+
+    kind: Literal["exclude"] = "exclude"
+    values: Annotated[tuple[int, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _distinct(self) -> ExcludeRule:
+        if len(set(self.values)) != len(self.values):
+            raise ValueError(f"exclude {list(self.values)} names a value twice")
+        return self
+
+
+class EncodingRule(Node):
+    """`encoding plmn-id`, `encoding element TS24.008 10.5.5.32 "Extended DRX
+    parameter"`: the payload's layout, one of `Codec`. Only `element` takes
+    the document defining the element, and its clause and name where the
+    clause states them."""
+
+    kind: Literal["encoding"] = "encoding"
+    codec: Codec
+    document: SpecRef | None = None
+    clause: SectionNumber | None = None
+    element: Mark | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _parameters(self) -> EncodingRule:
+        if self.codec is Codec.ELEMENT:
+            if self.document is None:
+                raise ValueError("an element names the document defining it")
+        elif (self.document, self.clause, self.element) != (None, None, None):
+            raise ValueError(f"{self.codec.value} takes no document or element")
+        return self
+
+
+# An integer the file prints bare, so a value or bit name of that spelling
+# would read back as a number.
+_INTEGER_RE = re.compile(r"-?[0-9]+")
+
+
+def _not_a_number(value: int | str | None) -> int | str | None:
+    if isinstance(value, str) and _INTEGER_RE.fullmatch(value):
+        raise ValueError(f"{value!r} reads as a number, not a name")
+    return value
+
+
+# A condition's value or bit: a number, or a name the AVP's values or bit
+# table gives it.
+ValueRef = Annotated[
+    int | EnumValueName,
+    Field(union_mode="left_to_right"),
+    pydantic.AfterValidator(_not_a_number),
+]
+
+
+class Condition(Node):
+    """What a predicate tests of another AVP in the same command or grouped
+    AVP: that it is present (`Foo`), that it holds a value (`Foo = 1`,
+    `Foo = TRUE`), or that a bit is set (`Foo bit 3`, `Foo bit "Trace Data
+    Withdrawal"`)."""
+
+    avp: AvpName
+    value: ValueRef | None = None
+    bit: ValueRef | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _one_test(self) -> Condition:
+        if self.value is not None and self.bit is not None:
+            raise ValueError(f"{self.avp}: a condition tests a value or a bit")
+        if isinstance(self.bit, int) and self.bit < 0:
+            raise ValueError(f"{self.avp}: bit {self.bit} is negative")
+        return self
+
+
+class PredicateKind(enum.StrEnum):
+    """How a predicate ties its AVP's presence to its conditions.
+
+    - `present-if`: the AVP is present when a condition holds;
+    - `absent-if`: the AVP is absent when a condition holds;
+    - `requires`: a condition holds when the AVP is present ("shall only be
+      present when");
+    - `excludes`: no condition holds when the AVP is present.
+    """
+
+    PRESENT_IF = "present-if"
+    ABSENT_IF = "absent-if"
+    REQUIRES = "requires"
+    EXCLUDES = "excludes"
+
+
+class PredicateRule(Node):
+    """`requires Non-IP-PDN-Type-Indicator = TRUE`: the AVP's presence tied
+    to other AVPs of the block's command or grouped AVP. Several conditions
+    are alternatives, `or` in the file."""
+
+    kind: Literal[
+        PredicateKind.PRESENT_IF,
+        PredicateKind.ABSENT_IF,
+        PredicateKind.REQUIRES,
+        PredicateKind.EXCLUDES,
+    ]
+    conditions: Annotated[tuple[Condition, ...], Field(min_length=1)]
+
+
+class TextOnly(Node):
+    """`text-only`: a rule the quote states that no kind expresses, such as
+    one depending on an earlier message, a negotiated feature or the
+    subscriber's state. A checker reports it unknown rather than guess."""
+
+    kind: Literal["text-only"] = "text-only"
+
+
+ConstraintRule = Annotated[
+    LengthRule | RangeRule | ExcludeRule | EncodingRule | PredicateRule | TextOnly,
+    Field(discriminator="kind"),
+]
+
+
+class Quote(Node):
+    """A sentence the rules after it were read from, verbatim as the clause
+    prints it once whitespace is collapsed, quoted in the file."""
+
+    text: InlineText
+
+
+class Reading(Node):
+    """Quotes and the rules read from them. Not a node of the tree: an
+    `InterpretedConstraints` body is a flat sequence of lines, and
+    `readings` groups it."""
+
+    quotes: Annotated[tuple[str, ...], Field(min_length=1)]
+    rules: Annotated[tuple[ConstraintRule, ...], Field(min_length=1)]
+
+
+# `; Versions:` — the versions a block was read against, as a declaration's
+# range: "19.6.0", "19.0.0..19.6.0", `*` for an open bound.
+VersionsText = Annotated[
+    str, Field(pattern=r"^(\*|\d+(\.\d+)*)(\.\.(\*|\d+(\.\d+)*))?$")
+]
+
+
+class InterpretedConstraints(Node):
+    """`; Type: Interpreted Constraints`: what a clause's prose says of one
+    AVP's value or presence, as a person read it, each rule after the
+    sentences it was read from.
+
+    `avp` is the AVP the rules constrain. `command` (with `application_id`
+    where the document prints the command for several applications) or
+    `within`, a grouped AVP, scopes them to where the AVP appears there, and
+    is where a predicate's conditions are looked up; with neither, the rules
+    hold wherever the document reads the AVP. `table` names the table
+    printing the quote, an information element's description. `versions` is
+    the range of document versions the quotes were checked against.
+
+    Only a correction writes the block (`corrections.Interpret`), so only a
+    corrected file holds one, and the format marks it interpreted: nothing
+    in it is structure the document prints.
+    """
+
+    type: Literal["Interpreted Constraints"] = "Interpreted Constraints"
+    avp: AvpName
+    command: AvpName | None = None
+    application_id: Unsigned32 | None = None
+    within: AvpName | None = None
+    table: TableLabel | None = None
+    source: SourceRef
+    versions: VersionsText
+    # Quotes and rules, in reading order: each run of quotes is followed by
+    # the rules read from it.
+    body: Annotated[tuple[Quote | ConstraintRule, ...], Field(min_length=2)]
+
+    @pydantic.model_validator(mode="after")
+    def _shape(self) -> InterpretedConstraints:
+        if self.command is not None and self.within is not None:
+            raise ValueError("a block is scoped to a command or a grouped AVP")
+        if self.application_id is not None and self.command is None:
+            raise ValueError("Application-ID chooses among a command's applications")
+        if not isinstance(self.body[0], Quote):
+            raise ValueError("the body opens with the quote its rules are read from")
+        if isinstance(self.body[-1], Quote):
+            raise ValueError("a quote is followed by the rules read from it")
+        for reading in self.readings:
+            if len(reading.rules) > 1 and any(
+                isinstance(rule, TextOnly) for rule in reading.rules
+            ):
+                raise ValueError("text-only is a reading's only rule")
+        return self
+
+    @property
+    def readings(self) -> tuple[Reading, ...]:
+        """The body as quotes and the rules read from them."""
+        readings: list[Reading] = []
+        quotes: list[str] = []
+        rules: list[Any] = []
+        for item in self.body:
+            if isinstance(item, Quote):
+                if rules:
+                    readings.append(Reading(quotes=tuple(quotes), rules=tuple(rules)))
+                    quotes, rules = [], []
+                quotes.append(item.text)
+            else:
+                rules.append(item)
+        if quotes and rules:
+            readings.append(Reading(quotes=tuple(quotes), rules=tuple(rules)))
+        return tuple(readings)
+
+
 def node_at(root: Node, path: TreePath) -> Any:
     """What `path` names under `root`: a node, or a field's value."""
     found: Any = root
@@ -1277,7 +1606,8 @@ Section = Annotated[
     | Registry
     | UndefinedAvp
     | ValueTable
-    | InformationElements,
+    | InformationElements
+    | InterpretedConstraints,
     Field(discriminator="type"),
 ]
 

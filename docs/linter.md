@@ -121,6 +121,25 @@ the wire carries, and documents differ on purpose (TS 29.283 marks
 `User-Identifier` M where its DPR's ABNF has `[ User-Identifier ]`). Each is
 countable by rule and acceptable through `Accept` like any note.
 
+## Interpreted constraints
+
+An `Interpreted Constraints` block ([constraints.md](constraints.md)) is held
+to what the documents print. Types, values and bits come from the file, and
+with a corpus from the document its re-used row cites and its bases; one no
+document read states is not judged.
+
+| Rule | Severity | Reports |
+|---|---|---|
+| `constraint-avp-unknown` | error | a name the block constrains, scopes or conditions on that the file does not hold |
+| `constraint-command-unknown` | error | a `; Command:` the file does not print, or prints for several applications with no `; Application-ID:` |
+| `constraint-not-member` | error | an AVP, or a condition's, that the printed body of its command or grouped AVP does not hold |
+| `constraint-type-mismatch` | error | a rule the AVP's type cannot meet: a range on an OctetString, a codec for another type, an octet length on an integer; a condition testing a value or a bit of an AVP holding none, or a bit past its width |
+| `constraint-value-unknown` | error | a condition naming a value or bit the AVP's values, result codes or bit table do not name |
+| `constraint-contradiction` | error | rules on one AVP in one place that cannot all hold: two codecs, lengths or ranges leaving nothing, a length beyond its codec's, an exclude covering its range |
+
+Rules in one place are a block's with those of every block for the same AVP,
+scope and those holding wherever the document reads it.
+
 ## The record of known holes
 
 With a corpus, a directory holding `holes.toml`

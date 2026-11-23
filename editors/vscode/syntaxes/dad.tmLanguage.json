@@ -13,6 +13,8 @@
     { "include": "#message-rule" },
     { "include": "#avp-header-rule" },
     { "include": "#avp-rule" },
+    { "include": "#constraint-quote" },
+    { "include": "#constraint-rule" },
     { "include": "#enum-value" },
     { "include": "#table-row" }
   ],
@@ -78,7 +80,7 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "match": "\\b(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Interpreted Constraints|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
               "name": "storage.type.section.dad"
             },
             {
@@ -173,6 +175,60 @@
         "13": { "name": "storage.modifier.bold.dad" },
         "14": { "name": "storage.modifier.strikethrough.dad" },
         "15": { "name": "comment.line.double-semicolon.dad" }
+      }
+    },
+    "constraint-quote": {
+      "match": "^(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\")\\s*(;;.*)?$",
+      "captures": {
+        "1": { "name": "string.quoted.double.quote.dad" },
+        "2": { "name": "comment.line.double-semicolon.dad" }
+      }
+    },
+    "constraint-rule": {
+      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|text-only)\\b(.*?)(\\s*;;.*)?$",
+      "captures": {
+        "2": { "name": "keyword.control.constraint.dad" },
+        "3": {
+          "patterns": [
+            {
+              "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
+              "name": "string.quoted.double.mark.dad"
+            },
+            {
+              "match": "(?<=\\s)(octets|digits|characters)$",
+              "name": "constant.language.unit.dad"
+            },
+            {
+              "match": "(?<=\\s)(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-address|time-zone|element)(?=\\s|$)",
+              "name": "support.type.codec.dad"
+            },
+            {
+              "match": "(?<=\\s)(or|bit)(?=\\s)",
+              "name": "keyword.operator.condition.dad"
+            },
+            {
+              "match": "(?<=\\s)(=|\\.\\.|\\*)(?=\\s|$|\\d|-)|\\.\\.",
+              "name": "keyword.operator.dad"
+            },
+            {
+              "match": "(?<=\\s)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$)",
+              "name": "entity.name.tag.spec-ref.dad"
+            },
+            {
+              "match": "(?<=\\s)(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=\\s|$)",
+              "name": "constant.other.section.dad"
+            },
+            {
+              "match": "-?\\b\\d+\\b",
+              "name": "constant.numeric.dad"
+            },
+            {
+              "match": "[A-Za-z0-9][A-Za-z0-9_-]*",
+              "name": "variable.other.avp.dad"
+            }
+          ]
+        },
+        "4": { "name": "comment.line.double-semicolon.dad" }
       }
     },
     "enum-value": {

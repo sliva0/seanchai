@@ -344,6 +344,23 @@ class _Resolver:
                 if table.avp == found.name
             )
             found = replace(found, value_tables=tables or found.value_tables)
+        if found is not None and found.kind is not None:
+            # As value tables: the reading document's, or the origin's.
+            own = tuple(
+                each
+                for each in view.constraints
+                if each.avp == found.name
+                and each.command is None
+                and each.within is None
+            )
+            members = tuple(
+                each for each in view.constraints if each.within == found.name
+            )
+            found = replace(
+                found,
+                constraints=own or found.constraints,
+                member_constraints=members or found.member_constraints,
+            )
         if (
             found is not None
             and self._wireshark is not None

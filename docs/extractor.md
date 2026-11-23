@@ -33,7 +33,9 @@ underscore. Its `__init__.py` lists what it offers.
 
 A `.dad` file records everything the document says about a definition: names,
 codes, vendor-ids, types, flag rules, value lists and ABNF bodies. Prose is out
-of scope; `; Section:` points at the clause.
+of scope; `; Section:` points at the clause. What a clause's prose says of an
+AVP's value is read by hand, as interpreted constraints
+([constraints.md](constraints.md)).
 
 The extractor keeps a block another block contradicts, a block that looks
 redundant, and a value that is wrong. The linter reports contradictions, and

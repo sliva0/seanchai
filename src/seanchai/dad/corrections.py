@@ -24,9 +24,10 @@ fails every `expect`, so "already corrected" never looks like "fixed
 upstream".
 
 Besides `Correction` (one field) there are `Delete`, `Insert` and `Supply`,
-each failing when upstream changes the state it expects. `Accept` changes
-nothing; it marks one linter finding as a deliberate override, and `apply`
-skips it.
+each failing when upstream changes the state it expects, and `Interpret`
+(`interpret.py`), which adds what a person read in a clause's prose.
+`Accept` changes nothing; it marks one linter finding as a deliberate
+override, and `apply` skips it.
 """
 
 import dataclasses
@@ -40,8 +41,9 @@ from typing import Any
 import pydantic
 
 from .._versions import VersionRange, applies, reviewed_release
-from ..errors import SeanchaiError
 from . import ast, formatter
+from ._errors import CorrectionError
+from .interpret import Interpret, check_quotes
 
 __all__ = [
     "UNSPECIFIED",
@@ -52,6 +54,7 @@ __all__ = [
     "Delete",
     "Edit",
     "Insert",
+    "Interpret",
     "Result",
     "Selector",
     "Supply",
@@ -62,6 +65,7 @@ __all__ = [
     "apply_with_comments",
     "avp_rule",
     "avp_table",
+    "check_quotes",
     "definition",
     "edits",
     "element_row",
@@ -82,10 +86,6 @@ __all__ = [
     "value_row",
     "value_table",
 ]
-
-
-class CorrectionError(SeanchaiError, ValueError):
-    pass
 
 
 @dataclass(frozen=True)
@@ -859,7 +859,7 @@ class Accept:
 
 # What a corrections module may declare: the edits `apply` makes, and the
 # acceptances it skips.
-Edit = Correction | Delete | Insert | Supply
+Edit = Correction | Delete | Insert | Supply | Interpret
 Declaration = Edit | Accept
 
 
@@ -947,7 +947,9 @@ def _corrected(node: ast.Node, correction: Correction) -> ast.Node:
         ) from None
 
 
-def _resolve(spec: ast.Specification, edit: Edit) -> ast.TreePath:
+def _resolve(
+    spec: ast.Specification, edit: Correction | Delete | Insert | Supply
+) -> ast.TreePath:
     target = edit.into if isinstance(edit, Insert) else edit.target
     found = [path for path, _ in target.locate(spec)]
     if not found:
@@ -1260,6 +1262,115 @@ def _check_undefined(spec: ast.Specification, node: ast.UndefinedAvp) -> None:
         )
 
 
+def _placed_constraints(
+    spec: ast.Specification,
+    sections: list[tuple[_Origin, Any]] | None,
+    interpret: Interpret,
+    origin: _Added,
+) -> list[tuple[_Origin, Any]]:
+    """Return the file's sections with the declared constraints placed in
+    clause order: after the last block whose clause sorts at or before
+    theirs, so a block reading clause 7.3.9 follows clause 7.3.8's, and one
+    reading an information element's description follows its table. An
+    undefined AVP, which ends the file, places nothing."""
+    node = interpret.node
+    if sections is None:
+        sections = [
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+        ]
+    scope = (node.avp, node.command, node.application_id, node.within)
+    for _, section in sections:
+        if (
+            isinstance(section, ast.InterpretedConstraints)
+            and (section.avp, section.command, section.application_id, section.within)
+            == scope
+            and section.source.section == node.source.section
+        ):
+            raise CorrectionError(
+                f"{interpret.id}: clause {node.source.section} already holds"
+                f" constraints on {interpret.scope()}; declare them together"
+            )
+    key = ast.section_sort_key(node.source.section)
+    position = max(
+        (
+            index + 1
+            for index, (_, section) in enumerate(sections)
+            if not isinstance(section, ast.UndefinedAvp)
+            and ast.section_sort_key(section.source.section) <= key
+        ),
+        default=0,
+    )
+    return [*sections[:position], (origin, node), *sections[position:]]
+
+
+def _held(spec: ast.Specification) -> set[str]:
+    """Every AVP name `spec` holds: defined, reprinted, tabulated, re-used,
+    declared undefined, or named by a body or an information element."""
+    held: set[str] = set()
+    for section in spec.sections:
+        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp | ast.UndefinedAvp):
+            held.add(section.name)
+        if isinstance(section, ast.Message | ast.GroupedAvp | ast.AnswerMessage):
+            held.update(rule.name for rule in section.avps)
+        elif isinstance(section, ast.AvpTable | ast.ReusedAvps):
+            held.update(row.name for row in section.rows)
+        elif isinstance(section, ast.InformationElements):
+            held.update(name for row in section.rows for name in row.avps)
+    held.discard("AVP")
+    return held
+
+
+def _check_interpreted(spec: ast.Specification, interpret: Interpret) -> None:
+    """Check an `Interpret` against the corrected file: it holds every AVP
+    the block names, the command scoping it once, and the AVP in the
+    command's or the grouped AVP's body where the file prints that body."""
+    described = f"{interpret.cited}: {interpret.scope()}"
+    held = _held(spec)
+    node = interpret.node
+    names = [node.avp, *([node.within] if node.within else [])]
+    names.extend(
+        condition.avp
+        for rule in node.body
+        if isinstance(rule, ast.PredicateRule)
+        for condition in rule.conditions
+    )
+    for name in names:
+        if name not in held:
+            raise CorrectionError(f"{described}: the file holds no AVP {name!r}")
+    body: tuple[ast.AvpRule, ...] | None = None
+    if node.command is not None:
+        messages = [
+            section
+            for section in spec.sections
+            if isinstance(section, ast.Message)
+            and section.name == node.command
+            and node.application_id in (None, section.application_id)
+        ]
+        if len(messages) != 1:
+            raise CorrectionError(
+                f"{described}: {len(messages)} commands {node.command!r} match;"
+                " the scope names one"
+            )
+        body = messages[0].avps
+    elif node.within is not None:
+        body = next(
+            (
+                section.avps
+                for section in spec.sections
+                if isinstance(section, ast.GroupedAvp)
+                and section.defines
+                and section.name == node.within
+            ),
+            None,
+        )
+    if body is not None and not any(rule.name == node.avp for rule in body):
+        raise CorrectionError(
+            f"{described}: the body of {node.command or node.within} does not"
+            f" hold {node.avp}"
+        )
+
+
 def _created_blocks(
     spec: ast.Specification, corrections: Sequence[Edit]
 ) -> tuple[ast.Specification, list[int], dict[reused_avps, ast.TreePath]]:
@@ -1457,6 +1568,21 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
     results = []
     origins: list[_Origin] = []  # per result: what `plan.placed` knows it by
     for index, correction in enumerate(corrections):
+        if isinstance(correction, Interpret):
+            plan.rows[("sections",)] = _placed_constraints(
+                tree, plan.rows.get(("sections",)), correction, _Added(index)
+            )
+            results.append(
+                Result(
+                    correction=correction,
+                    node=f"interpreted constraints on {correction.scope()}"
+                    f" in clause {correction.section}",
+                    old=None,
+                    new=correction.node,
+                )
+            )
+            origins.append(_Added(index))
+            continue
         if (
             isinstance(correction, Insert)
             and isinstance(correction.into, reused_avps)
@@ -1610,6 +1736,8 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
     for edit in corrections:
         if isinstance(edit, Insert) and isinstance(edit.node, ast.UndefinedAvp):
             _check_undefined(rebuilt, edit.node)
+        if isinstance(edit, Interpret):
+            _check_interpreted(rebuilt, edit)
     for path, description in targets.items():
         if path not in plan.placed:
             raise CorrectionError(
@@ -1785,6 +1913,7 @@ _SECTION_TYPES = (
     ast.UndefinedAvp,
     ast.ValueTable,
     ast.InformationElements,
+    ast.InterpretedConstraints,
 )
 
 
@@ -1819,6 +1948,15 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
                 kind,
                 result.path,
                 f"deleted: {edit.target.describe_in_place()} ({edit.cited})",
+                index,
+            )
+            continue
+        if isinstance(edit, Interpret):
+            # The block is the declaration's; its first line cites it.
+            yield (
+                "trailing",
+                (*result.path, "type"),
+                f"interpreted: ({edit.cited})",
                 index,
             )
             continue
@@ -1948,12 +2086,12 @@ def _corrections_of(path: Path) -> list[Declaration]:
             f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
         )
     if not all(
-        isinstance(item, Correction | Delete | Insert | Supply | Accept)
+        isinstance(item, Correction | Delete | Insert | Supply | Interpret | Accept)
         for item in corrections
     ):
         raise CorrectionError(
-            f"{path}: CORRECTIONS must hold Correction, Delete, Insert, Supply"
-            " or Accept objects"
+            f"{path}: CORRECTIONS must hold Correction, Delete, Insert, Supply,"
+            " Interpret or Accept objects"
         )
     seen: set[str] = set()
     for item in corrections:

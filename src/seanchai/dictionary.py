@@ -35,8 +35,10 @@ __all__ = [
     "Command",
     "CommandHeading",
     "CommandPair",
+    "Condition",
     "Conflict",
     "ConflictingReading",
+    "Constraint",
     "CrossRelease",
     "Dictionary",
     "Document",
@@ -50,6 +52,8 @@ __all__ = [
     "Marks",
     "Member",
     "Path",
+    "Reading",
+    "Rule",
     "UndefinedBlock",
     "Value",
     "ValueRow",
@@ -120,6 +124,79 @@ class Element(_Model):
     section: str
     table: str | None
     page: int | None
+
+
+class Condition(_Model):
+    """A predicate's condition on a sibling AVP: present (`value` and `bit`
+    null), holding `value` (a number, or the name its values give it), or
+    with `bit` set (a number, or its bit table's name)."""
+
+    avp: str
+    value: int | str | None
+    bit: int | str | None
+
+
+class Rule(_Model):
+    """One rule of a constraint, by `kind`; the fields another kind uses are
+    null or empty. `length`: `unit` (`octets`, `digits`, `characters`) and
+    inclusive `low` and `high`, null where open. `range`: `low` and `high`.
+    `exclude`: `values`. `encoding`: `codec`, and for an `element` the
+    `document`, `clause` and `element` name. `present-if`, `absent-if`,
+    `requires` and `excludes`: `conditions`, alternatives. `text-only`: no
+    field; a checker reports it unknown."""
+
+    kind: Literal[
+        "length",
+        "range",
+        "exclude",
+        "encoding",
+        "present-if",
+        "absent-if",
+        "requires",
+        "excludes",
+        "text-only",
+    ]
+    unit: ast.LengthUnit | None
+    low: int | None
+    high: int | None
+    values: tuple[int, ...]
+    codec: ast.Codec | None
+    document: str | None
+    clause: str | None
+    element: str | None
+    conditions: tuple[Condition, ...]
+
+
+class Reading(_Model):
+    """Sentences of the clause, verbatim, and the rules read from them."""
+
+    quotes: tuple[str, ...]
+    rules: tuple[Rule, ...]
+
+
+class Constraint(_Model):
+    """What a clause's prose says of an AVP's value or presence, as a person
+    read it (`model.Constraint`): `interpreted` is always true, since no
+    document prints it as structure. `command` (with `application_id`) or
+    `within` names where the AVP is constrained as a member; with neither,
+    wherever the document reads it. `avp_ids` are the readings carrying it:
+    the AVP's own, the grouped AVP's for `within`, and the command's members
+    of that name for `command`. `versions` is the range of the document's
+    versions the quotes were checked against."""
+
+    interpreted: Literal[True]
+    avp: str
+    avp_ids: tuple[str, ...]
+    command: str | None
+    application_id: int | None
+    within: str | None
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
+    versions: str
+    readings: tuple[Reading, ...]
 
 
 class Value(_Model):
@@ -197,6 +274,7 @@ class Command(CommandHeading):
     walk: tuple[str, ...]
     answer_message: str | None
     elements: tuple[Element, ...]
+    constraints: tuple[Constraint, ...]
 
 
 class CommandPair(_Model):
@@ -397,6 +475,7 @@ class Dictionary(_Versions):
     avps: tuple[Avp, ...]
     holes: tuple[Hole, ...]
     value_tables: tuple[ValueTable, ...]
+    constraints: tuple[Constraint, ...]
     conflicts: tuple[Conflict, ...]
 
 
@@ -412,6 +491,7 @@ class Lookup(_Versions):
     avps: tuple[Avp, ...]
     holes: tuple[Hole, ...]
     value_tables: tuple[ValueTable, ...]
+    constraints: tuple[Constraint, ...]
 
 
 class Listing(_Versions):
@@ -634,6 +714,17 @@ class _Builder:
                 Element.model_validate(element.to_dict())
                 for element in message.elements
             ),
+            constraints=tuple(
+                _constraint(
+                    each,
+                    [
+                        self.ids[member.avp]
+                        for member in message.avps
+                        if member.name == each.avp and member.avp in self.ids
+                    ],
+                )
+                for each in message.constraints
+            ),
         )
 
 
@@ -689,6 +780,115 @@ def _application_fields(application: model.Application) -> dict[str, Any]:
 def _value(fields: dict[str, Any]) -> Value:
     """`Enumerated.to_dict`'s line, every field of `Value` present."""
     return Value.model_validate({name: fields.get(name) for name in Value.model_fields})
+
+
+def _rule(rule: ast.ConstraintRule) -> Rule:
+    fields: dict[str, Any] = {
+        "kind": str(rule.kind),
+        "unit": None,
+        "low": None,
+        "high": None,
+        "values": (),
+        "codec": None,
+        "document": None,
+        "clause": None,
+        "element": None,
+        "conditions": (),
+    }
+    match rule:
+        case ast.LengthRule():
+            fields |= {"unit": rule.unit, "low": rule.low, "high": rule.high}
+        case ast.RangeRule():
+            fields |= {"low": rule.low, "high": rule.high}
+        case ast.ExcludeRule():
+            fields["values"] = rule.values
+        case ast.EncodingRule():
+            fields |= {
+                "codec": rule.codec,
+                "document": rule.document,
+                "clause": rule.clause,
+                "element": rule.element,
+            }
+        case ast.PredicateRule():
+            fields["conditions"] = tuple(
+                Condition(avp=each.avp, value=each.value, bit=each.bit)
+                for each in rule.conditions
+            )
+        case ast.TextOnly():
+            pass
+    return Rule.model_validate(fields)
+
+
+def _constraint(constraint: model.Constraint, ids: Iterable[str]) -> Constraint:
+    return Constraint(
+        interpreted=True,
+        avp=constraint.avp,
+        avp_ids=tuple(sorted(set(ids))),
+        command=constraint.command,
+        application_id=constraint.application_id,
+        within=constraint.within,
+        reference=constraint.reference,
+        version=constraint.version,
+        section=constraint.section,
+        table=constraint.table,
+        page=constraint.page,
+        versions=constraint.versions,
+        readings=tuple(
+            Reading(
+                quotes=reading.quotes,
+                rules=tuple(_rule(rule) for rule in reading.rules),
+            )
+            for reading in constraint.readings
+        ),
+    )
+
+
+class _Constraints:
+    """The constraints on AVPs an output holds, each with the readings it
+    was met with: the AVP's own, or the grouped AVP's for one scoped to its
+    members. A command's are its own."""
+
+    def __init__(self) -> None:
+        self.met: dict[model.Constraint, dict[model.Avp, None]] = {}
+
+    def add(self, constraint: model.Constraint, avps: Iterable[model.Avp] = ()) -> None:
+        self.met.setdefault(constraint, {}).update(dict.fromkeys(avps))
+
+    def reading(self, avp: model.Avp) -> None:
+        """Everything `avp`, a reading met, carries."""
+        for each in avp.constraints:
+            self.add(each, (avp,))
+        if isinstance(avp, model.Grouped):
+            for each in avp.member_constraints:
+                self.add(each, (avp,))
+
+    def entries(self, built: model.Model, builder: _Builder) -> tuple[Constraint, ...]:
+        found = []
+        for constraint, readings in self.met.items():
+            ids = [builder.ids[avp] for avp in readings if avp in builder.ids]
+            if not ids:
+                # One only its document's listing holds: name that document's
+                # reading, where the output has it.
+                own = built.resolve(
+                    constraint.reference,
+                    constraint.within or constraint.avp,
+                    version=constraint.version,
+                )
+                if own is not None and own in builder.ids:
+                    ids.append(builder.ids[own])
+            found.append(_constraint(constraint, ids))
+        return tuple(
+            sorted(
+                found,
+                key=lambda each: (
+                    each.reference,
+                    each.version or "",
+                    ast.section_sort_key(each.section),
+                    each.within or "",
+                    each.avp,
+                ),
+            )
+        )
 
 
 class _Tables:
@@ -974,6 +1174,7 @@ def build(
         )
     builder = _Builder(built)
     tables = _Tables()
+    constraints = _Constraints()
     paths = _Paths()
     resolved = _Resolved(built)
     # What the answers of each document holding a selected command take.
@@ -999,6 +1200,8 @@ def build(
             readings = [met.avp for met in reached.readings]
             for table in reached.value_tables:
                 tables.add(table, readings, identifier)
+            for each in readings:
+                constraints.reading(each)
     for answer in taken.values():
         resolved.copy(answer.defined_in, answer.defined_version)
         builder.hold_members((*answer.avps, *answer.dropped))
@@ -1007,6 +1210,8 @@ def build(
             readings = [met.avp for met in reached.readings]
             for table in reached.value_tables:
                 tables.add(table, readings)
+            for each in readings:
+                constraints.reading(each)
     if not application_ids:
         for reference in references:
             listed = built.avps(reference, version=version)
@@ -1016,6 +1221,11 @@ def build(
                     tables.add(table, (avp,))
             for table in built.value_tables(reference, version=version):
                 tables.add(table)
+            for avp in listed:
+                constraints.reading(avp)
+            for each in built.constraints(reference, version=version):
+                if each.command is None:
+                    constraints.add(each)
             for hole in built.holes(reference, version=version):
                 builder.holes.setdefault(_hole_id(hole), hole)
     if strict and builder.holes:
@@ -1027,6 +1237,8 @@ def build(
         resolved.hole(hole)
     for table in tables.met:
         resolved.copy(table.reference, table.version)
+    for each in constraints.met:
+        resolved.copy(each.reference, each.version)
     avps = tuple(builder.avp(avp) for avp in _in_order(builder))
     holes = _holes(builder)
     return Dictionary(
@@ -1056,6 +1268,7 @@ def build(
         avps=avps,
         holes=holes,
         value_tables=tables.entries(built, builder),
+        constraints=constraints.entries(built, builder),
         conflicts=_conflicts(built, builder, paths),
     )
 
@@ -1092,9 +1305,11 @@ def lookup(
     readings = [avp, *sorted(others, key=lambda each: builder.ids[each])]
     named = [each for each in _in_order(builder) if each.identity != avp.identity]
     tables = _Tables()
+    constraints = _Constraints()
     for reading in readings:
         for table in reading.value_tables:
             tables.add(table, (reading,))
+        constraints.reading(reading)
     return Lookup(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
@@ -1104,6 +1319,7 @@ def lookup(
         avps=tuple(builder.avp(each) for each in (*readings, *named)),
         holes=_holes(builder),
         value_tables=tables.entries(built, builder),
+        constraints=constraints.entries(built, builder),
     )
 
 

@@ -79,11 +79,22 @@ syn match dadVendorSpecificNote "\%(\d\s\+\)\@<=; [^;].\{-}\ze\s*\%(;;.*\)\?$" c
 syn match dadRange "\d\+-\d\+" contained
 syn match dadRange "\d\+\.\.\d\+" contained
 
+" Interpreted constraints: a quote line, then the rules read from it, each
+" indented four spaces under a keyword of the closed set.
+syn match dadConstraintQuote #^"\%([^"\\]\|\\["\\]\)*"\s*\%(;;.*\)\?$# contains=dadQuote,dadComment
+syn match dadQuote #^"\%([^"\\]\|\\["\\]\)*"# contained
+syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|text-only\)\>.*$" contains=dadConstraintKw,dadConstraintWord,dadCodec,dadUnit,dadSpecRef,dadSection,dadConstraintNumber,dadQuotedCell,dadComment
+syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|text-only\)\>" contained
+syn match dadConstraintWord "\s\zs\%(or\|bit\)\ze\s" contained
+syn match dadCodec "\s\zs\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-address\|time-zone\|element\)\ze\%(\s\|$\)" contained
+syn match dadUnit "\s\zs\%(octets\|digits\|characters\)$" contained
+syn match dadConstraintNumber "\%(\s\|\.\.\)\zs-\?\d\+\ze\%(\s\|$\|\.\.\|,\)" contained
+
 " Directives
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
 syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadNumber,dadLink,dadComment
-syn match dadTypeValue "\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\)$" contained
+syn match dadTypeValue "\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\|Interpreted Constraints\)$" contained
 " `; Registry:` kinds.
 syn match dadTypeValue "\%(Application IDs\|Command Codes\|AVP Codes\|Result Codes\)$" contained
 " `; Kind:` of a value table, whose rows read as enum values do.
@@ -133,5 +144,11 @@ hi def link dadReservedKw     Keyword
 hi def link dadVoidKw         Keyword
 hi def link dadVendorSpecificKw Keyword
 hi def link dadVendorSpecificNote String
+hi def link dadQuote          String
+hi def link dadConstraintKw   Statement
+hi def link dadConstraintWord Operator
+hi def link dadCodec          Type
+hi def link dadUnit           Constant
+hi def link dadConstraintNumber Number
 
 let b:current_syntax = 'dad'

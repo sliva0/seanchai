@@ -22,6 +22,7 @@ from ._types import (
     AnswerMessage,
     Application,
     Avp,
+    Constraint,
     Element,
     ElementTable,
     Grouped,
@@ -60,6 +61,10 @@ def _reached_across(avp: Avp | Hole) -> Iterator[Avp | Hole]:
             if found.across_releases is not None:
                 yield found
             pending.append(found)
+
+
+def _member_constraints(avp: Avp) -> tuple[Constraint, ...]:
+    return avp.member_constraints if isinstance(avp, Grouped) else ()
 
 
 def _by_citing_document(found: Avp | Hole) -> tuple[str, str]:
@@ -339,6 +344,12 @@ class Model(_Resolver):
             dropped=dropped,
             version=self._older(view),
             elements=elements,
+            constraints=tuple(
+                each
+                for each in view.constraints
+                if each.command == message.name
+                and each.application_id in (None, message.application_id)
+            ),
         )
 
     def _rows_of(
@@ -914,6 +925,23 @@ class Model(_Resolver):
             and (kind is None or table.kind is kind)
         )
 
+    def constraints(
+        self,
+        reference: str | None = None,
+        *,
+        avp: str | None = None,
+        version: str | None = None,
+    ) -> tuple[Constraint, ...]:
+        """The interpreted constraints `reference` (or the corpus) holds, in
+        file order, optionally of one AVP. `version` selects an older held
+        copy. Each is read from prose, not printed (`Constraint`)."""
+        return tuple(
+            each
+            for view in self._selected_views(reference, version)
+            for each in view.constraints
+            if avp is None or each.avp == avp
+        )
+
     def feature_lists(
         self, reference: str | None = None
     ) -> dict[tuple[str, int | None], ValueTable]:
@@ -993,7 +1021,8 @@ class Model(_Resolver):
         return [self._as_read_through(avp) for avp in found]
 
     def _as_read_through(self, avp: Avp) -> Avp:
-        """`avp` with the value tables of the document it is read through.
+        """`avp` with the value tables and constraints of the document it is
+        read through.
 
         Equal readings are one, and the first met stands for them; its
         tables are those of whichever document resolved it first. TS 32.299
@@ -1002,9 +1031,20 @@ class Model(_Resolver):
         """
         view = self._by_document.get(avp.read_through)
         own = None if view is None else self._final(view, avp.name)
-        if not isinstance(own, Avp) or own.value_tables == avp.value_tables:
+        if not isinstance(own, Avp) or (
+            own.value_tables == avp.value_tables
+            and own.constraints == avp.constraints
+            and _member_constraints(own) == _member_constraints(avp)
+        ):
             return avp
-        return replace(avp, value_tables=own.value_tables)
+        if isinstance(avp, Grouped):
+            return replace(
+                avp,
+                value_tables=own.value_tables,
+                constraints=own.constraints,
+                member_constraints=_member_constraints(own),
+            )
+        return replace(avp, value_tables=own.value_tables, constraints=own.constraints)
 
     @cached_property
     def _by_document(self) -> dict[str, _View]:

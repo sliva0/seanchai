@@ -402,16 +402,339 @@ local function int32(value)
   return value
 end
 
+local function data_text(pdu, avp)
+  return pdu:sub(avp.data + 1, avp.data + avp.size)
+end
+
+-- Interpreted constraints (docs/consumers.md#interpreted-constraints): what a
+-- person read in a clause's prose of an AVP's value or presence. A reading
+-- carries `cons`, its own; a grouped reading `member_cons[name]`, its
+-- members'; a command candidate `cons[name]`, its members'. Each is {at=n,
+-- rules={...}}, a rule {k=kind, ...}: a length's `u`, `lo` and `hi`, a range's
+-- `lo` and `hi`, exclude's `v`, an encoding's `codec`, a predicate's `c`,
+-- conditions on siblings {avp=identity, t=text, v=value or b=bit}. Every
+-- finding is a warning saying the rule is interpreted, citing its clause.
+
+-- A TBCD-string's decimal digits (TS 29.002 clause 17.7.8: the first digit in
+-- bits 1-4, "1111" filling the last octet's bits 5-8 after an odd count), or
+-- nil for anything else.
+local function tbcd_digits(s)
+  local digits = {}
+  for i = 1, #s do
+    local octet = string.byte(s, i)
+    local low, high = octet % 16, math.floor(octet / 16)
+    if low > 9 then
+      return nil
+    end
+    digits[#digits + 1] = string.char(48 + low)
+    if not (high == 15 and i == #s) then
+      if high > 9 then
+        return nil
+      end
+      digits[#digits + 1] = string.char(48 + high)
+    end
+  end
+  return table.concat(digits)
+end
+
+-- TS 29.272 table 7.3.9/1, after TS 24.008 clause 10.5.1.13: MCC digits 2
+-- and 1, MNC digit 3 ("1111" for a 2-digit MNC) and MCC digit 3, MNC digits 2
+-- and 1.
+local function plmn_problem(s)
+  if #s < 3 then
+    return string.format("is %d octets, and a PLMN identity is 3", #s)
+  end
+  local a, b, c = string.byte(s, 1, 3)
+  for _, digit in ipairs({ a % 16, math.floor(a / 16), b % 16, c % 16,
+    math.floor(c / 16) }) do
+    if digit > 9 then
+      return "holds an MCC or MNC digit that is no decimal digit"
+    end
+  end
+  local mnc3 = math.floor(b / 16)
+  if mnc3 > 9 and mnc3 ~= 15 then
+    return "holds an MNC digit 3 that is neither a digit nor the '1111' filler"
+  end
+  return nil
+end
+
+-- One or more non-empty labels separated by dots.
+local function labels_ok(text)
+  return text ~= "" and text:sub(1, 1) ~= "." and text:sub(-1) ~= "."
+    and not text:find("..", 1, true)
+end
+
+local function codec_problem(codec, s)
+  if codec == "e164-tbcd" then
+    if #s < 1 or #s > 8 then
+      return string.format("is %d octets, and a TBCD E.164 number 1 to 8", #s)
+    end
+    local digits = tbcd_digits(s)
+    if not digits then
+      return "is not a TBCD-string of decimal digits, '1111' filling only the"
+        .. " last octet's bits 5-8"
+    end
+    if #digits > 15 then
+      return string.format("holds %d digits, and an E.164 number at most 15", #digits)
+    end
+    return nil
+  elseif codec == "plmn-id" then
+    if #s ~= 3 then
+      return string.format("is %d octets, and a PLMN identity is 3", #s)
+    end
+    return plmn_problem(s)
+  elseif codec == "plmn-id-prefix" then
+    return plmn_problem(s)
+  elseif codec == "ip-address" then
+    if #s < 2 then
+      return "has no 2-octet address family"
+    end
+    local family, size = string.byte(s, 1) * 256 + string.byte(s, 2), #s - 2
+    if not ((family == 1 and size == 4) or (family == 2 and size == 16)) then
+      return string.format("is no IPv4 or IPv6 address (family %d, %d octets)",
+        family, size)
+    end
+    return nil
+  end
+  if not valid_utf8(s, 1, #s) then
+    return "is not UTF-8 text"
+  end
+  if codec == "digits" then
+    if s == "" or s:find("[^0-9]") then
+      return "is not decimal digits"
+    end
+  elseif codec == "labels" then
+    if not labels_ok(s) then
+      return "is not labels separated by dots"
+    end
+  elseif codec == "apn" then
+    if s ~= "*" and not labels_ok(s) then
+      return "is neither labels separated by dots nor the wild card *"
+    end
+  elseif codec == "plmn-domain" then
+    if not s:lower():match("^mnc%d%d%d?%.mcc%d%d%d%.3gppnetwork%.org$") then
+      return "is not mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+    end
+  elseif codec == "epc-plmn-domain" then
+    if not s:lower():match("^epc%.mnc%d%d%d?%.mcc%d%d%d%.3gppnetwork%.org$") then
+      return "is not epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+    end
+  elseif codec == "time-zone" then
+    if not s:match("^[+-]%d+$") then
+      return "is not a sign and a number of 15 minutes"
+    end
+  end
+  return nil
+end
+
+local function digit_count(codec, s)
+  if codec == "e164-tbcd" then
+    local digits = tbcd_digits(s)
+    return digits and #digits
+  end
+  if codec == "digits" and codec_problem(codec, s) == nil then
+    return #s
+  end
+  return nil
+end
+
+local function character_count(s)
+  if not valid_utf8(s, 1, #s) then
+    return nil
+  end
+  local _, continuations = s:gsub("[\128-\191]", "")
+  return #s - continuations
+end
+
+-- An integer-typed payload's value, an Enumerated being an Integer32; a
+-- 64-bit one as a float beyond 2^53.
+local function integer_value(kind, s)
+  if #s == 4 and (kind == "Integer32" or kind == "Enumerated") then
+    return int32(u32(s, 1))
+  elseif #s == 4 and kind == "Unsigned32" then
+    return u32(s, 1)
+  elseif #s == 8 and (kind == "Unsigned64" or kind == "Integer64") then
+    local high = u32(s, 1)
+    if kind == "Integer64" and high >= 2147483648 then
+      high = high - 4294967296
+    end
+    return high * 4294967296 + u32(s, 5)
+  end
+  return nil
+end
+
+local function number(value)
+  return string.format("%.0f", value)
+end
+
+local function within(count, low, high)
+  return (low == nil or count >= low) and (high == nil or count <= high)
+end
+
+local function bounds(low, high)
+  if low == high then
+    return number(low)
+  elseif high == nil then
+    return "at least " .. number(low)
+  elseif low == nil then
+    return "at most " .. number(high)
+  end
+  return number(low) .. " to " .. number(high)
+end
+
+local function interpreted(ctx, cons, rule, message, offset, length, path, name)
+  local where = M.reference(ctx.rules, cons.at)
+  finding(ctx.findings, WARN, "constraint-" .. rule,
+    string.format("%s (an interpreted rule, read in %s)", message,
+      where and where.place or "the documents' prose"),
+    offset, length, path, cons.at, name)
+end
+
+-- Checks one AVP's data against its reading's constraints and `scoped`,
+-- those its command or grouped AVP holds for it.
+local function check_constraints(ctx, avp, reading, path, scoped)
+  local lists = { reading.cons or {}, scoped or {} }
+  local data = data_text(ctx.pdu, avp)
+  local codec
+  for _, list in ipairs(lists) do
+    for _, cons in ipairs(list) do
+      for _, rule in ipairs(cons.rules) do
+        if rule.k == "encoding" and codec == nil then
+          codec = rule.codec
+        end
+      end
+    end
+  end
+  for _, list in ipairs(lists) do
+    for _, cons in ipairs(list) do
+      for _, rule in ipairs(cons.rules) do
+        local problem
+        if rule.k == "length" then
+          local count
+          if rule.u == "octets" then
+            count = #data
+          elseif rule.u == "characters" then
+            count = character_count(data)
+          elseif codec then
+            count = digit_count(codec, data)
+          end
+          if count and not within(count, rule.lo, rule.hi) then
+            problem = string.format("holds %d %s, not %s", count, rule.u,
+              bounds(rule.lo, rule.hi))
+          end
+        elseif rule.k == "range" or rule.k == "exclude" then
+          local value = integer_value(reading.type, data)
+          if value and rule.k == "range" and not within(value, rule.lo, rule.hi) then
+            problem = string.format("is %s, not %s", number(value),
+              bounds(rule.lo, rule.hi))
+          elseif value and rule.k == "exclude" then
+            for _, excluded in ipairs(rule.v) do
+              if value == excluded then
+                problem = string.format("is %s, which the clause excludes",
+                  number(value))
+              end
+            end
+          end
+        elseif rule.k == "encoding" then
+          problem = codec_problem(rule.codec, data)
+          if problem then
+            problem = "is no " .. rule.codec .. ": it " .. problem
+          end
+        end
+        if problem then
+          interpreted(ctx, cons, rule.k, reading.name .. " " .. problem, avp.data,
+            avp.size, path, reading.name)
+        end
+      end
+    end
+  end
+end
+
+-- Whether a predicate's condition holds of a run's AVPs: `held[identity]`
+-- the first AVP of that identity.
+local function condition_holds(ctx, held, condition)
+  local avp = held[condition.avp]
+  if not avp then
+    return false
+  end
+  if condition.v == nil and condition.b == nil then
+    return true
+  end
+  local reading = ctx.rules.avps[condition.avp]
+  local value = reading and integer_value(reading.type, data_text(ctx.pdu, avp))
+  if value == nil then
+    return nil
+  end
+  if condition.v ~= nil then
+    return value == condition.v
+  end
+  return has(value, 2 ^ condition.b)
+end
+
+local function conditions_text(conditions)
+  local parts = {}
+  for _, condition in ipairs(conditions) do
+    parts[#parts + 1] = condition.t
+  end
+  return table.concat(parts, " or ")
+end
+
+-- Checks the predicates `scoped` (constraints by member name) states of a
+-- run of AVPs: `identities` gives each name's identity in the body.
+local function check_predicates(ctx, scoped, identities, avps, path, where)
+  if not scoped then
+    return
+  end
+  local held = {}
+  for _, avp in ipairs(avps) do
+    local identity = avp.vendor .. ":" .. avp.code
+    held[identity] = held[identity] or avp
+  end
+  for name, list in pairs(scoped) do
+    local identity = identities[name]
+    local subject = identity and held[identity]
+    for _, cons in ipairs(list) do
+      for _, rule in ipairs(cons.rules) do
+        if rule.c then
+          local any, unknown = false, false
+          for _, condition in ipairs(rule.c) do
+            local holds = condition_holds(ctx, held, condition)
+            if holds == nil then
+              unknown = true
+            elseif holds then
+              any = true
+            end
+          end
+          local problem
+          local said = conditions_text(rule.c)
+          if rule.k == "present-if" and any and not subject then
+            problem = string.format("%s is missing from %s, which holds %s", name,
+              where, said)
+          elseif rule.k == "absent-if" and any and subject then
+            problem = string.format("%s is in %s, which holds %s", name, where, said)
+          elseif rule.k == "requires" and subject and not any and not unknown then
+            problem = string.format("%s is in %s, which does not hold %s", name,
+              where, said)
+          elseif rule.k == "excludes" and subject and any then
+            problem = string.format("%s is in %s with %s", name, where, said)
+          end
+          if problem then
+            local at = subject or {}
+            interpreted(ctx, cons, rule.k, problem, at.offset or ctx.anchor_offset,
+              at.length or ctx.anchor_length, path, name)
+          end
+        end
+      end
+    end
+  end
+end
+
 local function avp_label(rules, avp)
   local reading = rules.avps[avp.vendor .. ":" .. avp.code]
   if reading then
     return reading.name
   end
   return string.format("AVP %d (vendor %d)", avp.code, avp.vendor)
-end
-
-local function data_text(pdu, avp)
-  return pdu:sub(avp.data + 1, avp.data + avp.size)
 end
 
 -- What one value table says of a number: its name, or nil.
@@ -626,11 +949,22 @@ validate_body = function(ctx, body, avps, path, depth, owner)
     cite, cite_name = owner.at, owner.name
   end
   local by_identity = {}
+  -- Each member's identity by name, for the predicates' subjects.
+  local identities = {}
   for index, member in ipairs(body) do
     if member.id then
       local identity = member.id:match("^[^@]+")
       by_identity[identity] = by_identity[identity] or { member = member, index = index }
+      identities[member.name] = identities[member.name] or identity
     end
+  end
+  -- The constraints the grouped AVP, or at the top the command, holds for
+  -- its members.
+  local scoped
+  if owner then
+    scoped = owner.member_cons
+  elseif depth == 0 then
+    scoped = ctx.cons
   end
   local counts = {}
   local positions = {}
@@ -668,6 +1002,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
     if reading then
       check_flags(ctx, avp, reading, path)
       check_data(ctx, avp, reading, path, inner_path, depth)
+      check_constraints(ctx, avp, reading, path, scoped and scoped[name])
     elseif has(avp.flags, AVP_M) then
       about(finding(findings, WARN, "unknown-mandatory",
         string.format("%s is defined by no document in the corpus and has the M"
@@ -682,6 +1017,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   end
   -- Occurrences.
   local where = owner and owner.name or ctx.where
+  check_predicates(ctx, scoped, identities, avps, path, where)
   local wildcard = body.wildcard
   if wildcard and unlisted < wildcard.min then
     finding(findings, ERROR, "avp-missing",
@@ -776,6 +1112,7 @@ local function run(rules, prefs, pdu, avps, header_findings, form, anchor)
     anchor_length = anchor[2],
     experimental_codes = {},
     listed = 0,
+    cons = form.cons,
   }
   for _, each in ipairs(header_findings) do
     ctx.findings[#ctx.findings + 1] = each
@@ -935,6 +1272,7 @@ function M.validate(rules, pdu, prefs)
           where = candidate.abbreviation,
           cite = candidate.at,
           cite_name = candidate.name,
+          cons = candidate.cons,
         }
       end
     end
@@ -1084,6 +1422,8 @@ function M.cited(rules, result, prefs)
 end
 
 M.parse_avps = parse_avps
+M.codec_problem = codec_problem
+M.digit_count = digit_count
 M.valid_utf8 = valid_utf8
 M.identity_problem = identity_problem
 M.uri_problem = uri_problem

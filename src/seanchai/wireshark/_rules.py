@@ -23,7 +23,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from .. import corpus, dictionary, model
-from ..dad import ast
+from ..dad import ast, formatter
 
 # The RFC 6733 sections the checks of the header, the AVP framing and the
 # data formats cite, with their pages as RFC 6733's table of contents prints
@@ -247,6 +247,17 @@ class Places:
             return None
         return self._cite(entry, table.section, table.page, table.table)
 
+    def constraint(self, constraint: dictionary.Constraint) -> int | None:
+        """An Interpreted Constraints block, as its clause, page and the
+        table its quotes are in."""
+        document = constraint.reference
+        if constraint.version is not None:
+            document += f" V{constraint.version}"
+        entry = self.entry(document)
+        if entry is None:
+            return None
+        return self._cite(entry, constraint.section, constraint.page, constraint.table)
+
     def base(self, clause: str, page: int) -> int | None:
         """A section of RFC 6733, the base protocol."""
         entry = self.entry(ast.BASE_PROTOCOL)
@@ -393,7 +404,12 @@ def _avp_citations(avp: dictionary.Avp, places: Places) -> list[str]:
     return [*_cited("at", at), *([f"flags_at={{{letters}}}"] if cited else [])]
 
 
-def _avp(avp: dictionary.Avp, places: Places) -> str:
+def _avp(
+    avp: dictionary.Avp,
+    places: Places,
+    names: _Names,
+    constraints: dict[str, list[dictionary.Constraint]],
+) -> str:
     rules = avp.flag_rules
     parts = [
         f"name={lua_string(avp.name)}",
@@ -424,7 +440,184 @@ def _avp(avp: dictionary.Avp, places: Places) -> str:
             # A clause citing its values elsewhere, which no correction
             # supplied (TS 29.272's Report-Interval): any number may be one.
             parts.append("values_open=true")
+    # Interpreted constraints: the reading's own, and its members'.
+    own = _constraints(
+        (each for each in constraints.get(avp.id, ()) if each.within is None),
+        places,
+        names,
+        {},
+    )
+    if own:
+        parts.append(f"cons={{{','.join(own)}}}")
+    members = _scoped(
+        (each for each in constraints.get(avp.id, ()) if each.within == avp.name),
+        places,
+        names,
+        avp.members,
+    )
+    if members is not None:
+        parts.append(f"member_cons={members}")
     return "{" + ",".join(parts) + "}"
+
+
+class _Names:
+    """The numbers a condition's value and bit names stand for: an
+    Enumerated reading's values, the result codes and bits the value tables
+    give a name or a reading."""
+
+    def __init__(self, built: dictionary.Dictionary) -> None:
+        self.avps = {avp.id: avp for avp in built.avps}
+        self.codes: dict[str, dict[str, int]] = defaultdict(dict)
+        self.bits: dict[str, dict[str, int]] = defaultdict(dict)
+        for table in built.value_tables:
+            if table.kind.value == "result-codes":
+                for row in table.rows:
+                    self.codes[table.avp].setdefault(row.name, row.value)
+            elif table.kind.value == "bits":
+                for identifier in table.avp_ids:
+                    for row in table.rows:
+                        self.bits[identifier].setdefault(row.name, row.value)
+
+    def value(self, avp: str | None, name: str, value: int | str) -> int | None:
+        if isinstance(value, int):
+            return value
+        reading = None if avp is None else self.avps.get(avp)
+        if reading is not None:
+            for each in reading.values:
+                if each.kind == "value" and each.name == value:
+                    return each.value
+        return self.codes.get(name, {}).get(value)
+
+    def bit(self, avp: str | None, which: int | str) -> int | None:
+        if isinstance(which, int):
+            return which
+        return None if avp is None else self.bits.get(avp, {}).get(which)
+
+
+def _constraint(
+    constraint: dictionary.Constraint,
+    places: Places,
+    names: _Names,
+    siblings: dict[str, str],
+) -> str | None:
+    """A constraint as `{at=n, rules={...}}`, each rule `{k=kind, ...}`:
+    `u`, `lo`, `hi` for a length, `lo` and `hi` for a range, `v` for exclude,
+    `codec` for an encoding, `c` for a predicate's conditions, each `{avp=,
+    t=, v=}` (a value) or `{avp=, t=, b=}` (a bit) or `{avp=, t=}` (present).
+    `siblings`
+    maps a member name to its reading's id, where the scope has members; a
+    condition's `t` is as the file spells it. A
+    predicate whose names do not resolve, an `element` and `text-only` are
+    left out: what the plugin cannot check it does not report. None for a
+    constraint left with no rule."""
+    rules = []
+    for reading in constraint.readings:
+        for rule in reading.rules:
+            kind = rule.kind
+            if kind == "length":
+                assert rule.unit is not None
+                rules.append(
+                    f"{{k='length',u={lua_string(rule.unit.value)}"
+                    f"{_bound('lo', rule.low)}{_bound('hi', rule.high)}}}"
+                )
+            elif kind == "range":
+                rules.append(
+                    f"{{k='range'{_bound('lo', rule.low)}{_bound('hi', rule.high)}}}"
+                )
+            elif kind == "exclude":
+                values = ",".join(str(value) for value in rule.values)
+                rules.append(f"{{k='exclude',v={{{values}}}}}")
+            elif kind == "encoding":
+                assert rule.codec is not None
+                if rule.codec is not ast.Codec.ELEMENT:
+                    rules.append(
+                        f"{{k='encoding',codec={lua_string(rule.codec.value)}}}"
+                    )
+            elif kind != "text-only":
+                conditions = []
+                for condition in rule.conditions:
+                    sibling = siblings.get(condition.avp)
+                    if condition.value is not None:
+                        number = names.value(sibling, condition.avp, condition.value)
+                        test = None if number is None else f"v={number}"
+                    elif condition.bit is not None:
+                        number = names.bit(sibling, condition.bit)
+                        test = None if number is None else f"b={number}"
+                    else:
+                        test = ""
+                    if sibling is None or test is None:
+                        break
+                    said = formatter.constraint_rule(
+                        ast.PredicateRule(
+                            kind=ast.PredicateKind.REQUIRES,
+                            conditions=(
+                                ast.Condition(
+                                    avp=condition.avp,
+                                    value=condition.value,
+                                    bit=condition.bit,
+                                ),
+                            ),
+                        )
+                    ).removeprefix("requires ")
+                    conditions.append(
+                        f"{{avp={lua_string(sibling.partition('@')[0])},"
+                        f"t={lua_string(said)}{',' + test if test else ''}}}"
+                    )
+                else:
+                    rules.append(
+                        f"{{k={lua_string(kind)},c={{{','.join(conditions)}}}}}"
+                    )
+    if not rules:
+        return None
+    return (
+        "{"
+        + ",".join(
+            [
+                *_cited("at", places.constraint(constraint)),
+                f"rules={{{','.join(rules)}}}",
+            ]
+        )
+        + "}"
+    )
+
+
+def _bound(field: str, value: int | None) -> str:
+    return "" if value is None else f",{field}={value}"
+
+
+def _constraints(
+    constraints: Iterable[dictionary.Constraint],
+    places: Places,
+    names: _Names,
+    siblings: dict[str, str],
+) -> list[str]:
+    return [
+        found
+        for each in constraints
+        if (found := _constraint(each, places, names, siblings)) is not None
+    ]
+
+
+def _scoped(
+    constraints: Iterable[dictionary.Constraint],
+    places: Places,
+    names: _Names,
+    members: Iterable[dictionary.Member],
+) -> str | None:
+    """Constraints on members, as `{[name]={...}}`, or None for none."""
+    siblings = {member.name: member.avp for member in members if member.avp is not None}
+    by_name: dict[str, list[str]] = defaultdict(list)
+    for each in constraints:
+        found = _constraint(each, places, names, siblings)
+        if found is not None:
+            by_name[each.avp].append(found)
+    if not by_name:
+        return None
+    entries = ",".join(
+        f"[{lua_string(name)}]={{{','.join(found)}}}"
+        for name, found in sorted(by_name.items())
+    )
+    return "{" + entries + "}"
 
 
 def _allocated(built: model.Model, application_id: int | None) -> set[str]:
@@ -507,8 +700,13 @@ def rules_chunk(
         "local docs, cites, base = {}, {}, {}",
     ]
     readings: dict[str, list[str]] = defaultdict(list)
+    names = _Names(built)
+    carried: dict[str, list[dictionary.Constraint]] = defaultdict(list)
+    for each in built.constraints:
+        for identifier in each.avp_ids:
+            carried[identifier].append(each)
     for avp in built.avps:
-        lines.append(f"avps[{lua_string(avp.id)}]={_avp(avp, places)}")
+        lines.append(f"avps[{lua_string(avp.id)}]={_avp(avp, places, names, carried)}")
         readings[f"{avp.vendor_id}:{avp.code}"].append(avp.id)
     # The core looks a reading up by identity too, where a body does not name
     # it: the defining one, or failing that in the output, the first.
@@ -533,6 +731,9 @@ def rules_chunk(
             ]
             if command.answer_message is not None:
                 fields.append(f"answer={lua_string(command.answer_message)}")
+            scoped = _scoped(command.constraints, places, names, command.members)
+            if scoped is not None:
+                fields.append(f"cons={scoped}")
             candidates.append("{" + ",".join(fields) + "}")
         lines.append(f"commands[{lua_string(key)}]={{{','.join(candidates)}}}")
     for answer in built.answer_messages:

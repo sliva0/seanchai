@@ -112,6 +112,7 @@ Commands exit 1 on an error or a finding and 2 on a usage error.
 ## Documentation
 
 - [Using the model, the CLI's JSON and the corpus][consumers]
+- [Interpreted constraints: what a clause's prose says][constraints]
 - [The site export][website]
 - [The `.dad` format][format]
 - [Extraction][extractor] and [corrections][corrections]
@@ -123,6 +124,7 @@ Commands exit 1 on an error or a finding and 2 on a usage error.
 MIT, see [LICENSE][license]. The corpus contains text from 3GPP, ETSI, 3GPP2,
 OMA, oneM2M and IETF documents, which stay under their publishers' terms.
 
+[constraints]: https://github.com/sliva0/seanchai/blob/main/docs/constraints.md
 [consumers]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md
 [dictionary]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md#the-dictionary
 [corrections]: https://github.com/sliva0/seanchai/blob/main/docs/corrections.md

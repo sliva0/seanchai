@@ -19,7 +19,14 @@ classifies clauses with `_rules`, `_commands`, `_enums`, `_avp_tables` (over
 """
 
 from ._base import ONEM2M_VENDOR, TGPP_VENDOR
-from ._extract import attach_pages, extract, extract_with_comments, sources_file_name
+from ._extract import (
+    attach_pages,
+    clause_pages,
+    clause_texts,
+    extract,
+    extract_with_comments,
+    sources_file_name,
+)
 from ._quirks import QUIRKS
 
 __all__ = [
@@ -27,6 +34,8 @@ __all__ = [
     "QUIRKS",
     "TGPP_VENDOR",
     "attach_pages",
+    "clause_pages",
+    "clause_texts",
     "extract",
     "extract_with_comments",
     "sources_file_name",

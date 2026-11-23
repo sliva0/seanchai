@@ -526,6 +526,9 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
         elif isinstance(edit, corrections_module.Supply):
             verb = click.style("supplied", fg="green")
             click.echo(f"{verb}: {result.node} {reason}", err=True)
+        elif isinstance(edit, corrections_module.Interpret):
+            verb = click.style("interpreted", fg="green")
+            click.echo(f"{verb}: {result.node} {reason}", err=True)
         else:
             verb = click.style("corrected", fg="green")
             click.echo(

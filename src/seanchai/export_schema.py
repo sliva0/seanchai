@@ -32,6 +32,10 @@ __all__ = [
     "CommandIdentity",
     "CommandSpan",
     "Commands",
+    "ConstraintCondition",
+    "ConstraintQuote",
+    "ConstraintReading",
+    "ConstraintRule",
     "Correction",
     "CrossRelease",
     "Document",
@@ -156,7 +160,7 @@ class Finding(_Model):
 class Correction(_Model):
     """A declaration the file cites, by its reason."""
 
-    kind: Literal["correction", "delete", "insert", "supply", "accept"]
+    kind: Literal["correction", "delete", "insert", "supply", "interpret", "accept"]
     reason: str
 
 
@@ -321,6 +325,61 @@ class ElementRow(_Model):
     category: ast.Category | None = None
 
 
+class ConstraintQuote(_Model):
+    """A sentence an Interpreted Constraints block quotes, at `line`,
+    unescaped."""
+
+    line: int
+    text: str
+
+
+class ConstraintCondition(_Model):
+    """A predicate's condition: the sibling `avp` present, holding `value`,
+    or with `bit` set, a number or a name."""
+
+    avp: str
+    value: int | str | None = None
+    bit: int | str | None = None
+
+
+class ConstraintRule(_Model):
+    """A rule of an Interpreted Constraints block at `line`, by `kind`, as
+    the dictionary's `Rule`: `length` has `unit`, `low` and `high`; `range`
+    `low` and `high`; `exclude` `values`; `encoding` `codec`, and an
+    `element`'s `document`, `clause` and `element`; `present-if`,
+    `absent-if`, `requires` and `excludes` their `conditions`, alternatives;
+    `text-only` nothing."""
+
+    line: int
+    kind: Literal[
+        "length",
+        "range",
+        "exclude",
+        "encoding",
+        "present-if",
+        "absent-if",
+        "requires",
+        "excludes",
+        "text-only",
+    ]
+    unit: ast.LengthUnit | None = None
+    low: int | None = None
+    high: int | None = None
+    values: tuple[int, ...] = ()
+    codec: ast.Codec | None = None
+    document: str | None = None
+    clause: str | None = None
+    element: str | None = None
+    conditions: tuple[ConstraintCondition, ...] = ()
+
+
+class ConstraintReading(_Model):
+    """Quotes and the rules read from them."""
+
+    quotes: tuple[ConstraintQuote, ...]
+    rules: tuple[ConstraintRule, ...]
+
+
 class Block(_Model):
     """A `; Type:` block of a file: lines `line` (its `; Type:` line) to
     `last`, comments included. `fields` holds its other directives as printed,
@@ -339,7 +398,13 @@ class Block(_Model):
     - `columns`, `element_rows` and `described` for an Information Elements
       block, `name` being the command it describes and `described` where the
       model finds that command, none where the block names none or several
-      applications print it.
+      applications print it;
+    - `interpreted`, `avp_target` and `readings` for an Interpreted
+      Constraints block, `name` being the AVP it constrains, `avp_target`
+      where its `; AVP:` line links, and `fields` its scope (`Command`,
+      `Application-ID` or `Within`) and `Versions`. `interpreted` is true
+      only here: a person read the block in the clause's prose, and no
+      document prints it as structure.
 
     `commands` marks where its lines name a command.
     """
@@ -367,6 +432,8 @@ class Block(_Model):
     value_rows: tuple[ValueRow, ...] = ()
     element_rows: tuple[ElementRow, ...] = ()
     described: tuple[Target, ...] = ()
+    interpreted: bool = False
+    readings: tuple[ConstraintReading, ...] = ()
     commands: tuple[CommandSpan, ...] = ()
 
 

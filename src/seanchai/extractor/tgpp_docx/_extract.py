@@ -192,6 +192,70 @@ def _comments(
     )
 
 
+def clause_texts(
+    docx_path: Path | str, sources_dir: Path | None = None
+) -> dict[str, list[str]]:
+    """Each numbered clause's paragraphs and table cells, normalized and
+    patched as `extract` reads them, by clause number: what an interpreted
+    constraint's quotes are checked against (`dad.interpret.check_quotes`).
+    """
+    with boundary(f"reading {docx_path}"):
+        document = docx.Document(str(docx_path))
+        _unwrap_smart_tags(document)
+        specification, version = _spec_and_version(document)
+        declarations_path = (
+            sources_dir / sources_file_name(specification)
+            if sources_dir is not None
+            else None
+        )
+        patcher, quirks = sources.load(declarations_path, version, QUIRKS, [])
+        texts: dict[str, list[str]] = {}
+        for section in _sections(document, patcher, quirks):
+            found = texts.setdefault(section.number, [])
+            found.extend(paragraph.text for paragraph in section.paragraphs)
+            found.extend(
+                cell
+                for table in section.tables
+                for row in table.rows
+                for cell in row.cells
+            )
+        return texts
+
+
+def _outline_pages(reader: pypdf.PdfReader) -> dict[str, int]:
+    """Section number to the 1-based page of the first outline entry that
+    starts with it."""
+    pages: dict[str, int] = {}
+
+    def walk(entries) -> None:
+        for entry in entries:
+            if isinstance(entry, list):
+                walk(entry)
+                continue
+            match = re.match(r"^(\d+[A-Za-z]*(?:\.\d+[A-Za-z]*)*)\s", entry.title)
+            if match is None:
+                continue
+            # pypdf types `get_page_number` as optional; it resolves for a real
+            # outline.
+            destination = entry.page or reader.pages[0]
+            number = reader.get_page_number(destination)
+            if number is not None:
+                # `setdefault`, not assignment: a section number bookmarked
+                # twice (a "6.3.1" continued after a page break) should keep
+                # the first entry, as documented, not the last.
+                pages.setdefault(match.group(1), number + 1)
+
+    walk(reader.outline)
+    return pages
+
+
+def clause_pages(pdf_path: Path | str) -> dict[str, int]:
+    """Each clause's page in the ETSI PDF, from its bookmark outline, as
+    `attach_pages` reads it."""
+    with boundary(f"reading pages from {pdf_path}"):
+        return _outline_pages(pypdf.PdfReader(str(pdf_path)))
+
+
 def attach_pages(
     spec: ast.Specification,
     pdf_path: Path | str,
@@ -215,27 +279,7 @@ def attach_pages(
                 f" specification is {spec.specification} V{spec.version}"
                 " — its page numbers do not apply"
             )
-        pages: dict[str, int] = {}
-
-        def walk(entries) -> None:
-            for entry in entries:
-                if isinstance(entry, list):
-                    walk(entry)
-                    continue
-                match = re.match(r"^(\d+[A-Za-z]*(?:\.\d+[A-Za-z]*)*)\s", entry.title)
-                if match is None:
-                    continue
-                # pypdf types `get_page_number` as optional; it resolves for a real
-                # outline.
-                destination = entry.page or reader.pages[0]
-                number = reader.get_page_number(destination)
-                if number is not None:
-                    # `setdefault`, not assignment: a section number bookmarked
-                    # twice (a "6.3.1" continued after a page break) should keep
-                    # the first entry, as documented, not the last.
-                    pages.setdefault(match.group(1), number + 1)
-
-        walk(reader.outline)
+        pages = _outline_pages(reader)
         if not pages:
             raise ExtractionError(
                 "PDF bookmark outline has no numbered sections — wrong file, or a"

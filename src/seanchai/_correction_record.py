@@ -35,7 +35,7 @@ class _Model(pydantic.BaseModel):
 class RecordedEdit(_Model):
     """A declaration that changes the file."""
 
-    kind: Literal["correction", "delete", "insert", "supply"]
+    kind: Literal["correction", "delete", "insert", "supply", "interpret"]
     reason: str
 
 

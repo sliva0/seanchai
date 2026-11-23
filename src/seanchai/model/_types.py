@@ -122,6 +122,64 @@ def _value_table(entry: corpus.Entry, table: ast.ValueTable) -> ValueTable:
 
 
 @dataclass(frozen=True)
+class Constraint(_Plain):
+    """What one clause's prose says of an AVP's value or presence, as a
+    person read it: an `Interpreted Constraints` block of `reference`.
+
+    Nothing in it is structure the document prints, so `interpreted` is
+    always True, for a consumer meeting it among printed facts: each rule
+    stands after the sentences it was read from (`readings`, as
+    `ast.Reading`s), and a checker reports a `text-only` rule unknown.
+    `command` (with `application_id`) or `within` names where the AVP is
+    constrained as a member, and where a predicate's conditions are its
+    siblings; with neither, wherever the document reads it. `versions` is
+    the range of the document's versions the quotes were checked against.
+    """
+
+    avp: str
+    reference: str
+    version: str | None
+    section: str
+    page: int | None
+    table: str | None
+    command: str | None
+    application_id: int | None
+    within: str | None
+    versions: str
+    readings: tuple[ast.Reading, ...]
+    interpreted: bool = True
+
+    @property
+    def rules(self) -> tuple[ast.ConstraintRule, ...]:
+        """Every reading's rules, in order."""
+        return tuple(rule for reading in self.readings for rule in reading.rules)
+
+    def __repr__(self) -> str:
+        scope = self.command or self.within
+        where = f" in {scope}" if scope else ""
+        return (
+            f"<Constraint {self.avp}{where} in {self.reference} clause"
+            f" {self.section}, {len(self.rules)} rules>"
+        )
+
+
+def _constraint(entry: corpus.Entry, block: ast.InterpretedConstraints) -> Constraint:
+    return Constraint(
+        avp=block.avp,
+        reference=entry.reference,
+        version=entry.spec.version,
+        section=block.source.section,
+        page=block.source.page,
+        table=block.table,
+        command=block.command,
+        application_id=block.application_id,
+        within=block.within,
+        versions=block.versions,
+        readings=block.readings,
+    )
+
+
+@dataclass(frozen=True)
 class Avp(_Plain):
     """One resolved AVP, as the specification `defined_in` states it.
 
@@ -181,6 +239,10 @@ class Avp(_Plain):
     # of the AVP's: every document numbering its result codes reads RFC
     # 6733's `Experimental-Result-Code`, one AVP.
     value_tables: tuple[ValueTable, ...] = field(default=(), compare=False)
+    # What the reading document read in its clauses' prose about the AVP's
+    # value or presence wherever it appears, or failing any the origin's,
+    # as `value_tables` (`Constraint`). Interpreted, not printed.
+    constraints: tuple[Constraint, ...] = field(default=(), compare=False)
 
     @property
     def identity(self) -> tuple[int, int]:
@@ -507,6 +569,9 @@ class Grouped(Avp):
     # The undefined members `UndefinedPolicy.DROP` took out of `members`,
     # each with its hole and rule, so what the ABNF requires stays readable.
     dropped: tuple[Member, ...] = ()
+    # The reading document's constraints on members of this AVP
+    # (`Constraint.within`), or failing any the origin's.
+    member_constraints: tuple[Constraint, ...] = field(default=(), compare=False)
 
     def _repr_tail(self) -> str:
         return f", {len(self.members)} members"
@@ -576,6 +641,9 @@ class Message(_Plain):
     # its own document's or a citing document's (TS 29.228's for TS 29.229's
     # commands), in file order; each member holds those mapping it.
     elements: tuple[Element, ...] = ()
+    # The document's constraints on the command's members
+    # (`Constraint.command`), in file order. Interpreted, not printed.
+    constraints: tuple[Constraint, ...] = ()
 
     @property
     def is_request(self) -> bool:

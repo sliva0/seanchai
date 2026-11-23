@@ -13,6 +13,7 @@ from ..dad import ast
 from ._flags import FlagRules, _ietf_rules
 from ._types import (
     Avp,
+    Constraint,
     Enumerated,
     Grouped,
     Hole,
@@ -61,6 +62,8 @@ class _Draft:
     # `Avp.read_through`, where it is no longer `reference`.
     read_through: str | None = None
     value_tables: tuple[ValueTable, ...] = ()
+    constraints: tuple[Constraint, ...] = ()
+    member_constraints: tuple[Constraint, ...] = ()
 
     @property
     def document(self) -> str:
@@ -219,9 +222,15 @@ class _Draft:
             "read_through": self.read_through or self.document,
             "version": self.version,
             "may_encrypt": self.may_encrypt,
+            "constraints": self.constraints,
         }
         if self.kind is Grouped:
-            return Grouped(**common, members=self.members, dropped=self.dropped)
+            return Grouped(
+                **common,
+                members=self.members,
+                dropped=self.dropped,
+                member_constraints=self.member_constraints,
+            )
         if self.kind is Enumerated:
             return Enumerated(
                 **common, values=self.values, values_source=self.values_source
