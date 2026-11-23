@@ -172,8 +172,8 @@ applications[]     id, reference, version, application_id, clause, name,
   pairs[]          command_code, requests[], answers[]: indexes into commands
   marks[]          name, avp, table, section, marks: what the application's
                    tables mark about the names it reaches
-answer_messages[]  id, defined_in, section, read_through, members[], dropped[],
-                   walk[]
+answer_messages[]  id, defined_in, defined_version, section, read_through,
+                   version, members[], dropped[], walk[]
 avps[]             id, defining, kind (plain, grouped, enumerated), name,
                    vendor_id, code, data_type, basic_type, flag_rules,
                    may_encrypt, defined_in, version, section, read_through,
@@ -211,7 +211,9 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
 - `answer_message` names the `answer_messages[]` entry an answer takes with
   the E bit set ([error answers](#error-answers)); it is null for a request.
   That entry's `id` is `read_through/defined_in:section`, as
-  `TS29.272/RFC6733:7.2`.
+  `TS29.272/RFC6733:7.2`, an older copy spelled with its version;
+  `defined_version` is the version of the copy of `defined_in` a base
+  resolved to where that is an older one, and `version` `read_through`'s.
 - An application's `id` is `reference/clause/application_id`, `-` for no id.
 - `value_tables[]` holds the tables of every reading the selection reaches and
   those the application's document prints for the names it reaches, as
@@ -235,7 +237,8 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   document cites the obsoleted RFC (TS 29.061 builds on RFC 4005) means that
   reading; a backend following the current documents skips them.
 - `resolved` lists each document copy an AVP, hole, table, application or
-  error answer of the output comes from, cited copies included.
+  error answer of the output comes from, cited copies included: the copy of
+  the document printing an error answer that its base resolved to.
 
 ### One AVP
 

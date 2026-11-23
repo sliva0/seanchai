@@ -184,12 +184,16 @@ class CommandPair(_Model):
 class AnswerMessage(_Model):
     """RFC 6733 section 7.2's `<answer-message>` as `defined_in` prints it, read
     through `read_through`, whose commands' answers take it with the E bit set
-    (`model.AnswerMessage`). `id` is `read_through/defined_in:section`."""
+    (`model.AnswerMessage`). `id` is `read_through/defined_in:section`, each
+    document with its version where it is an older copy: `version` is
+    `read_through`'s, `defined_version` `defined_in`'s."""
 
     id: str
     defined_in: str
+    defined_version: str | None
     section: str
     read_through: str
+    version: str | None
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
     walk: tuple[str, ...]
@@ -429,7 +433,10 @@ def _hole_id(hole: model.Hole) -> str:
 
 
 def _answer_id(answer: model.AnswerMessage) -> str:
-    return f"{answer.read_through}/{answer.defined_in}:{answer.section}"
+    through = answer.read_through + (
+        "" if answer.version is None else f" V{answer.version}"
+    )
+    return f"{through}/{answer.document}:{answer.section}"
 
 
 def _application_id(application: model.Application) -> str:
@@ -564,8 +571,10 @@ class _Builder:
         return AnswerMessage(
             id=_answer_id(answer),
             defined_in=answer.defined_in,
+            defined_version=answer.defined_version,
             section=answer.section,
             read_through=answer.read_through,
+            version=answer.version,
             members=self.members(answer.avps),
             dropped=self.members(answer.dropped),
             walk=self.walk(answer.walk()),
@@ -946,7 +955,7 @@ def build(
             for table in reached.value_tables:
                 tables.add(table, readings, identifier)
     for answer in taken.values():
-        resolved.document(answer.defined_in)
+        resolved.copy(answer.defined_in, answer.defined_version)
         builder.hold_members((*answer.avps, *answer.dropped))
         for reached in built.reached(answer):
             paths.add(reached, None)

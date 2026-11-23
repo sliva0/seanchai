@@ -536,6 +536,16 @@ class AnswerMessage(_Plain):
     dropped: tuple[Member, ...] = ()
     # The version of `read_through` where the query read an older copy.
     version: str | None = None
+    # The version of `defined_in` where the base it was taken from resolved
+    # to an older copy, as a citation of the read-through document means it.
+    defined_version: str | None = None
+
+    @property
+    def document(self) -> str:
+        """`defined_in`, plus its version for an older copy, as
+        `Avp.document`."""
+        version = self.defined_version
+        return self.defined_in + ("" if version is None else f" V{version}")
 
     def walk(self) -> tuple[Member, ...]:
         """The members at every depth, as `Message.walk` reads them."""

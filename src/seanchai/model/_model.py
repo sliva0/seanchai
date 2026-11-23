@@ -344,6 +344,7 @@ class Model(_Resolver):
             avps=avps,
             dropped=dropped,
             version=self._older(view),
+            defined_version=self._older(printing),
         )
 
     def _answering(

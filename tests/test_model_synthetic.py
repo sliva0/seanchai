@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 from conftest import _RULES
 
-from seanchai import corpus, model
+from seanchai import corpus, dictionary, model
 from seanchai.dad import ast
 from seanchai.model import AvpFlag, DataType, FlagRules
 
@@ -429,3 +429,30 @@ def test_a_header_keeps_its_own_id_against_an_application_scope():
 def test_no_answer_message_where_neither_a_document_nor_its_bases_print_one():
     """Every committed document reaches RFC 6733's."""
     assert _model(_spec("3GPP TS 29.900")).answer_message("TS29.900") is None
+
+
+def test_an_error_answer_a_base_gives_names_the_copy_the_base_resolved_to():
+    """A Release 18 document printing no `<answer-message>` takes its Release
+    18 base's, not the newer copy the corpus also holds. No committed base
+    resolves to an older copy for an error answer: every document's comes
+    from RFC 6733 or from TS 29.229 and 3GPP2 X.S0013-006, held once."""
+    answer = ast.AnswerMessage(
+        source=ast.SourceRef(section="7.3.1"), avps=(_rule("Session-Id"),)
+    )
+    older = _spec("3GPP TS 29.800", answer)
+    newer = older.model_copy(update={"version": "19.0.0"})
+    reply = _message().model_copy(update={"name": "Test-Answer", "flags": frozenset()})
+    citing = _spec("3GPP TS 29.900", reply, bases=("TS29.800",))
+    built = _model(older, newer, citing)
+
+    taken = built.answer_message("TS29.900")
+    assert taken is not None
+    assert (taken.defined_in, taken.defined_version) == ("TS29.800", "18.1.0")
+    assert taken.document == "TS29.800 V18.1.0"
+
+    written = dictionary.build(built, documents=("TS29.900",))
+    (entry,) = written.answer_messages
+    assert entry.id == "TS29.900/TS29.800 V18.1.0:7.3.1"
+    copies = {(each.reference, each.version) for each in written.resolved}
+    assert ("TS29.800", "18.1.0") in copies
+    assert ("TS29.800", "19.0.0") not in copies
