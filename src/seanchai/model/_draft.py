@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from functools import cached_property
+from typing import Any
 
 from .. import corpus
 from ..corpus import Missing
@@ -41,6 +42,8 @@ class _Draft:
     code: int | None = None
     data_type: ast.DataType | None = None
     flag_rules: ast.AvpFlagRules | None = None
+    # The Encrypt cell of the row giving `flag_rules`, as `Avp.may_encrypt`.
+    may_encrypt: bool | None = None
     section: str | None = None
     origin: str | None = None
     conflict: str | None = None
@@ -135,6 +138,11 @@ class _Draft:
             flag_rules=(
                 other.flag_rules if self.flag_rules is None else self.flag_rules
             ),
+            may_encrypt=(
+                other.may_encrypt
+                if self.flag_rules is None and other.flag_rules is not None
+                else self.may_encrypt
+            ),
         )
 
     @property
@@ -196,41 +204,26 @@ class _Draft:
                 version=self.version,
                 undefined=self.undefined if self.kind is None else None,
             )
-        common = (
-            self.name,
-            self.vendor_id,
-            self.code,
-            self.data_type,
-            flag_rules,
-            self.reference,
-            self.section,
-            self.wireshark_name,
-        )
+        common: dict[str, Any] = {
+            "name": self.name,
+            "vendor_id": self.vendor_id,
+            "code": self.code,
+            "data_type": self.data_type,
+            "flag_rules": flag_rules,
+            "defined_in": self.reference,
+            "section": self.section,
+            "wireshark_name": self.wireshark_name,
+            "across_releases": self.across,
+            "supplied": self.supplied,
+            "completed_by": self.completed_by,
+            "read_through": self.read_through or self.document,
+            "version": self.version,
+            "may_encrypt": self.may_encrypt,
+        }
         if self.kind is Grouped:
-            return Grouped(
-                *common,
-                across_releases=self.across,
-                supplied=self.supplied,
-                completed_by=self.completed_by,
-                read_through=self.read_through or self.document,
-                members=self.members,
-                dropped=self.dropped,
-            )
+            return Grouped(**common, members=self.members, dropped=self.dropped)
         if self.kind is Enumerated:
             return Enumerated(
-                *common,
-                across_releases=self.across,
-                supplied=self.supplied,
-                completed_by=self.completed_by,
-                read_through=self.read_through or self.document,
-                values=self.values,
-                values_source=self.values_source,
+                **common, values=self.values, values_source=self.values_source
             )
-        return Avp(
-            *common,
-            across_releases=self.across,
-            supplied=self.supplied,
-            completed_by=self.completed_by,
-            read_through=self.read_through or self.document,
-            value_tables=self.value_tables,
-        )
+        return Avp(**common, value_tables=self.value_tables)

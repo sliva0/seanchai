@@ -1,23 +1,30 @@
-"""`seanchai dictionary`: the resolved corpus as one JSON file, for non-Python
-Diameter stacks; also the JSON `seanchai show` and `seanchai commands` print.
+"""`seanchai dictionary`: the resolved corpus as one JSON file, for Diameter
+stacks generating dictionaries or codecs; also the JSON `seanchai show` and
+`seanchai commands` print.
 
-These models are the shape; docs/consumers.md explains it. Every field is
-always written, null or empty when unstated. AVPs are a separate list, each
-reading once, and members refer to them by `id`. The same corpus and the
-same options give the same bytes.
+These models are the shape and `json_schema` describes them; docs/consumers.md
+explains it. Every field is always written, null or empty when unstated. AVPs
+are a separate list, each distinct reading once, and members refer to them by
+`id`. An id depends on the reading and the corpus, not on what was selected,
+and the same corpus and options give the same bytes.
 """
 
-import json
+from __future__ import annotations
+
+import contextlib
+import re
 from collections.abc import Iterable, Sequence
-from typing import Annotated, Any, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 import pydantic
+from pydantic.json_schema import models_json_schema
 
-from . import __version__, export_schema, model
+from . import __version__, _json, model
+from ._json import CrossRelease, FlagRules, UndefinedBlock
 from .dad import ast
-from .export import cross_release_entry, hole_entry
-from .export_schema import CrossRelease, FlagRules, UndefinedBlock
-from .model._types import is_cut
+
+if TYPE_CHECKING:
+    from . import corpus
 
 __all__ = [
     "FORMAT_VERSION",
@@ -27,26 +34,36 @@ __all__ = [
     "Avp",
     "Command",
     "CommandHeading",
+    "CommandPair",
+    "Conflict",
+    "ConflictingReading",
     "CrossRelease",
     "Dictionary",
+    "Document",
     "FlagRules",
     "Hole",
+    "HoleError",
     "ListedApplication",
     "Listing",
     "Lookup",
+    "Marks",
     "Member",
+    "Path",
     "UndefinedBlock",
     "Value",
     "ValueRow",
     "ValueTable",
+    "Vendor",
+    "avp_id",
     "build",
     "dumps",
+    "json_schema",
     "listing",
     "lookup",
 ]
 
 # Changes when a reader would have to.
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 
 
 class _Model(pydantic.BaseModel):
@@ -93,12 +110,14 @@ class Value(_Model):
 
 
 class Avp(_Model):
-    """One reading of an AVP. `id` is `vendor:code`, with `#2` and so on after it
-    where the selection holds several readings of the identity, since a citing
-    table can change the flags. `defining` marks the defining document's reading.
-    `kind` says which of `members` and `values` can hold anything. `defined_in`,
-    `section`, `read_through`, `completed_by` and `supplied` are as `model.Avp`
-    has them, and so is `dropped`, the members `drop` took out."""
+    """One reading of an AVP (`model.Avp`). `id` is `vendor:code` for the
+    defining document's reading (`defining`); another reading's adds
+    `@read_through`, then ` in DOCUMENT` where it is defined elsewhere and
+    ` via DOCUMENT` where a citation outside the citing release reached it
+    (`avp_id`). `kind` says which of `members` and `values` can hold anything.
+    `basic_type` is the RFC 6733 section 4.2 format `data_type` is carried in.
+    `version` is `defined_in`'s for an older copy. The rest are as
+    `model.Avp` has them, and `dropped` is the members `drop` took out."""
 
     id: str
     defining: bool
@@ -107,13 +126,17 @@ class Avp(_Model):
     vendor_id: int
     code: int
     data_type: ast.DataType
+    basic_type: ast.DataType
     flag_rules: FlagRules
+    may_encrypt: bool | None
     defined_in: str
+    version: str | None
     section: str | None
     read_through: str
     completed_by: tuple[tuple[str, str], ...]
     across_releases: CrossRelease | None
     supplied: str | None
+    wireshark_name: str | None
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
     values: tuple[Value, ...]
@@ -148,6 +171,16 @@ class Command(CommandHeading):
     answer_message: str | None
 
 
+class CommandPair(_Model):
+    """A command code's requests and answers in one application, as indexes
+    into its `commands` (`model.Command`): usually one of each, two where the
+    document prints a half twice, none where it prints no such half."""
+
+    command_code: int
+    requests: tuple[int, ...]
+    answers: tuple[int, ...]
+
+
 class AnswerMessage(_Model):
     """RFC 6733 section 7.2's `<answer-message>` as `defined_in` prints it, read
     through `read_through`, whose commands' answers take it with the E bit set
@@ -162,8 +195,24 @@ class AnswerMessage(_Model):
     walk: tuple[str, ...]
 
 
+class Marks(_Model):
+    """What one of an application's document's tables marks about a name its
+    commands reach, in a row within the application's clause
+    (`model.Marks`). `avp` is the `avps` entry the document reads the name as,
+    null where the dictionary holds none. A column's marks are null for a
+    blank cell and empty for a dash."""
+
+    name: str
+    avp: str | None
+    table: str | None
+    section: str
+    marks: dict[ast.MarkColumn, tuple[str, ...] | None]
+
+
 class _ApplicationFields(_Model):
+    id: str
     reference: str
+    version: str | None
     application_id: int | None
     clause: str
     name: str | None
@@ -172,9 +221,14 @@ class _ApplicationFields(_Model):
 
 class Application(_ApplicationFields):
     """A document's commands for one application id on one interface
-    (`model.Application`)."""
+    (`model.Application`). `id` is `reference/clause/application_id`, with
+    the version after the reference for an older copy and `-` for no id.
+    `pairs` pairs the commands by code; `marks` is what the document's tables
+    in the application's clause mark about the names it reaches."""
 
     commands: tuple[Command, ...]
+    pairs: tuple[CommandPair, ...]
+    marks: tuple[Marks, ...]
 
 
 class ListedApplication(_ApplicationFields):
@@ -182,9 +236,10 @@ class ListedApplication(_ApplicationFields):
     lists them."""
 
     commands: tuple[CommandHeading, ...]
+    pairs: tuple[CommandPair, ...]
 
 
-class Hole(export_schema.Hole):
+class Hole(_json.Hole):
     """A name the corpus cannot complete, as the export has it. `id` is what a
     member's `hole` names."""
 
@@ -203,12 +258,15 @@ class ValueRow(_Model):
 
 class ValueTable(_Model):
     """What one document names a numeric AVP's numbers (`model.ValueTable`).
-    `avp_id` is the `avps` entry the document's reading of `avp` is, null where
-    the selection holds none."""
+    `avp_ids` are the `avps` entries met carrying it, or the entry its
+    document reads `avp` as; `applications` the `applications` entries
+    reaching it. A features table is kept only for the applications whose
+    feature list it numbers (`model.Model.feature_owners`)."""
 
     kind: ast.ValueKind
     avp: str
-    avp_id: str | None
+    avp_ids: tuple[str, ...]
+    applications: tuple[str, ...]
     reference: str
     version: str | None
     vendor_id: int
@@ -220,6 +278,54 @@ class ValueTable(_Model):
     rows: tuple[ValueRow, ...]
 
 
+class Path(_Model):
+    """Where a reading is met: the `applications` entry (null for an error
+    answer's body), the command by abbreviation and clause, and the member
+    names from the command's body down to it (`model.MemberPath`)."""
+
+    application: str | None
+    command: str
+    section: str
+    names: tuple[str, ...]
+
+
+class ConflictingReading(_Model):
+    """One of a conflict's readings, by `avps` id, and where it is met."""
+
+    avp: str
+    paths: tuple[Path, ...]
+
+
+class Conflict(_Model):
+    """An identity the output holds several readings of that disagree on a
+    field a codec stores (`model.Reached.conflicts`): `fields` names them,
+    `defining` is the defining reading's id where the output holds it. A
+    backend keeping one reading per AVP has to choose here."""
+
+    vendor_id: int
+    code: int
+    defining: str | None
+    fields: tuple[str, ...]
+    readings: tuple[ConflictingReading, ...]
+
+
+class Vendor(_Model):
+    """A vendor id the output's AVPs use, the organisation it names, and where
+    that is stated (`model.VENDORS`); null name and source for one the
+    library does not know."""
+
+    vendor_id: int
+    name: str | None
+    source: str | None
+
+
+class Document(_Model):
+    """A document copy the output was resolved from."""
+
+    reference: str
+    version: str | None
+
+
 class _Versions(_Model):
     """What produced a document: this format, the library and the corpus."""
 
@@ -229,20 +335,29 @@ class _Versions(_Model):
 
 
 class Dictionary(_Versions):
-    """The file. `documents` and `application_ids` are what was selected, the
-    second empty for every application of those documents. `undefined_policy` is
-    what became of the names an `Undefined AVP` block declares. `value_tables` are
-    the selected documents'; with `application_ids`, those of the documents
-    holding one. `answer_messages` are those the selected answers take."""
+    """The file. `documents`, `version` and `application_ids` are what was
+    selected, `application_ids` empty for every application of those
+    documents. `strict` refused any hole. `undefined_policy` is what became of
+    the names an `Undefined AVP` block declares. `resolved` lists every
+    document copy the output was read from, transitively. `value_tables` are
+    those of the readings the selection reaches, and without
+    `application_ids` every table the documents print. `answer_messages` are
+    those the selected answers take. `conflicts` lists the identities read
+    two ways that disagree. `vendors` names the vendor ids used."""
 
     undefined_policy: model.UndefinedPolicy
+    strict: bool
     documents: tuple[str, ...]
+    version: str | None
     application_ids: tuple[int, ...]
+    resolved: tuple[Document, ...]
+    vendors: tuple[Vendor, ...]
     applications: tuple[Application, ...]
     answer_messages: tuple[AnswerMessage, ...]
     avps: tuple[Avp, ...]
     holes: tuple[Hole, ...]
     value_tables: tuple[ValueTable, ...]
+    conflicts: tuple[Conflict, ...]
 
 
 class Lookup(_Versions):
@@ -266,12 +381,55 @@ class Listing(_Versions):
     applications: tuple[ListedApplication, ...]
 
 
+class HoleError(model.ModelError):
+    """A strict build reached names the corpus cannot complete; `holes` lists
+    them."""
+
+    def __init__(self, holes: Sequence[model.Hole]) -> None:
+        self.holes = tuple(holes)
+        listing = "".join(f"\n  {hole}" for hole in self.holes)
+        count = f"{len(self.holes)} hole{'' if len(self.holes) == 1 else 's'}"
+        super().__init__(
+            f"strict: the selection reaches {count} the corpus cannot complete"
+            f" (a sidecar or an alias answers for an undefined name):{listing}"
+        )
+
+
+def avp_id(built: model.Model, avp: model.Avp) -> str:
+    """The dictionary's `id` for `avp`, one of `built`'s readings: `vendor:code`
+    for the defining document's reading, else `vendor:code@read_through`,
+    with ` in DOCUMENT` where the reading is defined elsewhere than it is read
+    through and ` via DOCUMENT` where a citation outside the citing release
+    reached it.
+
+    A reading is read through one copy at most once, so these tell every
+    reading the corpus resolves apart; versions come in where a document is an
+    older copy, as "TS32.299 V11.20.0"."""
+    base = f"{avp.vendor_id}:{avp.code}"
+    if avp == built.definition(avp.identity):
+        return base
+    identifier = f"{base}@{avp.read_through}"
+    if avp.document != avp.read_through:
+        identifier += f" in {avp.document}"
+    if avp.across_releases is not None:
+        identifier += f" via {avp.across_releases.citing}"
+    return identifier
+
+
 def _hole_id(hole: model.Hole) -> str:
     return f"{hole.document}/{hole.name}"
 
 
 def _answer_id(answer: model.AnswerMessage) -> str:
     return f"{answer.read_through}/{answer.defined_in}:{answer.section}"
+
+
+def _application_id(application: model.Application) -> str:
+    document = application.reference + (
+        "" if application.version is None else f" V{application.version}"
+    )
+    number = "-" if application.application_id is None else application.application_id
+    return f"{document}/{application.clause}/{number}"
 
 
 class _Builder:
@@ -300,35 +458,19 @@ class _Builder:
                 self.hold((member.avp,))
 
     def number(self) -> None:
-        """Give each reading its `id`: the defining document's reading first,
-        then the rest ordered by content, independent of hash seed or
-        selection order."""
-        identities: dict[tuple[int, int], list[model.Avp]] = {}
+        """Give each reading its `id` (`avp_id`)."""
+        owners: dict[str, model.Avp] = {}
         for avp in self.readings:
-            identities.setdefault(avp.identity, []).append(avp)
-        for (vendor_id, code), readings in identities.items():
-            defining = self._built.definition((vendor_id, code))
-            if len(readings) > 1:
-                readings.sort(
-                    key=lambda avp: (
-                        avp != defining,
-                        json.dumps(avp.to_dict(), sort_keys=True),
-                    )
+            identifier = avp_id(self._built, avp)
+            other = owners.setdefault(identifier, avp)
+            if other != avp:
+                raise model.ModelError(
+                    f"two readings would both be {identifier}: {other!r} and"
+                    f" {avp!r}; this is a bug in seanchai"
                 )
-            for index, avp in enumerate(readings, 1):
-                suffix = "" if index == 1 else f"#{index}"
-                self.ids[avp] = f"{vendor_id}:{code}{suffix}"
+            self.ids[avp] = identifier
 
     def member(self, member: model.Member) -> Member:
-        block = None
-        if member.placeholder is not None:
-            undefined = member.placeholder.undefined
-            block = UndefinedBlock(
-                section=undefined.section,
-                page=undefined.page,
-                note=undefined.note,
-                cited_in=undefined.cited_in,
-            )
         kind: Literal["avp", "hole", "placeholder", "wildcard"]
         if member.avp is not None:
             kind = "avp"
@@ -346,7 +488,9 @@ class _Builder:
             max_occurs=member.max_occurs,
             avp=None if member.avp is None else self.ids[member.avp],
             hole=None if member.hole is None else _hole_id(member.hole),
-            placeholder=block,
+            placeholder=None
+            if member.placeholder is None
+            else _json.undefined_block(member.placeholder.undefined),
             alias=None
             if member.alias is None
             else Alias(
@@ -362,7 +506,7 @@ class _Builder:
             for member in members
             # A body among its own descendants, `Message.walk`'s cut: the corpus
             # holds none, and the entry it would name is the one being read.
-            if not is_cut(member)
+            if not _is_cut(member)
         )
 
     def avp(self, avp: model.Avp) -> Avp:
@@ -386,13 +530,17 @@ class _Builder:
             vendor_id=avp.vendor_id,
             code=avp.code,
             data_type=avp.data_type,
-            flag_rules=FlagRules.model_validate(avp.flag_rules.to_dict()),
+            basic_type=avp.basic_type,
+            flag_rules=_json.flag_rules(avp.flag_rules),
+            may_encrypt=avp.may_encrypt,
             defined_in=avp.defined_in,
+            version=avp.version,
             section=avp.section,
             read_through=avp.read_through,
             completed_by=avp.completed_by,
-            across_releases=cross_release_entry(avp.across_releases),
+            across_releases=_json.cross_release(avp.across_releases),
             supplied=avp.supplied,
+            wireshark_name=avp.wireshark_name,
             members=self.members(members),
             dropped=self.members(dropped),
             values=values,
@@ -429,6 +577,17 @@ class _Builder:
         )
 
 
+def _is_cut(member: model.Member) -> bool:
+    """Whether a member is where the model cut a recursive body: no reading,
+    hole or placeholder, and not the wildcard."""
+    return (
+        member.avp is None
+        and member.hole is None
+        and member.placeholder is None
+        and member.name != "AVP"
+    )
+
+
 def _heading(message: model.Message) -> CommandHeading:
     return CommandHeading(
         name=message.name,
@@ -443,32 +602,256 @@ def _heading(message: model.Message) -> CommandHeading:
     )
 
 
-def _value_table(
-    built: model.Model, builder: _Builder, table: model.ValueTable
-) -> ValueTable:
-    reading = built.resolve(table.reference, table.avp, version=table.version)
-    return ValueTable(
-        kind=table.kind,
-        avp=table.avp,
-        avp_id=None if reading is None else builder.ids.get(reading),
-        reference=table.reference,
-        version=table.version,
-        vendor_id=table.vendor_id,
-        section=table.section,
-        page=table.page,
-        table=table.table,
-        application=table.application,
-        feature_list_id=table.feature_list_id,
-        rows=tuple(
-            ValueRow(name=row.name, value=row.value, section=row.section, mark=row.mark)
-            for row in table.rows
-        ),
+def _pairs(application: model.Application) -> tuple[CommandPair, ...]:
+    index = {id(message): at for at, message in enumerate(application.messages)}
+    return tuple(
+        CommandPair(
+            command_code=command.command_code,
+            requests=tuple(index[id(each)] for each in command.requests),
+            answers=tuple(index[id(each)] for each in command.answers),
+        )
+        for command in application.commands
     )
+
+
+def _application_fields(application: model.Application) -> dict[str, Any]:
+    return {
+        "id": _application_id(application),
+        "reference": application.reference,
+        "version": application.version,
+        "application_id": application.application_id,
+        "clause": application.clause,
+        "name": application.name,
+        "stated_in": application.stated_in,
+    }
 
 
 def _value(fields: dict[str, Any]) -> Value:
     """`Enumerated.to_dict`'s line, every field of `Value` present."""
     return Value.model_validate({name: fields.get(name) for name in Value.model_fields})
+
+
+class _Tables:
+    """The value tables an output holds, each with the readings and
+    applications it was met with."""
+
+    def __init__(self) -> None:
+        self.met: dict[model.ValueTable, tuple[dict[model.Avp, None], dict[str, None]]]
+        self.met = {}
+
+    def add(
+        self,
+        table: model.ValueTable,
+        avps: Iterable[model.Avp] = (),
+        application: str | None = None,
+    ) -> None:
+        readings, applications = self.met.setdefault(table, ({}, {}))
+        readings.update(dict.fromkeys(avps))
+        if application is not None:
+            applications[application] = None
+
+    def entries(self, built: model.Model, builder: _Builder) -> tuple[ValueTable, ...]:
+        found = []
+        for table, (readings, applications) in self.met.items():
+            ids = [builder.ids[avp] for avp in readings if avp in builder.ids]
+            if not ids:
+                # A table only its document's listing holds: name that
+                # document's reading, where the output has it.
+                own = built.resolve(table.reference, table.avp, version=table.version)
+                if own is not None and own in builder.ids:
+                    ids.append(builder.ids[own])
+            found.append(
+                ValueTable(
+                    kind=table.kind,
+                    avp=table.avp,
+                    avp_ids=tuple(sorted(set(ids))),
+                    applications=tuple(sorted(applications)),
+                    reference=table.reference,
+                    version=table.version,
+                    vendor_id=table.vendor_id,
+                    section=table.section,
+                    page=table.page,
+                    table=table.table,
+                    application=table.application,
+                    feature_list_id=table.feature_list_id,
+                    rows=tuple(
+                        ValueRow(
+                            name=row.name,
+                            value=row.value,
+                            section=row.section,
+                            mark=row.mark,
+                        )
+                        for row in table.rows
+                    ),
+                )
+            )
+        return tuple(
+            sorted(
+                found,
+                key=lambda each: (
+                    each.reference,
+                    each.version or "",
+                    ast.section_sort_key(each.section),
+                    each.table or "",
+                    each.avp,
+                    each.application or "",
+                    -1 if each.feature_list_id is None else each.feature_list_id,
+                ),
+            )
+        )
+
+
+class _Paths:
+    """Where each reading is met, over every application and error answer
+    the output holds."""
+
+    def __init__(self) -> None:
+        self.at: dict[model.Avp, dict[Path, None]] = {}
+
+    def add(self, reached: model.Reached, application: str | None) -> None:
+        for met in reached.readings:
+            paths = self.at.setdefault(met.avp, {})
+            for where in met.paths:
+                path = Path(
+                    application=application,
+                    command=where.command,
+                    section=where.section,
+                    names=where.names,
+                )
+                paths[path] = None
+
+
+_SPELLED = re.compile(r"^(?P<reference>\S+) V(?P<version>\S+)$")
+
+
+class _Resolved:
+    """The document copies an output was read from."""
+
+    def __init__(self, built: model.Model) -> None:
+        self._built = built
+        self.copies: dict[tuple[str, str | None], None] = {}
+
+    def document(self, spelled: str) -> None:
+        """A document as `Hole.document` spells it: its newest copy, or the
+        version it names."""
+        found = _SPELLED.match(spelled)
+        if found is not None:
+            self.copies[found["reference"], found["version"]] = None
+        else:
+            self.copy(spelled, None)
+
+    def copy(self, reference: str, version: str | None) -> None:
+        if version is None:
+            # A document the corpus cites and does not hold stays versionless.
+            with contextlib.suppress(model.ModelError):
+                version = self._built.version(reference)
+        self.copies[reference, version] = None
+
+    def avp(self, avp: model.Avp) -> None:
+        self.document(avp.document)
+        self.document(avp.read_through)
+        for _, stating in avp.completed_by:
+            self.document(stating)
+        self.crossing(avp.across_releases)
+
+    def hole(self, hole: model.Hole) -> None:
+        self.document(hole.document)
+        self.crossing(hole.across_releases)
+
+    def crossing(self, crossing: corpus.CrossRelease | None) -> None:
+        if crossing is not None:
+            self.copies[crossing.cited, crossing.version] = None
+
+    def entries(self) -> tuple[Document, ...]:
+        return tuple(
+            Document(reference=reference, version=version)
+            for reference, version in sorted(
+                self.copies, key=lambda each: (each[0], each[1] or "")
+            )
+        )
+
+
+def _vendors(avps: Iterable[Avp], holes: Iterable[Hole]) -> tuple[Vendor, ...]:
+    used = {avp.vendor_id for avp in avps} | {
+        hole.vendor_id for hole in holes if hole.vendor_id is not None
+    }
+    return tuple(
+        Vendor(
+            vendor_id=vendor_id,
+            name=None if known is None else known.name,
+            source=None if known is None else known.source,
+        )
+        for vendor_id in sorted(used)
+        for known in [model.VENDORS.get(vendor_id)]
+    )
+
+
+def _conflicts(
+    built: model.Model, builder: _Builder, paths: _Paths
+) -> tuple[Conflict, ...]:
+    by_identity: dict[tuple[int, int], list[model.Avp]] = {}
+    for avp in builder.readings:
+        by_identity.setdefault(avp.identity, []).append(avp)
+    found = []
+    for identity in sorted(by_identity):
+        readings = sorted(by_identity[identity], key=lambda avp: builder.ids[avp])
+        if len(readings) < 2:
+            continue
+        defining = built.definition(identity)
+        reached = model.Reached(
+            vendor_id=identity[0],
+            code=identity[1],
+            definition=defining,
+            readings=tuple(model.Met(avp, ()) for avp in readings),
+        )
+        if not reached.conflicts:
+            continue
+        found.append(
+            Conflict(
+                vendor_id=identity[0],
+                code=identity[1],
+                defining=builder.ids.get(defining) if defining is not None else None,
+                fields=reached.conflicts,
+                readings=tuple(
+                    ConflictingReading(
+                        avp=builder.ids[avp], paths=tuple(paths.at.get(avp, ()))
+                    )
+                    for avp in readings
+                ),
+            )
+        )
+    return tuple(found)
+
+
+def _marks(
+    built: model.Model, builder: _Builder, application: model.Application
+) -> tuple[Marks, ...]:
+    names = dict.fromkeys(member.name for member in application.walk())
+    found = []
+    for name in names:
+        marked = [
+            each
+            for each in built.marks(
+                application.reference, name, version=application.version
+            )
+            if ast.interface_clause(each.section) == application.clause
+        ]
+        if not marked:
+            continue
+        reading = built.resolve(
+            application.reference, name, version=application.version
+        )
+        for each in marked:
+            found.append(
+                Marks(
+                    name=name,
+                    avp=None if reading is None else builder.ids.get(reading),
+                    table=each.table,
+                    section=each.section,
+                    marks=dict(each.marks),
+                )
+            )
+    return tuple(found)
 
 
 def build(
@@ -477,21 +860,31 @@ def build(
     corpus_version: str | None = None,
     documents: Sequence[str] = (),
     application_ids: Sequence[int] = (),
+    version: str | None = None,
+    strict: bool = False,
 ) -> Dictionary:
     """Build the dictionary of `built`, limited to `documents` and
-    `application_ids` (all when not given).
+    `application_ids` (all when not given). `version` reads an older held
+    copy of the one document `documents` names.
 
-    AVPs are those the selected commands use at any depth; without
-    `application_ids`, also those the selected documents' tables list. An id
-    no selected document uses raises `model.ModelError`.
+    AVPs are those the selected commands and their error answers use at any
+    depth; without `application_ids`, also those the selected documents'
+    tables list. Value tables are those of the readings met, and the
+    application's document's own for the names it reaches, a feature list
+    only for its application; without `application_ids`, also every table the
+    documents print. An id no selected document uses raises
+    `model.ModelError`; with `strict`, so does any hole the output would hold
+    (`HoleError`).
     """
+    if version is not None and len(documents) != 1:
+        raise model.ModelError("version= reads one document: name it, and only it")
     references = tuple(
         sorted({built.canonical(each) for each in documents}) or built.references()
     )
     applications = [
         application
         for reference in references
-        for application in built.applications(reference)
+        for application in built.applications(reference, version=version)
         if not application_ids or application.application_id in application_ids
     ]
     found = {application.application_id for application in applications}
@@ -501,9 +894,12 @@ def build(
             f" {', '.join(references)}: `seanchai commands` lists them"
         )
     builder = _Builder(built)
+    tables = _Tables()
+    paths = _Paths()
+    resolved = _Resolved(built)
     # What the answers of each document holding a selected command take.
     answers = {
-        reference: built.answer_message(reference)
+        reference: built.answer_message(reference, version=version)
         for reference in sorted({application.reference for application in applications})
     }
     taken = {
@@ -513,72 +909,92 @@ def build(
         and (answer := answers[application.reference]) is not None
     }
     for application in applications:
+        identifier = _application_id(application)
+        resolved.copy(application.reference, application.version)
         for message in application.messages:
             builder.hold_members((*message.avps, *message.dropped))
+        for reached in built.reached(application):
+            paths.add(reached, identifier)
+            readings = [met.avp for met in reached.readings]
+            for table in reached.value_tables:
+                tables.add(table, readings, identifier)
     for answer in taken.values():
+        resolved.document(answer.defined_in)
         builder.hold_members((*answer.avps, *answer.dropped))
+        for reached in built.reached(answer):
+            paths.add(reached, None)
+            readings = [met.avp for met in reached.readings]
+            for table in reached.value_tables:
+                tables.add(table, readings)
     if not application_ids:
         for reference in references:
-            builder.hold(built.avps(reference))
-            for hole in built.holes(reference):
+            listed = built.avps(reference, version=version)
+            builder.hold(listed)
+            for avp in listed:
+                for table in avp.value_tables:
+                    tables.add(table, (avp,))
+            for table in built.value_tables(reference, version=version):
+                tables.add(table)
+            for hole in built.holes(reference, version=version):
                 builder.holes.setdefault(_hole_id(hole), hole)
+    if strict and builder.holes:
+        raise HoleError([builder.holes[each] for each in sorted(builder.holes)])
     builder.number()
-    avps = _in_order(builder)
-    holding = (
-        sorted({application.reference for application in applications})
-        if application_ids
-        else references
-    )
+    for avp in builder.readings:
+        resolved.avp(avp)
+    for hole in builder.holes.values():
+        resolved.hole(hole)
+    for table in tables.met:
+        resolved.copy(table.reference, table.version)
+    avps = tuple(builder.avp(avp) for avp in _in_order(builder))
+    holes = _holes(builder)
     return Dictionary(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
         corpus_version=corpus_version,
         undefined_policy=built.undefined_policy,
+        strict=strict,
         documents=references,
+        version=version,
         application_ids=tuple(sorted(set(application_ids))),
+        resolved=resolved.entries(),
+        vendors=_vendors(avps, holes),
         applications=tuple(
             Application(
-                reference=application.reference,
-                application_id=application.application_id,
-                clause=application.clause,
-                name=application.name,
-                stated_in=application.stated_in,
+                **_application_fields(application),
                 commands=tuple(
                     builder.command(each, answers[application.reference])
                     for each in application.messages
                 ),
+                pairs=_pairs(application),
+                marks=_marks(built, builder, application),
             )
             for application in applications
         ),
         answer_messages=tuple(builder.answer(taken[each]) for each in sorted(taken)),
-        avps=tuple(builder.avp(avp) for avp in avps),
-        holes=_holes(builder),
-        value_tables=tuple(
-            _value_table(built, builder, table)
-            for reference in holding
-            for table in built.value_tables(reference)
-        ),
+        avps=avps,
+        holes=holes,
+        value_tables=tables.entries(built, builder),
+        conflicts=_conflicts(built, builder, paths),
     )
 
 
 def _in_order(builder: _Builder) -> list[model.Avp]:
-    """The readings by identity, each identity's by `id`."""
+    """The readings by identity, the defining one first, then by `id`."""
     return sorted(
         builder.readings,
         key=lambda avp: (
             avp.vendor_id,
             avp.code,
-            # `10415:601#10` after `10415:601#9`, and no `#` first.
-            int(builder.ids[avp].partition("#")[2] or 1),
+            "@" in builder.ids[avp],
+            builder.ids[avp],
         ),
     )
 
 
 def _holes(builder: _Builder) -> tuple[Hole, ...]:
     return tuple(
-        Hole.model_validate(
-            {**hole_entry(hole).model_dump(mode="json"), "id": identifier}
-        )
+        Hole.model_validate({**dict(_json.hole(hole)), "id": identifier})
         for identifier, hole in sorted(builder.holes.items())
     )
 
@@ -594,11 +1010,10 @@ def lookup(
     builder.number()
     readings = [avp, *sorted(others, key=lambda each: builder.ids[each])]
     named = [each for each in _in_order(builder) if each.identity != avp.identity]
-    tables = {
-        _value_table(built, builder, table): None
-        for reading in readings
-        for table in reading.value_tables
-    }
+    tables = _Tables()
+    for reading in readings:
+        for table in reading.value_tables:
+            tables.add(table, (reading,))
     return Lookup(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
@@ -607,7 +1022,7 @@ def lookup(
         avp=builder.ids[avp],
         avps=tuple(builder.avp(each) for each in (*readings, *named)),
         holes=_holes(builder),
-        value_tables=tuple(tables),
+        value_tables=tables.entries(built, builder),
     )
 
 
@@ -621,18 +1036,30 @@ def listing(
         corpus_version=corpus_version,
         applications=tuple(
             ListedApplication(
-                reference=application.reference,
-                application_id=application.application_id,
-                clause=application.clause,
-                name=application.name,
-                stated_in=application.stated_in,
+                **_application_fields(application),
                 commands=tuple(_heading(each) for each in application.messages),
+                pairs=_pairs(application),
             )
             for application in applications
         ),
     )
 
 
-def dumps(dictionary: Dictionary) -> str:
-    """Return the file's text via `export_schema.dumps`."""
-    return export_schema.dumps(dictionary)
+def dumps(dictionary: Dictionary | Lookup | Listing) -> str:
+    """The file's text: compact, keys sorted, every field written, one final
+    newline."""
+    return _json.dumps(dictionary, exclude_defaults=False)
+
+
+def json_schema() -> dict[str, Any]:
+    """The JSON Schema of the three documents this module writes: a
+    `Dictionary`, a `Lookup` or a `Listing`."""
+    roots = (Dictionary, Lookup, Listing)
+    _, schema = models_json_schema(
+        [(root, "validation") for root in roots], title="Seanchaí dictionary"
+    )
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        **schema,
+        "oneOf": [{"$ref": f"#/$defs/{root.__name__}"} for root in roots],
+    }

@@ -119,8 +119,10 @@ class _Resolver:
 
     # --- resolution ---------------------------------------------------------
 
-    def _names(self, reference: str) -> dict[str, None]:
-        view = self._view(reference)
+    @staticmethod
+    def _names(view: _View) -> dict[str, None]:
+        """Every name `view` defines, tabulates, re-uses or declares
+        undefined, in that order."""
         return dict.fromkeys(
             (*view.defined, *view.tabled, *view.reused, *view.undefined)
         )
@@ -224,7 +226,8 @@ class _Resolver:
             vendor_stated=True,
             code=answer.code,
             data_type=answer.data_type,
-            flag_rules=answer.flag_rules,
+            flag_rules=answer.flag_rules.columns(),
+            may_encrypt=answer.may_encrypt,
             section=undefined.section,
             values=answer.values,
             supplied=answer.source,
@@ -278,6 +281,7 @@ class _Resolver:
         (`_through`).
         """
         own = self._own_flags(view, name)
+        own_encrypt = self._own_encrypt(view, name)
         m_bit = self._own_m_bit(view, name)
         found: _Draft | None = None
         for reading in self._readings(view, name, stack, own is None):
@@ -295,6 +299,7 @@ class _Resolver:
                 rules = _overlay(m_bit, rules)
             if own is not None:
                 rules = _overlay(own, rules)
+            encrypt = found.may_encrypt if own_encrypt is None else own_encrypt
             completed = found.completed_by
             if (
                 rules is not None
@@ -305,10 +310,11 @@ class _Resolver:
             found = replace(
                 found,
                 flag_rules=rules,
+                may_encrypt=encrypt,
                 completed_by=completed,
                 read_through=(
                     self._document(view)
-                    if rules != found.flag_rules
+                    if rules != found.flag_rules or encrypt != found.may_encrypt
                     else found.read_through
                 ),
             )
@@ -358,6 +364,22 @@ class _Resolver:
         for row in rows[1:]:
             rules = _overlay(rules, row.flag_rules)
         return rules if _stated(rules) else None
+
+    def _own_encrypt(self, view: _View, name: str) -> bool | None:
+        """The Encrypt cell of the first of `view`'s AVP-table rows for a name
+        it re-uses that states one, or None. As the flag rules beside it
+        (`_own_flags`), it belongs to the application using the AVP."""
+        origin = view.reused.get(name)
+        if origin is None or self._cited(view, origin)[0] is view:
+            return None
+        return next(
+            (
+                row.may_encrypt
+                for row in view.tabled.get(name, ())
+                if row.may_encrypt is not None
+            ),
+            None,
+        )
 
     def _own_m_bit(self, view: _View, name: str) -> ast.AvpFlagRules | None:
         """The M rule from the first of `view`'s re-used rows for `name` whose
@@ -502,6 +524,7 @@ class _Resolver:
             code=row.code,
             data_type=row.data_type,
             flag_rules=row.flag_rules if _stated(row.flag_rules) else None,
+            may_encrypt=row.may_encrypt,
             section=row.section,
             origin=unread,
         )
@@ -532,6 +555,7 @@ class _Resolver:
             flag_rules=(
                 flag_rules if flag_rules is not None and _stated(flag_rules) else None
             ),
+            may_encrypt=None if rows is None else rows[0].may_encrypt,
             section=definition.source.section,
             origin=unread,
         )

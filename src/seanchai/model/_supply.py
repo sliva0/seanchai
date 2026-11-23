@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ..dad import ast, parser
 from ._errors import ModelError
-from ._flags import _stated
+from ._flags import FlagRules, _stated
 from ._types import Supplied
 
 
@@ -69,8 +69,9 @@ def _supplied(
             vendor_id=vendor_id,
             code=row.code,
             data_type=row.data_type,
-            flag_rules=row.flag_rules,
+            flag_rules=FlagRules.printed(row.flag_rules),
             source=source,
+            may_encrypt=row.may_encrypt,
         )
     grouped = isinstance(definition, ast.GroupedAvp)
     data_type = ast.DataType.GROUPED if grouped else ast.DataType.ENUMERATED
@@ -91,8 +92,9 @@ def _supplied(
         vendor_id=vendor_id,
         code=definition.code,
         data_type=data_type,
-        flag_rules=row.flag_rules,
+        flag_rules=FlagRules.printed(row.flag_rules),
         source=source,
+        may_encrypt=row.may_encrypt,
         members=definition.avps if isinstance(definition, ast.GroupedAvp) else (),
         values=definition.values if isinstance(definition, ast.EnumeratedAvp) else (),
     )

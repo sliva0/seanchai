@@ -4,6 +4,7 @@ Resolution itself lives in `_Resolver`, its base."""
 from __future__ import annotations
 
 import os
+import re
 from collections import Counter
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import replace
@@ -25,8 +26,11 @@ from ._types import (
     HolePolicy,
     Marks,
     Member,
+    MemberPath,
     Message,
+    Met,
     Placeholder,
+    Reached,
     Supplied,
     SupplyKey,
     Undefined,
@@ -58,6 +62,37 @@ def _reached_across(avp: Avp | Hole) -> Iterator[Avp | Hole]:
 def _by_citing_document(found: Avp | Hole) -> tuple[str, str]:
     across = found.across_releases
     return ("" if across is None else across.citing, found.name)
+
+
+def _by_defining_document(avp: Avp) -> tuple[str, str, str, str]:
+    return (avp.defined_in, avp.name, avp.version or "", avp.read_through)
+
+
+def _application_key(
+    application: Application,
+) -> tuple[str, str | None, int | None, str]:
+    """What tells one application from another, without comparing bodies."""
+    return (
+        application.reference,
+        application.version,
+        application.application_id,
+        application.clause,
+    )
+
+
+# A registry's or caption's name for an interface, after its publisher:
+# "3GPP S6a", "3GPP T6a/T6b".
+_PUBLISHER = re.compile(r"^(?:3GPP2?|ETSI|oneM2M)\s+", re.IGNORECASE)
+
+
+def _components(name: str) -> frozenset[str]:
+    """The interfaces a name lists: "S6a/S6d" is S6a and S6d, "3GPP Cx/Px" Cx
+    and Px, folded for comparison."""
+    return frozenset(
+        part.strip().casefold()
+        for part in _PUBLISHER.sub("", name.strip()).split("/")
+        if part.strip()
+    )
 
 
 class Model(_Resolver):
@@ -224,9 +259,10 @@ class Model(_Resolver):
                     " two names on one identity are no dictionary"
                 )
 
-    def _chosen(self, reference: str | None) -> tuple[str, ...]:
-        """The references a query over `reference`, or over the corpus, reads."""
-        return self.references() if reference is None else (self.canonical(reference),)
+    def version(self, reference: str) -> str | None:
+        """The version of the copy of `reference` that reference-level queries
+        read, its newest; None for a document printing none, as an RFC."""
+        return self._view(reference).entry.spec.version
 
     def messages(
         self, reference: str | None = None, *, version: str | None = None
@@ -262,6 +298,7 @@ class Model(_Resolver):
                 section=message.source.section,
                 avps=avps,
                 dropped=dropped,
+                version=self._older(view),
             )
             for message in view.messages
             for avps, dropped in [self._split(self._body(view, message.avps))]
@@ -274,7 +311,9 @@ class Model(_Resolver):
         take: the document's first, else the first from its `; Bases:`
         documents, depth first. The body is read through `reference`. None if
         no document prints one. `version` selects an older held copy."""
-        view = self._view(reference, version)
+        return self._answer_of(self._view(reference, version))
+
+    def _answer_of(self, view: _View) -> AnswerMessage | None:
         found = self._answering(view, ())
         if found is None:
             return None
@@ -286,6 +325,7 @@ class Model(_Resolver):
             read_through=view.entry.reference,
             avps=avps,
             dropped=dropped,
+            version=self._older(view),
         )
 
     def _answering(
@@ -303,32 +343,33 @@ class Model(_Resolver):
                 return found
         return None
 
-    def undefined(self, reference: str | None = None) -> tuple[Undefined, ...]:
+    def undefined(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[Undefined, ...]:
         """Every `Undefined AVP` block in `reference` (or the corpus), in file
-        order, under any policy."""
-        references = self._chosen(reference)
+        order, under any policy. `version` selects an older held copy."""
         return tuple(
             self._undefined_of(view, block)
-            for each in references
-            for view in [self._view(each)]
+            for view in self._selected_views(reference, version)
             for block in view.undefined.values()
         )
 
-    def placeholders(self, reference: str | None = None) -> tuple[Placeholder, ...]:
+    def placeholders(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[Placeholder, ...]:
         """Every placeholder in `reference`'s reading (or the corpus's), found
         as `holes` finds holes, sorted by document and name. Empty unless
-        built with `UndefinedPolicy.PLACEHOLDER`."""
+        built with `UndefinedPolicy.PLACEHOLDER`. `version` selects an older
+        held copy."""
         if self._policy is not UndefinedPolicy.PLACEHOLDER:
             return ()
-        references = self._chosen(reference)
         found: dict[Placeholder, None] = {}
-        for each in references:
-            view = self._view(each)
-            for name in self._names(each):
+        for view in self._selected_views(reference, version):
+            for name in self._names(view):
                 hole = self._final(view, name)
                 if isinstance(hole, Hole) and hole.undefined is not None:
                     found[Placeholder(hole.undefined)] = None
-            for body in self._bodies(each):
+            for body in self._bodies(view):
                 found.update(
                     (member.placeholder, None)
                     for member in body
@@ -358,7 +399,8 @@ class Model(_Resolver):
 
         A command whose header prints no id takes it from the first
         `Application Scope` block covering its clause. A group may hold the
-        same command twice, as the document prints it.
+        same command twice, as the document prints it; `Application.commands`
+        pairs requests and answers.
         """
         return tuple(
             application
@@ -386,32 +428,37 @@ class Model(_Resolver):
                 tuple(messages),
                 name=None if block is None else block.name,
                 stated_in=None if block is None else block.source.section,
+                version=self._older(view),
             )
             for (application_id, clause), messages in groups.items()
             for block in [stating.get((application_id, clause))]
         )
 
-    def avps(self, reference: str | None = None) -> tuple[Avp, ...]:
+    def avps(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[Avp, ...]:
         """Every AVP `reference` defines, tabulates or re-uses, resolved, or
         every distinct reading in the corpus; sorted by defining document and
-        name.
+        name. `version` selects an older held copy of `reference`.
 
         Re-used AVPs keep the origin's `defined_in`. Names with a hole are
         left out (see `holes`). Without `reference`, AVPs only an older copy
         holds are included where a citation reaches them.
 
         This lists what the tables say, not what the commands use; for a
-        dictionary generator use `Application.walk` or `Message.walk`.
+        dictionary generator use `reached`, `Application.walk` or
+        `Message.walk`.
         """
         if reference is None:
-            return tuple(
-                sorted(self._everything, key=lambda avp: (avp.defined_in, avp.name))
-            )
-        return self._avps_of(self.canonical(reference))
+            self._selected_views(reference, version)
+            found: Iterable[Avp] = self._everything
+        else:
+            found = self._avps_of(self._view(reference, version))
+        return tuple(sorted(found, key=_by_defining_document))
 
-    def _avps_of(self, reference: str) -> tuple[Avp, ...]:
-        found = (self.resolve(reference, name) for name in self._names(reference))
-        return tuple(avp for avp in found if avp is not None)
+    def _avps_of(self, view: _View) -> tuple[Avp, ...]:
+        found = (self._final(view, name) for name in self._names(view))
+        return tuple(avp for avp in found if isinstance(avp, Avp))
 
     def resolve(
         self, reference: str, name: str, *, version: str | None = None
@@ -437,26 +484,27 @@ class Model(_Resolver):
             UndefinedPolicy.SUPPLY,
         )
 
-    def holes(self, reference: str | None = None) -> tuple[Hole, ...]:
+    def holes(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[Hole, ...]:
         """Every hole in `reference`'s reading (or the corpus's), sorted by
-        document and name.
+        document and name. `version` selects an older held copy.
 
         This covers names its tables and bodies cannot complete, plus holes
         in older copies reached across releases, which carry that copy's
         `version`. A hole belongs to the document that falls short.
         """
-        references = self._chosen(reference)
         found: dict[Hole, None] = {}
-        for each in references:
-            for name in self._names(each):
-                hole = self.hole(each, name)
-                if hole is not None:
+        for view in self._selected_views(reference, version):
+            for name in self._names(view):
+                hole = self._final(view, name)
+                if isinstance(hole, Hole) and self._open(hole):
                     found[hole] = None
-            for body in self._bodies(each):
+            for body in self._bodies(view):
                 found.update(
                     (member.hole, None) for member in body if member.hole is not None
                 )
-            found.update(dict.fromkeys(self._holes_across(each)))
+            found.update(dict.fromkeys(self._holes_across(view)))
         return tuple(sorted(found, key=lambda hole: (hole.document, hole.name)))
 
     def unrecorded_holes(self) -> tuple[Hole, ...]:
@@ -481,16 +529,16 @@ class Model(_Resolver):
             if key not in present and (*key, entry.missing) not in listed
         )
 
-    def _bodies(self, reference: str) -> list[tuple[Member, ...]]:
-        """`reference`'s resolved command and grouped bodies, minus dropped
+    def _bodies(self, view: _View) -> list[tuple[Member, ...]]:
+        """`view`'s resolved command and grouped bodies, minus dropped
         members."""
-        view = self._view(reference)
-        bodies = [message.avps for message in self.messages(reference)]
-        if view.answers and (answer := self.answer_message(reference)) is not None:
+        reference = view.entry.reference
+        bodies = [message.avps for message in self._messages_of(view)]
+        if view.answers and (answer := self._answer_of(view)) is not None:
             bodies.append(answer.avps)
         bodies += [
             avp.members
-            for avp in self.avps(reference)
+            for avp in self._avps_of(view)
             if isinstance(avp, Grouped) and avp.defined_in == reference
         ]
         # A grouped definition with a hole is no `Grouped`, but its body
@@ -499,19 +547,20 @@ class Model(_Resolver):
             self._split(self._body(view, definition.avps))[0]
             for name, definition in view.defined.items()
             if isinstance(definition, ast.GroupedAvp)
-            and self.hole(reference, name) is not None
+            and isinstance(hole := self._final(view, name), Hole)
+            and self._open(hole)
         ]
         return bodies
 
-    def _holes_across(self, reference: str) -> Iterator[Hole]:
-        """Holes of older copies inside grouped AVPs `reference` reaches
-        across releases, at any depth. Reference-level queries read only the
+    def _holes_across(self, view: _View) -> Iterator[Hole]:
+        """Holes of older copies inside grouped AVPs `view` reaches across
+        releases, at any depth. Reference-level queries read only the
         newest copies, so nothing else reports these. Holes in a newest copy
         are left to that copy's own reading."""
-        pending = [*self.avps(reference)]
+        pending = [*self._avps_of(view)]
         pending += [
             member.avp
-            for message in self.messages(reference)
+            for message in self._messages_of(view)
             for member in message.avps
             if member.avp is not None
         ]
@@ -527,37 +576,174 @@ class Model(_Resolver):
                 elif member.avp is not None:
                     pending.append(member.avp)
 
-    def across_releases(self, reference: str | None = None) -> tuple[Avp | Hole, ...]:
+    def across_releases(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[Avp | Hole, ...]:
         """Every name in `reference`'s reading (or the corpus's) that took a
         field from outside the citing document's release, each with its
-        `corpus.CrossRelease`, sorted by citing document and name.
+        `corpus.CrossRelease`, sorted by citing document and name. `version`
+        selects an older held copy.
 
         Includes, at any depth, what older copies reached this way cite
         across releases in turn. See docs/consumers.md."""
-        references = self._chosen(reference)
         found: dict[Avp | Hole, None] = {}
-        for each in references:
-            view = self._view(each)
-            for name in self._names(each):
+        for view in self._selected_views(reference, version):
+            for name in self._names(view):
                 resolved = self._final(view, name)
                 if resolved.across_releases is not None:
                     found[resolved] = None
                     found.update(dict.fromkeys(_reached_across(resolved)))
         return tuple(sorted(found, key=_by_citing_document))
 
-    def table_rows(self, reference: str, name: str) -> tuple[ast.AvpTableRow, ...]:
+    def table_rows(
+        self, reference: str, name: str, *, version: str | None = None
+    ) -> tuple[ast.AvpTableRow, ...]:
         """Every AVP-table row `reference` prints for `name`, in file order.
         `resolve` reads the first; later rows may differ
-        (`table-row-mismatch`).
+        (`table-row-mismatch`). `version` selects an older held copy.
         """
-        return tuple(self._view(reference).tabled.get(name, ()))
+        return tuple(self._view(reference, version).tabled.get(name, ()))
 
-    def marks(self, reference: str, name: str) -> tuple[Marks, ...]:
+    def marks(
+        self, reference: str, name: str, *, version: str | None = None
+    ) -> tuple[Marks, ...]:
         """`name`'s marks in `reference`, one per row of an AVP or re-used
         table with mark columns, in file order. For one interface, keep the
-        rows whose `section` lies in its clause.
+        rows whose `section` lies in its clause. `version` selects an older
+        held copy.
         """
-        return tuple(self._view(reference).marked.get(name, ()))
+        return tuple(self._view(reference, version).marked.get(name, ()))
+
+    def reached(
+        self, *of: Application | Message | AnswerMessage
+    ) -> tuple[Reached, ...]:
+        """One entry per `(vendor-id, code)` that the bodies of `of`, one or
+        more applications, commands and error answers, reach at any depth,
+        by identity: the defining document's reading, every distinct reading
+        met with the member paths it is met at, and whether those readings
+        conflict (`Reached.conflicts`).
+
+        Each entry's `value_tables` are those its readings carry where met,
+        and those the document of what is walked prints for its names,
+        without another application's feature lists: `Feature-List` numbers
+        other features on each interface. Holes, placeholders and the
+        wildcard reach no identity; `walk` yields them.
+        """
+        views: dict[Path, _View] = {}
+        roots: list[tuple[str, str, tuple[Member, ...]]] = []
+        context: list[tuple[str, str | None, int | None, str]] = []
+        for each in of:
+            if isinstance(each, Application):
+                view = self._view(each.reference, each.version)
+                roots += [
+                    (message.abbreviation, message.section, message.avps)
+                    for message in each.messages
+                ]
+                context.append(_application_key(each))
+            elif isinstance(each, Message):
+                view = self._view(each.defined_in, each.version)
+                roots.append((each.abbreviation, each.section, each.avps))
+                context += [
+                    _application_key(application)
+                    for application in self._applications_of(view)
+                    if each in application.messages
+                ]
+            else:
+                view = self._view(each.read_through, each.version)
+                roots.append(("answer-message", each.section, each.avps))
+                context += map(_application_key, self._applications_of(view))
+            views[view.entry.path] = view
+        met: dict[tuple[int, int], dict[Avp, list[MemberPath]]] = {}
+        tables: dict[tuple[int, int], dict[ValueTable, None]] = {}
+
+        def visit(
+            members: tuple[Member, ...],
+            command: str,
+            section: str,
+            prefix: tuple[str, ...],
+            above: frozenset[int],
+        ) -> None:
+            for member in members:
+                avp = member.avp
+                if avp is None:
+                    continue
+                names = (*prefix, member.name)
+                paths = met.setdefault(avp.identity, {}).setdefault(avp, [])
+                paths.append(MemberPath(command, section, names))
+                tables.setdefault(avp.identity, {}).update(
+                    dict.fromkeys(avp.value_tables)
+                )
+                # The model cuts a body among its own descendants; this
+                # guards a walk of one regardless.
+                if isinstance(avp, Grouped) and id(avp) not in above:
+                    visit(avp.members, command, section, names, above | {id(avp)})
+
+        for command, section, members in roots:
+            visit(members, command, section, (), frozenset())
+        printed: dict[str, list[ValueTable]] = {}
+        for view in views.values():
+            for table in view.value_tables:
+                printed.setdefault(table.avp, []).append(table)
+        found = []
+        for identity in sorted(met):
+            readings = met[identity]
+            for name in dict.fromkeys(avp.name for avp in readings):
+                tables[identity].update(dict.fromkeys(printed.get(name, ())))
+            found.append(
+                Reached(
+                    vendor_id=identity[0],
+                    code=identity[1],
+                    definition=self.definition(identity),
+                    readings=tuple(
+                        Met(avp, tuple(paths)) for avp, paths in readings.items()
+                    ),
+                    value_tables=tuple(
+                        table
+                        for table in tables[identity]
+                        if table.kind is not ast.ValueKind.FEATURES
+                        or not context
+                        or set(map(_application_key, self.feature_owners(table)))
+                        & set(context)
+                    ),
+                )
+            )
+        return tuple(found)
+
+    def feature_owners(self, table: ValueTable) -> tuple[Application, ...]:
+        """The applications of `table`'s document whose features a features
+        table numbers.
+
+        Those the caption names, matched against each application's name and
+        its Application IDs registry rows ("S6a/S6d" is TS 29.230's "3GPP
+        S6a"); failing a match, those of the interface clause holding the
+        table; failing that, every application of the document.
+        """
+        view = self._view(table.reference, table.version)
+        applications = self._applications_of(view)
+        if table.application is not None:
+            captioned = _components(table.application)
+            named = [
+                application
+                for application in applications
+                if captioned & self._application_names(application)
+            ]
+            if named:
+                return tuple(named)
+        clause = ast.interface_clause(table.section)
+        within = [each for each in applications if each.clause == clause]
+        return tuple(within or applications)
+
+    def _application_names(self, application: Application) -> frozenset[str]:
+        names = set() if application.name is None else _components(application.name)
+        if application.application_id is not None:
+            for allocation in self.registry(
+                ast.RegistryKind.APPLICATION_IDS, application.application_id
+            ):
+                if isinstance(allocation.entry, ast.RegistryRow) and (
+                    allocation.entry.name is not None
+                ):
+                    names |= _components(allocation.entry.name)
+        return frozenset(names)
 
     def registry(
         self, kind: ast.RegistryKind, code: int | None = None
@@ -666,8 +852,8 @@ class Model(_Resolver):
     @cached_property
     def _everything(self) -> list[Avp]:
         found: dict[Avp, None] = {}
-        for reference in self._views:
-            found.update(dict.fromkeys(self._avps_of(reference)))
+        for view in self._views.values():
+            found.update(dict.fromkeys(self._avps_of(view)))
         known = {avp.identity for avp in found}
         found.update(
             (avp, None) for avp in self._reached(found) if avp.identity not in known
@@ -725,8 +911,8 @@ class Model(_Resolver):
         """How many documents read each identity as each `defined_in`."""
         return Counter(
             (avp.identity, avp.defined_in)
-            for reference in self._views
-            for avp in self._avps_of(reference)
+            for view in self._views.values()
+            for avp in self._avps_of(view)
         )
 
     @cached_property

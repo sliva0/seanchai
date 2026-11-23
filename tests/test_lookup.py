@@ -187,7 +187,8 @@ def test_show_as_json_is_the_dictionarys_reading_then_the_others(tmp_path):
     assert first["id"] == data["avp"] == "0:263"
     assert first["defining"]
     assert [(each["id"], each["read_through"]) for each in others] == [
-        ("0:263#2", "OMA-DDS-Charging_Data")
+        ("0:263@OMA-DDS-Charging_Data in RFC6733", "OMA-DDS-Charging_Data"),
+        ("0:263@oneM2M-TS-0004 in RFC6733", "oneM2M-TS-0004"),
     ]
     dictionary = {avp["id"]: avp for avp in _dictionary(tmp_path)["avps"]}
     assert dictionary["0:263"] == first
@@ -201,8 +202,8 @@ def test_show_as_json_holds_everything_a_body_names_and_its_value_tables():
     _assert_resolves(data)
     _assert_resolves(_shown("SIP-Auth-Data-Item", "--document", "TS29.229"))
     tables = _shown("ULR-Flags")["value_tables"]
-    assert [(t["kind"], t["table"], t["avp_id"]) for t in tables] == [
-        ("bits", "7.3.7/1", "10415:1405")
+    assert [(t["kind"], t["table"], t["avp_ids"]) for t in tables] == [
+        ("bits", "7.3.7/1", ["10415:1405"])
     ]
 
 
@@ -256,7 +257,7 @@ def test_commands_as_json_are_the_dictionarys_without_their_bodies(tmp_path):
     bodies = {"members", "dropped", "walk", "answer_message"}
     assert listed["applications"] == [
         {
-            **application,
+            **{key: value for key, value in application.items() if key != "marks"},
             "commands": [
                 {key: value for key, value in command.items() if key not in bodies}
                 for command in application["commands"]
@@ -341,18 +342,32 @@ def test_every_member_names_an_entry_of_the_file(tmp_path, policy):
     _assert_resolves(data)
 
 
-def test_an_avp_id_is_its_identity_and_further_readings_are_numbered(tmp_path, built):
-    """The entry without `#` is the definition's reading, `defining`."""
+def test_an_avp_id_is_its_identity_and_another_reading_says_where_it_is_read(
+    tmp_path, built
+):
+    """The entry with no `@` is the definition's reading, `defining`; another
+    names the document it is read through, and more where that is not
+    enough."""
     data = _dictionary(tmp_path)
 
-    plain = [avp for avp in data["avps"] if "#" not in avp["id"]]
+    plain = [avp for avp in data["avps"] if "@" not in avp["id"]]
 
-    assert len(plain) == len({(a["vendor_id"], a["code"]) for a in data["avps"]})
+    assert len(plain) == len({(a["vendor_id"], a["code"]) for a in plain})
     for avp in plain:
         assert avp["id"] == f"{avp['vendor_id']}:{avp['code']}"
         assert avp["defining"], avp["id"]
         assert built.definition((avp["vendor_id"], avp["code"])) is not None
-    assert not [a for a in data["avps"] if a["defining"] and "#" in a["id"]]
+    for avp in data["avps"]:
+        if "@" in avp["id"]:
+            assert not avp["defining"], avp["id"]
+            assert avp["id"].startswith(
+                f"{avp['vendor_id']}:{avp['code']}@{avp['read_through']}"
+            )
+    ids = {avp["id"] for avp in data["avps"]}
+    # ETSI ES 283 026 defines Abort-Cause itself, takes TS 29.209's flags and
+    # cites that across releases; TS 29.234 cites TS 29.229 so.
+    assert "10415:500@TS29.209 in ETSI-ES283.026 via ETSI-ES283.026" in ids
+    assert "10415:600@TS29.229 via TS29.234" in ids
 
 
 def test_a_cited_reading_is_what_the_citing_documents_commands_name(tmp_path):
@@ -428,15 +443,16 @@ def test_an_answer_names_the_answer_message_it_takes_with_the_e_bit(tmp_path):
 def test_the_dictionary_holds_the_selected_documents_value_tables(built):
     selected = build(built, documents=("TS29.272",))
 
-    assert {table.reference for table in selected.value_tables} == {"TS29.272"}
+    printed = {(t.avp, t.section) for t in built.value_tables("TS29.272")}
+    assert printed <= {(t.avp, t.section) for t in selected.value_tables}
     flags = next(table for table in selected.value_tables if table.avp == "ULR-Flags")
     assert (flags.kind, flags.table, flags.vendor_id) == (
         ast.ValueKind.BITS,
         "7.3.7/1",
         10415,
     )
-    assert flags.avp_id == next(
-        avp.id for avp in selected.avps if avp.name == "ULR-Flags"
+    assert flags.avp_ids == (
+        next(avp.id for avp in selected.avps if avp.name == "ULR-Flags"),
     )
     features = [t for t in selected.value_tables if t.kind is ast.ValueKind.FEATURES]
     assert [(t.application, t.feature_list_id) for t in features] == [
@@ -444,8 +460,12 @@ def test_the_dictionary_holds_the_selected_documents_value_tables(built):
         ("S6a/S6d", 2),
     ]
     assert features[0].rows[0].mark == "O"
+    assert features[0].applications == ("TS29.272/7/16777251",)
     by_application = build(built, application_ids=(16777216,))
-    assert {table.reference for table in by_application.value_tables} == {"TS29.229"}
+    (cx_features,) = [
+        t for t in by_application.value_tables if t.kind is ast.ValueKind.FEATURES
+    ]
+    assert (cx_features.reference, cx_features.application) == ("TS29.229", "Cx")
     assert Dictionary.model_validate(by_application.model_dump()) == by_application
 
 
@@ -511,7 +531,7 @@ def test_a_supplied_answer_is_an_avp_like_any_other(tmp_path):
     [
         (("--application", "99"), 1, "no application 99"),
         (("--document", "TS99.999"), 1, "no copy of TS99.999"),
-        (("--policy", "supply"), 2, "--policy supply and --supply"),
+        (("--policy", "supply"), 2, "--policy supply goes with --supply"),
         (("--policy", "maybe"), 2, "maybe"),
     ],
 )

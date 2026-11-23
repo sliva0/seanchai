@@ -9,12 +9,13 @@ a default is omitted while it holds the default, which keeps mostly-empty
 per-token and per-line fields out of large files.
 """
 
-import json
 from typing import Annotated, Any, Literal
 
 import pydantic
 from pydantic.json_schema import models_json_schema
 
+from ._json import CrossRelease, FlagRules, Hole, UndefinedBlock
+from ._json import dumps as _dumps
 from .dad import ast
 from .linter import Severity
 
@@ -134,61 +135,6 @@ class Source(_Model):
     url: str | None
     local: str | None
     text: str | None
-
-
-class FlagRules(_Model):
-    """AVP flag rules, as a table's columns place the flags. `application_defined`
-    holds a bit RFC 6733 leaves to the application using the AVP."""
-
-    must: tuple[ast.AvpFlag, ...]
-    may: tuple[ast.AvpFlag, ...]
-    should_not: tuple[ast.AvpFlag, ...]
-    must_not: tuple[ast.AvpFlag, ...]
-    application_defined: tuple[ast.AvpFlag, ...]
-
-
-class CrossRelease(_Model):
-    """A citation resolved outside the citing document's release, and the rule
-    that allowed it (`corpus.CrossRelease`)."""
-
-    citing: str
-    cited: str
-    version: str
-    rule: str
-    cited_revision: str | None
-    revision: str | None
-    meant: str | None
-
-
-class UndefinedBlock(_Model):
-    """The `Undefined AVP` block declaring a name no document defines."""
-
-    section: str
-    page: int | None
-    note: str | None
-    cited_in: tuple[str, ...]
-
-
-class Hole(_Model):
-    """A name the corpus cannot complete (`model.Hole`): the document that falls
-    short, what it leaves unstated in `missing`, and what it does state.
-    `recorded` is the reason the corpus's record of known holes gives."""
-
-    name: str
-    reference: str
-    version: str | None
-    missing: tuple[str, ...]
-    vendor_id: int | None
-    code: int | None
-    data_type: ast.DataType | None
-    flag_rules: FlagRules | None
-    section: str | None
-    origin: str | None
-    conflict: str | None
-    wireshark_name: str | None
-    across_releases: CrossRelease | None
-    undefined: UndefinedBlock | None
-    recorded: str | None
 
 
 class Finding(_Model):
@@ -551,15 +497,7 @@ class Search(_Model):
 def dumps(model: pydantic.BaseModel) -> str:
     """Serialise a model as the export writes it: compact, keys sorted, one
     final newline."""
-    return (
-        json.dumps(
-            model.model_dump(mode="json", exclude_defaults=True),
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
-        + "\n"
-    )
+    return _dumps(model)
 
 
 def json_schema() -> dict[str, Any]:

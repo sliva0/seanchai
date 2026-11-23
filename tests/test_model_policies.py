@@ -290,7 +290,7 @@ def test_a_sidecar_supplies_definitions_and_rows(tmp_path):
         vendor_id=10415,
         code=59995,
         data_type=DataType.GROUPED,
-        flag_rules=ast.AvpFlagRules(must=_M | _V),
+        flag_rules=FlagRules(must=_M | _V),
         source=source,
         members=(ast.AvpRule(name="Session-Id", presence=ast.Presence.REQUIRED),),
     )

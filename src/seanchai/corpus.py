@@ -899,13 +899,23 @@ class Corpus:
         return books
 
     @classmethod
-    def installed(cls, *, raw: bool = False) -> Corpus:
+    def installed(
+        cls,
+        *,
+        raw: bool = False,
+        extra: Iterable[str | os.PathLike[str]] = (),
+    ) -> Corpus:
         """`load` the installed `seanchai-corpus` directory. Raises
         `CorpusNotInstalledError` if it is not installed and
         `CorpusFormatError` for an unreadable format.
+
+        `extra` names a consumer's own `.dad` files or directories to read
+        beside it, as `load` reads a list: proprietary AVPs and commands,
+        which the corpus's rules and record of holes do not speak for. The
+        version stays the package's.
         """
         package = _installed_package()
-        books = cls.load([package.CORPUS_DIR], raw=raw)
+        books = cls.load([package.CORPUS_DIR, *extra], raw=raw)
         books.version = package.__version__
         return books
 

@@ -89,7 +89,7 @@ class Addition:
     vendor: int
     code: int
     data_type: ast.DataType
-    flag_rules: ast.AvpFlagRules | None
+    flag_rules: model.FlagRules | None
     may_encrypt: bool | None
     where: str
     members: tuple[str, ...] = ()
@@ -297,7 +297,7 @@ def _anchors(
 _CONTEXT = 3
 
 
-def _flag(rules: ast.AvpFlagRules | None, flag: ast.AvpFlag) -> str | None:
+def _flag(rules: model.FlagRules | None, flag: ast.AvpFlag) -> str | None:
     if rules is None:
         return None
     for column, value in _FLAG_VALUES:

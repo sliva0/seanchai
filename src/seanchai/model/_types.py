@@ -5,7 +5,7 @@ frozen dataclass with `to_dict`; none resolves anything."""
 from __future__ import annotations
 
 import enum
-from collections.abc import Iterator, Mapping
+from collections.abc import Hashable, Iterator, Mapping
 from dataclasses import dataclass, field, fields, is_dataclass
 from typing import TYPE_CHECKING, Any, cast
 
@@ -15,6 +15,7 @@ from .. import corpus
 from ..corpus import Missing
 from ..dad import ast
 from ._flags import FlagRules
+from ._wire import basic_type
 
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance
@@ -46,10 +47,12 @@ class _Plain:
     """What the model's dataclasses share: `to_dict`."""
 
     def to_dict(self) -> dict[str, Any]:
-        """This object's fields as JSON-ready values, for `json.dumps`."""
+        """This object's fields as JSON-ready values, for `json.dumps`: those
+        equality compares, so that equal objects give equal dicts."""
         return {
             each.name: _plain(getattr(self, each.name))
             for each in fields(cast("DataclassInstance", self))
+            if each.compare
         }
 
 
@@ -136,22 +139,31 @@ class Avp(_Plain):
     # The fields `defined_in`'s reading leaves unstated, each with the
     # document that states it instead: TS 29.229's clause 6.3.43 gives
     # `Wildcarded-IMPU` no code, vendor or flags, so through TS 29.329 they
-    # are its table 6.3.1's. Provenance only: two readings stating the same
-    # facts are one AVP.
-    completed_by: tuple[tuple[Missing, str], ...] = field(default=(), compare=False)
+    # are its table 6.3.1's.
+    completed_by: tuple[tuple[Missing, str], ...] = ()
     # The document whose table produced this reading, spelled as
     # `Hole.document` for an older copy: `defined_in`, unless a table elsewhere
-    # changed the flag rules or a grouped member. TS 29.229 reads RFC 6733's
-    # `Session-Id` as RFC 6733 does, so that reading names RFC 6733; oneM2M
-    # TS-0004's table adds P under May, so its reading names it. Provenance
-    # only, as `completed_by`: two documents giving one reading are one AVP,
-    # which names the first in corpus order.
-    read_through: str = field(default="", compare=False)
+    # changed the flag rules, the Encrypt cell or a grouped member. TS 29.229
+    # reads RFC 6733's `Session-Id` as RFC 6733 does, so that reading names
+    # RFC 6733; oneM2M TS-0004's table adds P under May, so its reading names
+    # it. Two documents changing a reading alike give two readings, one
+    # naming each.
+    read_through: str = ""
+    # The version of `defined_in` when the reading is an older copy's, held
+    # for a citation, as `Hole.version`: TS 32.299 V11.20.0's
+    # `WLAN-Information`, which oneM2M TS-0004 reaches.
+    version: str | None = None
+    # Whether the Encrypt column of the AVP table giving the reading its flag
+    # rules allows encrypting the AVP (RFC 3588 section 4.5); None where that
+    # table prints no Encrypt column or leaves the cell blank. RFC 6733
+    # dropped the column, and most 3GPP tables still print it.
+    may_encrypt: bool | None = None
     # What the reading document names this AVP's numbers, its own tables, or
     # failing any the origin's: TS 29.272's `ULR-Flags` bits, the features of
-    # each of a `Feature-List`'s lists. Not a fact of the AVP's: every document
-    # numbering its result codes reads RFC 6733's `Experimental-Result-Code`,
-    # one AVP.
+    # each of a `Feature-List`'s lists. The one field equality and `to_dict`
+    # leave out, since it is the context the reading was met in and no fact
+    # of the AVP's: every document numbering its result codes reads RFC
+    # 6733's `Experimental-Result-Code`, one AVP.
     value_tables: tuple[ValueTable, ...] = field(default=(), compare=False)
 
     @property
@@ -163,6 +175,18 @@ class Avp(_Plain):
     def value_table(self) -> ValueTable | None:
         """The first of `value_tables`, or None."""
         return self.value_tables[0] if self.value_tables else None
+
+    @property
+    def document(self) -> str:
+        """`defined_in`, plus the version for an older copy, as
+        `Hole.document`: "TS32.299 V11.20.0"."""
+        return self.defined_in + ("" if self.version is None else f" V{self.version}")
+
+    @property
+    def basic_type(self) -> ast.DataType:
+        """The RFC 6733 section 4.2 basic format `data_type` is carried in
+        (`basic_type`)."""
+        return basic_type(self.data_type)
 
     def _repr_tail(self) -> str:
         return ""
@@ -218,10 +242,11 @@ class Supplied(_Plain):
     vendor_id: int
     code: int
     data_type: ast.DataType
-    flag_rules: ast.AvpFlagRules
+    flag_rules: FlagRules
     source: str
     members: tuple[ast.AvpRule, ...] = ()
     values: tuple[ast.EnumEntry, ...] = ()
+    may_encrypt: bool | None = None
 
     def __repr__(self) -> str:
         identity = (self.vendor_id, self.code)
@@ -465,6 +490,8 @@ class Message(_Plain):
     dropped: tuple[Member, ...] = ()
     # The id the header prints, None where it prints none.
     header_application_id: int | None = None
+    # The version of `defined_in` where the query read an older copy.
+    version: str | None = None
 
     @property
     def is_request(self) -> bool:
@@ -507,6 +534,8 @@ class AnswerMessage(_Plain):
     avps: tuple[Member, ...]
     # As `Grouped.dropped`.
     dropped: tuple[Member, ...] = ()
+    # The version of `read_through` where the query read an older copy.
+    version: str | None = None
 
     def walk(self) -> tuple[Member, ...]:
         """The members at every depth, as `Message.walk` reads them."""
@@ -516,6 +545,42 @@ class AnswerMessage(_Plain):
         return (
             f"<AnswerMessage {self.defined_in} {self.section} through"
             f" {self.read_through}, {len(self.avps)} members>"
+        )
+
+
+@dataclass(frozen=True)
+class Command(_Plain):
+    """A command's request and answer in one application, paired by command
+    code. Each half is a tuple because a document may print one twice: TS
+    29.273 prints its AAR in clauses 9.2.2.2.1 and 9.2.2.5.1. A half the
+    document does not print is empty."""
+
+    command_code: int
+    requests: tuple[Message, ...]
+    answers: tuple[Message, ...]
+
+    @property
+    def request(self) -> Message | None:
+        """The first request printed, or None."""
+        return self.requests[0] if self.requests else None
+
+    @property
+    def answer(self) -> Message | None:
+        """The first answer printed, or None."""
+        return self.answers[0] if self.answers else None
+
+    def to_dict(self) -> dict[str, Any]:
+        """Each half as its messages' clauses, not their bodies."""
+        return {
+            "command_code": self.command_code,
+            "requests": [message.section for message in self.requests],
+            "answers": [message.section for message in self.answers],
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"<Command {self.command_code}: {len(self.requests)} request(s),"
+            f" {len(self.answers)} answer(s)>"
         )
 
 
@@ -541,6 +606,21 @@ class Application(_Plain):
     # its name for the application ("Gx") and the clause stating the id.
     name: str | None = None
     stated_in: str | None = None
+    # The copy's version where it is an older one the query asked for.
+    version: str | None = None
+
+    @property
+    def commands(self) -> tuple[Command, ...]:
+        """`messages` paired by command code, in the order each code is first
+        printed."""
+        halves: dict[int, tuple[list[Message], list[Message]]] = {}
+        for message in self.messages:
+            requests, answers = halves.setdefault(message.command_code, ([], []))
+            (requests if message.is_request else answers).append(message)
+        return tuple(
+            Command(code, tuple(requests), tuple(answers))
+            for code, (requests, answers) in halves.items()
+        )
 
     def walk(self) -> tuple[Member, ...]:
         """The members the application's commands reach at any depth, as
@@ -557,6 +637,97 @@ class Application(_Plain):
             f"<Application {self.reference} {self.application_id}{named}, clause"
             f" {self.clause}, {len(self.messages)} messages>"
         )
+
+
+@dataclass(frozen=True)
+class MemberPath(_Plain):
+    """Where a member sits: the command, by abbreviation and the clause
+    printing it (`answer-message` for an error answer's body), and the member
+    names from the command's body down to it."""
+
+    command: str
+    section: str
+    names: tuple[str, ...]
+
+    def __str__(self) -> str:
+        return f"{self.command} ({self.section}): {' / '.join(self.names)}"
+
+
+@dataclass(frozen=True)
+class Met(_Plain):
+    """One distinct reading of an identity, and every place it is met."""
+
+    avp: Avp
+    paths: tuple[MemberPath, ...]
+
+    def __repr__(self) -> str:
+        return f"<Met {self.avp!r} at {len(self.paths)} paths>"
+
+
+# What a codec stores of an AVP. Readings differing elsewhere (where the
+# reading is defined or read through, a citation's release) are provenance.
+_WIRE_FIELDS = ("name", "data_type", "flag_rules", "may_encrypt", "members", "values")
+
+
+def _wire(avp: Avp, name: str) -> Hashable:
+    """A reading's field as a codec sees it: a grouped body as its members'
+    names, identities and occurrences, not the readings they point at."""
+    if name == "members":
+        return tuple(
+            (
+                member.name,
+                None if member.avp is None else member.avp.identity,
+                member.min_occurs,
+                member.max_occurs,
+            )
+            for member in getattr(avp, "members", ())
+        )
+    return getattr(avp, name, ())
+
+
+@dataclass(frozen=True)
+class Reached(_Plain):
+    """One `(vendor-id, code)` a command, an application or an error answer
+    reaches: the defining document's reading (`Model.definition`), every
+    distinct reading met, each with the member paths it is met at, and the
+    value tables met with it.
+
+    The effective reading at one member stays `Member.avp`. `conflicts` names
+    the fields a codec stores in which the readings met disagree, as the flag
+    rules a citing table sets; a backend storing one reading per AVP has to
+    choose there.
+    """
+
+    vendor_id: int
+    code: int
+    definition: Avp | None
+    readings: tuple[Met, ...]
+    value_tables: tuple[ValueTable, ...] = ()
+
+    @property
+    def identity(self) -> tuple[int, int]:
+        return (self.vendor_id, self.code)
+
+    @property
+    def conflicts(self) -> tuple[str, ...]:
+        """The fields of `_WIRE_FIELDS` in which the readings met differ:
+        `flag_rules`, `may_encrypt`, `members` and so on. A reading whose
+        tables print no Encrypt column states nothing to differ in."""
+        return tuple(
+            name
+            for name in _WIRE_FIELDS
+            if len({_wire(met.avp, name) for met in self.readings} - {None}) > 1
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """As `_Plain.to_dict`, with `conflicts`."""
+        return {**super().to_dict(), "conflicts": list(self.conflicts)}
+
+    def __repr__(self) -> str:
+        conflicts = (
+            f", conflicting in {', '.join(self.conflicts)}" if self.conflicts else ""
+        )
+        return f"<Reached {self.identity}: {len(self.readings)} reading(s){conflicts}>"
 
 
 @dataclass(frozen=True)

@@ -23,14 +23,14 @@ This package holds only the shared error base and the version, so importing
 - `seanchai.downloader`: fetches the source documents the corpus is built from,
   with that extra for whatever it has to open as docx or PDF.
 
-Semantic versioning covers the names in the `__all__` of this package and of
-each module listed above (for `seanchai.downloader`, the package's own; for
-`seanchai.extractor`, its modules'), the command line's commands, options and
-exit statuses, the format versions of the two JSON outputs
-(`dictionary.FORMAT_VERSION`, `export_schema.SCHEMA_VERSION`) and the corpus
-formats the library reads (`corpus.FORMATS`). Modules whose names start with an
-underscore, names outside an `__all__`, and the Python of `seanchai.cli` may
-change in any release.
+Semantic versioning covers the names in the `__all__` of this package,
+`model`, `corpus`, `dictionary` and `errors`, the dictionary's JSON
+(`dictionary.FORMAT_VERSION`), the `.dad` grammar and the corpus formats the
+library reads (`corpus.FORMATS`), and the consumer commands' options, output
+and exit statuses. Everything else, `dad`, `linter`, `extractor`, `downloader`,
+`oracle`, `export`, `export_schema`, `wireshark`, the `corpus` maintainer
+commands and every underscored module, may change in any minor release; the
+export's JSON keeps its own `export_schema.SCHEMA_VERSION`.
 """
 
 from importlib.metadata import version

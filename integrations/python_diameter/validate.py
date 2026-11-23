@@ -354,7 +354,7 @@ def check_message(
                 f" {message.command_code}",
             )
         ]
-    request = ast.CommandFlag.REQUEST in message.flags
+    request = message.is_request
     cls = direction_class(base, request)
     if cls is None:
         return [
@@ -425,7 +425,10 @@ def check_dictionary(
     type_name = info["type"].__name__
     acceptable = ACCEPTABLE.get(avp.data_type) if avp.data_type else None
     if options.enumerated_as_integer and avp.data_type is ast.DataType.ENUMERATED:
-        acceptable = {"AvpEnumerated", "AvpInteger32"}
+        # Or as RFC 6733 section 4.3.1's base, which it is on the wire.
+        acceptable = (
+            ACCEPTABLE[avp.data_type] | ACCEPTABLE[model.basic_type(avp.data_type)]
+        )
     if avp.data_type is None:
         pass
     elif acceptable is None:
@@ -473,8 +476,7 @@ def mentions_in(built: model.Model, references: Iterable[str]) -> Mentions:
     for reference in references:
         pending: list[model.Avp | model.Hole] = list(built.avps(reference))
         for message in built.messages(reference):
-            request = ast.CommandFlag.REQUEST in message.flags
-            note(command_holder(message.command_code, request), message.avps)
+            note(command_holder(message.command_code, message.is_request), message.avps)
             pending += [m.avp for m in message.avps if m.avp is not None]
         seen = set()
         while pending:

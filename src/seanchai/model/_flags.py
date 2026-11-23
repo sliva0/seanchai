@@ -3,14 +3,18 @@ bits, and helpers for reading a table row's flag cells."""
 
 from __future__ import annotations
 
-import pydantic
+from dataclasses import dataclass
 
 from ..dad import ast
 
+_COLUMNS = ("must", "may", "should_not", "must_not", "application_defined")
 
-class FlagRules(ast.AvpFlagRules):
-    """AVP flag rules plus `application_defined`: the bits RFC 6733 leaves
-    to the application that uses the AVP.
+
+@dataclass(frozen=True)
+class FlagRules:
+    """An AVP's flag rules: the four columns of a specification's AVP table,
+    plus `application_defined`, the bits RFC 6733 leaves to the application
+    that uses the AVP.
 
     RFC 6733 section 4.1 has the using application set the M bit, so an IETF
     AVP whose RFC states no M rule has none of its own. Section 4.1.1 makes
@@ -18,14 +22,33 @@ class FlagRules(ast.AvpFlagRules):
 
     Every `Avp.flag_rules` and `Hole.flag_rules` is one of these.
     `application_defined` is set only for vendor 0 (`_ietf_rules`); elsewhere
-    it is empty and the columns are as the document prints them.
+    it is empty and the columns are as the document prints them. Each flag
+    sits in at most one column.
     """
 
+    must: frozenset[ast.AvpFlag] = frozenset()
+    may: frozenset[ast.AvpFlag] = frozenset()
+    should_not: frozenset[ast.AvpFlag] = frozenset()
+    must_not: frozenset[ast.AvpFlag] = frozenset()
     application_defined: frozenset[ast.AvpFlag] = frozenset()
 
+    def __post_init__(self) -> None:
+        seen: dict[ast.AvpFlag, str] = {}
+        for column in _COLUMNS:
+            flags = frozenset(ast.AvpFlag(flag) for flag in getattr(self, column))
+            # Accepts any iterable of flags or their letters, held as a frozenset.
+            object.__setattr__(self, column, flags)
+            for flag in flags:
+                if flag in seen:
+                    raise ValueError(
+                        f"AVP flag {flag.value!r} is in both {seen[flag]} and {column}"
+                    )
+                seen[flag] = column
+
     @classmethod
-    def printed(cls, rules: ast.AvpFlagRules) -> FlagRules:
-        """`rules` as a `FlagRules`, returned unchanged if it already is one."""
+    def printed(cls, rules: ast.AvpFlagRules | FlagRules) -> FlagRules:
+        """A table row's printed rules (`ast.AvpFlagRules`) as a `FlagRules`,
+        or `rules` unchanged if it already is one."""
         if isinstance(rules, cls):
             return rules
         return cls(
@@ -35,29 +58,31 @@ class FlagRules(ast.AvpFlagRules):
             must_not=rules.must_not,
         )
 
+    def columns(self) -> ast.AvpFlagRules:
+        """The four printed columns, as a table row holds them; the
+        application-defined bits are in none of them."""
+        return ast.AvpFlagRules(
+            must=self.must,
+            may=self.may,
+            should_not=self.should_not,
+            must_not=self.must_not,
+        )
+
     def to_dict(self) -> dict[str, list[str]]:
-        """The five columns, each a sorted list of flags."""
+        """The five columns, each a list of flags in a flags cell's order
+        (M, V, P)."""
         return {
-            name: sorted(flag.value for flag in getattr(self, name))
-            for name in type(self).model_fields
+            name: [flag.value for flag in ast.AvpFlag if flag in getattr(self, name)]
+            for name in _COLUMNS
         }
 
-    @pydantic.field_serializer("application_defined", when_used="json")
-    def _application_defined_in_cell_order(
-        self, flags: frozenset[ast.AvpFlag]
-    ) -> list[ast.AvpFlag]:
-        """As `AvpFlagRules`' columns."""
-        return [flag for flag in ast.AvpFlag if flag in flags]
-
-    @pydantic.model_validator(mode="after")
-    def _defined_once(self) -> FlagRules:
-        placed = self.must | self.may | self.should_not | self.must_not
-        if overlap := placed & self.application_defined:
-            raise ValueError(
-                f"AVP flag {min(overlap).value!r} is both placed and"
-                " application-defined"
-            )
-        return self
+    def __repr__(self) -> str:
+        placed = ", ".join(
+            f"{name}={''.join(self.to_dict()[name])}"
+            for name in _COLUMNS
+            if getattr(self, name)
+        )
+        return f"<FlagRules {placed or 'none'}>"
 
 
 def _ietf_rules(flag_rules: ast.AvpFlagRules | None) -> FlagRules:

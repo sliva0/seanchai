@@ -628,7 +628,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   local by_identity = {}
   for index, member in ipairs(body) do
     if member.id then
-      local identity = member.id:gsub("#%d+$", "")
+      local identity = member.id:match("^[^@]+")
       by_identity[identity] = by_identity[identity] or { member = member, index = index }
     end
   end
@@ -696,7 +696,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   end
   for _, member in ipairs(body) do
     if member.id then
-      local identity = member.id:gsub("#%d+$", "")
+      local identity = member.id:match("^[^@]+")
       local count = counts[identity] or 0
       if count < member.min then
         finding(findings, ERROR, "avp-missing",
@@ -727,7 +727,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   end
   local expected = 1
   for _, member in ipairs(leading) do
-    local identity = member.id and member.id:gsub("#%d+$", "")
+    local identity = member.id and member.id:match("^[^@]+")
     local at = identity and positions[identity]
     if at then
       if at ~= expected then
@@ -750,7 +750,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   end
   expected = #avps - #trailing + 1
   for _, member in ipairs(trailing) do
-    local identity = member.id and member.id:gsub("#%d+$", "")
+    local identity = member.id and member.id:match("^[^@]+")
     local at = identity and positions[identity]
     if at and at ~= expected then
       local avp = avps[at]

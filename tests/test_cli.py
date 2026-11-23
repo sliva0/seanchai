@@ -106,7 +106,7 @@ _OUTCOMES = [
     (["show", "1:x"], 2, "err", "an identity is VENDOR:CODE"),
     (["show", "Session-Id", "--version", "1"], 2, "err", "--version needs --document"),
     (["commands", "--application", "cx"], 2, "err", "is not a valid integer"),
-    (["dictionary"], 2, "err", "error: Missing option '-o'"),
+    (["dictionary"], 2, "err", "error: give -o/--output, --schema or both"),
     (["wireshark-plugin"], 2, "err", "error: Missing option '-o'"),
     # Errors, which name the file or the download that would fix them.
     (["lint", "bad.dad"], 1, "err", "error: bad.dad: "),

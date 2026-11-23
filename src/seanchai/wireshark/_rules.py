@@ -506,8 +506,15 @@ def rules_chunk(
         "local result_codes, bits, bits_at = {}, {}, {}",
         "local docs, cites, base = {}, {}, {}",
     ]
+    readings: dict[str, list[str]] = defaultdict(list)
     for avp in built.avps:
         lines.append(f"avps[{lua_string(avp.id)}]={_avp(avp, places)}")
+        readings[f"{avp.vendor_id}:{avp.code}"].append(avp.id)
+    # The core looks a reading up by identity too, where a body does not name
+    # it: the defining one, or failing that in the output, the first.
+    for identity, ids in readings.items():
+        if identity not in ids:
+            lines.append(f"avps[{lua_string(identity)}]=avps[{lua_string(ids[0])}]")
     for key, entries in sorted(_candidates(built.applications, resolved).items()):
         candidates = []
         for application, command in entries:
@@ -544,11 +551,14 @@ def rules_chunk(
         if table.kind.value == "result-codes":
             for row in table.rows:
                 codes[table.vendor_id].setdefault(row.value, row.name)
-        elif table.kind.value == "bits" and table.avp_id is not None:
-            identity = table.avp_id.partition("#")[0]
-            masks[identity].update(row.value for row in table.rows)
-            if (at := places.table(table)) is not None:
-                masks_at.setdefault(identity, at)
+        elif table.kind.value == "bits":
+            # Every reading met carrying the table: the mask is the identity's.
+            for identity in dict.fromkeys(
+                each.partition("@")[0] for each in table.avp_ids
+            ):
+                masks[identity].update(row.value for row in table.rows)
+                if (at := places.table(table)) is not None:
+                    masks_at.setdefault(identity, at)
     for vendor, names in sorted(codes.items()):
         entries = ",".join(
             f"[{value}]={lua_string(name)}" for value, name in sorted(names.items())

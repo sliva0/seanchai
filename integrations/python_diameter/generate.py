@@ -353,7 +353,7 @@ class Library:
 # --- collecting --------------------------------------------------------------
 
 
-def _flags(flag_rules: ast.AvpFlagRules | None) -> tuple[str, str, str, str] | None:
+def _flags(flag_rules: model.FlagRules | None) -> tuple[str, str, str, str] | None:
     if flag_rules is None:
         return None
     order = list(ast.AvpFlag)
@@ -416,7 +416,7 @@ class Definition:
         return None if isinstance(sample, model.Placeholder) else sample.data_type
 
     @property
-    def flag_rules(self) -> ast.AvpFlagRules | None:
+    def flag_rules(self) -> model.FlagRules | None:
         sample = self.sample
         return None if isinstance(sample, model.Placeholder) else sample.flag_rules
 
@@ -743,16 +743,18 @@ def collect_unit(
     library: Library,
 ) -> Unit:
     bases: dict[int, tuple[str, str]] = {}
+    for pair in application.commands:
+        first = pair.request or pair.answer
+        assert first is not None
+        base = command_base(first.name)
+        # The library's class name for the code where it has one, so the
+        # document's `CC-Request` is `CreditControlRequest` as there.
+        bases[pair.command_code] = library.commands.get(
+            pair.command_code, (class_name(base), base)
+        )
     commands: list[Command] = []
     by_name: dict[str, list[Command]] = {}
     for message in application.messages:
-        base = command_base(message.name)
-        # The library's class name for the code where it has one, so the
-        # document's `CC-Request` is `CreditControlRequest` as there.
-        base_class, base_name = library.commands.get(
-            message.command_code, (class_name(base), base)
-        )
-        bases.setdefault(message.command_code, (base_class, base_name))
         members = [
             (member, definitions.member(member, application.reference))
             for member in message.avps
@@ -760,13 +762,11 @@ def collect_unit(
         notes = [
             member_note(built, application, message, member) for member in message.avps
         ]
-        request = ast.CommandFlag.REQUEST in message.flags
-        named_request = message.name.lower().endswith("-request")
-        named_answer = message.name.lower().endswith("-answer")
-        # By the name where it says, as the library's `to_answer` pairs the
-        # two by name; by the REQ flag where the name does not.
-        is_request = named_request or (request and not named_answer)
-        name = bases[message.command_code][0] + ("Request" if is_request else "Answer")
+        # The model pairs a code's halves by the R bit; no document's names
+        # say otherwise, which the library's `to_answer`, pairing by name,
+        # relies on.
+        direction = "Request" if message.is_request else "Answer"
+        name = bases[message.command_code][0] + direction
         alike = by_name.setdefault(name, [])
         same = [
             command
@@ -899,9 +899,11 @@ class Resolver:
             )
         vendor, code = identity
         if vendor not in library.vendors:
+            known = model.VENDORS.get(vendor)
+            named = "" if known is None else f" ({known.name})"
             raise SystemExit(
-                f"error: {first.name} is vendor {vendor}, for which the library"
-                " has no VENDOR_ constant"
+                f"error: {first.name} is vendor {vendor}{named}, for which the"
+                " library has no VENDOR_ constant"
             )
         prefix = library.vendors[vendor].removeprefix("VENDOR_")
         base = "AVP_" + ("" if vendor == 0 else prefix + "_")

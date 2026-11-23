@@ -69,14 +69,21 @@ def test_a_model_is_built_only_through_its_builders(built):
 
 
 def test_a_flag_cannot_be_both_placed_and_application_defined():
-    with pytest.raises(ValueError, match="both placed and application-defined"):
+    with pytest.raises(ValueError, match="is in both may and application_defined"):
         FlagRules(may=_M, application_defined=_M)
 
 
 def test_every_model_type_has_a_one_line_repr_and_a_json_dict(built):
     undefined = built.undefined()[0]
+    (cx,) = built.applications("TS29.229")
+    reached = built.reached(cx)
     found = [
         *built.applications("TS29.229"),
+        *cx.commands,
+        *reached,
+        *reached[0].readings,
+        *reached[0].readings[0].paths,
+        *model.VENDORS.values(),
         *built.messages("TS29.229"),
         *built.messages("TS29.229")[0].avps,
         *built.resolve("TS29.234", "Charging-Data").members,
@@ -565,17 +572,23 @@ def test_every_etsi_tispan_citation_resolves_to_its_transcription(built):
 
 
 def test_readings_name_the_document_whose_table_made_each(built):
-    """OMA-DDS-Charging_Data's table 11 adds P under May to RFC 6733's
-    Session-Id; TS 29.229's table agrees with RFC 6733 and makes no reading.
+    """OMA-DDS-Charging_Data's table 11 and oneM2M TS-0004's each add P under
+    May to RFC 6733's Session-Id, two readings alike but for the document
+    reading them; TS 29.229's table agrees with RFC 6733 and makes no reading.
     Two copies of TS 29.061 read 3GPP-RAT-Type apart, so the older copy's
     reading names its version."""
-    plain, protected = sorted(
+    plain, *protected = sorted(
         built.readings("Session-Id"),
-        key=lambda avp: AvpFlag.PROTECTED in avp.flag_rules.may,
+        key=lambda avp: (AvpFlag.PROTECTED in avp.flag_rules.may, avp.read_through),
     )
 
     assert plain.read_through == "RFC6733"
-    assert protected.read_through == "OMA-DDS-Charging_Data"
+    assert [avp.read_through for avp in protected] == [
+        "OMA-DDS-Charging_Data",
+        "oneM2M-TS-0004",
+    ]
+    assert protected[0].flag_rules == protected[1].flag_rules
+    assert protected[0] != protected[1]
     assert built.resolve("TS29.229", "Session-Id") == plain
     assert built.readings((0, 263)) == built.readings("Session-Id")
     assert {avp.read_through for avp in built.readings("3GPP-RAT-Type")} == {
@@ -740,7 +753,7 @@ def test_a_corpus_wide_reading_carries_its_read_through_documents_tables(built):
     """TS 32.299 reads RFC 6733's Result-Code and Experimental-Result-Code
     with its own codes; the corpus-wide readings, read through RFC 6733,
     carry RFC 6733's codes and none, whichever document is met first."""
-    (result_code, _oma) = built.readings("Result-Code")
+    (result_code, _oma, _onem2m) = built.readings("Result-Code")
     (experimental,) = built.readings("Experimental-Result-Code")
 
     assert result_code.read_through == "RFC6733"
@@ -1026,3 +1039,96 @@ def test_the_pinned_dictionary_names_the_avps_it_spells_differently():
     hole = named.hole("TS29.061", "3GPP-Session-Stop-Indicator")
     assert hole is not None
     assert hole.wireshark_name == "3GPP-Session-Stop-Indicator"
+
+
+# --- what a generator would otherwise rebuild ---------------------------------
+
+
+def test_an_application_pairs_requests_and_answers_by_code(built):
+    """TS 29.273 prints its AAR twice, in clauses 9.2.2.2.1 and 9.2.2.5.1."""
+    (s6a,) = built.applications("TS29.272", application_id=16777251)
+    ulr = next(command for command in s6a.commands if command.command_code == 316)
+    assert ulr.request is not None and ulr.request.abbreviation == "ULR"
+    assert ulr.answer is not None and ulr.answer.abbreviation == "ULA"
+    assert sum(len(c.requests) + len(c.answers) for c in s6a.commands) == len(
+        s6a.messages
+    )
+
+    (s6b,) = built.applications("TS29.273", application_id=16777272)
+    aar = next(command for command in s6b.commands if command.command_code == 265)
+    assert [m.section for m in aar.requests] == ["9.2.2.2.1", "9.2.2.5.1"]
+    assert [m.section for m in aar.answers] == ["9.2.2.2.2", "9.2.2.5.2"]
+    assert aar.request is aar.requests[0]
+
+
+@pytest.mark.parametrize(
+    ("data_type", "basic"),
+    [
+        (model.DataType.UNSIGNED32, model.DataType.UNSIGNED32),
+        (model.DataType.GROUPED, model.DataType.GROUPED),
+        (model.DataType.ENUMERATED, model.DataType.INTEGER32),
+        (model.DataType.DIAMETER_IDENTITY, model.DataType.OCTET_STRING),
+        (model.DataType.UTF8_STRING, model.DataType.OCTET_STRING),
+        (model.DataType.TIME, model.DataType.OCTET_STRING),
+        (model.DataType.QOS_FILTER_RULE, model.DataType.OCTET_STRING),
+    ],
+)
+def test_a_type_is_carried_in_its_basic_format(data_type, basic):
+    assert model.basic_type(data_type) is basic
+
+
+def test_every_vendor_the_corpus_uses_is_named_with_its_source(built):
+    used = {avp.vendor_id for avp in built.avps()}
+
+    assert used == set(model.VENDORS)
+    assert model.VENDORS[10415].name == "3GPP"
+    assert all(vendor.source for vendor in model.VENDORS.values())
+
+
+def test_a_reading_carries_its_tables_encrypt_cell(built):
+    """TS 29.229 table 6.3.0.1 prints Encrypt "No"; RFC 6733 prints none."""
+    public = built.resolve("TS29.229", "Public-Identity")
+    session = built.resolve("RFC6733", "Session-Id")
+
+    assert public is not None and public.may_encrypt is False
+    assert session is not None and session.may_encrypt is None
+
+
+def test_every_document_query_takes_a_version(built):
+    """TS 29.061 is held as V6.15.0 beside its newest copy."""
+    older = "6.15.0"
+    assert built.version("TS29.061") != older
+
+    avps = built.avps("TS29.061", version=older)
+    assert avps and avps != built.avps("TS29.061")
+    assert {avp.version for avp in avps if avp.defined_in == "TS29.061"} == {older}
+    assert all(hole.version == older for hole in built.holes("TS29.061", version=older))
+    name = avps[0].name
+    assert built.table_rows("TS29.061", name, version=older) is not None
+    assert isinstance(built.marks("TS29.061", name, version=older), tuple)
+    assert isinstance(built.undefined("TS29.061", version=older), tuple)
+    assert isinstance(built.placeholders("TS29.061", version=older), tuple)
+    assert isinstance(built.across_releases("TS29.061", version=older), tuple)
+    with pytest.raises(model.ModelError, match=r"no copy of TS29\.061 V9\.9\.9"):
+        built.avps("TS29.061", version="9.9.9")
+    with pytest.raises(model.ModelError, match="reads one document"):
+        built.holes(version=older)
+
+
+def test_a_documents_avps_are_sorted_as_the_corpus_wide_list_is(built):
+    def key(avp):
+        return (avp.defined_in, avp.name, avp.version or "", avp.read_through)
+
+    for reference in ("TS29.229", "TS32.299"):
+        listed = built.avps(reference)
+        assert list(listed) == sorted(listed, key=key)
+    assert list(built.avps()) == sorted(built.avps(), key=key)
+
+
+def test_flag_rules_are_the_consumers_own_type():
+    rules = FlagRules(must=_M, must_not=_V)
+
+    assert rules == FlagRules.printed(rules.columns())
+    assert rules.to_dict()["must_not"] == ["V"]
+    assert not isinstance(rules, model.Avp)
+    assert repr(rules) == "<FlagRules must=M, must_not=V>"

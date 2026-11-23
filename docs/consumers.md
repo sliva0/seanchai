@@ -11,10 +11,13 @@ pip install "seanchai[corpus]"
 
 ### Generate a dictionary
 
-`Application.walk()` yields every member an application's commands hold, at
-any depth, whichever document defines it. `Message.walk()` does the same for
-one command. Cx's commands reach 104 AVPs, among them RFC 6733's
-`Destination-Host`, which no table of TS 29.229 lists.
+`Model.reached` gives one entry per `(vendor-id, code)` that applications,
+commands or error answers reach, at any depth, whichever document defines
+it. Cx's commands reach RFC 6733's `Destination-Host`, which no table of TS
+29.229 lists. An entry holds the defining document's reading, every distinct
+reading met with the member paths it is met at, the value tables met with it,
+and `conflicts`, the fields in which those readings disagree. `Member.avp`
+stays the reading at each member.
 
 ```python
 import seanchai
@@ -24,31 +27,49 @@ from seanchai.model import AvpFlag, Enumerated, Grouped, Model
 corpus = Corpus.installed()
 model = Model.build(corpus)
 (cx,) = model.applications("TS 29.229", application_id=16777216)
+# What Cx's answers hold in place of their bodies when the E bit is set.
+error_answer = model.answer_message("TS 29.229")
 
 # Record both versions: the generated output depends on both.
 print(f"# seanchai {seanchai.__version__}, corpus {corpus.version}")
 
-dictionary = {}
-for member in cx.walk():
-    if member.avp is not None:
-        # A citing table can read one AVP two ways: keep one per identity.
-        dictionary.setdefault(member.avp.identity, member.avp)
-    elif member.hole is not None:
+for command in cx.commands:  # request and answer, paired by code
+    for message in (*command.requests, *command.answers):
+        # `< >` is a fixed position, `{ }` required and `[ ]` optional.
+        print(message.abbreviation, message.command_code, message.is_request)
+        for member in message.avps:
+            print(" ", member.name, member.rule.presence, member.max_occurs)
+
+for member in (*cx.walk(), *error_answer.walk()):
+    if member.hole is not None:
         # A name the corpus cannot complete; the hole says what it lacks.
         print(f"# skipped: {member.hole}")
-    # Neither: the `* [ AVP ]` wildcard, which is grammar and not an AVP.
+    # Neither avp nor hole: the `* [ AVP ]` wildcard, grammar and not an AVP.
 
-for (vendor_id, code), avp in sorted(dictionary.items()):
+for entry in model.reached(cx, error_answer):
+    avp = entry.readings[0].avp
+    if entry.conflicts:
+        # The readings met disagree, as where a citing table sets other
+        # flags: a backend keeping one per AVP chooses here.
+        for met in entry.readings:
+            print("#", avp.name, met.avp.read_through, met.paths[0])
     rules = avp.flag_rules
     # M is in Must, May or Must not; or RFC 6733 leaves it to the application.
     open_m = AvpFlag.MANDATORY in rules.application_defined
     mandatory = "app" if open_m else AvpFlag.MANDATORY in rules.must
-    print(vendor_id, code, avp.name, avp.data_type, mandatory)
+    print(avp.vendor_id, avp.code, avp.name, avp.basic_type, mandatory)
     if isinstance(avp, Grouped):
         print("  holds", [member.name for member in avp.members])
     elif isinstance(avp, Enumerated):
         print("  values", len(avp.values))
+    for table in entry.value_tables:  # result codes, bits, this Cx's features
+        print(" ", table.kind, table.reference, len(table.rows))
 ```
+
+Under `UndefinedPolicy.SUPPLY` a supplied definition is a reading like any
+other, its `supplied` naming the source ([undefined names](#undefined-names)).
+`seanchai dictionary` writes the same as JSON
+([the dictionary](#the-dictionary)).
 
 ### Look up one AVP
 
@@ -107,7 +128,15 @@ seanchai dictionary -o cx.json --application 16777216
 `show --document REF --version V` reads an older copy of that document the
 corpus holds. With `--json`, `show` and `commands` print the shapes
 `dictionary` writes. All three are pydantic models in `seanchai.dictionary`,
-under one `format_version`.
+under one `format_version`; `dictionary.json_schema()`, which
+`seanchai dictionary --schema FILE` writes, describes them.
+
+All three read the installed corpus, or with `--corpus PATH` (repeatable)
+another. `--with PATH` (repeatable) reads your own `.dad` files beside it:
+proprietary AVPs and commands. The grammar names no private document yet, so
+give such a file an RFC number no RFC holds, and `; Bases: RFC6733` for the
+base protocol's AVPs. Over another corpus, or with `--with`, holes the
+corpus's record does not list are allowed and listed in the output.
 
 ### The dictionary
 
@@ -117,33 +146,45 @@ The same corpus and options give the same bytes.
 | Option | Keeps |
 |---|---|
 | `--document REF` | that document's applications; alone, also every AVP its tables list |
+| `--version V` | with one `--document`, that held version of it |
 | `--application ID` | that application's commands and the AVPs they use |
+| `--strict` | nothing, and exits 1, if the selection reaches a hole |
 | `--policy` | what becomes of [undefined names](#undefined-names): `hole` (default), `drop`, `placeholder` or `supply` |
 | `--supply SIDECAR.dad` | the sidecar `--policy supply` reads |
+| `--alias NAME REF TARGET` | for `--policy supply`, reads the undefined `NAME` as `REF`'s `TARGET` (`model.Alias`) |
+| `--wireshark DIR` | each AVP's `wireshark_name` from Wireshark's dictionary |
 
-`--document`, `--application` and `--supply` repeat. Every field is always
-written, null or empty where it says nothing.
+`--document`, `--application`, `--supply` and `--alias` repeat. Every field
+is always written, null or empty where it says nothing.
 
 ```text
-format_version     1, changes when a reader would have to
-seanchai_version, corpus_version, undefined_policy
-documents, application_ids    what was selected; no ids is every application
-applications[]     reference, application_id, clause, name, stated_in
+format_version     2, changes when a reader would have to
+seanchai_version, corpus_version, undefined_policy, strict
+documents, version, application_ids   what was selected; no ids is every application
+resolved[]         reference, version: every copy the output was read from
+vendors[]          vendor_id, name, source, for each vendor id used
+applications[]     id, reference, version, application_id, clause, name,
+                   stated_in, commands[], pairs[], marks[]
   commands[]       name, abbreviation, command_code, is_request, flags,
                    application_id (on the wire), header_application_id,
                    defined_in, section, members[], dropped[], walk[],
                    answer_message
+  pairs[]          command_code, requests[], answers[]: indexes into commands
+  marks[]          name, avp, table, section, marks: what the application's
+                   tables mark about the names it reaches
 answer_messages[]  id, defined_in, section, read_through, members[], dropped[],
                    walk[]
 avps[]             id, defining, kind (plain, grouped, enumerated), name,
-                   vendor_id, code, data_type, flag_rules, defined_in, section,
-                   read_through, completed_by, across_releases, supplied,
+                   vendor_id, code, data_type, basic_type, flag_rules,
+                   may_encrypt, defined_in, version, section, read_through,
+                   completed_by, across_releases, supplied, wireshark_name,
                    members[], dropped[], values[], values_source
 holes[]            id, name, reference, version, missing, what it does state,
                    recorded (the reason)
-value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
-                   version, vendor_id, section, page, table, application,
-                   feature_list_id, rows[]
+value_tables[]     kind (result-codes, bits, features), avp, avp_ids,
+                   applications, reference, version, vendor_id, section, page,
+                   table, application, feature_list_id, rows[]
+conflicts[]        vendor_id, code, defining, fields, readings[]: avp, paths[]
 ```
 
 - A member has `name`, `presence` (`fixed`, `required`, `optional`),
@@ -152,10 +193,16 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
   `placeholder` holds its block; `wildcard` is the `* [ AVP ]` line. `alias`
   is set for a `model.Alias`.
 - `walk` lists every AVP `id` the command reaches, at any depth.
-- An AVP `id` is `vendor:code`. A citing table can read an identity
-  differently, so each further reading in the selection is `vendor:code#2`,
-  `#3` and so on. `defining` marks the defining document's reading. For one
-  entry per identity, take the ids without `#`.
+- An AVP `id` depends on the reading and the corpus, never on the selection
+  (`dictionary.avp_id`). The defining document's reading, `defining`, is
+  `vendor:code`. Another adds `@` and the document it is read through, then
+  ` in DOCUMENT` where it is defined elsewhere and ` via DOCUMENT` where a
+  citation outside the citing document's release reached it:
+  `0:110@TS29.229 in RFC4590`, `10415:600@TS29.229 via TS29.234`. An older
+  copy is spelled with its version, `TS32.299 V11.20.0`.
+- `basic_type` is the RFC 6733 section 4.2 format `data_type` is carried in,
+  `OctetString` for a `DiameterIdentity`. `may_encrypt` is the Encrypt cell
+  of the table giving the flag rules, null where it prints none.
 - `values[]` entries have `kind` (`value`, `reserved`, `void`,
   `vendor-specific`), `name`, `value`, `first`, `last` and `description`. No
   dictionary may assign a `reserved` or `void` value.
@@ -164,11 +211,24 @@ value_tables[]     kind (result-codes, bits, features), avp, avp_id, reference,
   the E bit set ([error answers](#error-answers)); it is null for a request.
   That entry's `id` is `read_through/defined_in:section`, as
   `TS29.272/RFC6733:7.2`.
-- `value_tables[]` holds the selected documents' tables; with
-  `--application`, those of the documents defining the application. `avp_id`
-  names the `avps[]` entry for the document's reading of `avp`, or is null
-  where the selection holds none. A row has `name`, `value`, a result code's
-  own `section`, and a feature's `mark` (the M/O column).
+- An application's `id` is `reference/clause/application_id`, `-` for no id.
+- `value_tables[]` holds the tables of every reading the selection reaches and
+  those the application's document prints for the names it reaches, as
+  `Model.reached` gives them: S6a holds RFC 6733's result codes and TS 29.273's
+  `Emergency-Services` bits. A features table is kept only for the
+  applications whose feature list it numbers, since `Feature-List` means
+  other features on each interface; `applications` names them, and `avp_ids`
+  the readings carrying the table. Without `--application`, the documents'
+  own tables are all kept. A row has `name`, `value`, a result code's own
+  `section`, and a feature's `mark` (the M/O column).
+- `conflicts[]` lists each identity the output reads two ways that disagree
+  in a field a codec stores (`fields`: `flag_rules`, `may_encrypt`,
+  `data_type`, `members`, `values`, `name`), each reading with the paths it
+  is met at: `application` (null in an error answer), `command`, `section`
+  and the member `names` down to it. A backend storing one flag rule per AVP
+  chooses there.
+- `resolved` lists each document copy an AVP, hole, table, application or
+  error answer of the output comes from, cited copies included.
 
 ### One AVP
 
@@ -180,22 +240,21 @@ avp                the id of the reading asked for
 avps[]             that reading first; then the identity's other readings, by
                    id; then every AVP their bodies name, at any depth
 holes[]            what their bodies name and the corpus cannot complete
-value_tables[]     those of the identity's readings, each its avp_id
+value_tables[]     those of the identity's readings, each with its avp_ids
 ```
 
-Entries have the dictionary's shapes, and every id a member names is in the
-output. Ids are numbered over this output only, so a `#2` here need not be
-the dictionary's `#2`.
+Entries have the dictionary's shapes and ids, and every id a member names is
+in the output.
 
 ```json
 {
-  "format_version": 1,
-  "corpus_version": "2026.11.11",
+  "format_version": 2,
+  "corpus_version": "2026.11.12",
   "undefined_policy": "hole",
-  "avp": "0:110#2",
+  "avp": "0:110@TS29.229 in RFC4590",
   "avps": [
-    {"id": "0:110#2", "defining": false, "name": "Digest-Qop",
-     "read_through": "TS29.229", "...": "..."},
+    {"id": "0:110@TS29.229 in RFC4590", "defining": false,
+     "name": "Digest-Qop", "read_through": "TS29.229", "...": "..."},
     {"id": "0:110", "defining": true, "name": "Digest-Qop",
      "read_through": "RFC4590", "...": "..."}
   ],
@@ -209,8 +268,8 @@ the dictionary's `#2`.
 
 `seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
 `seanchai_version`, `corpus_version` and `applications[]` as the dictionary
-writes them, each command without `members`, `dropped`, `walk` and
-`answer_message`.
+writes them, without `marks`, each command without `members`, `dropped`,
+`walk` and `answer_message`.
 
 ## Installing the corpus
 
@@ -222,8 +281,9 @@ pip install seanchai seanchai-corpus   # or "seanchai[corpus]"
 ```
 
 - `corpus.Corpus.installed()` loads the installed corpus with its record of
-  known holes; `installed(raw=True)` loads its raw mirror. Without the package
-  it raises `corpus.CorpusNotInstalledError`.
+  known holes; `installed(raw=True)` loads its raw mirror, and
+  `installed(extra=paths)` your own `.dad` files beside it. Without the
+  package it raises `corpus.CorpusNotInstalledError`.
 - `corpus.Corpus.load(path)` loads another directory, file, or list of them.
   A file named twice counts once. Two files of the same document, version and
   3GPP2 revision raise `corpus.CorpusError`.
@@ -253,19 +313,23 @@ Every error the library raises derives from `seanchai.SeanchaiError`.
 `seanchai` follows semantic versioning over:
 
 - the names in the `__all__` of `seanchai`, `seanchai.model`,
-  `seanchai.corpus`, `seanchai.dictionary`, `seanchai.export`,
-  `seanchai.export_schema`, `seanchai.dad` and its modules (`ast`, `parser`,
-  `formatter`, `corrections`, `abnf`), `seanchai.linter`, `seanchai.oracle`,
-  `seanchai.errors`, the `seanchai.downloader` package and the modules of
-  `seanchai.extractor`;
-- the command line's commands, options and exit statuses;
-- the format version of each JSON output: the dictionary's `format_version`
-  and the export's `schema_version`;
-- the corpus formats it reads, `corpus.FORMATS`.
+  `seanchai.corpus`, `seanchai.dictionary` and `seanchai.errors`;
+- the dictionary's JSON, versioned by its `format_version`;
+- the `.dad` grammar and the corpus format it reads, `corpus.FORMATS`;
+- the consumer commands' options, output and exit statuses: `show`,
+  `commands`, `dictionary`, `export`, `wireshark-plugin`, `lint` and
+  `format`.
 
-Modules whose names start with an underscore, names outside every `__all__`,
-and the Python of `seanchai.cli` may change in any release. `seanchai-corpus`
-is versioned by the date it was regenerated.
+The rest may change in any minor release: the Python of `seanchai.dad` (the
+AST, parser, formatter and corrections), `seanchai.linter`'s internals and
+rule set, `seanchai.extractor`, `seanchai.downloader`, `seanchai.oracle`,
+`seanchai.export`, `seanchai.export_schema`, `seanchai.wireshark`, the
+`corpus` maintainer commands, `seanchai.cli`, and every module whose name
+starts with an underscore. The export's JSON keeps its own `schema_version`
+([website.md](website.md#data-boundary)). The model's types still hold AST
+nodes where the corpus's text is the fact (`Member.rule`, `Enumerated.values`,
+`ValueTable.rows`, `Allocation.entry`), and those fields are covered.
+`seanchai-corpus` is versioned by the date it was regenerated.
 
 ## The model
 
@@ -285,6 +349,8 @@ model.canonical("ts 29.229")  # how it spells a reference: TS29.229
 model.messages("TS29.229")  # bodies resolved; no reference: the whole corpus
 model.applications("TS29.212")  # commands per application and interface
 model.applications(application_id=16777216)  # one id, across documents
+model.applications("TS29.229")[0].commands  # requests and answers, paired by code
+model.reached(model.applications("TS29.272")[0])  # one entry per identity reached
 model.answer_message("TS29.272")  # what its answers take with the E bit set
 model.avps("TS29.229")  # what a document's tables list; no reference: all
 model.resolve("TS29.229", "DRMP")  # one name in one document's reading
@@ -301,6 +367,8 @@ model.value_tables("TS29.272", avp="ULR-Flags")  # the numbers a document names
 model.value_tables(kind=ValueKind.FEATURES)  # one kind, the whole corpus
 model.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
 model.definition("ULR-Flags").value_table  # the bits, read through resolution
+model.version("TS29.061")  # the copy queries read; version="6.15.0" an older one
+model.avps("TS29.061", version="6.15.0")  # every document query takes version=
 ```
 
 - `Model.build` and `Model.installed` are the only constructors; `Model(...)`
@@ -314,7 +382,17 @@ model.definition("ULR-Flags").value_table  # the bits, read through resolution
 - `Message.application_id` is the id on the wire: the header's, or, where the
   header prints none, the one the `Application Scope` block covering the
   command's clause states. `header_application_id` is what the header prints.
-  `is_request` reads the R bit.
+  `is_request` reads the R bit. `Application.commands` pairs requests and
+  answers by code as `model.Command`s; a half a document prints twice, as TS
+  29.273's AAR, is two entries of `requests` or `answers`.
+- `Avp.basic_type`, and `model.basic_type(data_type)`, give the RFC 6733
+  section 4.2 format a type is carried in (section 4.3.1 derives the others).
+  `model.VENDORS` names each vendor id the corpus uses, with the source
+  stating it. `Avp.may_encrypt` is the Encrypt cell of the table that gave
+  the flag rules, None where it prints none.
+- `reached` walks as `walk` does, but gives one `model.Reached` per identity:
+  `definition`, every distinct reading met as a `model.Met` with its
+  `model.MemberPath`s, the value tables met with it, and `conflicts`.
 - A `Member` carries the ABNF `rule` as spelled, and `min_occurs` and
   `max_occurs` as RFC 6733 section 3.2 reads them.
 - `Enumerated.values` also holds `ast.ReservedValues` and `ast.VoidValues`,
@@ -328,6 +406,9 @@ model.definition("ULR-Flags").value_table  # the bits, read through resolution
   ([oracle.md](oracle.md#in-the-model)). `name` is always the document's
   spelling.
 - Every model type has a one-line `repr` and a `to_dict()` for `json.dumps`.
+  Two readings are equal when their `to_dict()`s are: provenance such as
+  `read_through` and `completed_by` counts, and only `Avp.value_tables`, the
+  tables of the document a reading was met in, is in neither.
 
 The AST stays public underneath. `parser.parse(text)` reads one file and drops
 `;;` comments; `parser.parse_with_comments(text)` returns them too, for
@@ -433,8 +514,9 @@ a required member, use `SUPPLY`.
 `SUPPLY` takes `supply=`, a mapping from a name, or from a more specific
 `(reference, name)`, to one of:
 
-- `model.Supplied`: vendor, code, type, flag rules, members for a Grouped AVP,
-  values for an Enumerated one, and a required `source`. Its `Avp` names the
+- `model.Supplied`: vendor, code, type, flag rules (a `model.FlagRules`),
+  members for a Grouped AVP, values for an Enumerated one, `may_encrypt`, and
+  a required `source`. Its `Avp` names the
   block's document in `defined_in`, carries `source` in `supplied`, and
   resolves its members in the block's document.
 - `model.Alias`: reads the name as an AVP the corpus completes, with a
@@ -510,17 +592,22 @@ else. For example, TS 29.229 table 6.3.0.1 puts M in Must for four
 `Digest-*` AVPs for which RFC 4590 states no rule, and `readings` returns
 both readings.
 
-`Avp.flag_rules` and `Hole.flag_rules` are a `model.FlagRules`: the AST's
-four columns plus `application_defined`. An IETF reading stating no flags has
-M there (application-defined) and V in Must not (RFC 6733 sections 4.1 and
-4.1.1); a vendor reading stating none stays a hole. A table row keeps the
-AST's rules; compare it through `model.FlagRules.printed(row.flag_rules)`.
+`Avp.flag_rules` and `Hole.flag_rules` are a `model.FlagRules`, a frozen
+dataclass: the table's four columns plus `application_defined`. An IETF reading
+stating no flags has M there (application-defined) and V in Must not (RFC 6733
+sections 4.1 and 4.1.1); a vendor reading stating none stays a hole. A table row
+keeps the AST's rules; compare it through
+`model.FlagRules.printed(row.flag_rules)`.
 
 A grouped AVP defined elsewhere keeps the defining document's body, in that
 document's sense: TS 32.299's own `Originator` is (10415, 864), but its
 re-used `M2M-Information`, from oneM2M TS-0004, holds oneM2M's `Originator`,
 (45687, 1008). A member the citing document also describes, with the same
 `(vendor-id, code)`, is read through the citing document.
+
+Two documents whose tables change a reading alike give two readings, each
+naming its own `read_through`: OMA-DDS-Charging_Data's and oneM2M TS-0004's
+`Session-Id`.
 
 A field the first reading leaves unstated comes from the next reading in the
 order, if the two agree on every field both state. If they disagree, the name

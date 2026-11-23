@@ -28,13 +28,12 @@ from urllib.parse import unquote, urlparse
 
 import pydantic
 
-from . import _correction_record, export_schema, model
+from . import _correction_record, _json, export_schema, model
 from .corpus import (
     CitationRule,
     Corpus,
     CorpusError,
     CorpusNotInstalledError,
-    CrossRelease,
     Entry,
     installed_directory,
 )
@@ -56,8 +55,6 @@ from .export_schema import (
     DocumentSummary,
     EnumEntry,
     Finding,
-    FlagRules,
-    Hole,
     Index,
     Line,
     Member,
@@ -73,7 +70,6 @@ from .export_schema import (
     TableRow,
     Target,
     Token,
-    UndefinedBlock,
     ValueIdentity,
     ValueRow,
 )
@@ -996,53 +992,6 @@ def _check_citations(
         )
 
 
-def cross_release_entry(
-    crossing: CrossRelease | None,
-) -> export_schema.CrossRelease | None:
-    if crossing is None:
-        return None
-    return export_schema.CrossRelease(
-        citing=crossing.citing,
-        cited=crossing.cited,
-        version=crossing.version,
-        rule=crossing.rule,
-        cited_revision=crossing.cited_revision,
-        revision=crossing.revision,
-        meant=crossing.meant,
-    )
-
-
-def hole_entry(hole: model.Hole) -> Hole:
-    """`hole` as an export or a dictionary writes it."""
-    block = hole.undefined
-    return Hole(
-        name=hole.name,
-        reference=hole.reference,
-        version=hole.version,
-        missing=hole.missing,
-        vendor_id=hole.vendor_id,
-        code=hole.code,
-        data_type=hole.data_type,
-        flag_rules=None
-        if hole.flag_rules is None
-        else FlagRules.model_validate(hole.flag_rules.model_dump(mode="json")),
-        section=hole.section,
-        origin=hole.origin,
-        conflict=hole.conflict,
-        wireshark_name=hole.wireshark_name,
-        across_releases=cross_release_entry(hole.across_releases),
-        undefined=None
-        if block is None
-        else UndefinedBlock(
-            section=block.section,
-            page=block.page,
-            note=block.note,
-            cited_in=block.cited_in,
-        ),
-        recorded=hole.recorded,
-    )
-
-
 class _Lookups:
     """What every document's page and search entries look things up in."""
 
@@ -1140,7 +1089,7 @@ class _Lookups:
 
 def _avps(
     corpus: _Lookups, entry: Entry
-) -> tuple[dict[str, Target | None], list[Hole], list[SearchEntry]]:
+) -> tuple[dict[str, Target | None], list[_json.Hole], list[SearchEntry]]:
     """`entry`'s AVP names: their targets, holes and search entries."""
     spec = entry.spec
     names: dict[str, Target | None] = {}
@@ -1151,7 +1100,7 @@ def _avps(
         hole = corpus.model.hole(entry.reference, name, version=spec.version)
         target = corpus.avp_target(entry, avp) if avp is not None else None
         if hole is not None:
-            holes.append(hole_entry(hole))
+            holes.append(_json.hole(hole))
         names[name] = target
         search.append(
             SearchEntry(
@@ -1170,7 +1119,7 @@ def _avps(
                 if avp
                 else (hole.wireshark_name if hole else None),
                 data_type=avp.data_type if avp else None,
-                across_releases=cross_release_entry(
+                across_releases=_json.cross_release(
                     avp.across_releases if avp else None
                 ),
             )
