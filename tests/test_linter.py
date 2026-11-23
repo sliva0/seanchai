@@ -204,15 +204,20 @@ _NOTE_COUNTS = {
     "29337-j00": 2,
     "29338-j30": 2,
     "29388-j10": 1,
-    # Table 5.3.0.1 cites 5.3.142 for clause 5.3.81's AVP.
-    "29214-j30": 1,
+    # Table 5.3.0.1 cites 5.3.142 for clause 5.3.81's AVP; and in each copy,
+    # Media-Type's OTHER (4294967295), past what an Integer32 holds, as in
+    # 3GPP2 X.S0013-013's and the ETSI transcriptions' copies of it.
+    "29214-j30": 2,
+    "29214-bg0": 1,
+    "29214-7c0": 1,
     # Clause 6.20 defines MIP6-Auth-Mode, clause 9.5 prints its values.
     "rfc5778": 1,
     # Clauses 5.2 and 6 are prose, under the scope a correction inserts.
     "rfc6942.raw": 0,
     "rfc6942": 2,
     # Table 5.1-1's clauses run ahead of the document's, until corrected.
-    "xs0013-013-0_v1.0.raw": 7,
+    "xs0013-013-0_v1.0.raw": 8,
+    "xs0013-013-0_v1.0": 1,
     # Clause A.5.25 cites clause 6.6.3, outside the Diameter annex, and,
     # raw, table A.4-1 cites clause 5.4.2 for Accounting-Record-Type.
     "ts-0004-v2_35_0.raw": 2,
@@ -261,15 +266,16 @@ _NOTE_COUNTS = {
     "dds-charging_data-v1_0-20110201-a": 13,
     # ES 283 026 re-prints Gq's and e4's and Gq' AVPs it imports; TS 183
     # 033's corrections give SIP-Auth-Data-Item the re-used row it lacks.
-    "es283026-010600": 11,
+    "es283026-010600": 12,
     "ts183033-010200.raw": 0,
     "ts183033-010200": 1,
-    "ts183017-030201.raw": 9,
-    "ts183017-030201": 11,
+    "ts183017-030201.raw": 10,
+    "ts183017-030201": 12,
 }
 
 
 _SINGLE_FILE_NOTE_RULES = {
+    "enum-value-out-of-range",
     "local-and-reused",
     "member-marked-unused",
     "registry-range-overlap",
@@ -467,6 +473,7 @@ _STANDING_CORPUS_NOTES = {
     # FIFTEEN; clause 6.4.16 adds three members to Media-Component-Description
     # without saying so; and Media-Type adds OTHER, as TS 183 017 does.
     "es283026-010600.dad": {
+        "enum-value-out-of-range": ["Media-Type"],
         "cross-release-origin": ["TS29.209"],
         "reused-body-differs": ["Reservation-Priority"],
         "reused-extension": ["Media-Component-Description", "Media-Type"],
@@ -518,6 +525,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-row-mismatch": ["Billing-Information", "Service-Key"],
     },
     "ts183017-030201.dad": {
+        "enum-value-out-of-range": ["Media-Type"],
         "cross-release-origin": ["TS29.209", "TS29.214"],
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports
         # from TS 29.209 V6.8.0: seven as printed there, Media-Type adding
@@ -558,10 +566,11 @@ _STANDING_CORPUS_NOTES = {
         "undefined-avp": ["Error-Cause"],
     },
     "29214-7c0.dad": {
+        "enum-value-out-of-range": ["Media-Type"],
         "origin-not-in-corpus": [
             "TS29.061 (corpus has 19.1.0, 6.15.0),"
             " TS29.212 (corpus has 19.1.0, 11.19.0)"
-        ]
+        ],
     },
     "29212-bj0.dad": {
         "cross-release-origin": ["3GPP2-X.S0057"],
@@ -571,9 +580,10 @@ _STANDING_CORPUS_NOTES = {
         ],
     },
     "29214-bg0.dad": {
+        "enum-value-out-of-range": ["Media-Type"],
         "origin-not-in-corpus": [
             "TS29.061 (corpus has 19.1.0, 6.15.0), TS29.229 (corpus has 19.1.0)"
-        ]
+        ],
     },
     "32299-bk0.dad": {
         "cross-release-origin": [
@@ -608,6 +618,9 @@ _STANDING_CORPUS_NOTES = {
             "DIAMETER_ERROR_USER_UNKNOWN",
         ],
     },
+    # An Enumerated value only an Unsigned32 holds: Media-Type's OTHER.
+    "29214-j30.dad": {"enum-value-out-of-range": ["Media-Type"]},
+    "xs0013-013-0_v1.0.dad": {"enum-value-out-of-range": ["Media-Type"]},
 }
 
 

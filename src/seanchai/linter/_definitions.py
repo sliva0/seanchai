@@ -79,6 +79,33 @@ def _duplicate_enum_values(index: _Index) -> list[Finding]:
     return findings
 
 
+# An Enumerated AVP is an Integer32 on the wire (RFC 6733 section 4.3.1).
+_INTEGER32_MAX = 2**31 - 1
+
+
+def _enum_values_out_of_range(index: _Index) -> list[Finding]:
+    """An enumerated value past what an Integer32 holds. The `.dad` value is
+    the document's number, an Unsigned32, so TS 29.214's `Media-Type` value
+    `OTHER (4294967295)` parses; on the wire it is -1."""
+    findings = []
+    for definition in index.definitions:
+        if not isinstance(definition, ast.EnumeratedAvp):
+            continue
+        findings.extend(
+            Finding(
+                Severity.NOTE,
+                "enum-value-out-of-range",
+                f"{definition.name} gives {value.name!r} {value.value}, past the"
+                f" {_INTEGER32_MAX} an Enumerated (Integer32) holds; on the wire"
+                f" it reads {value.value - 2**32}",
+                definition.source.section,
+            )
+            for value in definition.values
+            if isinstance(value, ast.EnumValue) and value.value > _INTEGER32_MAX
+        )
+    return findings
+
+
 def _duplicate_values(index: _Index) -> list[Finding]:
     """One value table giving one number twice, whether the names agree or
     not."""

@@ -33,6 +33,7 @@ Errors exit non-zero; notes do not.
 | `duplicate-definition` | error | one name defined by two clauses |
 | `one-name-two-commands` | error | one command name with two command codes; a repeated message name alone is normal |
 | `duplicate-enum-value` | error | an enumerated AVP using a value or value name twice |
+| `enum-value-out-of-range` | note | an enumerated value past 2147483647, which an Enumerated, an Integer32 on the wire, reads as negative (TS 29.214's `Media-Type` `OTHER`, 4294967295) |
 | `duplicate-value` | error | a value table giving one number twice |
 | `value-bit-out-of-range` | error | a bit past what the AVP holds: 31 for Unsigned32, 63 for Unsigned64 |
 | `vendor-specific-overlap` | error | a `; VENDOR-SPECIFIC` range covering a named value, a reserved or void range, or another vendor-specific range |
