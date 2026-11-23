@@ -336,6 +336,7 @@ def _value_tables(
             columns = bits or features
             if columns is None:
                 continue
+            table.claimed = True
             rows, notes = _value_rows(table, columns)
             where = f"{section.number}: table {table.caption}"
             if not rows:

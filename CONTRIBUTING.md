@@ -37,6 +37,9 @@ the `sources` tests, which need `uv run seanchai corpus download`.
   `uv run pytest tests/test_export.py --update-export-pin`.
 - The corpus's `corrections.json`: `uv run seanchai corpus regenerate`
   rewrites it. Commit it with the edits it records.
+- `edits/unclaimed.json`, the tables no reading claims:
+  `uv run seanchai corpus regenerate --acknowledge-unclaimed` rewrites it
+  once you have looked over what it lists.
 - The linter's findings over the corpus: `_RAW_ERRORS`, the note counts,
   `_STANDING_CORPUS_NOTES` and `_ACCEPTED_CORPUS_NOTES` in
   `tests/test_linter.py`. Edit them by hand after reading the failure.
@@ -65,7 +68,7 @@ the `sources` tests, which need `uv run seanchai corpus download`.
 |---|---|
 | `src/seanchai/` | the library and the `seanchai` command (`cli/`: the consumer, file and `corpus` commands); `wireshark/` the Wireshark plugin's generator and Lua |
 | `packages/seanchai-corpus/` | the corpus package; the `.dad` files are under `src/seanchai_corpus/dad/` |
-| `edits/` | per-document `sources/` (input patches, quirks, exclusions), `corrections/` and `transcriptions/` |
+| `edits/` | per-document `sources/` (input patches, quirks, exclusions), `corrections/` and `transcriptions/`; `unclaimed.json` |
 | `tests/` | tests for both packages |
 | `integrations/` | consumer scripts and staged Wireshark dictionary patches |
 | `editors/` | `.dad` syntax highlighting for VS Code, Vim and Neovim |

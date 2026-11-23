@@ -40,6 +40,7 @@ from .downloader.catalog import SOURCES, load_catalog
 from .errors import SeanchaiError
 from .extractor import rfc_text, transcription
 from .extractor.errors import ExtractionError
+from .extractor.unclaimed import Baseline, Candidate, with_pages
 
 Status = Literal[
     "unchanged", "changed", "new", "failed", "not-in-manifest", "not-converted"
@@ -62,6 +63,10 @@ class Outcome:
     # With `expand_ranges`: each declaration range widened to `version`.
     expanded: list[str] = field(default_factory=list)
     error: str | None = None
+    # The tables no reading claimed that resemble a definition
+    # (`extractor.unclaimed`), and of them those the baseline does not list.
+    unclaimed: list[Candidate] = field(default_factory=list)
+    new_unclaimed: list[Candidate] = field(default_factory=list)
 
 
 @dataclass
@@ -76,6 +81,9 @@ class Report:
     # Whether the run's changes reached the output and the edit files: only a
     # run with no failure promotes anything.
     promoted: bool = False
+    # Candidates the baseline lists for a rebuilt document that it no longer
+    # prints unclaimed, by reference.
+    stale_unclaimed: dict[str, list[Candidate]] = field(default_factory=dict)
 
     @property
     def failed(self) -> list[Outcome]:
@@ -120,6 +128,8 @@ def regenerate(
     only: Sequence[str] = (),
     report: Callable[[Outcome], None] = lambda outcome: None,
     expand_ranges: bool = False,
+    unclaimed: Path | None = None,
+    acknowledge_unclaimed: bool = False,
 ) -> Report:
     """Rebuild every committed specification (plus `add`) into `output`.
 
@@ -140,6 +150,11 @@ def regenerate(
 
     With `corrections_dir`, a run with no failure also rewrites `output`'s
     corrections record (`seanchai._correction_record`).
+
+    `unclaimed` is the baseline of unclaimed tables (`extractor.unclaimed`): a
+    document printing one it does not list fails, and one it lists that the
+    document no longer prints is reported stale. `acknowledge_unclaimed`
+    rewrites the baseline's entries for the documents rebuilt instead.
     """
     try:
         sources = _sources(manifest)
@@ -154,6 +169,7 @@ def regenerate(
     # Acceptances are checked against the committed corpus's origins before
     # their ranges are widened; loaded once, and only then.
     books = Corpus.load([corpus]) if expand_ranges else None
+    baseline = Baseline.load(unclaimed) if unclaimed is not None else None
     with _Stage(
         output,
         [sources_dir, corrections_dir] if expand_ranges else [],
@@ -171,6 +187,8 @@ def regenerate(
             only=only,
             report=report,
             books=books,
+            baseline=baseline,
+            unclaimed=unclaimed if acknowledge_unclaimed else None,
         )
 
 
@@ -188,9 +206,12 @@ def _run(
     only: Sequence[str],
     report: Callable[[Outcome], None],
     books: Corpus | None,
+    baseline: Baseline | None,
+    unclaimed: Path | None,
 ) -> Report:
     """`regenerate`'s run, building into `stage` and promoting it to `output`
-    and the edit directories only when nothing failed."""
+    and the edit directories only when nothing failed. With `unclaimed`, the
+    baseline is rewritten there for the documents rebuilt."""
     outcomes = []
     out_of_scope = load_catalog().out_of_scope() if add else {}
     for reference in add:
@@ -216,6 +237,17 @@ def _run(
             absent,
         )
         stage.unstaged(outcome)
+        if baseline is not None and outcome.status not in ("failed",):
+            outcome.new_unclaimed, _ = baseline.compare(
+                outcome.reference, outcome.unclaimed
+            )
+            if outcome.new_unclaimed and unclaimed is None:
+                outcome.status = "failed"
+                outcome.error = (
+                    f"{len(outcome.new_unclaimed)} table(s) no reading claims"
+                    " and the baseline does not list; look them over, then"
+                    " acknowledge them with --acknowledge-unclaimed"
+                )
         outcomes.append(outcome)
         report(outcome)
     result = Report(
@@ -231,8 +263,19 @@ def _run(
             )
         ),
     )
+    rebuilt: dict[str, list[Candidate]] = {}
+    for outcome in outcomes:
+        if outcome.status in ("unchanged", "changed", "new"):
+            rebuilt.setdefault(outcome.reference, []).extend(outcome.unclaimed)
+    if baseline is not None:
+        for reference, found in rebuilt.items():
+            if stale := baseline.compare(reference, found)[1]:
+                result.stale_unclaimed[reference] = stale
     if result.failed:
         return result
+    if unclaimed is not None and baseline is not None:
+        stage.write_file(unclaimed, baseline.updated(rebuilt).render())
+        result.stale_unclaimed = {}
     record = None
     if corrections_dir is not None:
         try:
@@ -369,7 +412,7 @@ def _one(
     outcome = Outcome(reference, "unchanged")
     try:
         raw_text, corrected_text, spec = _produce(
-            source, sources_dir, corrections_dir, outcome.warnings
+            source, sources_dir, corrections_dir, outcome.warnings, outcome.unclaimed
         )
     except (ExtractionError, CorrectionError, DadParseError, OSError) as error:
         outcome.status = "failed"
@@ -429,6 +472,8 @@ class _Stage:
         self._scratch: tempfile.TemporaryDirectory[str] | None = None
         self.corpus = Path()
         self._copies: dict[Path, Path] = {}
+        # Single files a run rewrites outside the directories: the baseline.
+        self._files: dict[Path, bytes] = {}
 
     def __enter__(self) -> _Stage:
         self._scratch = tempfile.TemporaryDirectory(prefix="seanchai-regenerate-")
@@ -456,6 +501,10 @@ class _Stage:
         path = self.corpus / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
+
+    def write_file(self, path: Path, text: str) -> None:
+        """Stage `path`'s new text, for `promote` to write."""
+        self._files[path] = text.encode("utf-8")
 
     def remove(self, relative: Path) -> None:
         path = self.corpus / relative
@@ -503,6 +552,12 @@ class _Stage:
                 temporary = target.with_name(f".{target.name}.seanchai-staged")
                 hidden.append((temporary, target))
                 shutil.copyfile(source, temporary)
+            for target, data in self._files.items():
+                if target.is_file() and target.read_bytes() == data:
+                    continue
+                temporary = target.with_name(f".{target.name}.seanchai-staged")
+                hidden.append((temporary, target))
+                temporary.write_bytes(data)
         except OSError:
             for temporary, _ in hidden:
                 temporary.unlink(missing_ok=True)
@@ -591,9 +646,12 @@ def _produce(
     sources_dir: Path | None,
     corrections_dir: Path | None,
     warnings: list[str],
+    unclaimed: list[Candidate] | None = None,
 ) -> tuple[str, str, ast.Specification]:
-    """The raw and corrected texts for one source, and the corrected tree."""
+    """The raw and corrected texts for one source, and the corrected tree;
+    `unclaimed` receives the tables no reading claimed."""
     comments = formatter.Comments()
+    found: list[Candidate] = []
     if source.transcribed:
         spec, comments = transcription.read(source.document, sources_dir, warnings)
     elif source.document.suffix == ".txt":
@@ -602,6 +660,7 @@ def _produce(
             link=source.link,
             warnings=warnings,
             sources_dir=sources_dir,
+            unclaimed=found,
         )
     else:
         # Here, not at the top: importing this module asks for no extra.
@@ -612,9 +671,14 @@ def _produce(
             link=source.link,
             warnings=warnings,
             sources_dir=sources_dir,
+            unclaimed=found,
         )
         if source.pdf is not None:
             spec = tgpp_docx.attach_pages(spec, source.pdf, warnings=warnings)
+            if found:
+                found = with_pages(found, tgpp_docx.clause_pages(source.pdf))
+    if unclaimed is not None:
+        unclaimed.extend(found)
     raw_text = formatter.format_spec(spec, comments)
     declared = corrections.in_release(
         corrections.load(corrections_dir, spec.specification), spec.version

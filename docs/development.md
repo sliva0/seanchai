@@ -112,6 +112,13 @@ Under each document it prints the extractor's warnings and a warning for each
 declaration whose version range does not cover the parsed version.
 Transcriptions are rebuilt from `edits/transcriptions/`.
 
+Under a document it also prints, as `unclaimed:`, each table no reading
+claims that resembles a definition and `edits/unclaimed.json` does not list,
+and fails the document. Look each over: a new shape the extractor should
+read, or prose in a grid. `--acknowledge-unclaimed` lists them, and drops
+what the documents rebuilt no longer print
+([extractor.md](extractor.md#unclaimed-tables)).
+
 A run writes all or nothing. It builds every document, removes replaced
 pairs, writes `corrections.json` and, with `--expand-ranges`, rewrites the
 edit files in a scratch copy, and copies the changes over only when nothing
@@ -184,6 +191,8 @@ ETSI PDF, so a new version appears as `replaced` on the next `regenerate`.
    finishes it ([extractor.md](extractor.md#exclusions)).
 6. Run `uv run seanchai corpus regenerate --expand-ranges` to widen the
    version ranges of every declaration that applied cleanly.
+7. Look over each `unclaimed:` table the new version prints, then run with
+   `--acknowledge-unclaimed`.
 
 If the extractor changed since the old raw file was committed, re-extract the
 old version with the current code before diffing:

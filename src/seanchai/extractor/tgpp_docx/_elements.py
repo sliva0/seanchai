@@ -201,6 +201,7 @@ def _element_tables(
             )
             pair = None
         for position, table in enumerate(tables):
+            table.claimed = True
             rows = _rows(table, section.number, warnings)
             if not rows:
                 warnings.append(

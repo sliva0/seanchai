@@ -16,6 +16,7 @@ from ._base import (
     _DEFAULT_CORRECTIONS,
     _DEFAULT_SOURCES,
     _DEFAULT_TRANSCRIPTIONS,
+    _DEFAULT_UNCLAIMED,
     _naming,
     _need_wireshark,
     _require_extract,
@@ -246,6 +247,19 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
     help="Widen edit declaration version ranges to cover versions they applied"
     " to cleanly.",
 )
+@click.option(
+    "--unclaimed",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=_DEFAULT_UNCLAIMED,
+    show_default=True,
+    help="The baseline of tables no reading claims that resemble a definition.",
+)
+@click.option(
+    "--acknowledge-unclaimed",
+    is_flag=True,
+    help="Rewrite the baseline's entries for the documents rebuilt, instead of"
+    " failing a document printing one it does not list.",
+)
 def regenerate(
     manifest: Path,
     corpus: Path,
@@ -256,6 +270,8 @@ def regenerate(
     add: tuple[str, ...],
     only: tuple[str, ...],
     expand_ranges: bool,
+    unclaimed: Path,
+    acknowledge_unclaimed: bool,
 ) -> None:
     """Rebuild the committed corpus from the downloaded sources.
 
@@ -264,6 +280,10 @@ def regenerate(
     replaces the committed version. Also rewrites `corrections.json`. A failing
     specification does not stop the run, but a run with any failure writes
     nothing, the edit files --expand-ranges would widen included, and exits 1.
+
+    A document printing a table that resembles a definition, that no reading
+    claims and that --unclaimed does not list fails; --acknowledge-unclaimed
+    lists it instead.
 
     To extract an older version fetched with `corpus download --spec --version`:
 
@@ -307,7 +327,20 @@ def regenerate(
             only=only,
             report=_echo_outcome,
             expand_ranges=expand_ranges,
+            unclaimed=unclaimed,
+            acknowledge_unclaimed=acknowledge_unclaimed,
         )
+    for reference, stale in sorted(report.stale_unclaimed.items()):
+        for candidate in stale:
+            click.echo(
+                click.style(
+                    f"    warning: {reference} {candidate.describe()}: listed in"
+                    f" {unclaimed.name} and no longer printed unclaimed"
+                    " (--acknowledge-unclaimed drops it)",
+                    dim=True,
+                ),
+                err=True,
+            )
     counts = {}
     for outcome in report.outcomes:
         counts[outcome.status] = counts.get(outcome.status, 0) + 1
@@ -343,6 +376,8 @@ def _echo_outcome(outcome) -> None:
         click.echo(click.style(f"    warning: {warning}", dim=True), err=True)
     for widened in outcome.expanded:
         click.echo(f"    expanded: {widened}")
+    for candidate in outcome.new_unclaimed:
+        click.echo(f"    unclaimed: {candidate.describe()}")
 
 
 @corpus.command()

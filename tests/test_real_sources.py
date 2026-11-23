@@ -48,6 +48,7 @@ def report(tmp_path_factory):
         sources_dir=_ROOT / "edits" / "sources",
         corrections_dir=_ROOT / "edits" / "corrections",
         transcriptions_dir=_ROOT / "edits" / "transcriptions",
+        unclaimed=_ROOT / "edits" / "unclaimed.json",
     )
 
 
@@ -93,6 +94,11 @@ def test_the_real_sources_still_produce_the_committed_output(
             f"the manifest holds {outcome.version}, the corpus"
             f" {outcome.replaced_version}: run `seanchai corpus regenerate` and commit"
         )
+    if outcome.status == "changed" and not report_promoted(outcome):
+        pytest.fail(
+            "changed; another document failed, so the run wrote nothing to"
+            " compare: run `seanchai corpus regenerate` and review the diff"
+        )
     if outcome.status == "changed":
         diff = " and ".join(
             f"{path.name} differs from {committed}"
@@ -104,6 +110,17 @@ def test_the_real_sources_still_produce_the_committed_output(
         )
         pytest.fail(f"{diff}: run `seanchai corpus regenerate` and review the diff")
     assert outcome.status == "unchanged"
+
+
+def report_promoted(outcome) -> bool:
+    return all(path.is_file() for path in outcome.written)
+
+
+@pytest.mark.sources
+def test_the_baseline_lists_no_table_the_documents_no_longer_print(report):
+    assert not report.stale_unclaimed, (
+        "run `seanchai corpus regenerate --acknowledge-unclaimed`"
+    )
 
 
 @pytest.mark.sources

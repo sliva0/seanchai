@@ -18,6 +18,7 @@ lists the forms read.
 """
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -26,6 +27,7 @@ import pydantic
 from ..dad import abnf, ast, formatter
 from . import sources
 from .errors import ExtractionError, boundary
+from .unclaimed import Candidate, classify
 
 __all__ = [
     "IETF_VENDOR",
@@ -2313,6 +2315,7 @@ def extract_with_comments(
     link: str | None = None,
     warnings: list[str] | None = None,
     sources_dir: Path | None = None,
+    unclaimed: list[Candidate] | None = None,
 ) -> tuple[ast.Specification, formatter.Comments]:
     """Extract a `Specification` from an RFC's plain-text rendering, with the
     `;;` lines the file prints beside the tree, as `format_spec` takes them.
@@ -2321,7 +2324,8 @@ def extract_with_comments(
     declarations in `<sources_dir>/<SpecRef>.toml` (if present) apply: input
     patches to every content line before parsing, quirks (`QUIRKS`) to the
     readings. Non-fatal source inconsistencies are appended to `warnings` when a
-    list is given.
+    list is given. `unclaimed`, when given, receives each clause holding a table
+    that resembles a definition and giving no block (`extractor.unclaimed`).
     """
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {text_path}"):
@@ -2473,4 +2477,53 @@ def extract_with_comments(
             link=None if link is None else pydantic.HttpUrl(link),
             sections=file_sections,
         )
+        if unclaimed is not None:
+            unclaimed.extend(_unclaimed(document_sections, file_sections))
         return spec, _comments(file_sections, commented)
+
+
+# A table's header in plain text: the first line of a run of ruled lines, or a
+# line underlined with dashes ("Command-Name  Abbrev.  Code  Reference").
+_RULED_RE = re.compile(r"^\s*\|.*\|")
+_UNDERLINE_RE = re.compile(r"^\s*-{3,}[- ]*$")
+_BORDER_RE = re.compile(r"^\s*\+[-=+ ]+\+?\s*$")
+
+
+def _unclaimed(
+    sections: list[_DocSection], blocks: Sequence[ast.Section]
+) -> list[Candidate]:
+    """The clauses giving no block that print a table resembling a definition,
+    each with the header of its first such table. A claim is the clause's,
+    since the readings here find tables by their clause and not their lines."""
+    claimed = {block.source.section for block in blocks}
+    found = []
+    for section in sections:
+        if section.number in claimed:
+            continue
+        texts = section.texts
+        for index, text in enumerate(texts):
+            before = texts[index - 1] if index else ""
+            if _RULED_RE.match(text) and not _RULED_RE.match(before):
+                cells = [cell.strip() for cell in text.strip().strip("|").split("|")]
+            elif (
+                index + 1 < len(texts)
+                and _UNDERLINE_RE.match(texts[index + 1])
+                and text.strip()
+                and not _BORDER_RE.match(text)
+            ):
+                cells = re.split(r"\s{2,}", text.strip())
+            else:
+                continue
+            if len(cells) < 2 or (kind := classify(cells, None)) is None:
+                continue
+            found.append(
+                Candidate(
+                    section=section.number,
+                    kind=kind,
+                    caption=None,
+                    header=tuple(cells),
+                    page=section.page,
+                )
+            )
+            break
+    return found

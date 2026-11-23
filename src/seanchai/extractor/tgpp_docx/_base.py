@@ -98,6 +98,9 @@ class _Table:
     rows: list[_Row]
     # The caption's whole text: a feature table's says which list it is.
     caption_text: str | None = None
+    # Whether a pass read the table, or recognised it and said why it made
+    # nothing of it; what none did is looked over for `_unclaimed`.
+    claimed: bool = False
 
 
 @dataclass

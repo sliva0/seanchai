@@ -615,6 +615,41 @@ it against the file's number and version, and `corpus.revision` reads it
 document: ETSI's TS 183 059-1 is `ts18305901-020101`. A 3GPP2 page is the
 number its footer prints.
 
+## Unclaimed tables
+
+A declared edit catches a known defect disappearing upstream. A new shape the
+readings do not recognise would pass in silence, so every extraction also
+lists the tables no reading claimed that resemble a definition:
+
+- in a docx, each table no pass read (or recognised and warned about) whose
+  header or caption looks like an AVP table, a value table, an
+  information-element table, a list of command codes or application ids, or
+  whose rows print `NAME (n)` values;
+- in an RFC, each clause giving no block that prints a ruled or underlined
+  table of such a header, by its first one.
+
+Each candidate has its clause, kind, caption, header cells and page.
+`edits/unclaimed.json` is the baseline, listing per document the candidates
+a maintainer looked over. `seanchai corpus regenerate` prints a candidate
+the baseline does not list as `unclaimed:` and fails its document, and warns
+of a listed one the document no longer prints. `--acknowledge-unclaimed`
+rewrites the baseline's entries for the documents rebuilt instead. The test
+is a resemblance, not a reading: a candidate is often prose in a grid (TS
+29.212's QCI mapping, oneM2M TS-0004's resource attributes), and the
+baseline says only that someone looked.
+
+What the baseline lists that holds definitions the corpus does not read:
+
+| Tables | Documents |
+|---|---|
+| Command-Code values (name, abbreviation, code, clause) | most 3GPP documents and RFCs; the ABNF gives the same codes |
+| a command's valid result codes, "Result-Code AVP value \| Condition" | TS 29.228, 29.234, 29.273, 29.328 |
+| an AVP's values as a table: Group-Service-Id, TWAN-S2a-Failure-Cause, IMEI-Check-In-VPLMN-Result | TS 29.272, 29.273 |
+| a command's AVPs with their category, "AVP \| Category \| Description" | TS 32.299 |
+| Gmb's re-used AVPs, "AVP Name \| Reference" | TS 29.061 table 11 |
+| RADIUS attributes per message | TS 29.061, 29.561, RFC 4590 |
+| IANA's AVP, command and value registrations | RFC 4005, 4740, 5866, 8506 |
+
 ## Strictness
 
 Every extraction failure derives from `ExtractionError`, including

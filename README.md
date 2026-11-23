@@ -104,6 +104,7 @@ seanchai corpus download --only transcribed # the hand transcriptions' PDFs
 seanchai corpus download --spec SPECREF --version X.Y.Z   # an older version
 seanchai corpus regenerate [--add SPECREF]  # rebuild the corpus from the downloads
 seanchai corpus regenerate --expand-ranges  # also widen stale declaration ranges
+seanchai corpus regenerate --acknowledge-unclaimed  # list new unclaimed tables
 seanchai corpus extract DOCX --pdf PDF --link URL [--corrections DIR] -o OUT.dad
 seanchai corpus extract-rfc RFC.txt --link URL [--corrections DIR] -o OUT.dad
 seanchai corpus correct RAW.dad --corrections DIR -o OUT.dad

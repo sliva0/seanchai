@@ -32,6 +32,8 @@ if TYPE_CHECKING:
 _DEFAULT_SOURCES = Path("edits") / "sources"
 _DEFAULT_CORRECTIONS = Path("edits") / "corrections"
 _DEFAULT_TRANSCRIPTIONS = Path("edits") / "transcriptions"
+# The tables no reading claims, as looked over (`extractor.unclaimed`).
+_DEFAULT_UNCLAIMED = Path("edits") / "unclaimed.json"
 # What `regenerate` rebuilds in place: the repository's copy, the package's data.
 _DEFAULT_CORPUS = Path("packages/seanchai-corpus/src/seanchai_corpus/dad")
 # Wireshark's deliberate renames, which `crosscheck` accepts as agreement.

@@ -1,0 +1,2284 @@
+{
+ "documents": {
+  "RFC4004": [
+   {
+    "caption": null,
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 23,
+    "section": "5"
+   }
+  ],
+  "RFC4005": [
+   {
+    "caption": null,
+    "header": [
+     "Command-Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 9,
+    "section": "3"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Value",
+     "Description"
+    ],
+    "kind": "values",
+    "page": 24,
+    "section": "4.8"
+   }
+  ],
+  "RFC4006": [
+   {
+    "caption": null,
+    "header": [
+     "Command-Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 9,
+    "section": "3"
+   }
+  ],
+  "RFC4072": [
+   {
+    "caption": null,
+    "header": [
+     "Command-Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 14,
+    "section": "3"
+   }
+  ],
+  "RFC4590": [
+   {
+    "caption": null,
+    "header": [
+     "Req",
+     "Accept",
+     "Reject",
+     "Challenge",
+     "#",
+     "Attribute"
+    ],
+    "kind": "avp-table",
+    "page": 21,
+    "section": "3.20"
+   }
+  ],
+  "RFC4740": [
+   {
+    "caption": null,
+    "header": [
+     "Command Name",
+     "Abbr.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 22,
+    "section": "8"
+   },
+   {
+    "caption": null,
+    "header": [
+     "ID values",
+     "Name",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": 64,
+    "section": "13.1"
+   }
+  ],
+  "RFC5778": [
+   {
+    "caption": null,
+    "header": [
+     "Command-Name",
+     "Abbrev. Code Reference Application"
+    ],
+    "kind": "commands",
+    "page": 13,
+    "section": "5.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Command-Name",
+     "Abbrev. Code",
+     "Reference Application"
+    ],
+    "kind": "commands",
+    "page": 15,
+    "section": "5.2"
+   }
+  ],
+  "RFC5866": [
+   {
+    "caption": null,
+    "header": [
+     "Command Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 29,
+    "section": "5"
+   },
+   {
+    "caption": null,
+    "header": [
+     "AVP Code",
+     "AVP Name",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": 45,
+    "section": "10.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "ID values",
+     "Name",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": 45,
+    "section": "10.2"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Code Value",
+     "Name",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": 46,
+    "section": "10.3"
+   }
+  ],
+  "RFC6733": [
+   {
+    "caption": null,
+    "header": [
+     "Command Flags",
+     "Command Code"
+    ],
+    "kind": "commands",
+    "page": 34,
+    "section": "3"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Command Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 37,
+    "section": "3.1"
+   }
+  ],
+  "RFC6738": [
+   {
+    "caption": null,
+    "header": [
+     "Command Name",
+     "Abbrev.",
+     "Code",
+     "Section",
+     "Application"
+    ],
+    "kind": "commands",
+    "page": 7,
+    "section": "5"
+   }
+  ],
+  "RFC7155": [
+   {
+    "caption": null,
+    "header": [
+     "Command Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 11,
+    "section": "3"
+   }
+  ],
+  "RFC8506": [
+   {
+    "caption": null,
+    "header": [
+     "Command Name",
+     "Abbrev.",
+     "Code",
+     "Reference"
+    ],
+    "kind": "commands",
+    "page": 11,
+    "section": "3"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Code",
+     "Defined in"
+    ],
+    "kind": "avp-table",
+    "page": 97,
+    "section": "12.3"
+   }
+  ],
+  "TS29.061": [
+   {
+    "caption": "Table 1: The attributes of the Access-Request message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 52,
+    "section": "16.4.1"
+   },
+   {
+    "caption": "Table 1: The attributes of the Access-Request message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 78,
+    "section": "16.4.1"
+   },
+   {
+    "caption": "Table 2: The attributes of the Access-Accept message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 53,
+    "section": "16.4.2"
+   },
+   {
+    "caption": "Table 2: The attributes of the Access-Accept message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 80,
+    "section": "16.4.2"
+   },
+   {
+    "caption": "Table 3: The attributes of the Accounting-Request START message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Content",
+     "Presence Requirement",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 54,
+    "section": "16.4.3"
+   },
+   {
+    "caption": "Table 3: The attributes of the Accounting-Request START message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Content",
+     "Presence Requirement",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 82,
+    "section": "16.4.3"
+   },
+   {
+    "caption": "Table 4: The attributes of the Accounting-Request STOP message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 55,
+    "section": "16.4.4"
+   },
+   {
+    "caption": "Table 4: The attributes of the Accounting-Request STOP message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 83,
+    "section": "16.4.4"
+   },
+   {
+    "caption": "Table 5: The attributes of the Accounting-Request ON message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 57,
+    "section": "16.4.5"
+   },
+   {
+    "caption": "Table 5: The attributes of the Accounting-Request ON message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 85,
+    "section": "16.4.5"
+   },
+   {
+    "caption": "Table 6: The attributes of the Accounting-Request OFF message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 57,
+    "section": "16.4.6"
+   },
+   {
+    "caption": "Table 6: The attributes of the Accounting-Request OFF message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 85,
+    "section": "16.4.6"
+   },
+   {
+    "caption": "Table 8: The attributes of the Accounting-Request Interim-Update message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 71,
+    "section": "16.4.8"
+   },
+   {
+    "caption": "Table 8: The attributes of the Accounting-Request Interim-Update message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 109,
+    "section": "16.4.8"
+   },
+   {
+    "caption": "Table 9: The attributes of the Disconnect-Request message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 72,
+    "section": "16.4.9"
+   },
+   {
+    "caption": "Table 9: The attributes of the Disconnect-Request message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 111,
+    "section": "16.4.9"
+   },
+   {
+    "caption": "Table 11: Gmb reused AVPs from other Diameter applications.",
+    "header": [
+     "AVP Name",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": 87,
+    "section": "17.7"
+   },
+   {
+    "caption": "Table 11: Gmb reused AVPs from other Diameter applications.",
+    "header": [
+     "AVP Name",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": 148,
+    "section": "17.7.0"
+   }
+  ],
+  "TS29.128": [
+   {
+    "caption": "Table 6.2.2-1: Command-Code values for T6a/T6b",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 32,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.140": [
+   {
+    "caption": "Table 6.1.1: Command-Code values",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 12,
+    "section": "6.1"
+   }
+  ],
+  "TS29.153": [
+   {
+    "caption": "Table 5.6.1: Command-Code values for Ns",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 13,
+    "section": "5.6.1"
+   }
+  ],
+  "TS29.154": [
+   {
+    "caption": "Table 5.6.1: Command-Code values for Nt",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 14,
+    "section": "5.6.1"
+   },
+   {
+    "caption": "Table A.6.6-1: Command-Code values for Nta",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": null,
+    "section": "A.6.6.1"
+   }
+  ],
+  "TS29.172": [
+   {
+    "caption": "Table 7.2-1: Command-Code values",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 26,
+    "section": "7.2"
+   }
+  ],
+  "TS29.173": [
+   {
+    "caption": "Table 6.2.2/1: Command-Code values for SLh",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 14,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.212": [
+   {
+    "caption": "Table 5c.6.1.1: Command-Code values for St",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 240,
+    "section": "5c.6.1"
+   },
+   {
+    "caption": "Table B.3.3.3.2: Mapping between standardized QCIs and R99 UM3GPP TS QoS parameter values",
+    "header": [
+     "QoS-Class-Identifier AVP value",
+     "R99 UM3GPP TS QoS parameters",
+     "R99 UM3GPP TS QoS parameters",
+     "R99 UM3GPP TS QoS parameters",
+     "R99 UM3GPP TS QoS parameters"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "B.3.3.3"
+   },
+   {
+    "caption": "Table B.3.3.3.2: Mapping between standardized QCIs and R99 UMTS QoS parameter values",
+    "header": [
+     "QoS-Class-Identifier AVP value",
+     "R99 UMTS QoS parameters",
+     "R99 UMTS QoS parameters",
+     "R99 UMTS QoS parameters",
+     "R99 UMTS QoS parameters"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "B.3.3.3"
+   },
+   {
+    "caption": "Table C-1: Mapping table for type of access network code values",
+    "header": [
+     "Access Technology Type registered with IANA, see 3GPP TS 29.275 [28]",
+     "Access Technology Type registered with IANA, see 3GPP TS 29.275 [28]",
+     "PCC related RAT-Type, see clause 5.3.31",
+     "PCC related RAT-Type, see clause 5.3.31",
+     "RAT-Type specified for GTPv2, see 3GPP TS 29.274 [22]",
+     "RAT-Type specified for GTPv2, see 3GPP TS 29.274 [22]",
+     "IP-CAN-Type, see clause 5.3.27 (NOTE)",
+     "IP-CAN-Type, see clause 5.3.27 (NOTE)"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "B.3.15"
+   },
+   {
+    "caption": "Table C-1: Mapping table for type of access network code values",
+    "header": [
+     "Access Technology Type registered with IANA, see TS 29.275 [28]",
+     "Access Technology Type registered with IANA, see TS 29.275 [28]",
+     "PCC related RAT-Type, see clause 5.3.31",
+     "PCC related RAT-Type, see clause 5.3.31",
+     "RAT-Type specified for GTPv2, see TS 29.274 [22]",
+     "RAT-Type specified for GTPv2, see TS 29.274 [22]",
+     "IP-CAN-Type, see clause 5.3.27 (NOTE 1 and 2)",
+     "IP-CAN-Type, see clause 5.3.27 (NOTE 1 and 2)"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "B.3.18"
+   }
+  ],
+  "TS29.217": [
+   {
+    "caption": "Table 5.6.0.1: Command-Code values for Np",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 20,
+    "section": "5.6.0"
+   }
+  ],
+  "TS29.219": [
+   {
+    "caption": "Table 5.6.1: Command-Code values for Sy",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 20,
+    "section": "5.6.1"
+   }
+  ],
+  "TS29.228": [
+   {
+    "caption": "Table 6.2.2.1.1: User information update response valid result codes",
+    "header": [
+     "Result-Code AVP value",
+     "Condition"
+    ],
+    "kind": "values",
+    "page": 36,
+    "section": "6.2.2.1"
+   },
+   {
+    "caption": "Table A.2.1: Cx message to Diameter command mapping",
+    "header": [
+     "Cx message",
+     "Source",
+     "Destination",
+     "Command-Name",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": null,
+    "section": "A.2"
+   }
+  ],
+  "TS29.229": [
+   {
+    "caption": "Table 6.1.1: Command-Code values",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 13,
+    "section": "6.1"
+   },
+   {
+    "caption": "Table 7.1.2: Application identifiers used in Cx",
+    "header": [
+     "Application identifier",
+     "First applied"
+    ],
+    "kind": "application-ids",
+    "page": 43,
+    "section": "7.1.2"
+   }
+  ],
+  "TS29.234": [
+   {
+    "caption": "Table 6.3.3.3: User profile response valid result codes",
+    "header": [
+     "Result-Code AVP value",
+     "Condition"
+    ],
+    "kind": "values",
+    "page": 45,
+    "section": "6.3.3.2.1"
+   }
+  ],
+  "TS29.272": [
+   {
+    "caption": "Table 7.2.2/1: Command-Code values for S6a/S6d",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 74,
+    "section": "7.2.2"
+   },
+   {
+    "caption": "Table 7.2.2/2: Command-Code values for S13/S13'",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 74,
+    "section": "7.2.2"
+   },
+   {
+    "caption": "Table 7.2.2/3: Command-Code values for S7a/S7d",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 74,
+    "section": "7.2.2"
+   },
+   {
+    "caption": "Table 7.3.190-1: Group-Service-Id",
+    "header": [
+     "Value",
+     "Description"
+    ],
+    "kind": "values",
+    "page": 161,
+    "section": "7.3.190"
+   },
+   {
+    "caption": "Table A.1: Mapping from S6a error code to NAS Cause Code values",
+    "header": [
+     "Reject indication received at MME over S6a",
+     "NAS Cause Code sent to UE"
+    ],
+    "kind": "enumeration",
+    "page": 181,
+    "section": "8"
+   },
+   {
+    "caption": "Table B.1: Mapping from S6d error code to NAS Cause Code values",
+    "header": [
+     "Reject indication received at SGSN over S6d",
+     "NAS Cause Code sent to UE"
+    ],
+    "kind": "enumeration",
+    "page": 181,
+    "section": "8"
+   }
+  ],
+  "TS29.273": [
+   {
+    "caption": "Table 5.2.3.30/1: TWAN-S2a-Failure-Cause value description",
+    "header": [
+     "Cause value (decimal)",
+     "Cause Value",
+     "Meaning"
+    ],
+    "kind": "values",
+    "page": 80,
+    "section": "5.2.3.31"
+   },
+   {
+    "caption": "Table 5.2.3.35/1: IMEI-Check-In-VPLMN-Result value description",
+    "header": [
+     "Cause value (decimal)",
+     "Cause Value",
+     "Meaning"
+    ],
+    "kind": "values",
+    "page": 81,
+    "section": "5.2.3.35"
+   },
+   {
+    "caption": "Table 7.1.2.5.3/1: Re-authorization Answer valid result codes",
+    "header": [
+     "Result-Code AVP value",
+     "Condition"
+    ],
+    "kind": "values",
+    "page": 117,
+    "section": "7.1.2.5.3"
+   },
+   {
+    "caption": "Table 8.1.2.3.3/1: User profile response valid result codes",
+    "header": [
+     "Result-Code AVP value",
+     "Condition"
+    ],
+    "kind": "values",
+    "page": 137,
+    "section": "8.1.2.3.3"
+   }
+  ],
+  "TS29.283": [
+   {
+    "caption": "Table 7.2.2-1: Command-Code values",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 24,
+    "section": "7.2.2"
+   }
+  ],
+  "TS29.328": [
+   {
+    "caption": "Table 6.1.4.1.1: Sh-Notif response valid result codes",
+    "header": [
+     "Result-Code AVP value",
+     "Condition"
+    ],
+    "kind": "values",
+    "page": 30,
+    "section": "6.1.4.1"
+   },
+   {
+    "caption": "Table A.2.1: Sh message to Diameter command mapping",
+    "header": [
+     "Sh message",
+     "Source",
+     "Destination",
+     "Command-Name",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": null,
+    "section": "A.2"
+   },
+   {
+    "caption": "Table A.4.1: Sh-ee message to Diameter command mapping",
+    "header": [
+     "Sh-ee message",
+     "Source",
+     "Destination",
+     "Command-Name",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": null,
+    "section": "A.4"
+   }
+  ],
+  "TS29.329": [
+   {
+    "caption": "Table 6.1.1: Command-Code values",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 11,
+    "section": "6.1"
+   },
+   {
+    "caption": "Table 7.1.2: Application identifiers used in Sh",
+    "header": [
+     "Application identifier",
+     "First applied"
+    ],
+    "kind": "application-ids",
+    "page": 26,
+    "section": "7.1"
+   }
+  ],
+  "TS29.330": [
+   {
+    "caption": "Table 6.2.2: Command-Code values",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 16,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.336": [
+   {
+    "caption": "Table 6.2.2/1: Command-Code values for S6m/S6n",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 20,
+    "section": "6.2.2"
+   },
+   {
+    "caption": "Table 8.2.2-1: Command-Code values for S6t",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 44,
+    "section": "8.2.2"
+   }
+  ],
+  "TS29.337": [
+   {
+    "caption": "Table 7.2.2/1: Command-Code values for T4",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 17,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.338": [
+   {
+    "caption": "Table 5.3.2.2/1: Command-Code values for S6c",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 25,
+    "section": "5.3.2.2"
+   },
+   {
+    "caption": "Table 6.3.2.2/1: Command-Code values for SGd/Gdd",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 50,
+    "section": "6.3.2.2"
+   }
+  ],
+  "TS29.343": [
+   {
+    "caption": "Table 6.6.1.1: Command-Code values for PC2",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 24,
+    "section": "6.6.1"
+   }
+  ],
+  "TS29.344": [
+   {
+    "caption": "Table 6.2.2-1: Command-Code values for PC4a",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 18,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.345": [
+   {
+    "caption": "Table 6.2.2-1: Command-Code values for Diameter ProSe Inter Functions Application",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 33,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.368": [
+   {
+    "caption": "Table 6.6.1.1: Command-Code values for Tsp",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 22,
+    "section": "6.6.1"
+   }
+  ],
+  "TS29.388": [
+   {
+    "caption": "Table 6.2.2-1: Command-Code values for V4",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 17,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.389": [
+   {
+    "caption": "Table 6.2.2-1: Command-Code values for Diameter V2X Inter Control Functions Application",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Clause"
+    ],
+    "kind": "commands",
+    "page": 13,
+    "section": "6.2.2"
+   }
+  ],
+  "TS29.468": [
+   {
+    "caption": "Table 6.6.1-1: Command-Code values for MB2-C",
+    "header": [
+     "Command-Name",
+     "Abbreviation",
+     "Code",
+     "Section"
+    ],
+    "kind": "commands",
+    "page": 30,
+    "section": "6.6.1"
+   }
+  ],
+  "TS29.561": [
+   {
+    "caption": "Table 11.3-1: Additional information needed for 5G compared to the RADIUS attributes defined in 3GPP TS 29.061 [5]",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement",
+     "Applicable message"
+    ],
+    "kind": "avp-table",
+    "page": 41,
+    "section": "11.3.1"
+   },
+   {
+    "caption": "Table 11.3.2-1: The attributes of the Change-of-Authorization Request message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 57,
+    "section": "11.3.2"
+   },
+   {
+    "caption": "Table 11.3.3-1: The attributes of the Access-Challenge message",
+    "header": [
+     "Attr #",
+     "Attribute Name",
+     "Description",
+     "Content",
+     "Presence Requirement"
+    ],
+    "kind": "avp-table",
+    "page": 58,
+    "section": "11.3.3"
+   }
+  ],
+  "TS32.299": [
+   {
+    "caption": "Table 5.1.2.1: Charging Data Request content",
+    "header": [
+     "Information Element",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 27,
+    "section": "5.1.2"
+   },
+   {
+    "caption": "Table 5.1.2.2: Charging Data Response content",
+    "header": [
+     "Information Element",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 27,
+    "section": "5.1.2"
+   },
+   {
+    "caption": "Table 5.2.3.1: Debit / Reserve Units Request content",
+    "header": [
+     "Information Element",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 48,
+    "section": "5.2.3"
+   },
+   {
+    "caption": "Table 5.2.3.2: Debit / Reserve Units Response content",
+    "header": [
+     "Information Element",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 48,
+    "section": "5.2.3"
+   },
+   {
+    "caption": "Table 6.2.1.1.1: Offline charging messages reference table",
+    "header": [
+     "Command-Name",
+     "Source",
+     "Destination",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": 57,
+    "section": "6.2.1.1"
+   },
+   {
+    "caption": "Table 6.2.1.1: Offline Charging Messages Reference Table",
+    "header": [
+     "Command-Name",
+     "Source",
+     "Destination",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": 49,
+    "section": "6.2.1.1"
+   },
+   {
+    "caption": "Table 6.2.2.1: 3GPP Accounting-Request message contents",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 58,
+    "section": "6.2.2"
+   },
+   {
+    "caption": "Table 6.2.2: 3GPP Accounting-Request Message Contents",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 50,
+    "section": "6.2.2"
+   },
+   {
+    "caption": "Table 6.2.3.1: 3GPP Accounting-Answer (ACA) message content",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 60,
+    "section": "6.2.3"
+   },
+   {
+    "caption": "Table 6.2.3: 3GPP Accounting-Answer (ACA) Message Content",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 52,
+    "section": "6.2.3"
+   },
+   {
+    "caption": "Table 6.4.1.1.1: Online charging messages reference table",
+    "header": [
+     "Command-Name",
+     "Source",
+     "Destination",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": 71,
+    "section": "6.4.1.1"
+   },
+   {
+    "caption": "Table 6.4.1.1: Online Charging Messages Reference Table",
+    "header": [
+     "Command-Name",
+     "Source",
+     "Destination",
+     "Abbreviation"
+    ],
+    "kind": "commands",
+    "page": 63,
+    "section": "6.4.1.1"
+   },
+   {
+    "caption": "Table 6.4.2.1: 3GPP CCR message content",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 72,
+    "section": "6.4.2"
+   },
+   {
+    "caption": "Table 6.4.2: 3GPP Credit-Control-Request Message Content",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 65,
+    "section": "6.4.2"
+   },
+   {
+    "caption": "Table 6.4.3.1: 3GPP CCA message content",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 78,
+    "section": "6.4.3"
+   },
+   {
+    "caption": "Table 6.4.3: 3GPP Credit-Control-Answer Message Content",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 70,
+    "section": "6.4.3"
+   },
+   {
+    "caption": "Table 6.4.4.1: RAR message contents for online charging",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 83,
+    "section": "6.4.4"
+   },
+   {
+    "caption": "Table 6.4.5.1: RAA message contents for online charging",
+    "header": [
+     "AVP",
+     "Category",
+     "Description"
+    ],
+    "kind": "information-elements",
+    "page": 84,
+    "section": "6.4.5"
+   }
+  ],
+  "oneM2M-TS-0004": [
+   {
+    "caption": "Table 6.3.4.1-1: Example of oneM2M Enumeration Type Definition",
+    "header": [
+     "Value",
+     "Interpretation",
+     "Note"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "6.3.4.1"
+   },
+   {
+    "caption": "Table 6.3.6-103: Universal and Common Attributes",
+    "header": [
+     "Attribute Name",
+     "Data Type",
+     "Value restrictions and Notes"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "6.3.6"
+   },
+   {
+    "caption": "Table 7.3.1.4-118: Request primitive parameter settings",
+    "header": [
+     "Parameter Name",
+     "Value"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "7.3.1.4"
+   },
+   {
+    "caption": "Table 7.3.2.2-119: Common attributes settings for <request> resource",
+    "header": [
+     "Attribute Name",
+     "Value"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "7.3.2.2"
+   },
+   {
+    "caption": "Table 7.3.2.2-120: Resource-specific attributes settings for <request> resource",
+    "header": [
+     "Attribute Name",
+     "Value"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "7.3.2.2"
+   },
+   {
+    "caption": "Table 7.3.2.3-121: Response primitive parameter settings",
+    "header": [
+     "Parameter Name",
+     "Value"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "7.3.2.3"
+   },
+   {
+    "caption": "Table 7.3.2.5-122: Common attributes settings for <request> resource",
+    "header": [
+     "Attribute Name",
+     "Value"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "7.3.2.5"
+   },
+   {
+    "caption": "Table 7.3.2.5-123: Resource-specific attributes settings for <request> resource",
+    "header": [
+     "Attribute Name",
+     "Value"
+    ],
+    "kind": "values",
+    "page": null,
+    "section": "7.3.2.5"
+   },
+   {
+    "caption": "Table 7.4.1.1-128: Resource Specific Attributes of <resourceType> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.1.1"
+   },
+   {
+    "caption": "Table 7.4.2.1-132: Resource Specific Attributes of <accessControlPolicy> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.2.1"
+   },
+   {
+    "caption": "Table 7.4.3.1-136: Resource Specific Attributes of <CSEBase> resource",
+    "header": [
+     "Attribute Name",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.3.1"
+   },
+   {
+    "caption": "Table 7.4.4.1-140: Resource Specific Attributes of <remoteCSE> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.4.1"
+   },
+   {
+    "caption": "Table 7.4.5.1-144: Resource Specific Attributes of <AE> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.5.1"
+   },
+   {
+    "caption": "Table 7.4.6.1-148: Resource Specific Attributes of <container> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.6.1"
+   },
+   {
+    "caption": "Table 7.4.7.1-152: Resource Specific Attributes of <contentInstance> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.7.1"
+   },
+   {
+    "caption": "Table 7.4.8.1-156: Resource Specific Attributes of <subscription> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.8.1"
+   },
+   {
+    "caption": "Table 7.4.9.1-160: Resource Specific Attributes of <schedule> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.9.1"
+   },
+   {
+    "caption": "Table 7.4.10.1-166: Resource Specific Attributes of <locationPolicy> resource",
+    "header": [
+     "Attribute Name",
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.10.1"
+   },
+   {
+    "caption": "Table 7.4.11.1-170: Resource Specific Attributes of <delivery> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.11.1"
+   },
+   {
+    "caption": "Table 7.4.12.1-174: Resource Specific Attributes of <request> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.12.1"
+   },
+   {
+    "caption": "Table 7.4.13.1-178: Resource Specific Attributes of <group> resource",
+    "header": [
+     "Attribute Name",
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.13.1"
+   },
+   {
+    "caption": "Table 7.4.15.1-181: Resource Specific Attributes of <mgmtObj> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.15.1"
+   },
+   {
+    "caption": "Table 7.4.16.1-185: Resource Specific Attributes of <mgmtCmd> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.16.1"
+   },
+   {
+    "caption": "Table 7.4.17.1-189: Resource Specific Attributes of <execInstance> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.17.1"
+   },
+   {
+    "caption": "Table 7.4.18.1-192: Resource Specific Attributes of <node> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.18.1"
+   },
+   {
+    "caption": "Table 7.4.20.1-199: Resource Specific Attributes of <serviceSubscribedNode> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.20.1"
+   },
+   {
+    "caption": "Table 7.4.24.1-209: Resource Specific Attributes of <eventConfig> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.24.1"
+   },
+   {
+    "caption": "Table 7.4.25.1-213: Resource Specific Attributes of <statsCollect> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.25.1"
+   },
+   {
+    "caption": "Table 7.4.26.1-217: Resource Specific Attributes of announcedResource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.26.1"
+   },
+   {
+    "caption": "Table 7.4.29.1-220: Resource Specific Attributes of <serviceSubscribedAppRule> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.29.1"
+   },
+   {
+    "caption": "Table 7.4.30.1-224: Resource Specific Attributes of <notificationTargetMgmtPolicyRef> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.30.1"
+   },
+   {
+    "caption": "Table 7.4.31.1-228: Resource Specific Attributes of <notificationTargetPolicy> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.31.1"
+   },
+   {
+    "caption": "Table 7.4.32.1-232: Resource Specific Attributes of <policyDeletionRules> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.32.1"
+   },
+   {
+    "caption": "Table 7.4.34.1-236: Resource Specific Attributes of <semanticDescriptor> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.34.1"
+   },
+   {
+    "caption": "Table 7.4.36.1-240: Resource Specific Attributes of <dynamicAuthorizationConsultation> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.36.1"
+   },
+   {
+    "caption": "Table 7.4.37.1-242: Resource Specific Attributes of <flexContainer> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.37.1"
+   },
+   {
+    "caption": "Table 7.4.38.1-246: Resource Specific Attributes of <timeSeries> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.38.1"
+   },
+   {
+    "caption": "Table 7.4.39.1-250: Resource Specific Attributes of <timeSeriesInstance> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.39.1"
+   },
+   {
+    "caption": "Table 7.4.40.1-253: Resource Specific Attributes of <role> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.40.1"
+   },
+   {
+    "caption": "Table 7.4.41.1-257: Resource Specific Attributes of <token> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.41.1"
+   },
+   {
+    "caption": "Table 7.4.42.1-261: Resource Specific Attributes of <trafficPattern> resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "7.4.42.1"
+   },
+   {
+    "caption": "Table B.2.1.2-1: Mapping between oneM2M resource and 3GPP AVP",
+    "header": [
+     "oneM2M <trafficPattern> Resource Attribute or Child Resource",
+     "3GPP Communication-Pattern-Set AVP",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "B.2.1.2"
+   },
+   {
+    "caption": "Table B.2.1.3-1: Mapping between oneM2M resource and 3GPP AVP",
+    "header": [
+     "oneM2M <trafficPattern> Resource Attribute",
+     "3GPP AESE-Communication-Pattern-Config-Status AVP",
+     "Reference"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "B.2.1.3"
+   },
+   {
+    "caption": "Table D.2.1-2: Resource specific attributes of [firmware]",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.2.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.3.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.4.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.5.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.6.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.7.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.8.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.9.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.10.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.11.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.1"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.2"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.3"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.4"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.5"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.6"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.7"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.8"
+   },
+   {
+    "caption": null,
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "D.12.9"
+   },
+   {
+    "caption": "Table J.2-2: Resource Specific Attributes of [genericInterworkingService] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.2"
+   },
+   {
+    "caption": "Table J.3-2: Resource Specific Attributes of [genericInterworkingOperationInstance] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.3"
+   },
+   {
+    "caption": "Table J.4-2: Resource Specific Attributes of [svcObjWrapper] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.4"
+   },
+   {
+    "caption": "Table J.5-2: Resource Specific Attributes of [svcFwWrapper] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.5"
+   },
+   {
+    "caption": "Table J.6-2: Resource Specific Attributes of [allJoynApp] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.6"
+   },
+   {
+    "caption": "Table J.7-2: Resource Specific Attributes of [allJoynSvcObject] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.7"
+   },
+   {
+    "caption": "Table J.8-2: Resource Specific Attributes of [allJoynInterface] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.8"
+   },
+   {
+    "caption": "Table J.9-2: Resource Specific Attributes of [allJoynMethod] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.9"
+   },
+   {
+    "caption": "Table J.10-2: Resource Specific Attributes of [allJoynMethodCall] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.10"
+   },
+   {
+    "caption": "Table J.11-2: Resource Specific Attributes of [allJoynProperty] resource",
+    "header": [
+     "Attribute Name",
+     "Request Optionality",
+     "Request Optionality",
+     "Data Type",
+     "Default Value and Constraints"
+    ],
+    "kind": "avp-table",
+    "page": null,
+    "section": "J.11"
+   }
+  ]
+ },
+ "note": "Written by `seanchai corpus regenerate --acknowledge-unclaimed`: the tables each document prints that resemble a definition and that no reading claims, as looked over. See docs/extractor.md."
+}

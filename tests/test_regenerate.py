@@ -915,3 +915,62 @@ def test_a_promotion_failing_partway_changes_nothing(
     assert not report.promoted
     assert report.failed[0].error == "promoting: disk full"
     assert _snapshot(corpus, *edits) == before
+
+
+def test_a_table_no_reading_claims_fails_until_acknowledged(
+    tmp_path, synthetic_spec_docx
+):
+    import docx
+
+    from seanchai.extractor.unclaimed import Baseline
+
+    manifest, document = _manifest(tmp_path / "specifications", "29999-123")
+    source = docx.Document(synthetic_spec_docx)
+    table = source.add_table(rows=2, cols=3)
+    for cell, text in zip(
+        table.rows[0].cells, ("Command-Name", "Abbreviation", "Code"), strict=True
+    ):
+        cell.text = text
+    for cell, text in zip(
+        table.rows[1].cells, ("Example-Request", "EXR", "9999"), strict=True
+    ):
+        cell.text = text
+    source.save(document)
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    baseline = tmp_path / "unclaimed.json"
+
+    def run(**options):
+        return _regenerate.regenerate(
+            manifest,
+            corpus,
+            corpus,
+            sources_dir=None,
+            corrections_dir=None,
+            add=["TS29.999"],
+            unclaimed=baseline,
+            **options,
+        )
+
+    (refused,) = run().outcomes
+    assert refused.status == "failed"
+    (candidate,) = refused.new_unclaimed
+    assert (candidate.kind, candidate.header) == (
+        "commands",
+        ("Command-Name", "Abbreviation", "Code"),
+    )
+    assert not list(corpus.rglob("*.dad")) and not baseline.exists()
+
+    acknowledged = run(acknowledge_unclaimed=True)
+    assert acknowledged.promoted
+    assert Baseline.load(baseline).documents == {"TS29.999": (candidate,)}
+
+    (again,) = run().outcomes
+    assert again.status == "unchanged" and again.new_unclaimed == []
+
+    # Gone from the document: listed stale, and dropped when acknowledged.
+    shutil.copy(synthetic_spec_docx, document)
+    stale = run()
+    assert stale.stale_unclaimed == {"TS29.999": [candidate]}
+    run(acknowledge_unclaimed=True)
+    assert Baseline.load(baseline).documents == {}

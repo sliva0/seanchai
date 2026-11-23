@@ -13,6 +13,7 @@ from ...dad import ast, formatter
 from ...errors import MissingExtraError
 from .. import sources
 from ..errors import ExtractionError, boundary
+from ..unclaimed import Candidate, classify
 from ._base import (
     _Commented,
     _Glosses,
@@ -90,11 +91,15 @@ def extract_with_comments(
     link: str | None = None,
     warnings: list[str] | None = None,
     sources_dir: Path | None = None,
+    unclaimed: list[Candidate] | None = None,
 ) -> tuple[ast.Specification, formatter.Comments]:
     """`extract`, plus the `;;` lines the file prints beside the tree, as the
     `formatter.Comments` `format_spec` takes: each line commented out behind
     `struck-rules-unused` or `elided-members`, standing before the member that
-    followed it, or at its body's end."""
+    followed it, or at its body's end.
+
+    `unclaimed`, when given, receives the tables no reading claimed that
+    resemble a definition (`extractor.unclaimed`), without pages."""
     warnings = warnings if warnings is not None else []
     with boundary(f"extracting {docx_path}"):
         document = docx.Document(str(docx_path))
@@ -128,6 +133,8 @@ def extract_with_comments(
             elements,
         )
         quirks.finish()
+        if unclaimed is not None:
+            unclaimed.extend(_unclaimed(read))
         spec = ast.Specification(
             specification=specification,
             version=version,
@@ -145,6 +152,29 @@ def extract_with_comments(
             if declarations_path is None
             else patcher.exclusion_notes(declarations_path.name),
         )
+
+
+def _unclaimed(sections) -> list[Candidate]:
+    """The tables no pass claimed that resemble a definition."""
+    found = []
+    for section in sections:
+        for table in section.tables:
+            if table.claimed or not table.rows:
+                continue
+            header = tuple(table.rows[0].cells)
+            kind = classify(
+                header, table.caption_text, (row.cells for row in table.rows[1:])
+            )
+            if kind is not None:
+                found.append(
+                    Candidate(
+                        section=section.number,
+                        kind=kind,
+                        caption=table.caption_text,
+                        header=header,
+                    )
+                )
+    return found
 
 
 def _comments(

@@ -126,6 +126,7 @@ def _collect(
                 if (start := _table_message_row(table)) is not None
             ]
             for table, start in printed:
+                table.claimed = True
                 collected.messages.append(
                     _extract_table_message(
                         section,
@@ -156,6 +157,7 @@ def _collect(
                         f"{section.number}: {caption[0]!r} over no table a"
                         " `message-tables` reading knows"
                     )
+                table.claimed = True
                 collected.messages.append(
                     _extract_category_message(
                         section,
@@ -186,6 +188,7 @@ def _collect(
         for table in section.tables:
             header = table.rows[0].cells
             if quirks.enabled("registry-tables") and header[0] in _REGISTRY_KINDS:
+                table.claimed = True
                 collected.registries.append(
                     _extract_registry(
                         table, section.number, warnings, quirks, references
@@ -195,6 +198,7 @@ def _collect(
             # Substring, not membership: 29.214 titles the column group
             # "AVP Flag rules (Note 1)".
             if any("AVP Flag rules" in cell for cell in header):
+                table.claimed = True
                 # TS 29.330 table 6.3.1-1 is a template with no definitions.
                 # Recognise only the full header followed entirely by blank cells.
                 labels = next(
@@ -243,6 +247,7 @@ def _collect(
                 and "Reference" in header
                 and quirks.enabled("vendor-avp-tables")
             ):
+                table.claimed = True
                 vendor = _extract_vendor_table(
                     table, section.number, warnings, quirks, references
                 )
@@ -251,6 +256,7 @@ def _collect(
             elif "Attribute Name" in header and "Reference" in header:
                 # Keyed on Reference rather than on M-bit: TS 29.128, 29.173
                 # and 29.336 print a re-used table with no M-bit column at all.
+                table.claimed = True
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")
                 reused_rows, reused_columns = _extract_reused_table(
