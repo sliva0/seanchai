@@ -16,6 +16,8 @@ file          = header *(2*NL section) NL
 header        = spec-line NL [version-line NL] vendor-line [NL bases-line]
                 [NL obsoletes-line] [NL link-line] [NL transcribed-line]
 spec-line     = "; Specification: " inline-text
+                ; a title naming a spec-ref's document: "3GPP TS 29.272",
+                ; "RFC 6733", "ETSI ES 283 034", "Private ACME-HSS"
 version-line  = "; Version: " version
 vendor-line   = "; Vendor-ID: " 1*DIGIT    ; < 2^32; 0 is the IETF space
 bases-line    = "; Bases: " spec-ref *(", " spec-ref)
@@ -28,6 +30,8 @@ external-ref  = ("ETSI-" ("TS" / "ES") 3DIGIT "." 3DIGIT ["-" 1*DIGIT])
                                                           ; "3GPP2-X.S0057"
               / ("OMA" 1*("-" 1*(ALPHA / DIGIT / "_")))   ; "OMA-DDS-Charging_Data"
               / ("oneM2M-TS-" 4DIGIT)                     ; "oneM2M-TS-0004"
+              / ("Private-" private-name)                 ; "Private-ACME-HSS"
+private-name  = (ALPHA / DIGIT) *(ALPHA / DIGIT / "_" / "." / "-")
 link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 transcribed-line = "; Transcribed: by hand from " URI   ; the rendering copied
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
@@ -45,6 +49,12 @@ A `spec-ref` names a document without its version, as one token.
   3GPP2's "X.S0057" without its revision letter but with its part
   ("X.S0013-014" is another document); OMA's name as printed; oneM2M's
   "TS-0004".
+- A private or vendor document, which no publisher numbers, is `Private-`
+  and a name of its author's, its title `Private ACME-HSS`. Its
+  `; Vendor-ID:` is its own vendor's, and other files cite it by the
+  reference: a From cell `Private-ACME-HSS`. It follows no publisher's
+  releases, so what it cites without a version means the newest copy held,
+  as for an RFC ([consumers.md](consumers.md#without-python)).
 - Each document has one spelling, since resolution compares references
   exactly. A raw file keeps a citing document's misnaming (3GPP cites ETSI ES
   283 034 as `ETSI-TS283.034`); the corpus maps each listed misnaming

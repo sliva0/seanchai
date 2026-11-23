@@ -39,7 +39,8 @@ lists the conflict and where each reading is met.
 29.154's Nta names `External-Group-Identifier`, which no document defines;
 `--policy supply --alias External-Group-Identifier TS29.336
 External-Identifier` reads it as the AVP you take it for. `--with FILE.dad`
-adds your own AVPs and commands.
+adds your own AVPs and commands, from a file naming a private document
+(`; Specification: Private ACME-HSS`) in your own vendor's space.
 
 [The dictionary][dictionary] describes the file, and
 [`seanchai dictionary --schema`][dictionary] writes its JSON Schema.

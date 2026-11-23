@@ -992,6 +992,11 @@ class Corpus:
             # 3GPP numbers. The corpus holds such a document only when someone
             # writes it by hand, and then the newest copy is the answer.
             return (candidates[0] if candidates else None), None
+        if ast.is_private(citing):
+            # A private document follows no publisher's releases: it means
+            # what the corpus holds of the documents it cites, newest first,
+            # as an RFC does.
+            return (candidates[0] if candidates else None), None
         version = like.version
         external = _external(like)
         named = rules.cited_versions.get(key)

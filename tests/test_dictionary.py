@@ -263,10 +263,12 @@ def test_the_schema_validates_what_the_commands_write(tmp_path):
 
 # --- the command line ---------------------------------------------------------
 
-# The grammar names no private document yet, so this one takes an RFC number
-# no RFC holds.
+# A private document: a stack's own AVPs and commands, in its own vendor's
+# space, over the corpus. It re-uses TS 29.272's ULR-Flags, and a second one
+# re-uses its token.
 _ACME = """\
-; Specification: RFC 99999
+; Specification: Private ACME-HSS
+; Version: 4.2
 ; Vendor-ID: 99999
 ; Bases: RFC6733
 
@@ -276,29 +278,64 @@ _ACME = """\
 <ACME-Probe-Request> ::= < Diameter Header: 9999, REQ, 4242 >
         < Session-Id >
         { ACME-Token }
+        [ ULR-Flags ]
 
 ; Type: AVP Table
 ; Section: 2
 ; Columns: Name Code Type Must May S.not M.not
 ACME-Token 1 OctetString V,M - - -
+
+; Type: Reused AVPs
+; Section: 2
+; Columns: Name From
+ULR-Flags TS29.272
+"""
+
+_ACME_EDGE = """\
+; Specification: Private ACME-Edge
+; Vendor-ID: 99999
+; Bases: RFC6733
+
+; Type: Message
+; Name: ACME-Edge-Request, AER
+; Section: 1
+<ACME-Edge-Request> ::= < Diameter Header: 9998, REQ, 4243 >
+        < Session-Id >
+        { ACME-Token }
+
+; Type: Reused AVPs
+; Section: 1
+; Columns: Name From
+ACME-Token Private-ACME-HSS
 """
 
 
 def test_your_own_documents_sit_beside_the_corpus(tmp_path):
     acme = tmp_path / "acme.dad"
     acme.write_text(_ACME, encoding="utf-8")
+    edge = tmp_path / "edge.dad"
+    edge.write_text(_ACME_EDGE, encoding="utf-8")
 
-    data = _written(tmp_path, "--with", str(acme), "--application", "4242")
+    data = _written(
+        tmp_path, "--with", str(acme), "--with", str(edge), "--application", "4242"
+    )
 
     (application,) = data["applications"]
-    assert application["reference"] == "RFC99999"
+    assert application["reference"] == "Private-ACME-HSS"
     ids = {avp["id"]: avp for avp in data["avps"]}
     assert ids["99999:1"]["name"] == "ACME-Token"
     assert ids["0:263"]["defined_in"] == "RFC6733"
+    # A private document means the newest copy it holds of what it cites.
+    assert ids["10415:1405"]["defined_in"] == "TS29.272"
     shown = _run("show", "ACME-Token", "--with", str(acme))
     assert shown.exit_code == 0, shown.output
     listed = _run("commands", "--application", "4242", "--with", str(acme))
     assert "ACME-Probe-Request" in listed.stdout
+    edged = _written(
+        tmp_path, "--with", str(acme), "--with", str(edge), "--application", "4243"
+    )
+    (token,) = [avp for avp in edged["avps"] if avp["name"] == "ACME-Token"]
+    assert (token["id"], token["defined_in"]) == ("99999:1", "Private-ACME-HSS")
 
 
 def test_commands_read_another_corpus(tmp_path):

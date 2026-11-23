@@ -28,6 +28,7 @@ __all__ = [
     "EXTERNAL_REF_RE",
     "IETF_VENDOR",
     "MARK_COLUMN_PATTERN",
+    "PRIVATE_REF_PATTERN",
     "REUSED_COLUMNS",
     "SPEC_REF_PATTERN",
     "SPEC_REF_RE",
@@ -90,6 +91,7 @@ __all__ = [
     "in_document_order",
     "interface_clause",
     "is_external",
+    "is_private",
     "is_reprint",
     "mark_column",
     "node_at",
@@ -150,9 +152,17 @@ EnumValueName = Annotated[
 # "3GPP2-X.S0013-014" (the part is another document, as a revision is not),
 # OMA's "OMA-DDS-Charging_Data", whose name already leads with it, and oneM2M's
 # "oneM2M-TS-0004" (TS 32.299 tables 7.2.0.1 and 7.5.1).
+#
+# A private or vendor document, which no publisher numbers, is "Private-" and
+# a name its author gives it, as one token: "Private-ACME-HSS", the reference
+# of a file whose `; Specification:` is "Private ACME-HSS". Such a file holds
+# a stack's own AVPs and commands, layered over the corpus (`seanchai
+# dictionary --with`), and its `; Vendor-ID:` is its own vendor's.
+PRIVATE_REF_PATTERN = r"Private-[A-Za-z0-9][A-Za-z0-9_.-]*"
 EXTERNAL_REF_PATTERN = (
     r"ETSI-(?:TS|ES)\d{3}\.\d{3}(?:-\d+)?|3GPP2-[A-Z]\.[A-Z]\d{4}(?:-\d{3})?"
     r"|OMA-[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*|oneM2M-TS-\d{4}"
+    rf"|{PRIVATE_REF_PATTERN}"
 )
 SPEC_REF_PATTERN = rf"^(TS\d{{2}}\.\d{{3}}|RFC\d+|{EXTERNAL_REF_PATTERN})$"
 SpecRef = Annotated[str, Field(pattern=SPEC_REF_PATTERN)]
@@ -1240,14 +1250,20 @@ EXTERNAL_REF_RE = re.compile(rf"^(?:{EXTERNAL_REF_PATTERN})$")
 # carry no spaces and need no rule.
 _EXTERNAL_TITLE_RE = re.compile(
     r"^(?:ETSI (?P<etsi>TS|ES) (?P<series>\d{3}) (?P<number>\d{3})(?P<part>-\d+)?"
-    r"|(?P<publisher>3GPP2|oneM2M) (?P<document>\S+))$"
+    r"|(?P<publisher>3GPP2|oneM2M|Private) (?P<document>\S+))$"
 )
+PRIVATE_REF_RE = re.compile(rf"^{PRIVATE_REF_PATTERN}$")
 
 
 def is_external(reference: str) -> bool:
     """Whether a `SpecRef` names a document outside 3GPP and IETF (ETSI,
-    3GPP2, OMA, oneM2M)."""
+    3GPP2, OMA, oneM2M, or a private document)."""
     return EXTERNAL_REF_RE.match(reference) is not None
+
+
+def is_private(reference: str) -> bool:
+    """Whether a `SpecRef` names a private document, "Private-ACME-HSS"."""
+    return PRIVATE_REF_RE.match(reference) is not None
 
 
 def spec_ref(specification: str) -> str:
@@ -1269,7 +1285,7 @@ def spec_ref(specification: str) -> str:
     if not SPEC_REF_RE.match(reference):
         raise SpecRefError(
             f"specification {specification!r} does not name a supported document"
-            " (expected e.g. '3GPP TS 29.272' or 'RFC 6733')"
+            " (expected e.g. '3GPP TS 29.272', 'RFC 6733' or 'Private ACME-HSS')"
         )
     return reference
 

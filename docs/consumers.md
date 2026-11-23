@@ -133,10 +133,44 @@ under one `format_version`; `dictionary.json_schema()`, which
 
 All three read the installed corpus, or with `--corpus PATH` (repeatable)
 another. `--with PATH` (repeatable) reads your own `.dad` files beside it:
-proprietary AVPs and commands. The grammar names no private document yet, so
-give such a file an RFC number no RFC holds, and `; Bases: RFC6733` for the
-base protocol's AVPs. Over another corpus, or with `--with`, holes the
-corpus's record does not list are allowed and listed in the output.
+proprietary AVPs and commands. Such a file names a private document, its
+`; Vendor-ID:` your vendor's and `; Bases: RFC6733` giving the base
+protocol's AVPs:
+
+```dad
+; Specification: Private ACME-HSS
+; Version: 4.2
+; Vendor-ID: 99999
+; Bases: RFC6733
+
+
+; Type: Message
+; Name: ACME-Probe-Request, APR
+; Section: 1
+<ACME-Probe-Request> ::= < Diameter Header: 9999, REQ, 4242 >
+        < Session-Id >
+        { ACME-Token }
+        [ ULR-Flags ]
+
+
+; Type: AVP Table
+; Section: 2
+; Columns: Name   Code   Type          Must   May   S.not   M.not
+ACME-Token        1      OctetString   M,V    -     -       -
+
+
+; Type: Reused AVPs
+; Section: 2
+; Columns: Name   From
+ULR-Flags         TS29.272
+```
+
+Another of your files cites it as `Private-ACME-HSS`. A private document
+follows no release, so `TS29.272` means the newest copy the corpus holds.
+`seanchai dictionary --with acme.dad --application 4242` then holds
+ACME-Probe-Request, `ACME-Token` as `99999:1` and TS 29.272's `ULR-Flags`.
+Over another corpus, or with `--with`, holes the corpus's record does not
+list are allowed and listed in the output.
 
 ### The dictionary
 

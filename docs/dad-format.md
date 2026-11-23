@@ -75,7 +75,9 @@ blank lines. Each section starts with `; Type:`.
   Parsing a canonical file with its comments and formatting it back gives the
   same text, and every committed file is a fixed point of `seanchai format`.
 - A hand-written file, for a proprietary extension say, is read by the
-  parser, linter and model like an extracted one.
+  parser, linter and model like an extracted one. Its title names a private
+  document, `; Specification: Private ACME-HSS`
+  ([grammar.md](grammar.md#file)).
 - A new `; Type:`, directive key or structural column is a format change.
   It needs a source document that cannot otherwise be recorded; consumer
   convenience belongs in the model. Mark columns are open

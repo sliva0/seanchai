@@ -962,6 +962,24 @@ def test_a_corpus_of_its_own_has_no_version_and_a_stale_record_is_refused(tmp_pa
         export_corpus(Corpus.load([corpus]), tmp_path / "again")
 
 
+def test_a_private_document_exports_as_its_own_publishers(tmp_path):
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
+    (corpus / source.name).write_bytes(source.read_bytes())
+    (corpus / "acme.dad").write_text(
+        "; Specification: Private ACME-HSS\n; Vendor-ID: 99999\n"
+        "; Bases: RFC6733\n\n\n; Type: AVP Table\n; Section: 2\n"
+        "; Columns: Name Code Type\nACME-Token 1 OctetString\n",
+        "utf-8",
+    )
+
+    index = export_corpus(Corpus.load([corpus]), tmp_path / "out")
+
+    (acme,) = [doc for doc in index.documents if doc.reference == "Private-ACME-HSS"]
+    assert (acme.publisher, acme.release) == ("Private", None)
+
+
 def test_a_self_hosted_export_copies_each_pdf_from_where_the_download_puts_it(
     tmp_path,
 ):

@@ -362,7 +362,7 @@ class DocumentSummary(_Model):
     reference: str
     specification: str
     version: str | None
-    publisher: Literal["3GPP", "3GPP2", "ETSI", "IETF", "OMA", "oneM2M"]
+    publisher: Literal["3GPP", "3GPP2", "ETSI", "IETF", "OMA", "oneM2M", "Private"]
     release: int | None
     title: str
     pinned: str | None
