@@ -191,7 +191,7 @@ def _uncovered_sources(path: Path, data: dict, version: str, why: str) -> list[s
 
 # --- corrections modules ----------------------------------------------------
 
-_DECLARATIONS = {"Correction", "Delete", "Insert", "Supply", "Accept"}
+_DECLARATIONS = {"Correction", "Delete", "Insert", "Supply", "Interpret", "Accept"}
 
 
 def expand_corrections(
