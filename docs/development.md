@@ -289,9 +289,12 @@ until it exists.
 ## The corpus format
 
 `corpus.toml` states the format, `format = 2`, and `corpus.FORMATS` lists the
-formats the library reads, `(2,)`. Format 1, the grammar before mark columns
-were open, is not read: nothing depends on a format 1 corpus, so a second
-grammar would serve no one. Loading another
+formats the library reads, `(2,)`. Format 2 opened the mark columns, folded
+`Reprinted AVP` into `Grouped AVP` as `; Reprints:`, and added
+`; Obsoletes:`, private documents and the `Information Elements` block.
+Format 1 is not read: nothing depends on a format 1 corpus, so a second
+grammar would serve no one. The library's `corpus` extra names the first
+format 2 corpus once it is released. Loading another
 format raises `corpus.CorpusFormatError` before any `.dad` file is parsed,
 naming both numbers and the package to upgrade. A directory without
 `corpus.toml` has no format check and no resolution rules, and is loaded as
