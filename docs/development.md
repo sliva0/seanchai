@@ -237,13 +237,13 @@ The two packages are released separately, each from its own tag:
 | Package | Version | Tag |
 |---|---|---|
 | `seanchai` | semantic, `0.1.0` | `seanchai-v0.1.0` |
-| `seanchai-corpus` | the date the corpus was regenerated, `2026.11.11` | `corpus-2026.11.11` |
+| `seanchai-corpus` | the date the corpus was regenerated, `2026.11.11`, or `2026.11.11.1` for a same-day fix | `corpus-2026.11.11` |
 
 Each version is set once, in the package's `pyproject.toml`, by `uv version`,
 which updates the lockfile too. `tests/test_packaging.py` requires the corpus
 version to be a real date without leading zeros, since PEP 440 drops them.
-PyPI accepts a version once, so a second corpus release waits for the next
-day.
+PyPI accepts a version once, so a fix released the same day adds its number:
+`2026.11.12.1`, then `.2`, which PEP 440 orders after the day's first.
 
 The library's `corpus` extra names the oldest corpus it reads: the first
 release of the oldest format in `corpus.FORMATS`. Raise it when the library

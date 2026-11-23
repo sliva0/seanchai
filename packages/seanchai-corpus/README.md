@@ -10,9 +10,8 @@ documents, as `.dad` files. It holds:
   document a citation means, each with its evidence;
 - `interfaces.toml`: the Diameter interfaces each document specifies.
 
-It has no dependencies and needs Python 3.10 or newer. The
-[`seanchai`](https://pypi.org/project/seanchai/) library that reads it needs
-Python 3.12 or newer.
+It has no dependencies and needs Python 3.12 or newer, as the
+[`seanchai`](https://pypi.org/project/seanchai/) library that reads it does.
 
 ```sh
 pip install seanchai-corpus

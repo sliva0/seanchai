@@ -198,17 +198,47 @@ def test_the_corpus_wheel_carries_its_notice(dist):
     assert "publishers'" in notice
 
 
+@pytest.mark.parametrize(
+    ("version", "good"),
+    [
+        ("2026.11.12", True),
+        ("2026.11.12.1", True),  # a fix released the same day
+        ("2026.11.12.2", True),
+        ("2026.11.02", False),  # PEP 440 drops the zero
+        ("2026.11.12.0", False),  # the first release has no suffix
+        ("2026.11.12.01", False),
+        ("2026.2.30", False),  # no such day
+        ("2026.11.12.post1", False),
+    ],
+)
+def test_a_corpus_version_is_a_date_and_a_same_day_fix_its_number(version, good):
+    assert _is_corpus_version(version) is good
+
+
+def _is_corpus_version(version: str) -> bool:
+    """A date without leading zeros, which PEP 440 would normalise away,
+    optionally followed by the number of a same-day fix from 1."""
+    parts = version.split(".")
+    if len(parts) not in (3, 4) or not all(part.isdecimal() for part in parts):
+        return False
+    numbers = list(map(int, parts))
+    try:
+        datetime.date(*numbers[:3])
+    except ValueError:
+        return False
+    if len(numbers) == 4 and numbers[3] < 1:
+        return False
+    return version == ".".join(map(str, numbers))
+
+
 def test_the_corpus_version_is_the_date_it_names_stored_once():
-    """It only reads files, so a generator on an older Python can hold the data
-    without the library."""
-    assert _project(_PACKAGE / "pyproject.toml")["requires-python"] == ">=3.10"
+    """Both packages share one Python floor (the corpus's pyproject says
+    why)."""
+    assert _project(_PACKAGE / "pyproject.toml")["requires-python"] == ">=3.12"
     assert _project(_ROOT / "pyproject.toml")["requires-python"] == ">=3.12"
     version = _project(_PACKAGE / "pyproject.toml")["version"]
 
-    year, month, day = map(int, version.split("."))
-    datetime.date(year, month, day)  # refuses what names no day
-    # PEP 440 normalizes 2026.11.02 away, so the file keeps the published form.
-    assert version == f"{year}.{month}.{day}"
+    assert _is_corpus_version(version)
     assert seanchai_corpus.__version__ == version
     assert version not in (_PACKAGE / "src/seanchai_corpus/__init__.py").read_text()
 

@@ -6,7 +6,11 @@ readme = "README.md"
 authors = [
     { name = "sliva0", email = "sliva0mk@gmail.com" }
 ]
-requires-python = ">=3.10"
+# The library's floor. The package's module only says where the data is,
+# and its one Python reader is the library; a stack in another language reads
+# the files, not the module. CI runs nothing older, so a lower floor would
+# promise what nothing checks.
+requires-python = ">=3.12"
 license = "MIT"
 license-files = ["LICENSE", "NOTICE"]
 keywords = ["diameter", "3gpp", "avp", "abnf", "rfc6733"]
@@ -14,8 +18,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Telecommunications Industry",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
