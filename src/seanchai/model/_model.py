@@ -701,7 +701,7 @@ class Model(_Resolver):
             visit(members, command, section, (), frozenset())
         printed: dict[str, list[ValueTable]] = {}
         for view in views.values():
-            for table in view.value_tables:
+            for table in self._tables(view):
                 printed.setdefault(table.avp, []).append(table)
         found = []
         for identity in sorted(met):
@@ -796,7 +796,7 @@ class Model(_Resolver):
         return tuple(
             table
             for view in self._selected_views(reference, version)
-            for table in view.value_tables
+            for table in self._tables(view)
             if (avp is None or table.avp == avp)
             and (kind is None or table.kind is kind)
         )

@@ -800,12 +800,22 @@ def _undefined(name: str) -> str:
             "gives 1 to 'S6a-S6d-Indicator', 'Skip-Subscriber-Data'",
             id="duplicate-value",
         ),
-        # Unsigned32 unless a table types the AVP otherwise.
+        # 31 where a table types the AVP Unsigned32, 63 where none types it.
         pytest.param(
-            [_ULR_FLAGS + "Initial-Attach-Indicator = 32\n"],
+            [
+                _ULR_FLAGS + "Initial-Attach-Indicator = 32\n",
+                "; Type: AVP Table\n; Section: 7.3\n; Columns: Name Code Type\n"
+                "ULR-Flags 1405 Unsigned32\n",
+            ],
             "value-bit-out-of-range",
             "bit 32, past the 31 a Unsigned32 holds",
             id="value-bit-out-of-range",
+        ),
+        pytest.param(
+            [_ULR_FLAGS + "Initial-Attach-Indicator = 64\n"],
+            "value-bit-out-of-range",
+            "bit 64, past the 63 an untyped AVP holds",
+            id="value-bit-out-of-range-untyped",
         ),
         # TS 32.299 clause 7.2.213 leaves 100-199 of SM-Service-Type to vendors.
         pytest.param(

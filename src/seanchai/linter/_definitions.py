@@ -131,21 +131,24 @@ def _duplicate_values(index: _Index) -> list[Finding]:
 
 
 def _values_out_of_range(index: _Index) -> list[Finding]:
-    """A bit number past what its AVP holds: 31 for Unsigned32 (the default),
-    63 for an AVP the file's own table types Unsigned64."""
+    """A bit number past what its AVP holds: 31 for an AVP the file's own
+    table types other than Unsigned64, 63 for one it types Unsigned64 or does
+    not type, as RFC 5779 numbers bits of RFC 5447's Unsigned64
+    MIP6-Feature-Vector, which it re-uses."""
     typed = {row.name: row.data_type for row in index.rows if row.data_type}
     findings = []
     for table in index.value_tables:
         if table.kind is ast.ValueKind.RESULT_CODES:
             continue
-        data_type = typed.get(table.avp, ast.DataType.UNSIGNED32)
-        last = 63 if data_type is ast.DataType.UNSIGNED64 else 31
+        data_type = typed.get(table.avp)
+        last = 31 if data_type not in (None, ast.DataType.UNSIGNED64) else 63
+        holds = "an untyped AVP" if data_type is None else f"a {data_type}"
         findings.extend(
             Finding(
                 Severity.ERROR,
                 "value-bit-out-of-range",
                 f"{table.avp}'s {table.kind} table numbers {row.name!r} bit"
-                f" {row.value}, past the {last} a {data_type} holds",
+                f" {row.value}, past the {last} {holds} holds",
                 table.source.section,
                 paths=(index.path(row),),
             )

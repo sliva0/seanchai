@@ -712,9 +712,12 @@ None of them names an interface. A row's interface is its table's clause.
 values, as `model.ValueTable`s: `kind` (`ValueKind.RESULT_CODES`, `BITS` or
 `FEATURES`), `avp`, the document, clause, page, table label and `rows`. A row
 is an `ast.ValueRow` with `name` and `value`, plus a result code's `section`
-and `origin` where they apply and a feature's M/O `mark`. A plain
-`Result-Code` table has `vendor_id` 0; any other has the file's
-`; Vendor-ID:`.
+and `origin` where they apply and a feature's M/O `mark`. `vendor_id` is the
+vendor space the numbers belong to: a plain `Result-Code` table's is 0 and an
+`Experimental-Result-Code` table's the file's `; Vendor-ID:`, the space its
+Experimental-Result names; a bits or features table's is the vendor of the
+AVP as the document reads it, 0 for RFC 5447's `MIP6-Feature-Vector` whoever
+numbers its bits.
 
 `Avp.value_tables` holds the tables the reading document prints for the
 name, or else its origin's; `Avp.value_table` is the first.

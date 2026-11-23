@@ -22,3 +22,12 @@ MIP6-Agent-Info ::= < AVP header: 486 >
         [ MIP-Home-Agent-Host ]
         [ MIP6-Home-Link-Prefix ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: MIP6-Feature-Vector
+; Kind: bits
+; Section: 4.2.5
+; Page: 8
+MIP6_INTEGRATED             = 0
+LOCAL_HOME_AGENT_ASSIGNMENT = 1

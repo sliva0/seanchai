@@ -481,6 +481,16 @@ Re-Auth-Request-Type ::= < Enumerated AVP header: 285 >
 Termination-Cause ::= < Enumerated AVP header: 295 >
 
 
+; Type: Value Table
+; AVP: Session-Binding
+; Kind: bits
+; Section: 8.17
+; Page: 120
+RE_AUTH    = 0
+STR        = 1
+ACCOUNTING = 2
+
+
 ; Type: Enumerated AVP
 ; Name: Session-Server-Failover
 ; Section: 8.18

@@ -11,6 +11,14 @@
 OC-Maximum-Rate   670    7.2.1     Unsigned32   -      V
 
 
+; Type: Value Table
+; AVP: OC-Feature-Vector
+; Kind: bits
+; Section: 7.1.1
+; Page: 10
+OLR_RATE_ALGORITHM = 2
+
+
 ; Type: Grouped AVP
 ; Name: OC-OLR
 ; Section: 7.2

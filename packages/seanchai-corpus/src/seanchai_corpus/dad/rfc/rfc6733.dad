@@ -506,6 +506,16 @@ Termination-Cause ::= < Enumerated AVP header: 295 >
         DIAMETER_SESSION_TIMEOUT      = 8 ;; supplied: (RFC6733.py#termination-cause-values)
 
 
+; Type: Value Table
+; AVP: Session-Binding
+; Kind: bits
+; Section: 8.17
+; Page: 120
+RE_AUTH    = 0
+STR        = 1
+ACCOUNTING = 2
+
+
 ; Type: Enumerated AVP
 ; Name: Session-Server-Failover
 ; Section: 8.18

@@ -33,7 +33,9 @@ from ._types import (
     SupplyKey,
     Undefined,
     UndefinedPolicy,
+    ValueTable,
     _identity,
+    _placed,
     is_cut,
 )
 from ._view import _folded, _View
@@ -104,6 +106,15 @@ class _Resolver:
             else "; Model.references() lists what it holds"
         )
         raise ModelError(f"the corpus holds no copy of {reference}{hint}")
+
+    def _tables(self, view: _View) -> list[ValueTable]:
+        """`view`'s value tables, each in the vendor space of the AVP it
+        numbers as `view` resolves it (`_placed`)."""
+        placed = []
+        for table in view.value_tables:
+            found = self._final(view, table.avp)
+            placed.append(_placed(table, getattr(found, "vendor_id", None)))
+        return placed
 
     def _view(self, reference: str, version: str | None = None) -> _View:
         reference = self.canonical(reference)
@@ -328,7 +339,9 @@ class _Resolver:
                 found.members = members
         if found is not None and found.kind is Avp:
             tables = tuple(
-                table for table in view.value_tables if table.avp == found.name
+                _placed(table, found.vendor_id)
+                for table in view.value_tables
+                if table.avp == found.name
             )
             found = replace(found, value_tables=tables or found.value_tables)
         if (

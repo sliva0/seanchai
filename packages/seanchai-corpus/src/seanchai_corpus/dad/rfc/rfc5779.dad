@@ -49,6 +49,16 @@ MIP6-Agent-Info   RFC5447
 MIP6-Home-Link-Prefix   RFC5447
 
 
+; Type: Value Table
+; AVP: MIP6-Feature-Vector
+; Kind: bits
+; Section: 5.5
+; Page: 10
+PMIP6_SUPPORTED             = 40
+IP4_HOA_SUPPORTED           = 41
+LOCAL_MAG_ROUTING_SUPPORTED = 42
+
+
 ; Type: Reused AVPs
 ; Section: 5.5
 ; Page: 10

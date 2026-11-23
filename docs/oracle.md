@@ -90,6 +90,7 @@ On the committed corpus these report:
 | TS 29.234's code | `DIAMETER_ERROR_W-DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION` |
 | TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN` | the registry's `IMPI` |
 | bit 0 of TS 29.212's `Presence-Reporting-Area-Node`, `OCS` | `PCRF` |
+| bit 0 of RFC 5777's `Day-Of-Week-Mask` and `Month-Of-Year-Mask`, `SUNDAY` and `JANUARY` | value 0, which sets no bit; its other values are masks |
 
 ## In the model
 

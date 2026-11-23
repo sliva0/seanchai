@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import enum
 from collections.abc import Hashable, Iterator, Mapping
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass, replace
 from typing import TYPE_CHECKING, Any, cast
 
 import pydantic
@@ -61,9 +61,13 @@ class ValueTable(_Plain):
     """The named numbers one document gives a numeric AVP: result codes, bit
     mask bits or feature-list features (`ast.ValueKind`).
 
-    `rows` are `ast.ValueRow`s. `vendor_id` is the file's vendor, except that
-    plain Result-Code values are always IETF. `application` and
-    `feature_list_id` identify a feature table's list, as its caption does."""
+    `rows` are `ast.ValueRow`s. `vendor_id` is the vendor space the numbers
+    belong to: for result codes the file's vendor, the space an
+    Experimental-Result's Vendor-Id names, except that plain Result-Code
+    values are always IETF; for bits and features the vendor of the AVP as
+    the document reads it, IETF for RFC 5447's MIP6-Feature-Vector however a
+    3GPP document numbers it. `application` and `feature_list_id` identify a
+    feature table's list, as its caption does."""
 
     kind: ast.ValueKind
     avp: str
@@ -85,6 +89,18 @@ class ValueTable(_Plain):
             f"<ValueTable {self.avp} {self.kind}{which} in {self.reference},"
             f" {len(self.rows)} rows>"
         )
+
+
+def _placed(table: ValueTable, vendor_id: int | None) -> ValueTable:
+    """`table` in the vendor space of the AVP it numbers, `vendor_id` as the
+    document resolves it; a result-code table keeps its values' space, and
+    an AVP resolving to no vendor keeps the file's."""
+    if table.kind is ast.ValueKind.RESULT_CODES or vendor_id in (
+        None,
+        table.vendor_id,
+    ):
+        return table
+    return replace(table, vendor_id=vendor_id)
 
 
 def _value_table(entry: corpus.Entry, table: ast.ValueTable) -> ValueTable:

@@ -2215,6 +2215,73 @@ def _result_tables(sections: list[_DocSection]) -> list[ast.ValueTable]:
     return tables
 
 
+# A bit mask's named bits, in the clause its AVP heads. Three shapes:
+#
+# - a flag and its mask alone on a line, "OC_PEER_REPORT (0x0000000000000010)"
+#   (RFC 5447, 5779, 7683, 8581 and 8582 clause 7.1.1, which add bits to
+#   another RFC's AVP in a clause headed with its name);
+# - after "This field is a bit mask, and the following bits have been
+#   defined:", a flag and its decimal mask, "RE_AUTH 1" (RFC 6733 clause 8.17);
+# - under a "Bit | Name" header, the bit and its name, "0 | SUNDAY" (RFC 5777
+#   clauses 4.2.4 and 4.2.6).
+#
+# A mask is read as the bit it sets, least significant 0, as a 3GPP bit table
+# numbers its bits; a mask setting no single bit fails.
+_FLAG_NAME = r"[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*"
+_HEX_FLAG_RE = re.compile(rf"\s*(?P<name>{_FLAG_NAME}) \((?P<mask>0x[0-9A-Fa-f]+)\)")
+_MASK_SENTENCE_RE = re.compile(r"\bbit mask\b.*\bfollowing bits\b")
+_DECIMAL_FLAG_RE = re.compile(rf"\s*(?P<name>{_FLAG_NAME}) +(?P<mask>\d+)")
+_BIT_HEADER_RE = re.compile(r"\s*Bit\s*\|\s*Name\s*")
+_BIT_RULE_RE = re.compile(r"\s*-+\+-+\s*")
+_BIT_ROW_RE = re.compile(rf"\s*(?P<bit>\d+)\s*\|\s*(?P<name>{_FLAG_NAME})\s*")
+
+
+def _bit(mask: int, name: str, section: str) -> int:
+    """The bit a flag's mask sets."""
+    if mask <= 0 or mask & (mask - 1):
+        raise ExtractionError(
+            f"{section}: flag {name} has mask {mask:#x}, which sets no single bit"
+        )
+    return mask.bit_length() - 1
+
+
+def _bit_tables(sections: list[_DocSection]) -> list[ast.ValueTable]:
+    """A `bits` value table per clause headed with an AVP's name that names
+    its bits in one of the shapes above."""
+    tables = []
+    for section in sections:
+        title = _TITLE_RE.fullmatch(section.title)
+        if title is None:
+            continue
+        rows: list[ast.ValueRow] = []
+        masked = in_table = False
+        for text in section.texts:
+            if match := _HEX_FLAG_RE.fullmatch(text):
+                bit = _bit(int(match["mask"], 16), match["name"], section.number)
+                rows.append(ast.ValueRow(name=match["name"], value=bit))
+            elif _MASK_SENTENCE_RE.search(text):
+                masked = True
+            elif masked and (match := _DECIMAL_FLAG_RE.fullmatch(text)):
+                bit = _bit(int(match["mask"]), match["name"], section.number)
+                rows.append(ast.ValueRow(name=match["name"], value=bit))
+            elif _BIT_HEADER_RE.fullmatch(text):
+                in_table = True
+            elif in_table and (match := _BIT_ROW_RE.fullmatch(text)):
+                rows.append(ast.ValueRow(name=match["name"], value=int(match["bit"])))
+            elif in_table and not _BIT_RULE_RE.fullmatch(text):
+                in_table = False
+        if rows:
+            tables.append(
+                ast.ValueTable(
+                    avp=title["name"],
+                    kind=ast.ValueKind.BITS,
+                    source=ast.SourceRef(section=section.number, page=section.page),
+                    rows=tuple(rows),
+                )
+            )
+    return tables
+
+
 def extract(
     text_path: Path | str,
     link: str | None = None,
@@ -2379,7 +2446,12 @@ def extract_with_comments(
         # in document order, the AVP table, then every definition, value table
         # and clause's re-used block in document order.
         ordered = sorted(
-            (*definitions, *_result_tables(document_sections), *reused),
+            (
+                *definitions,
+                *_result_tables(document_sections),
+                *_bit_tables(document_sections),
+                *reused,
+            ),
             key=lambda definition: ast.section_sort_key(definition.source.section),
         )
         file_sections: tuple[ast.Section, ...] = (

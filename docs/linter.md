@@ -35,7 +35,7 @@ Errors exit non-zero; notes do not.
 | `duplicate-enum-value` | error | an enumerated AVP using a value or value name twice |
 | `enum-value-out-of-range` | note | an enumerated value past 2147483647, which an Enumerated, an Integer32 on the wire, reads as negative (TS 29.214's `Media-Type` `OTHER`, 4294967295) |
 | `duplicate-value` | error | a value table giving one number twice |
-| `value-bit-out-of-range` | error | a bit past what the AVP holds: 31 for Unsigned32, 63 for Unsigned64 |
+| `value-bit-out-of-range` | error | a bit past what the AVP holds: 31 where the file's table types it other than Unsigned64, 63 where it types it Unsigned64 or not at all |
 | `vendor-specific-overlap` | error | a `; VENDOR-SPECIFIC` range covering a named value, a reserved or void range, or another vendor-specific range |
 | `void-overlap` | error | a `; VOID` line covering a named value, a reserved range, or another void line |
 | `duplicate-identity` | error | two AVPs claiming one `(vendor-id, code)`; with a corpus, re-used rows too |

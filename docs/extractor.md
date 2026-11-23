@@ -519,8 +519,15 @@ It reads the same definitions as the docx extractor. Every file states
 - Result codes are read in a clause titled `Result-Code AVP`, `Result Code AVP
   Values`, `Extension to the Result-Code AVP Values` or `Additional Result-Code
   AVP Values`, or under one, in shapes such as `DIAMETER_SUCCESS 2001` and
-  `RESOURCE_FAILURE (4014)`. Every code is `Result-Code`'s. Bit masks are not
-  read.
+  `RESOURCE_FAILURE (4014)`. Every code is `Result-Code`'s.
+- A bit mask's named bits are a `bits` value table, in the clause headed with
+  the AVP's name, the RFC's own or one it adds bits to: a flag and its mask
+  alone on a line, `OLR_DEFAULT_ALGO (0x0000000000000001)` (RFC 7683; RFC
+  5447, 5779, 8581, 8582); a flag and its decimal mask after "This field is a
+  bit mask, and the following bits have been defined:", `RE_AUTH 1` (RFC 6733
+  clause 8.17); or a `Bit | Name` table (RFC 5777 clauses 4.2.4 and 4.2.6). A
+  mask is read as the bit it sets, numbered from 0 as a 3GPP bit table is, and
+  one setting no single bit fails.
 - RFC 6733 section 7.2's `<answer-message>` becomes an `AnswerMessage`.
 - The header block's "Obsoletes: 3588, 5719" becomes
   `; Obsoletes: RFC3588, RFC5719`.

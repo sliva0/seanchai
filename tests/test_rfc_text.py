@@ -373,6 +373,40 @@ def test_the_header_says_which_rfcs_it_obsoletes(tmp_path):
         rfc_text.extract(path)
 
 
+_BITS = (
+    "\n8.17.  Session-Binding AVP\n\n"
+    "   The Session-Binding AVP (AVP Code 270) is of type Unsigned32.\n"
+    "   This field is a bit mask, and the following bits have been defined:\n\n"
+    "   RE_AUTH 1\n\n      When set, ...\n\n   STR 2\n\n      When set, ...\n"
+    "\n7.1.1.  OC-Feature-Vector AVP\n\n"
+    "   OC_PEER_REPORT (0x0000000000000010)\n\n      When this flag is set, ...\n"
+    "\n4.2.4.  Day-Of-Week-Mask AVP\n\n"
+    "   This document specifies the following bits:\n\n"
+    "      Bit  | Name\n     ------+------------\n       0   | SUNDAY\n"
+    "       1   | MONDAY\n\n   The bit MUST be set ...\n"
+)
+
+
+def test_a_bit_masks_named_bits_are_a_bits_table_numbered_from_zero(tmp_path):
+    """RFC 6733's decimal masks after its "bit mask" sentence, RFC 8581's
+    hexadecimal flags and RFC 5777's Bit | Name table, each in the clause its
+    AVP heads; a mask is read as the bit it sets."""
+    spec = _read(tmp_path, _table(_ROW) + _BITS)
+
+    tables = {
+        section.avp: [(row.name, row.value) for row in section.rows]
+        for section in spec.sections
+        if isinstance(section, ast.ValueTable)
+    }
+    assert tables == {
+        "Session-Binding": [("RE_AUTH", 0), ("STR", 1)],
+        "OC-Feature-Vector": [("OC_PEER_REPORT", 4)],
+        "Day-Of-Week-Mask": [("SUNDAY", 0), ("MONDAY", 1)],
+    }
+    with pytest.raises(ExtractionError, match="sets no single bit"):
+        _read(tmp_path, _table(_ROW) + _BITS.replace("0x0000000000000010", "0x3"))
+
+
 def test_a_declaration_without_a_reason_or_for_an_exclusion_is_refused(tmp_path):
     path = tmp_path / "rfc9999.txt"
     path.write_text(_rfc(_table(_ROW)), encoding="utf-8")

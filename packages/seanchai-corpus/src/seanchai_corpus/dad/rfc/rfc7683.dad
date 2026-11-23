@@ -26,6 +26,14 @@ OC-Supported-Features ::= < AVP header: 621 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: OC-Feature-Vector
+; Kind: bits
+; Section: 7.2
+; Page: 25
+OLR_DEFAULT_ALGO = 0
+
+
 ; Type: Grouped AVP
 ; Name: OC-OLR
 ; Section: 7.3

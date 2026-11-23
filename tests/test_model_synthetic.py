@@ -456,3 +456,42 @@ def test_an_error_answer_a_base_gives_names_the_copy_the_base_resolved_to():
     copies = {(each.reference, each.version) for each in written.resolved}
     assert ("TS29.800", "18.1.0") in copies
     assert ("TS29.800", "19.0.0") not in copies
+
+
+def test_a_bit_table_a_vendor_document_prints_for_an_ietf_avp_is_in_the_ietf():
+    """TS 29.273 numbers bits of RFC 5447's MIP6-Feature-Vector in prose no
+    extractor reads, so no committed vendor document prints a bits table for
+    an IETF AVP: the table is the AVP's, in its vendor space, while the
+    document's experimental result codes stay in its own."""
+    rfc = _spec(
+        "RFC 5447",
+        _table(_row("MIP6-Feature-Vector", 124, DataType.UNSIGNED64)),
+    )
+    bits = ast.ValueTable(
+        avp="MIP6-Feature-Vector",
+        kind=ast.ValueKind.BITS,
+        source=ast.SourceRef(section="5.2.3.3"),
+        rows=(ast.ValueRow(name="GTPv2_SUPPORTED", value=46),),
+    )
+    codes = ast.ValueTable(
+        avp="Experimental-Result-Code",
+        kind=ast.ValueKind.RESULT_CODES,
+        source=ast.SourceRef(section="5.2.4"),
+        rows=(ast.ValueRow(name="DIAMETER_ERROR_USER_UNKNOWN", value=5001),),
+    )
+    citing = _spec(
+        "3GPP TS 29.900",
+        ast.ReusedAvps(
+            source=ast.SourceRef(section="5.2.3.1"),
+            rows=(ast.ReusedAvpRow(name="MIP6-Feature-Vector", origin="RFC5447"),),
+        ),
+        bits,
+        codes,
+    )
+    built = _model(rfc, citing)
+
+    placed = {table.avp: table.vendor_id for table in built.value_tables("TS29.900")}
+    assert placed == {"MIP6-Feature-Vector": 0, "Experimental-Result-Code": 10415}
+    avp = built.resolve("TS29.900", "MIP6-Feature-Vector")
+    assert avp is not None and avp.value_table is not None
+    assert avp.value_table.vendor_id == 0
