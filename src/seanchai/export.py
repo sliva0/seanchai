@@ -1537,16 +1537,19 @@ def _write_export(
     summaries = []
     search = []
     mentions = []
+    documents = []
     for entry in corpus.entries:
         document = _write_document(
             corpus, entry, output, declarations, sources, titles, pinned, search
         )
+        documents.append(document)
         summaries.append(
             DocumentSummary.model_validate(
                 {name: getattr(document, name) for name in DocumentSummary.model_fields}
             )
         )
         mentions.extend(_mentions(document))
+    _write(output / "commands.json", _commands(documents))
     _write(
         output / "search.json",
         Search(
@@ -1667,6 +1670,65 @@ def _write_document(
     )
     _write(output / path, document)
     return document
+
+
+def _commands(documents: list[Document]) -> export_schema.Commands:
+    """What `commands.json` lists of `documents`' commands."""
+    commands = []
+    registry = []
+    applications: dict[str, str] = {}
+    for document in documents:
+        for block in document.blocks:
+            kind = block.fields.get("Registry")
+            if block.type == "Registry" and kind == "Application IDs":
+                for row in block.allocations:
+                    if row.code is not None and row.name:
+                        applications.setdefault(str(row.code), row.name)
+            if block.type == "Registry" and kind == "Command Codes":
+                registry += [
+                    export_schema.IndexedCodeRow(
+                        document=document.id,
+                        code=row.code,
+                        name=row.name,
+                        abbreviation=row.abbreviation,
+                        section=block.section,
+                        page=block.page,
+                        line=row.line,
+                        table=block.fields.get("Table"),
+                        defined=row.documents,
+                    )
+                    for row in block.allocations
+                    if row.code is not None and row.name
+                ]
+            command = block.command
+            if command is None or not block.name:
+                continue
+            scope = None
+            if command.application and command.application_clause:
+                scope = export_schema.Scope(
+                    name=command.application, section=command.application_clause
+                )
+            commands.append(
+                export_schema.IndexedCommand(
+                    document=document.id,
+                    name=block.name,
+                    abbreviation=block.abbreviation,
+                    section=block.section,
+                    page=block.page,
+                    line=block.line,
+                    code=command.code,
+                    flags=command.flags,
+                    header=command.header_application_id,
+                    application=command.application_id,
+                    scope=scope,
+                )
+            )
+    return export_schema.Commands(
+        schema_version=SCHEMA_VERSION,
+        commands=tuple(commands),
+        registry=tuple(registry),
+        applications=applications,
+    )
 
 
 def _mentions(document: Document) -> Iterator[Mention]:

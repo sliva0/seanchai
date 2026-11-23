@@ -36,6 +36,7 @@ Neither mode needs a checkout. What each needs downloaded:
 DIR/
   index.json              generator, versions, mode, every document's summary
   search.json             search entries and line mentions, for the search page
+  commands.json           every document's commands and Command Codes rows
   schema.json             JSON Schema of the other files
   syntax/dad.tmLanguage.json   the editors' TextMate grammar, for highlighting
   documents/<id>.json     one corrected file and what its page shows
@@ -50,7 +51,7 @@ same bytes: there are no timestamps.
 `seanchai.export_schema` holds the shapes as pydantic models.
 `SCHEMA_VERSION`, now 2, is written into every file except `schema.json` and
 the grammar, and changes when a reader would have to. `schema.json`'s root is
-one of the four file shapes, so a fixture can be validated against it. A field
+one of the five file shapes, so a fixture can be validated against it. A field
 with no default is always written, null where it says nothing. A field with
 one, as most of a token's, a line's and a block's are, is left out while it
 holds it: a member with no `bold` is not bold, a block with no `rows` has none.
@@ -161,6 +162,19 @@ cells, and a table's column named by one of the file's commands (TS 32.299's
 ACR to CCA). Each has `code`, `request`, `name`, `abbreviation`, and `block`,
 the index of the Message block it names, null for a registry's half, which
 has `allocation` instead, its row's index in the block's `allocations`.
+
+### `commands.json`
+
+What a page shows of a command another document defines, small enough to
+fetch beside one document. `commands` lists every Message block in document
+order: the document's `id`, `name`, `abbreviation`, `section`, `page`, `line`
+(its `; Type:` line), `code`, `flags` as printed, `header` (the id the header
+prints), `application` (the effective id) and `scope`, the `name` and
+`section` of the block's `application` and `application_clause`. `registry`
+lists every Command Codes registry row with a code and a name: `document`,
+`code`, `name`, `abbreviation`, `section`, `page`, `line`, `table` and
+`defined`, its row's `documents`. `applications` maps an application id to
+the name the first Application IDs registry row allocating it prints.
 
 ### `search.json`
 

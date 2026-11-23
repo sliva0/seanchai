@@ -175,7 +175,7 @@ def test_every_file_is_compact_json_its_schema_describes(exported):
     schema = json.loads((exported.path / "schema.json").read_text("utf-8"))
     assert schema == export_schema.json_schema()
     definitions = schema["$defs"]
-    for root in ("Index", "Search", "Document", "RawDocument"):
+    for root in ("Index", "Search", "Document", "RawDocument", "Commands"):
         assert {"$ref": f"#/$defs/{root}"} in schema["oneOf"]
         version = definitions[root]["properties"]["schema_version"]
         assert version["minimum"] == version["maximum"] == export_schema.SCHEMA_VERSION
@@ -185,7 +185,11 @@ def test_every_file_is_compact_json_its_schema_describes(exported):
     ]
     assert all(part.split('"')[0] in definitions for part in references)
 
-    models = {"index.json": export_schema.Index, "search.json": export_schema.Search}
+    models = {
+        "index.json": export_schema.Index,
+        "search.json": export_schema.Search,
+        "commands.json": export_schema.Commands,
+    }
     for name, data in _tree(exported.path).items():
         assert str(ROOT).encode() not in data, name
         if name == SYNTAX_FILE:
@@ -732,6 +736,50 @@ def test_a_row_reads_the_code_and_data_type_it_prints(exported):
     (integer,) = [a for a in registry["allocations"] if a["code"] == 314]
     assert integer["cells"][2] == '"Integer"'
     assert "type" not in integer
+
+
+def test_the_commands_index_lists_every_command_and_registry_row(exported):
+    """`commands.json`, which the explorer reads for a command another
+    document defines."""
+    index = json.loads((exported.path / "commands.json").read_text("utf-8"))
+
+    assert index["schema_version"] == export_schema.SCHEMA_VERSION
+    blocks = [
+        (identifier, block["line"])
+        for identifier, document in exported.docs.items()
+        for block in document["blocks"]
+        if block["type"] == "Message"
+    ]
+    assert sorted((c["document"], c["line"]) for c in index["commands"]) == sorted(
+        blocks
+    )
+    (uar,) = [
+        c
+        for c in index["commands"]
+        if c["document"] == "29229-j10" and c["abbreviation"] == "UAR"
+    ]
+    assert (uar["code"], uar["flags"], uar["header"], uar["application"]) == (
+        300,
+        ["REQ", "PXY"],
+        16777216,
+        16777216,
+    )
+    # TS 29.212's CCRs print bare headers, one per interface clause.
+    ccrs = [
+        c
+        for c in index["commands"]
+        if c["document"] == "29212-j10" and c["abbreviation"] == "CCR"
+    ]
+    gx = ccrs[0]
+    assert (gx["header"], gx["application"], gx["scope"]) == (
+        None,
+        16777238,
+        {"name": "Gx", "section": "5.1"},
+    )
+    assert len(ccrs) == 4
+    rows = [r for r in index["registry"] if r["code"] == 316]
+    assert rows and all(r["document"] == "29230-j30" for r in rows)
+    assert index["applications"]["16777251"] == "3GPP S6a"
 
 
 def test_a_command_codes_row_names_its_request_and_answer(exported):

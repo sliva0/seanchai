@@ -31,6 +31,7 @@ __all__ = [
     "Command",
     "CommandIdentity",
     "CommandSpan",
+    "Commands",
     "Correction",
     "CrossRelease",
     "Document",
@@ -40,6 +41,8 @@ __all__ = [
     "FlagRules",
     "Hole",
     "Index",
+    "IndexedCodeRow",
+    "IndexedCommand",
     "Line",
     "Member",
     "Mention",
@@ -47,6 +50,7 @@ __all__ = [
     "RegistryIdentity",
     "Reservation",
     "Rule",
+    "Scope",
     "Search",
     "SearchEntry",
     "Section",
@@ -494,6 +498,61 @@ class Search(_Model):
     mentions: tuple[Mention, ...]
 
 
+class Scope(_Model):
+    """The Application Scope block naming a command's application, and for a
+    bare header the one stating its id (`Command.application` and
+    `application_clause`)."""
+
+    name: str
+    section: str
+
+
+class IndexedCommand(_Model):
+    """A Message block, as `commands.json` lists it across the corpus:
+    `document` is the document's `id`, `line` its `; Type:` line, `flags` the
+    header's in printed order, `header` the id the header prints and
+    `application` the effective one."""
+
+    document: str
+    name: str
+    abbreviation: str | None
+    section: str
+    page: int | None
+    line: int
+    code: int
+    flags: tuple[ast.CommandFlag, ...]
+    header: int | None
+    application: int | None
+    scope: Scope | None
+
+
+class IndexedCodeRow(_Model):
+    """A Command Codes registry row with a code and a name, at `line` of
+    `document`; `defined` is the documents its Defined-In cell resolves to."""
+
+    document: str
+    code: int
+    name: str
+    abbreviation: str | None
+    section: str
+    page: int | None
+    line: int
+    table: str | None
+    defined: tuple[str, ...]
+
+
+class Commands(_Model):
+    """`commands.json`: every document's commands and Command Codes registry
+    rows, in document order, and each application's name by its id as the
+    first Application IDs registry naming it prints it, for what a page
+    shows of a command another document defines."""
+
+    schema_version: _Version
+    commands: tuple[IndexedCommand, ...]
+    registry: tuple[IndexedCodeRow, ...]
+    applications: dict[str, str]
+
+
 def dumps(model: pydantic.BaseModel) -> str:
     """Serialise a model as the export writes it: compact, keys sorted, one
     final newline."""
@@ -501,9 +560,9 @@ def dumps(model: pydantic.BaseModel) -> str:
 
 
 def json_schema() -> dict[str, Any]:
-    """Return the JSON Schema in `schema.json`: one of the export's four
+    """Return the JSON Schema in `schema.json`: one of the export's five
     file kinds, as `dumps` writes them."""
-    roots = (Index, Search, Document, RawDocument)
+    roots = (Index, Search, Document, RawDocument, Commands)
     _, schema = models_json_schema(
         [(root, "validation") for root in roots], title="Seanchaí export"
     )
