@@ -163,10 +163,10 @@ _GX = ("; Type: Application Scope", "; Name: Gx", "; Section: 5.1")
             id="malformed-cell",
         ),
         pytest.param(
-            _table("Example prose", columns="; Columns: Name Comments"),
+            _table("Example MUST", columns="; Columns: Name M-bit"),
             8,
-            "unknown column 'Comments'",
-            id="unknown-column",
+            "'M-bit' is a structural column, not a mark column",
+            id="structural-mark-column",
         ),
         # TS 29.272 table 7.3.1/1 printed "Enumerate", a typo no free-text
         # field would have caught.
@@ -233,8 +233,8 @@ def test_a_malformed_file_is_refused_at_its_line(text, lineno, fact):
 
 # Constructs no committed file prints, in any spacing the grammar allows: the
 # `ERR` flag and the widest numbers, a member both bold and struck, a quoted
-# name or data type that is an identifier, the two escapes, and free text
-# shaped like a directive.
+# name or data type that is an identifier, the two escapes, free text shaped
+# like a directive, and a mark column no document prints.
 _CORNERS = """\
 ; Specification: 3GPP TS 29.999
 ; Version: 19.0.0
@@ -260,8 +260,8 @@ Example-Mode ::= < Enumerated AVP header: 4294967295 4294967295 >
 
 ; Type: AVP Table
 ; Section: 6.3
-; Columns: Name Code Type
-Example-Mode 4294967295 "Enumerated"
+; Columns: Name Code Type Used-In-ODR
+Example-Mode 4294967295 "Enumerated" ODR,"All (NOTE 5)"
 
 
 ; Type: Registry
@@ -297,8 +297,8 @@ Example-Mode ::= < Enumerated AVP header: 4294967295 4294967295 >
 
 ; Type: AVP Table
 ; Section: 6.3
-; Columns: Name   Code         Type
-Example-Mode      4294967295   Enumerated
+; Columns: Name   Code         Type         Used-In-ODR
+Example-Mode      4294967295   Enumerated   ODR,"All (NOTE 5)"
 
 
 ; Type: Registry
@@ -323,6 +323,8 @@ def test_grammar_no_committed_file_uses_reads_back_canonical():
     assert names == ["Yes", 'a "quoted" back\\slash']
     assert isinstance(table, ast.AvpTable) and isinstance(registry, ast.Registry)
     assert table.rows[0].data_type is ast.DataType.ENUMERATED
+    assert table.rows[0].marks == {"Used-In-ODR": ("ODR", "All (NOTE 5)")}
+    assert ast.mark_column(table.columns[3]) == "Used-In-ODR"
     (row,) = registry.rows
     assert isinstance(row, ast.RegistryRow)
     assert row.data_type is ast.DataType.ENUMERATED

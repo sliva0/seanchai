@@ -1135,7 +1135,7 @@ def _complete_rows_from_prose(
                     may_encrypt=row.may_encrypt,
                 )
             )
-        columns: list[ast.AvpColumn] = []
+        columns: list[ast.AvpColumn | str] = []
         for column in table.columns:
             columns.append(column)
             if column is ast.AvpColumn.NAME:

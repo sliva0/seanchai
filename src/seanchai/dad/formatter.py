@@ -386,7 +386,7 @@ def _format_enumerated(
     return lines
 
 
-def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn) -> str:
+def avp_table_cell(row: ast.AvpTableRow, column: ast.AvpColumn | str) -> str:
     """Spell one modelled cell, `-` for empty. Only meaningful for columns
     the row's table declares."""
     match column:
@@ -427,12 +427,12 @@ _PLAIN_MARK_RE = re.compile(r'[^\s,;"\\]+')
 BLANK_CELL = '""'
 
 
-def marks_cell(marks: ast.Marks, column: ast.AvpColumn | ast.ReusedColumn) -> str:
+def marks_cell(marks: ast.Marks, column: str) -> str:
     """A `MarkColumn` cell: the row's marks joined by commas, each quoted
     exactly when it is not a plain token; `-` for a printed dash and `""`
     for a blank cell."""
     marked = ast.mark_column(column)
-    assert marked is not None, f"{column.value} is no mark column"
+    assert marked is not None, f"{column} is no mark column"
     if marked not in marks:
         return BLANK_CELL
     return ",".join(map(_mark, marks[marked])) or "-"
@@ -454,12 +454,12 @@ def _format_avp_table(
     return [
         *_directives(table, None, path, notes),
         *_table(
-            [column.value for column in table.columns], rows, "; Columns:", path, notes
+            [str(column) for column in table.columns], rows, "; Columns:", path, notes
         ),
     ]
 
 
-def _reused_cell(row: ast.ReusedAvpRow, column: ast.ReusedColumn) -> str:
+def _reused_cell(row: ast.ReusedAvpRow, column: ast.ReusedColumn | str) -> str:
     match column:
         case ast.ReusedColumn.NAME:
             return row.name
@@ -484,7 +484,7 @@ def _format_reused(
     return [
         *_directives(reused, None, path, notes),
         *_table(
-            [column.value for column in reused.columns], rows, "; Columns:", path, notes
+            [str(column) for column in reused.columns], rows, "; Columns:", path, notes
         ),
     ]
 

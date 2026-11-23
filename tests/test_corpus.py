@@ -357,7 +357,7 @@ reason = "clause 6.3.1 states no type"
 """
 # A corpus file the fixture corpus of `_corpus_directory` satisfies: TS 29.900
 # V18.0.0 is all it holds.
-_DESCRIBED = '''format = 1
+_DESCRIBED = '''format = 2
 
 [[final_version]]
 document = "TS29.900"
@@ -439,7 +439,7 @@ def test_a_corpus_directory_brings_its_rules_raw_mirror_included(tmp_path):
     for raw in (False, True):
         assert corpus.Corpus.load([directory], raw=raw).rules == corpus.Rules(
             path=directory / "corpus.toml",
-            format=1,
+            format=2,
             final_versions={"TS29.900": "18.0.0"},
         )
     bare = corpus.Corpus.load([_corpus_directory(tmp_path / "bare")])
@@ -599,41 +599,41 @@ _FILL = (
         ("format = [\n", "corpus.toml"),
         ('format = "1"\n', "states no corpus format"),
         ("format = true\n", "states no corpus format"),
-        ("format = 1\n[[stand_ins]]\n", "stand_ins: not a table"),
-        ("format = 1\n[final_version]\n", r"must be \[\[final_version\]\]"),
+        ("format = 2\n[[stand_ins]]\n", "stand_ins: not a table"),
+        ("format = 2\n[final_version]\n", r"must be \[\[final_version\]\]"),
         (
-            'format = 1\n[[final_version]]\ndocument = "TS29.900"\n'
+            'format = 2\n[[final_version]]\ndocument = "TS29.900"\n'
             'version = "18.0.0"\n',
             "states document, evidence, version",
         ),
         (
-            'format = 1\n[[final_version]]\ndocument = "TS29.900"\nversion = 18\n'
+            'format = 2\n[[final_version]]\ndocument = "TS29.900"\nversion = 18\n'
             'evidence = "x"\n',
             "version must be non-empty text",
         ),
         (
-            "format = 1\n"
+            "format = 2\n"
             + _FILL.replace('citing_version = "18.0.0"', "citing_version = 18"),
             'citing_version must be a version, or "" for a document without one',
         ),
         (
-            "format = 1\n"
+            "format = 2\n"
             + _FILL.replace('fields = ["data_type"]', 'fields = ["code"]'),
             "fields must be a non-empty list of distinct names of data_type",
         ),
         (
-            "format = 1\n"
+            "format = 2\n"
             + _FILL.replace("[[release_fill]]", "[[release_stand_in]]").replace(
                 'names = ["Thing"]\nfields = ["data_type"]\n', 'specific = "yes"\n'
             ),
             "specific must be true or false",
         ),
         (
-            "format = 1\n" + _FILL * 2,
+            "format = 2\n" + _FILL * 2,
             r"\[\[release_fill\]\] TS29.900 18.0.0 TS29.900 is stated twice",
         ),
         (
-            'format = 1\n[[stand_in]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
+            'format = 2\n[[stand_in]]\ncited = "TS29.900"\nciting = "TS29.900"\n'
             'citing_version = "18.0.0"\nrevision = "0"\nversion = "18.0.0"\n'
             'evidence = "x"\n',
             r"no \[\[cited_revision\]\] of that citing copy names the revision",
@@ -714,7 +714,7 @@ def test_an_entry_naming_what_the_corpus_lacks_fails_the_load(tmp_path, entry, m
     """An entry answering no citation is stale, as a hole record's entry is:
     the rules describe the corpus beside them. Taken as given, they are not
     checked."""
-    text = "format = 1\n" + entry.replace("\n[[", '\nevidence = "x"\n[[')
+    text = "format = 2\n" + entry.replace("\n[[", '\nevidence = "x"\n[[')
     directory = _corpus_directory(tmp_path, rules=text + 'evidence = "x"\n')
 
     with pytest.raises(corpus.CorpusError, match=message):
@@ -726,7 +726,7 @@ def test_an_entry_naming_what_the_corpus_lacks_fails_the_load(tmp_path, entry, m
 def test_a_rule_keyed_by_no_version_answers_the_version_less_copy(tmp_path):
     directory = _corpus_directory(
         tmp_path,
-        rules='format = 1\n[[cited_version]]\nciting = "RFC9999"\nciting_version = ""\n'
+        rules='format = 2\n[[cited_version]]\nciting = "RFC9999"\nciting_version = ""\n'
         'cited = "TS29.900"\nversion = "18.0.0"\nevidence = "x"\n',
     )
     (directory / "rfc9999.dad").write_text(
@@ -743,7 +743,7 @@ def test_a_rule_keyed_by_no_version_answers_the_version_less_copy(tmp_path):
 
 
 @pytest.mark.parametrize(
-    ("found", "upgrade"), [(2, "upgrade seanchai$"), (0, "upgrade seanchai-corpus$")]
+    ("found", "upgrade"), [(3, "upgrade seanchai$"), (1, "upgrade seanchai-corpus$")]
 )
 def test_a_corpus_of_another_format_names_the_package_to_upgrade(
     tmp_path, found, upgrade
@@ -751,7 +751,7 @@ def test_a_corpus_of_another_format_names_the_package_to_upgrade(
     """The format is read before any `.dad` file, so a newer grammar the
     library cannot parse is refused as a format, not as a parse error."""
     directory = _corpus_directory(
-        tmp_path, rules=_DESCRIBED.replace("format = 1", f"format = {found}")
+        tmp_path, rules=_DESCRIBED.replace("format = 2", f"format = {found}")
     )
     (directory / "newer.dad").write_text("; Specification: nonsense\n", "utf-8")
 
@@ -760,7 +760,7 @@ def test_a_corpus_of_another_format_names_the_package_to_upgrade(
             corpus.Corpus.load([directory], raw=raw)
         assert (raised.value.found, raised.value.reads) == (found, corpus.FORMATS)
         assert f"the corpus is format {found}" in str(raised.value)
-        assert f"seanchai {seanchai.__version__} reads format 1" in str(raised.value)
+        assert f"seanchai {seanchai.__version__} reads format 2" in str(raised.value)
         assert str(directory / "corpus.toml") in str(raised.value)
 
 
@@ -768,7 +768,7 @@ def test_installed_refuses_a_corpus_of_a_format_the_library_does_not_read(
     monkeypatch,
 ):
     assert corpus.Corpus.installed().rules.format in corpus.FORMATS
-    monkeypatch.setattr(corpus, "FORMATS", (2,))
+    monkeypatch.setattr(corpus, "FORMATS", (3,))
 
     with pytest.raises(corpus.CorpusFormatError, match=r"upgrade seanchai-corpus$"):
         corpus.Corpus.installed()

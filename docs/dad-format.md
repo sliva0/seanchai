@@ -77,9 +77,11 @@ blank lines. Each section starts with `; Type:`.
   same text, and every committed file is a fixed point of `seanchai format`.
 - A hand-written file, for a proprietary extension say, is read by the
   parser, linter and model like an extracted one.
-- A new column, `; Type:` or directive key is a format change. It needs a
-  source document that cannot otherwise be recorded; consumer convenience
-  belongs in the model.
+- A new `; Type:`, directive key or structural column is a format change.
+  It needs a source document that cannot otherwise be recorded; consumer
+  convenience belongs in the model. Mark columns are open
+  ([grammar.md](grammar.md#avp-table)): a document's own applicability or
+  per-command column needs no format change.
 
 ## Comments
 

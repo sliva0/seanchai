@@ -186,7 +186,7 @@ def test_an_application_carries_its_tables_marks(built):
     (gx,) = written.applications
 
     marked = {each.name: each for each in gx.marks}
-    assert ast.MarkColumn.ACCESS_TYPES in marked["AN-GW-Address"].marks
+    assert "Acc-Type" in marked["AN-GW-Address"].marks
     assert all(ast.interface_clause(each.section) == "5" for each in gx.marks)
 
 

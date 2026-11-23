@@ -27,6 +27,7 @@ __all__ = [
     "EXTERNAL_REF_PATTERN",
     "EXTERNAL_REF_RE",
     "IETF_VENDOR",
+    "MARK_COLUMN_PATTERN",
     "REUSED_COLUMNS",
     "SPEC_REF_PATTERN",
     "SPEC_REF_RE",
@@ -38,6 +39,7 @@ __all__ = [
     "AvpName",
     "AvpRule",
     "AvpTable",
+    "AvpTableColumn",
     "AvpTableRow",
     "ClauseWildcard",
     "CommandFlag",
@@ -67,6 +69,7 @@ __all__ = [
     "ReusedAvpRow",
     "ReusedAvps",
     "ReusedColumn",
+    "ReusedTableColumn",
     "Section",
     "SectionNumber",
     "SourceRef",
@@ -584,47 +587,10 @@ class AvpFlagRules(Node):
         return [flag for flag in AvpFlag if flag in flags]
 
 
-class MarkColumn(enum.StrEnum):
-    """Columns in which a table marks where its row applies, each cell a
-    list of the document's marks. Both table kinds may carry them.
-
-    What a mark means is the document's legend's to say, so the cells keep
-    its spelling and the model and consumers interpret them per label:
-
-    - `Acc-Type`: TS 29.212's and 29.215's "Acc. Type", the IP-CAN access
-      types the AVP applies to (`All`, `3GPP-EPS`, `Non-3GPP-EPS`, ...).
-    - `Applicability`: the supported features an AVP belongs to ("AVPs
-      marked with a supported feature are applicable as described in clause
-      5.4.1", TS 29.212 table 5.3.0.1 note 9; TS 29.468's `V2X Localized
-      User Plane`), and in TS 29.212 and 29.215 also the function: `CC`
-      charging control, `PC` policy control, `Both`, `ADC`, `ABC` (note 3).
-    - `Reference-Points`: TS 29.061's "Applicable Reference Points" (`Gi`,
-      `Sgi`).
-    - `ACR`, `ACA`, `CCR`, `CCA`: TS 32.299's "Used in" columns, one per
-      command: `M`, `OM` or `OC` (table 7.1.0.1, clause 7.1.0) or `X`
-      (tables 7.2.0.1 and 7.3.1-7.5.1) where the AVP is used in it, a dash
-      where it is not.
-    - `SI`, `CCR-MSCC`, `CCA-MSCC`: OMA-DDS-Charging_Data table 11's "Used
-      In" columns for the Service-Information AVP and for the
-      Multiple-Services-Credit-Control AVP in each command, beside its `ACR`
-      to `CCA`.
-    """
-
-    ACCESS_TYPES = "Acc-Type"
-    APPLICABILITY = "Applicability"
-    REFERENCE_POINTS = "Reference-Points"
-    ACR = "ACR"
-    ACA = "ACA"
-    SI = "SI"
-    CCR = "CCR"
-    CCR_MSCC = "CCR-MSCC"
-    CCA = "CCA"
-    CCA_MSCC = "CCA-MSCC"
-
-
 class AvpColumn(enum.StrEnum):
-    """Columns of an AVP table that the format models, spelled as the
-    `; Columns:` directive writes them."""
+    """The structural columns of an AVP table, spelled as the `; Columns:`
+    directive writes them. Any other column is a mark column
+    (`MarkColumn`)."""
 
     NAME = "Name"
     # oneM2M TS-0004 table A.4-1 prints each row's vendor ("AVP Vendor Id"),
@@ -638,20 +604,11 @@ class AvpColumn(enum.StrEnum):
     SHOULD_NOT = "S.not"
     MUST_NOT = "M.not"
     ENCRYPT = "Encrypt"
-    ACCESS_TYPES = MarkColumn.ACCESS_TYPES.value
-    APPLICABILITY = MarkColumn.APPLICABILITY.value
-    REFERENCE_POINTS = MarkColumn.REFERENCE_POINTS.value
-    ACR = MarkColumn.ACR.value
-    ACA = MarkColumn.ACA.value
-    SI = MarkColumn.SI.value
-    CCR = MarkColumn.CCR.value
-    CCR_MSCC = MarkColumn.CCR_MSCC.value
-    CCA = MarkColumn.CCA.value
-    CCA_MSCC = MarkColumn.CCA_MSCC.value
 
 
 class ReusedColumn(enum.StrEnum):
-    """Columns of a re-used AVPs table that the format models."""
+    """The structural columns of a re-used AVPs table. Any other column is a
+    mark column (`MarkColumn`)."""
 
     NAME = "Name"
     FROM = "From"
@@ -660,13 +617,6 @@ class ReusedColumn(enum.StrEnum):
     # code, 29.172 the type too, of the AVPs they re-use.
     CODE = "Code"
     TYPE = "Type"
-    ACCESS_TYPES = MarkColumn.ACCESS_TYPES.value
-    APPLICABILITY = MarkColumn.APPLICABILITY.value
-    REFERENCE_POINTS = MarkColumn.REFERENCE_POINTS.value
-    ACR = MarkColumn.ACR.value
-    ACA = MarkColumn.ACA.value
-    CCR = MarkColumn.CCR.value
-    CCA = MarkColumn.CCA.value
 
 
 REUSED_COLUMNS: tuple[ReusedColumn, ...] = (
@@ -675,16 +625,68 @@ REUSED_COLUMNS: tuple[ReusedColumn, ...] = (
     ReusedColumn.M_BIT,
 )
 
+# What a mark column may be called: a token, so `; Columns:` stays a list
+# split at spaces.
+MARK_COLUMN_PATTERN = r"[A-Za-z0-9][A-Za-z0-9_.-]*"
+_STRUCTURAL_COLUMNS = frozenset(
+    column.value for kind in (AvpColumn, ReusedColumn) for column in kind
+)
 
-def mark_column(column: AvpColumn | ReusedColumn) -> MarkColumn | None:
-    """The `MarkColumn` a table column is, or None for any other column."""
-    return MarkColumn(column.value) if column.value in MarkColumn else None
+
+def _not_structural(name: str) -> str:
+    if name in _STRUCTURAL_COLUMNS:
+        raise ValueError(f"{name!r} is a structural column, not a mark column")
+    return name
 
 
-def _check_columns(columns: tuple[AvpColumn | ReusedColumn, ...]) -> None:
+# A column in which a table marks where its row applies, each cell a list of
+# the document's marks. Both table kinds may carry them, and the set is open:
+# a `; Columns:` entry that is no structural column of its table kind, nor of
+# the other, is a mark column, named by the label its document prints in
+# token form. What a mark means is the document's legend's to say, so the
+# cells keep its spelling and consumers interpret them per column. The corpus
+# holds:
+#
+# - `Acc-Type`: TS 29.212's and 29.215's "Acc. Type", the IP-CAN access types
+#   the AVP applies to (`All`, `3GPP-EPS`, `Non-3GPP-EPS`, ...).
+# - `Applicability`: the supported features an AVP belongs to ("AVPs marked
+#   with a supported feature are applicable as described in clause 5.4.1",
+#   TS 29.212 table 5.3.0.1 note 9; TS 29.468's `V2X Localized User Plane`),
+#   and in TS 29.212 and 29.215 also the function: `CC` charging control,
+#   `PC` policy control, `Both`, `ADC`, `ABC` (note 3).
+# - `Reference-Points`: TS 29.061's "Applicable Reference Points" (`Gi`,
+#   `Sgi`).
+# - `ACR`, `ACA`, `CCR`, `CCA`: TS 32.299's "Used in" columns, one per
+#   command: `M`, `OM` or `OC` (table 7.1.0.1, clause 7.1.0) or `X` (tables
+#   7.2.0.1 and 7.3.1-7.5.1) where the AVP is used in it, a dash where it is
+#   not.
+# - `SI`, `CCR-MSCC`, `CCA-MSCC`: OMA-DDS-Charging_Data table 11's "Used In"
+#   columns for the Service-Information AVP and for the
+#   Multiple-Services-Credit-Control AVP in each command, beside its `ACR` to
+#   `CCA`.
+MarkColumn = Annotated[
+    str,
+    Field(pattern=f"^{MARK_COLUMN_PATTERN}$"),
+    pydantic.AfterValidator(_not_structural),
+]
+
+# A table column: a structural one first, so that `Name` is never read as a
+# mark column of that name.
+AvpTableColumn = Annotated[AvpColumn | MarkColumn, Field(union_mode="left_to_right")]
+ReusedTableColumn = Annotated[
+    ReusedColumn | MarkColumn, Field(union_mode="left_to_right")
+]
+
+
+def mark_column(column: str) -> str | None:
+    """`column` where it is a mark column, or None for a structural one."""
+    return None if isinstance(column, AvpColumn | ReusedColumn) else column
+
+
+def _check_columns(columns: Sequence[str]) -> None:
     """Check `; Columns:`, the modelled source columns in source order.
     Unmodelled columns are dropped; docs/extractor.md says why."""
-    labels = [column.value for column in columns]
+    labels = [str(column) for column in columns]
     if len(set(labels)) != len(labels):
         raise ValueError(f"duplicate column in {labels}")
 
@@ -711,15 +713,12 @@ Mark = Annotated[EnumValueName, pydantic.AfterValidator(_not_the_dash)]
 Marks = dict[MarkColumn, tuple[Mark, ...]]
 
 
-def _check_marks(
-    name: str, marks: Marks, columns: tuple[AvpColumn | ReusedColumn, ...]
-) -> None:
+def _check_marks(name: str, marks: Marks, columns: Sequence[str]) -> None:
     declared = {mark_column(column) for column in columns}
     for column in marks:
         if column not in declared:
             raise ValueError(
-                f"{name}: {column.value} marks set but the table has no"
-                f" {column.value} column"
+                f"{name}: {column} marks set but the table has no {column} column"
             )
 
 
@@ -812,7 +811,7 @@ class AvpTable(Node):
     # `; Table:` to record.
     table: TableLabel | None = None
     source: SourceRef
-    columns: Annotated[tuple[AvpColumn, ...], Field(min_length=1)]
+    columns: Annotated[tuple[AvpTableColumn, ...], Field(min_length=1)]
     # A table section with no rows carries no information, and would mean the
     # extractor found a caption but lost its contents.
     rows: Annotated[tuple[AvpTableRow, ...], Field(min_length=1)]
@@ -899,7 +898,9 @@ class ReusedAvps(Node):
     type: Literal["Reused AVPs"] = "Reused AVPs"
     table: TableLabel | None = None
     source: SourceRef
-    columns: Annotated[tuple[ReusedColumn, ...], Field(min_length=1)] = REUSED_COLUMNS
+    columns: Annotated[tuple[ReusedTableColumn, ...], Field(min_length=1)] = (
+        REUSED_COLUMNS
+    )
     rows: Annotated[tuple[ReusedAvpRow, ...], Field(min_length=1)]
 
     @pydantic.model_validator(mode="after")

@@ -60,7 +60,7 @@ def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
     in that command's column (TS 32.299 clause 7.1.0). A blank cell marks
     nothing; `* [ AVP ]` is skipped.
     """
-    unused: dict[tuple[str, ast.MarkColumn], list[str]] = defaultdict(list)
+    unused: dict[tuple[str, str], list[str]] = defaultdict(list)
     for section in spec.sections:
         if not isinstance(section, ast.AvpTable | ast.ReusedAvps):
             continue
@@ -71,12 +71,9 @@ def _members_marked_unused(spec: ast.Specification) -> list[Finding]:
                     unused[row.name, column].append(label)
     findings = []
     for position, section in enumerate(spec.sections):
-        if (
-            not isinstance(section, ast.Message)
-            or section.abbreviation not in ast.MarkColumn
-        ):
+        if not isinstance(section, ast.Message):
             continue
-        command = ast.MarkColumn(section.abbreviation)
+        command = section.abbreviation
         for number, rule in enumerate(section.avps):
             if rule.name == "AVP":
                 continue

@@ -760,7 +760,7 @@ class Marks(_Plain):
     # The table's label and the clause it sits in: "5a.4.0.1" and "5a.4.0".
     table: str | None
     section: str
-    marks: dict[ast.MarkColumn, tuple[str, ...] | None]
+    marks: dict[str, tuple[str, ...] | None]
 
     def __repr__(self) -> str:
         return f"<Marks table {self.table}, clause {self.section}: {self.marks}>"

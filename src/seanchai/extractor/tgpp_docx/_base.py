@@ -132,7 +132,7 @@ class _ReusedTable:
     caption for the origins a clause's prose states."""
 
     rows: list[ast.ReusedAvpRow]
-    columns: tuple[ast.ReusedColumn, ...]
+    columns: tuple[ast.ReusedColumn | str, ...]
     label: str | None
     section: str
 

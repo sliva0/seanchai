@@ -12,7 +12,7 @@
 # Which generation of the `.dad` grammar and of this directory's layout the
 # corpus is; a library refuses a corpus of a format it does not read
 # (docs/development.md).
-format = 1
+format = 2
 
 # A document its citers number otherwise than its publisher does, by the
 # reference a From cell carries. Corrections name the publisher's document in

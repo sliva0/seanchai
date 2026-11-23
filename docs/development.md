@@ -288,12 +288,14 @@ until it exists.
 
 ## The corpus format
 
-`corpus.toml` states the format, `format = 1`, and `corpus.FORMATS` lists the
-formats the library reads. Loading another format raises
-`corpus.CorpusFormatError` before any `.dad` file is parsed, naming both
-numbers and the package to upgrade. A directory without `corpus.toml` has no
-format check and no resolution rules, and is loaded as it parses; a
-`holes.toml` beside its files is still read
+`corpus.toml` states the format, `format = 2`, and `corpus.FORMATS` lists the
+formats the library reads, `(2,)`. Format 1, the grammar before mark columns
+were open, is not read: nothing depends on a format 1 corpus, so a second
+grammar would serve no one. Loading another
+format raises `corpus.CorpusFormatError` before any `.dad` file is parsed,
+naming both numbers and the package to upgrade. A directory without
+`corpus.toml` has no format check and no resolution rules, and is loaded as
+it parses; a `holes.toml` beside its files is still read
 ([consumers.md](consumers.md#known-holes)).
 
 Bump the number when a library that reads the old format would misread or

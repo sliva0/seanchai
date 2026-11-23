@@ -584,7 +584,7 @@ def _blocks(
             fields["command"] = commands[index]
             spans += _message_spans(placed, index, placement, section, commands[index])
         if isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
-            fields["columns"] = tuple(column.value for column in section.columns)
+            fields["columns"] = tuple(str(column) for column in section.columns)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
             fields["rows"] = _table_rows(placed, index, section)
             spans += _column_spans(placed.lines, spec, placement, abbreviations)

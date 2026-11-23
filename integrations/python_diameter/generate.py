@@ -604,11 +604,7 @@ def _order(definition: Definition) -> tuple:
 # of its own, and these say which access types and features within it an
 # AVP serves (TS 29.212 table 5.3.0.1 notes 3 and 9), or on which reference
 # points (TS 29.061 table 9a).
-_NOTED_MARKS = (
-    ast.MarkColumn.ACCESS_TYPES,
-    ast.MarkColumn.APPLICABILITY,
-    ast.MarkColumn.REFERENCE_POINTS,
-)
+_NOTED_MARKS = ("Acc-Type", "Applicability", "Reference-Points")
 
 
 def member_note(
@@ -634,8 +630,10 @@ def member_note(
         row for row in rows if ast.interface_clause(row.section) == application.clause
     ]
     columns = [(noted, here) for noted in _NOTED_MARKS]
-    if message.abbreviation in ast.MarkColumn:
-        columns.insert(0, (ast.MarkColumn(message.abbreviation), list(rows)))
+    # A column named by the command (TS 32.299's ACR to CCA) says whether the
+    # command uses the AVP.
+    if any(message.abbreviation in row.marks for row in rows):
+        columns.insert(0, (message.abbreviation, list(rows)))
     spelled = []
     for column, candidates in columns:
         found = next(
@@ -650,9 +648,9 @@ def member_note(
             continue
         row, marks = found
         if not marks:
-            spelled.append(f"{column.value}: - (unused, table {row.table})")
+            spelled.append(f"{column}: - (unused, table {row.table})")
         elif marks != ("All",):  # every access type restricts nothing
-            spelled.append(f"{column.value}: {', '.join(marks)}")
+            spelled.append(f"{column}: {', '.join(marks)}")
     return "; ".join(spelled) or None
 
 

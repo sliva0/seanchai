@@ -270,8 +270,8 @@ columns       = column *(1*SP column)
 column        = "Name" / "Vendor-ID" / "Code" / "Section" / "Type"
               / "Must" / "May" / "S.not" / "M.not" / "Encrypt"
               / mark-column
-mark-column   = "Acc-Type" / "Applicability" / "Reference-Points"
-              / "ACR" / "ACA" / "SI" / "CCR" / "CCR-MSCC" / "CCA" / "CCA-MSCC"
+mark-column   = (ALPHA / DIGIT) *(ALPHA / DIGIT / "_" / "." / "-")
+                ; any other name but a structural column of either table
 table-row     = cell *(1*SP cell)
 cell          = 1*(quoted / %x21 / %x23-10FFFF)   ; spaces only inside quotes
 quoted        = DQUOTE *(name-char / SP) DQUOTE
@@ -315,7 +315,11 @@ vendor comes from `; Vendor-ID:` and the V flag
 ([linter.md](linter.md#vendor-spaces)).
 
 A mark column holds the document's marks for where a row applies, in its
-spelling, comma-separated and uninterpreted:
+spelling, comma-separated and uninterpreted. The set is open: a column that
+is not one of the structural columns above, nor a re-used table's, is a mark
+column, named by the label its document prints, written as one token. A
+document with a column of its own needs an extractor reading, not a format
+change. The corpus holds:
 
 | Column | Source |
 |---|---|
@@ -324,6 +328,10 @@ spelling, comma-separated and uninterpreted:
 | `Reference-Points` | TS 29.061 (`Gi,Sgi`) |
 | `ACR`, `ACA`, `CCR`, `CCA` | TS 32.299's use per command (`M`, `OM`, `OC`, `X`) |
 | `SI`, `CCR-MSCC`, `CCA-MSCC` | OMA-DDS-Charging_Data table 11 |
+
+A column named as one of the file's commands abbreviates, as `ACR`, marks
+that command's use of the AVP (`member-marked-unused` in
+[linter.md](linter.md#single-file-rules)).
 
 A mark keeps what the document prints beside it, mostly a note reference. A
 mark that is not a `plain-mark` is quoted as an enum value name is

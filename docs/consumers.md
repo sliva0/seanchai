@@ -680,9 +680,11 @@ documents print, depth first. TS 29.229 prints its own in clause 7.3.1; TS
 ### Marks
 
 `marks` returns, for each row of a table with mark columns, the table's label
-and clause and the row's marks per column. Each cell is a tuple of marks,
-`()` for a dash, or None when blank. The document's legend gives their
-meaning:
+and clause and the row's marks per column, keyed by the column's name as
+`; Columns:` spells it. Each cell is a tuple of marks, `()` for a dash, or
+None when blank. The set of columns is open
+([grammar.md](grammar.md#avp-table)); the document's legend gives their
+meaning. The corpus holds:
 
 | Column | Documents | Means |
 |---|---|---|

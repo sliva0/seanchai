@@ -28,7 +28,7 @@ _COLUMNS = (
     ast.AvpColumn.SHOULD_NOT,
     ast.AvpColumn.MUST_NOT,
     ast.AvpColumn.ENCRYPT,
-    ast.AvpColumn.ACCESS_TYPES,
+    "Acc-Type",
 )
 
 _THREE_GPP_ROWS = (

@@ -70,8 +70,10 @@ class CorpusNotInstalledError(CorpusError):
 
 # The corpus formats this library reads. A format is the generation of the
 # `.dad` grammar and of the corpus directory's layout and records, as the
-# corpus's `CORPUS_FILE` states it (docs/development.md).
-FORMATS: tuple[int, ...] = (1,)
+# corpus's `CORPUS_FILE` states it (docs/development.md). Format 1 is not
+# read: no release of the library read anything else before format 2
+# changed the grammar, and nothing depends on a format 1 corpus.
+FORMATS: tuple[int, ...] = (2,)
 
 
 class CorpusFormatError(CorpusError):
@@ -253,7 +255,7 @@ class Rules:
         found = data.get("format")
         if not isinstance(found, int) or isinstance(found, bool):
             raise CorpusError(
-                f"{path}: states no corpus format: a top-level `format = 1`"
+                f"{path}: states no corpus format: a top-level `format = 2`"
             )
         if found not in FORMATS:
             raise CorpusFormatError(path, found)

@@ -650,12 +650,12 @@ def test_marks_give_every_tables_row_in_file_order(built):
 
     assert (gx.table, gx.section) == ("5.3.0.1", "5.3.0")
     assert gx.marks == {
-        ast.MarkColumn.ACCESS_TYPES: ("All",),
-        ast.MarkColumn.APPLICABILITY: ("Both", "Rel8", "EPC-routed"),
+        "Acc-Type": ("All",),
+        "Applicability": ("Both", "Rel8", "EPC-routed"),
     }
     assert gxx.table == "5a.4.0.1"
-    assert gxx.marks[ast.MarkColumn.APPLICABILITY] == ("EPC-routed (See NOTE 8)",)
-    commands = [ast.MarkColumn(each) for each in ("ACR", "ACA", "CCR", "CCA")]
+    assert gxx.marks["Applicability"] == ("EPC-routed (See NOTE 8)",)
+    commands = ["ACR", "ACA", "CCR", "CCA"]
     (charging,) = built.marks("TS32.299", "Error-Message")
     assert charging.marks == dict.fromkeys(commands, ())
     (termination,) = built.marks("TS32.299", "Termination-Cause")

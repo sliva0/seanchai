@@ -500,20 +500,33 @@ def _cells(body: list[tuple[int, str]], count: int):
         yield lineno, cells
 
 
-def _columns[T: enum.StrEnum](directive: _Directive, known: type[T]) -> tuple[T, ...]:
+def _columns[T: enum.StrEnum](
+    directive: _Directive, known: type[T], marks: bool = True
+) -> tuple[T | str, ...]:
     """The `; Columns:` directive: which columns the source table had, and in
-    which order. Only modelled columns appear — see `ast._check_columns`."""
-    columns: list[T] = []
+    which order. Only modelled columns appear — see `ast._check_columns`. A
+    token that is none of `known` is a mark column (`ast.MarkColumn`) where
+    the table kind has them (`marks`)."""
+    columns: list[T | str] = []
     for token in directive.value.split():
-        try:
+        if token in known:
             columns.append(known(token))
-        except ValueError:
-            known_names = ", ".join(member.value for member in known)
-            raise DadParseError(
-                directive.lineno,
-                f"unknown column {token!r} (expected one of {known_names})",
-            ) from None
+            continue
+        if marks and _MARK_COLUMN_RE.fullmatch(token):
+            with _validated(directive.lineno):
+                columns.append(_MARK_COLUMN.validate_python(token))
+            continue
+        known_names = ", ".join(member.value for member in known)
+        raise DadParseError(
+            directive.lineno,
+            f"unknown column {token!r} (expected one of {known_names}"
+            + (", or a mark column's name)" if marks else ")"),
+        )
     return tuple(columns)
+
+
+_MARK_COLUMN_RE = re.compile(ast.MARK_COLUMN_PATTERN)
+_MARK_COLUMN = pydantic.TypeAdapter(ast.MarkColumn)
 
 
 def _flags(cell: str, lineno: int) -> frozenset[ast.AvpFlag]:
@@ -544,23 +557,20 @@ def _encrypt(cell: str, lineno: int) -> bool | None:
 
 
 def _marks(
-    marks: dict[ast.MarkColumn, tuple[str, ...]],
-    column: ast.AvpColumn | ast.ReusedColumn,
-    cell: str,
-    lineno: int,
+    marks: dict[str, tuple[str, ...]], column: str, cell: str, lineno: int
 ) -> None:
     """A `MarkColumn` cell into `marks`: comma-separated marks, plain or
     quoted; `-` for a printed dash, no marks; `""` for a blank cell, no
     entry. The marks themselves are checked by the row's validation."""
     marked = ast.mark_column(column)
-    assert marked is not None, f"{column.value} is no mark column"
+    assert marked is not None, f"{column} is no mark column"
     if cell == formatter.BLANK_CELL:
         return
     if cell == "-":
         marks[marked] = ()
         return
     if not _MARKS_RE.fullmatch(cell):
-        raise DadParseError(lineno, f"malformed {column.value} cell {cell!r}")
+        raise DadParseError(lineno, f"malformed {column} cell {cell!r}")
     marks[marked] = tuple(
         _ESCAPE_RE.sub(r"\1", mark[1:-1]) if mark.startswith('"') else mark
         for mark in _MARK_RE.findall(cell)
@@ -568,10 +578,10 @@ def _marks(
 
 
 def _avp_table_row(
-    columns: tuple[ast.AvpColumn, ...], cells: list[str], lineno: int
+    columns: tuple[ast.AvpColumn | str, ...], cells: list[str], lineno: int
 ) -> ast.AvpTableRow:
     name: str | None = None
-    marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
+    marks: dict[str, tuple[str, ...]] = {}
     vendor_id: int | None = None
     code: int | None = None
     section: str | None = None
@@ -656,14 +666,14 @@ def _parse_avp_table(
 
 
 def _reused_row(
-    columns: tuple[ast.ReusedColumn, ...], cells: list[str], lineno: int
+    columns: tuple[ast.ReusedColumn | str, ...], cells: list[str], lineno: int
 ) -> ast.ReusedAvpRow:
     name: str | None = None
     origin: str | None = None
     m_bit: ast.MBitOverride | None = None
     code: int | None = None
     data_type: ast.DataType | None = None
-    marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
+    marks: dict[str, tuple[str, ...]] = {}
     for column, text in zip(columns, cells, strict=True):
         match column:
             case ast.ReusedColumn.NAME:
@@ -753,6 +763,14 @@ def _documents(cell: str, lineno: int) -> tuple[str, ...]:
     return documents
 
 
+def _registry_columns(directive: _Directive) -> tuple[ast.RegistryColumn, ...]:
+    """A registry's `; Columns:`, which names no mark column."""
+    return tuple(
+        ast.RegistryColumn(column)
+        for column in _columns(directive, ast.RegistryColumn, marks=False)
+    )
+
+
 def _registry_row(
     columns: tuple[ast.RegistryColumn, ...], cells: list[str], lineno: int
 ) -> ast.RegistryRow:
@@ -820,7 +838,7 @@ def _parse_registry(
     kind = _pop(directives, "Registry", lineno)
     table = _pop(directives, "Table", lineno)
     columns_directive = _pop(directives, "Columns", lineno)
-    columns = _columns(columns_directive, ast.RegistryColumn)
+    columns = _registry_columns(columns_directive)
     # Before the rows, which each need their code.
     if ast.RegistryColumn.CODE not in columns:
         raise DadParseError(columns_directive.lineno, "registry has no Code column")

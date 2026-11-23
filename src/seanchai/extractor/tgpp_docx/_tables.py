@@ -62,45 +62,48 @@ _PROSE_COLUMNS = frozenset({"Comments", "Comment", "Description"})
 
 
 # Columns marking where a row applies (`ast.MarkColumn`), keyed by the label
-# they print. A cell lists the document's marks, and what separates them is
-# the document's convention: TS 29.212 writes "Both Rel8" and "3GPP-EPS,
-# Non-3GPP-EPS", where TS 29.468 names a feature "V2X Localized User Plane"
-# (`worded-marks`). So each column is read only where its quirk is declared,
-# the declaration naming the legend; elsewhere it is dropped with the
-# unmodelled columns' warning.
+# they print, with the name each is written under. A cell lists the
+# document's marks, and what separates them is the document's convention: TS
+# 29.212 writes "Both Rel8" and "3GPP-EPS, Non-3GPP-EPS", where TS 29.468
+# names a feature "V2X Localized User Plane" (`worded-marks`). So each column
+# is read only where its quirk is declared, the declaration naming the legend;
+# elsewhere it is dropped with the unmodelled columns' warning. The format
+# takes any column name, so a new document's column needs an entry here and a
+# quirk, not a format change.
 _MARK_COLUMNS = {
-    "Acc. Type": ast.MarkColumn.ACCESS_TYPES,
-    "Acc. type": ast.MarkColumn.ACCESS_TYPES,  # TS 29.215
-    "Applicability": ast.MarkColumn.APPLICABILITY,
+    "Acc. Type": "Acc-Type",
+    "Acc. type": "Acc-Type",  # TS 29.215
+    "Applicability": "Applicability",
     # TS 29.215 tables A.7.4.1.1 and A.8.4.1.1, the note reference unbracketed.
-    "Applicability Note 1": ast.MarkColumn.APPLICABILITY,
-    "Applicable Reference Points": ast.MarkColumn.REFERENCE_POINTS,
+    "Applicability Note 1": "Applicability",
+    "Applicable Reference Points": "Reference-Points",
     # TS 32.299's "Used in" columns, under a spanning header.
-    "ACR": ast.MarkColumn.ACR,
-    "ACA": ast.MarkColumn.ACA,
-    "CCR": ast.MarkColumn.CCR,
-    "CCA": ast.MarkColumn.CCA,
+    "ACR": "ACR",
+    "ACA": "ACA",
+    "CCR": "CCR",
+    "CCA": "CCA",
 }
 _MARK_QUIRKS = {
-    ast.MarkColumn.ACCESS_TYPES: "access-type-column",
-    ast.MarkColumn.APPLICABILITY: "applicability-column",
-    ast.MarkColumn.REFERENCE_POINTS: "reference-points-column",
-    ast.MarkColumn.ACR: "command-columns",
-    ast.MarkColumn.ACA: "command-columns",
-    ast.MarkColumn.CCR: "command-columns",
-    ast.MarkColumn.CCA: "command-columns",
+    "Acc-Type": "access-type-column",
+    "Applicability": "applicability-column",
+    "Reference-Points": "reference-points-column",
+    "ACR": "command-columns",
+    "ACA": "command-columns",
+    "CCR": "command-columns",
+    "CCA": "command-columns",
 }
 
 
 def _with_marks[T: enum.StrEnum](
-    known: dict[str, T], kind: type[T], quirks: sources.Quirks
-) -> dict[str, T]:
+    known: dict[str, T], quirks: sources.Quirks
+) -> dict[str, T | str]:
     """`known` plus the mark columns this document's quirks read."""
-    return known | {
-        label: kind(column.value)
+    marks: dict[str, T | str] = {
+        label: column
         for label, column in _MARK_COLUMNS.items()
         if quirks.enabled(_MARK_QUIRKS[column])
     }
+    return {**known, **marks}
 
 
 # A mark as a cell prints it: a word, followed by what the document prints
@@ -137,7 +140,7 @@ def _split_marks(
 
 
 def _mark_cell(
-    text: str, column: ast.MarkColumn, name: str, quirks: sources.Quirks
+    text: str, column: str, name: str, quirks: sources.Quirks
 ) -> tuple[str, ...] | None:
     """A mark column's cell: None where it is blank, no marks where it
     prints a dash (TS 32.299 clause 7.1.0: "Those Diameter AVPs that are not
@@ -157,7 +160,7 @@ def _mark_cell(
         marks = _split_marks(text, _SPACED_MARK_RE, _SPACED_SEPARATOR_RE)
     if marks is None:
         raise ExtractionError(
-            f"row {name!r}: {column.value} cell {text!r} is no list of marks"
+            f"row {name!r}: {column} cell {text!r} is no list of marks"
         )
     return tuple(marks)
 

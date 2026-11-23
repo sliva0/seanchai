@@ -249,7 +249,7 @@ class TableRow(_Model):
     code: int | None = None
     type: ast.DataType | None = None
     vendor: int | None = None
-    marks: dict[ast.MarkColumn, tuple[str, ...]] = pydantic.Field(default_factory=dict)
+    marks: dict[str, tuple[str, ...]] = pydantic.Field(default_factory=dict)
 
 
 class Allocation(_Model):

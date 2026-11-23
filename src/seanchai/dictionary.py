@@ -206,7 +206,7 @@ class Marks(_Model):
     avp: str | None
     table: str | None
     section: str
-    marks: dict[ast.MarkColumn, tuple[str, ...] | None]
+    marks: dict[str, tuple[str, ...] | None]
 
 
 class _ApplicationFields(_Model):

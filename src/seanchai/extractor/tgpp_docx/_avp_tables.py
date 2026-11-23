@@ -167,7 +167,7 @@ def _extract_avp_table(
         # Spanning header rows (merged cells repeat the same text).
         return cells[0] == "" or cells[0] == cells[1]
 
-    known = _with_marks(_AVP_TABLE_COLUMNS, ast.AvpColumn, quirks)
+    known = _with_marks(_AVP_TABLE_COLUMNS, quirks)
     if quirks.enabled("reference-cells"):
         known["Reference"] = ast.AvpColumn.SECTION
     columns, positions, data_rows = _walk_table(
@@ -199,7 +199,7 @@ def _extract_avp_table(
                 wildcards.append((len(rows), f"{printed} ; the * [ AVP ] wildcard"))
             continue
         name = ""
-        marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
+        marks: dict[str, tuple[str, ...]] = {}
         vendor_value: int | None = None
         code_value: int | None = None
         section_value: str | None = None
@@ -301,8 +301,7 @@ def _extract_avp_table(
                     should_not = _flags_cell(text, quirks)
                 case ast.AvpColumn.MUST_NOT:
                     must_not = _flags_cell(text, quirks)
-                case _:
-                    marked = ast.MarkColumn(column.value)
+                case str() as marked:
                     found = _mark_cell(text, marked, name, quirks)
                     if found is not None:
                         marks[marked] = found
@@ -506,11 +505,11 @@ def _extract_reused_table(
     own_reference: str,
     quirks: sources.Quirks,
     references: dict[str, str],
-) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedColumn, ...]]:
+) -> tuple[list[ast.ReusedAvpRow], tuple[ast.ReusedColumn | str, ...]]:
     rows = []
     columns, positions, data_rows = _walk_table(
         table,
-        _with_marks(_REUSED_TABLE_COLUMNS, ast.ReusedColumn, quirks),
+        _with_marks(_REUSED_TABLE_COLUMNS, quirks),
         "re-used AVPs",
         warnings,
         lambda row: row.cells[0] == "" or row.cells[0].startswith("NOTE"),
@@ -525,7 +524,7 @@ def _extract_reused_table(
         m_bit: ast.MBitOverride | None = None
         code: int | None = None
         data_type: ast.DataType | None = None
-        marks: dict[ast.MarkColumn, tuple[str, ...]] = {}
+        marks: dict[str, tuple[str, ...]] = {}
         for column, position in zip(columns, positions, strict=True):
             text = cells[position]
             match column:
@@ -535,19 +534,6 @@ def _extract_reused_table(
                     code = _reused_code(text, name)
                 case ast.ReusedColumn.TYPE:
                     data_type = _data_type(text or None)
-                case (
-                    ast.ReusedColumn.ACCESS_TYPES
-                    | ast.ReusedColumn.APPLICABILITY
-                    | ast.ReusedColumn.REFERENCE_POINTS
-                    | ast.ReusedColumn.ACR
-                    | ast.ReusedColumn.ACA
-                    | ast.ReusedColumn.CCR
-                    | ast.ReusedColumn.CCA
-                ):
-                    marked = ast.MarkColumn(column.value)
-                    found = _mark_cell(text, marked, name, quirks)
-                    if found is not None:
-                        marks[marked] = found
                 case ast.ReusedColumn.FROM:
                     origin = _origin(text, own_reference, references, quirks)
                 case ast.ReusedColumn.M_BIT:
@@ -566,6 +552,10 @@ def _extract_reused_table(
                             f" unrecognized M-bit cell {text!r}"
                         )
                     m_bit = _M_BIT_OVERRIDES[text]
+                case str() as marked:
+                    found = _mark_cell(text, marked, name, quirks)
+                    if found is not None:
+                        marks[marked] = found
         if origin is None:
             raise ExtractionError(f"re-used AVPs row {name!r} has no Reference column")
         rows.append(
@@ -609,7 +599,7 @@ def _extract_vendor_table(
         raise ExtractionError(f"{section_number}: AVP table without a caption")
     columns, positions, data_rows = _walk_table(
         table,
-        _with_marks(_VENDOR_TABLE_COLUMNS, ast.ReusedColumn, quirks),
+        _with_marks(_VENDOR_TABLE_COLUMNS, quirks),
         "re-used AVPs",
         warnings,
         lambda row: row.cells[0] == "",

@@ -71,9 +71,7 @@ def _values(kind, *rows, **fields):
             "no Type column",
         ),
         (
-            lambda: ast.AvpTableRow(
-                name="A", marks={ast.MarkColumn.APPLICABILITY: ("-",)}
-            ),
+            lambda: ast.AvpTableRow(name="A", marks={"Applicability": ("-",)}),
             "printed dash",
         ),
         (
