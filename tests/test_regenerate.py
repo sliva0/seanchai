@@ -798,3 +798,120 @@ def test_a_document_missing_from_the_manifest_names_the_download_it_needs(
     report = _run(whole, corpus, corpus)
     assert report.missing_sources == ()
     assert report.failed[0].status == "not-in-manifest"
+
+
+def _snapshot(*directories):
+    return {
+        path: path.read_bytes()
+        for directory in directories
+        for path in sorted(directory.rglob("*"))
+        if path.is_file() and "__pycache__" not in path.parts
+    }
+
+
+def _two_documents(tmp_path, synthetic_spec_docx):
+    """A corpus of the synthetic document and a transcription, committed, and
+    a run that would replace the first's version, rewrite both edit files of
+    the second and the corrections record: everything a run can change."""
+    corpus, sources, edits, _ = _transcribed(tmp_path, "2.2.1", "2.2.0")
+    specifications = tmp_path / "specifications"
+    manifest, document = _manifest(specifications, "29999-100")
+    shutil.copy(synthetic_spec_docx, document)
+    transcriptions = tmp_path / "transcriptions"
+
+    def rebuild(**options):
+        return _regenerate.regenerate(
+            manifest,
+            corpus,
+            corpus,
+            sources_dir=sources,
+            corrections_dir=edits,
+            transcriptions_dir=transcriptions,
+            **options,
+        )
+
+    first = rebuild(add=["ETSI-TS183.017", "TS29.999"])
+    assert first.promoted and not first.failed
+    manifest, newer = _manifest(specifications, "29999-110")
+    shutil.copy(synthetic_spec_docx, newer)
+    return corpus, (sources, edits), rebuild
+
+
+def test_a_run_failing_on_a_later_document_changes_nothing(
+    tmp_path, synthetic_spec_docx, monkeypatch
+):
+    corpus, edits, rebuild = _two_documents(tmp_path, synthetic_spec_docx)
+    before = _snapshot(corpus, *edits)
+    produce = _regenerate._produce
+    calls = []
+
+    def failing_second(*arguments, **options):
+        calls.append(arguments[0].reference)
+        if len(calls) == 2:
+            raise _regenerate.CorrectionError("injected")
+        return produce(*arguments, **options)
+
+    monkeypatch.setattr(_regenerate, "_produce", failing_second)
+    report = rebuild(expand_ranges=True)
+
+    assert calls == ["ETSI-TS183.017", "TS29.999"]
+    first, second = report.outcomes
+    assert first.expanded and first.status == "unchanged"
+    assert second.status == "failed"
+    assert not report.promoted and report.record is None
+    assert _snapshot(corpus, *edits) == before
+
+    monkeypatch.setattr(_regenerate, "_produce", produce)
+    report = rebuild(expand_ranges=True)
+    assert report.promoted and not report.failed
+    assert _snapshot(corpus, *edits) != before
+    assert sorted(p.name for p in corpus.rglob("29999-*")) == [
+        "29999-110.dad",
+        "29999-110.raw.dad",
+    ]
+
+
+def test_a_run_whose_corrections_record_fails_changes_nothing(
+    tmp_path, synthetic_spec_docx, monkeypatch
+):
+    corpus, edits, rebuild = _two_documents(tmp_path, synthetic_spec_docx)
+    before = _snapshot(corpus, *edits)
+
+    def failing(*_):
+        raise OSError("injected")
+
+    monkeypatch.setattr(_correction_record, "write", failing)
+    report = rebuild(expand_ranges=True)
+
+    (failed,) = report.failed
+    assert failed.reference == _correction_record.RECORD_NAME
+    assert "injected" in (failed.error or "")
+    assert not report.promoted
+    assert _snapshot(corpus, *edits) == before
+
+
+def test_a_promotion_failing_partway_changes_nothing(
+    tmp_path, synthetic_spec_docx, monkeypatch
+):
+    corpus, edits, rebuild = _two_documents(tmp_path, synthetic_spec_docx)
+    before = _snapshot(corpus, *edits)
+    copy = shutil.copyfile
+    calls = []
+
+    def failing_third(source, target, **options):
+        # The stage's own copies of the corpus pass; the third file promoted
+        # fails.
+        if str(target).endswith(".seanchai-staged"):
+            calls.append(target)
+            if len(calls) == 3:
+                raise OSError("disk full")
+        return copy(source, target, **options)
+
+    monkeypatch.setattr(shutil, "copyfile", failing_third)
+    report = rebuild(expand_ranges=True)
+    monkeypatch.setattr(shutil, "copyfile", copy)
+
+    assert len(calls) == 3
+    assert not report.promoted
+    assert report.failed[0].error == "promoting: disk full"
+    assert _snapshot(corpus, *edits) == before

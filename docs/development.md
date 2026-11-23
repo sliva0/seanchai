@@ -110,8 +110,12 @@ from the downloaded sources and the edit layers.
 
 Under each document it prints the extractor's warnings and a warning for each
 declaration whose version range does not cover the parsed version.
-Transcriptions are rebuilt from `edits/transcriptions/`. `corrections.json` is
-written only when nothing failed.
+Transcriptions are rebuilt from `edits/transcriptions/`.
+
+A run writes all or nothing. It builds every document, removes replaced
+pairs, writes `corrections.json` and, with `--expand-ranges`, rewrites the
+edit files in a scratch copy, and copies the changes over only when nothing
+failed. A failed run says so and leaves the corpus and `edits/` as they were.
 
 `regenerate` writes `.dad` files and `corrections.json` only. It does not set
 the corpus's version ([Releases](#releases)) and does not touch `corpus.toml`,

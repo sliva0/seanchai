@@ -261,9 +261,9 @@ def regenerate(
 
     Re-extracts, pages and corrects every specification in the corpus from the
     manifest's files and writes it back with its raw mirror. A newer download
-    replaces the committed version. Also rewrites `corrections.json` unless
-    something failed. A failing specification does not stop the run; the exit
-    status is 1 if any failed.
+    replaces the committed version. Also rewrites `corrections.json`. A failing
+    specification does not stop the run, but a run with any failure writes
+    nothing, the edit files --expand-ranges would widen included, and exits 1.
 
     To extract an older version fetched with `corpus download --spec --version`:
 
@@ -320,6 +320,7 @@ def regenerate(
             f" `seanchai corpus download {fetch}`, or name what it holds with --spec"
         )
     if report.failed:
+        click.echo("nothing was written: the corpus and the edits are as they were")
         raise click.exceptions.Exit(1)
 
 

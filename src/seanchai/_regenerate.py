@@ -10,10 +10,21 @@ The corpus decides which documents count: what is committed, plus whatever
 `add` names that the catalog does not mark `out_of_scope`. The manifest
 decides which version counts, so a superseded copy is replaced and reported.
 The library returns a `Report`; `seanchai corpus regenerate` prints it.
+
+A run changes nothing until it has rebuilt everything: the documents, the
+removals of replaced copies, the corrections record and `expand_ranges`'
+rewrites of the edit files are made in a scratch copy, and only a run with
+no failure copies them over (`_Stage`). A failed run leaves the corpus and
+the edits as they were.
 """
 
+from __future__ import annotations
+
 import json
+import os
 import re
+import shutil
+import tempfile
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -57,11 +68,14 @@ class Outcome:
 class Report:
     outcomes: list[Outcome]
     # The corrections record written, under the output directory; None with no
-    # corrections directory, or when a failure left the corpus part rebuilt.
+    # corrections directory, or when a failure left everything as it was.
     record: Path | None = None
     # The sources a partial download left out that this run needed, as
     # `seanchai corpus download --only` names them.
     missing_sources: tuple[str, ...] = ()
+    # Whether the run's changes reached the output and the edit files: only a
+    # run with no failure promotes anything.
+    promoted: bool = False
 
     @property
     def failed(self) -> list[Outcome]:
@@ -140,6 +154,43 @@ def regenerate(
     # Acceptances are checked against the committed corpus's origins before
     # their ranges are widened; loaded once, and only then.
     books = Corpus.load([corpus]) if expand_ranges else None
+    with _Stage(
+        output,
+        [sources_dir, corrections_dir] if expand_ranges else [],
+    ) as stage:
+        return _run(
+            stage,
+            listed,
+            committed,
+            absent,
+            corpus,
+            output,
+            sources_dir=stage.edits(sources_dir),
+            corrections_dir=stage.edits(corrections_dir),
+            add=add,
+            only=only,
+            report=report,
+            books=books,
+        )
+
+
+def _run(
+    stage: _Stage,
+    listed: dict[_Key, _Source],
+    committed: dict[_Key, _Committed],
+    absent: frozenset[str],
+    corpus: Path,
+    output: Path,
+    *,
+    sources_dir: Path | None,
+    corrections_dir: Path | None,
+    add: Sequence[str],
+    only: Sequence[str],
+    report: Callable[[Outcome], None],
+    books: Corpus | None,
+) -> Report:
+    """`regenerate`'s run, building into `stage` and promoting it to `output`
+    and the edit directories only when nothing failed."""
     outcomes = []
     out_of_scope = load_catalog().out_of_scope() if add else {}
     for reference in add:
@@ -158,11 +209,13 @@ def regenerate(
             committed.get(moves.get(key, key)),
             corpus,
             output,
+            stage,
             sources_dir,
             corrections_dir,
             books,
             absent,
         )
+        stage.unstaged(outcome)
         outcomes.append(outcome)
         report(outcome)
     result = Report(
@@ -178,15 +231,31 @@ def regenerate(
             )
         ),
     )
-    if corrections_dir is not None and not result.failed:
+    if result.failed:
+        return result
+    record = None
+    if corrections_dir is not None:
         try:
-            result.record = _correction_record.write(output, corrections_dir)
+            record = _correction_record.write(stage.corpus, corrections_dir)
         except (CorrectionError, CorpusError, OSError) as error:
             failed = Outcome(
-                _correction_record.RECORD_NAME, "failed", error=f"writing: {error}"
+                _correction_record.RECORD_NAME,
+                "failed",
+                error=f"writing: {stage.unstaged_text(str(error))}",
             )
             outcomes.append(failed)
             report(failed)
+            return result
+    try:
+        stage.promote()
+    except OSError as error:
+        failed = Outcome(output.name, "failed", error=f"promoting: {error}")
+        outcomes.append(failed)
+        report(failed)
+        return result
+    result.promoted = True
+    if record is not None:
+        result.record = output / record.relative_to(stage.corpus)
     return result
 
 
@@ -264,6 +333,7 @@ def _one(
     committed: _Committed | None,
     corpus: Path,
     output: Path,
+    stage: _Stage,
     sources_dir: Path | None,
     corrections_dir: Path | None,
     books: Corpus | None,
@@ -315,9 +385,9 @@ def _one(
             return outcome
 
     stem = source.stem or source.document.stem
-    corrected = output / source.tree / f"{stem}.dad"
-    raw = output / "raw" / source.tree / f"{stem}.raw.dad"
-    outcome.written = [corrected, raw]
+    corrected = Path(source.tree) / f"{stem}.dad"
+    raw = Path("raw") / source.tree / f"{stem}.raw.dad"
+    outcome.written = [output / corrected, output / raw]
 
     if committed is None:
         outcome.status = "new"
@@ -328,21 +398,137 @@ def _one(
         outcome.status = "new"
         outcome.replaced_version = committed.version
         for old in (committed.corrected, committed.raw):
-            relocated = output / old.relative_to(corpus)
-            outcome.replaced.append(relocated)
-            relocated.unlink(missing_ok=True)
-            # The last copy out of a release's tree takes the tree with it.
-            if relocated.parent.is_dir() and not any(relocated.parent.iterdir()):
-                relocated.parent.rmdir()
+            relative = old.relative_to(corpus)
+            outcome.replaced.append(output / relative)
+            stage.remove(relative)
     elif (
         _read(committed.corrected) != corrected_text or _read(committed.raw) != raw_text
     ):
         outcome.status = "changed"
 
     for path, text in ((corrected, corrected_text), (raw, raw_text)):
+        stage.write(path, text)
+    return outcome
+
+
+class _Stage:
+    """A scratch copy of the output corpus, and of the edit directories a run
+    rewrites, that a run changes in place of them; `promote` then copies what
+    changed over the originals.
+
+    Promotion writes every changed file beside its original under a hidden
+    name first, and only once all are written renames them into place and
+    removes what the run removed. A failure while writing removes the hidden
+    files and changes nothing; the renames, within one directory, do not fail
+    short of the disk going away.
+    """
+
+    def __init__(self, output: Path, edits: Sequence[Path | None]) -> None:
+        self._output = output
+        self._edits = [directory for directory in edits if directory is not None]
+        self._scratch: tempfile.TemporaryDirectory[str] | None = None
+        self.corpus = Path()
+        self._copies: dict[Path, Path] = {}
+
+    def __enter__(self) -> _Stage:
+        self._scratch = tempfile.TemporaryDirectory(prefix="seanchai-regenerate-")
+        root = Path(self._scratch.name)
+        self.corpus = root / "corpus"
+        if self._output.is_dir():
+            shutil.copytree(self._output, self.corpus, ignore=_IGNORED)
+        else:
+            self.corpus.mkdir()
+        for index, directory in enumerate(self._edits):
+            copy = root / f"edits-{index}"
+            shutil.copytree(directory, copy, ignore=_IGNORED)
+            self._copies[directory] = copy
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        if self._scratch is not None:
+            self._scratch.cleanup()
+
+    def edits(self, directory: Path | None) -> Path | None:
+        """The directory a run reads and rewrites in place of `directory`."""
+        return None if directory is None else self._copies.get(directory, directory)
+
+    def write(self, relative: Path, text: str) -> None:
+        path = self.corpus / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
-    return outcome
+
+    def remove(self, relative: Path) -> None:
+        path = self.corpus / relative
+        path.unlink(missing_ok=True)
+        # The last copy out of a release's tree takes the tree with it.
+        if path.parent.is_dir() and not any(path.parent.iterdir()):
+            path.parent.rmdir()
+
+    def unstaged_text(self, text: str) -> str:
+        """`text` naming the original directories in place of their copies."""
+        for directory, copy in self._copies.items():
+            text = text.replace(str(copy), str(directory))
+        return text.replace(str(self.corpus), str(self._output))
+
+    def unstaged(self, outcome: Outcome) -> None:
+        """Name the original directories in `outcome`'s messages."""
+        outcome.warnings = [self.unstaged_text(line) for line in outcome.warnings]
+        outcome.expanded = [self.unstaged_text(line) for line in outcome.expanded]
+        if outcome.error is not None:
+            outcome.error = self.unstaged_text(outcome.error)
+
+    def promote(self) -> None:
+        """Copy every change over the originals, all or nothing."""
+        writes: list[tuple[Path, Path]] = []
+        removals: list[tuple[Path, Path]] = []
+        for copy, original in [
+            (self.corpus, self._output),
+            *((copy, original) for original, copy in self._copies.items()),
+        ]:
+            staged = _files(copy)
+            present = _files(original) if original.is_dir() else set()
+            writes += [
+                (copy / relative, original / relative)
+                for relative in sorted(staged)
+                if relative not in present
+                or (copy / relative).read_bytes() != (original / relative).read_bytes()
+            ]
+            removals += [
+                (original, original / relative) for relative in sorted(present - staged)
+            ]
+        hidden: list[tuple[Path, Path]] = []
+        try:
+            for source, target in writes:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                temporary = target.with_name(f".{target.name}.seanchai-staged")
+                hidden.append((temporary, target))
+                shutil.copyfile(source, temporary)
+        except OSError:
+            for temporary, _ in hidden:
+                temporary.unlink(missing_ok=True)
+            raise
+        for temporary, target in hidden:
+            os.replace(temporary, target)
+        for root, path in removals:
+            path.unlink()
+            parent = path.parent
+            while parent != root and not any(parent.iterdir()):
+                parent.rmdir()
+                parent = parent.parent
+
+
+_IGNORED = shutil.ignore_patterns("__pycache__", ".*.seanchai-staged")
+
+
+def _files(directory: Path) -> set[Path]:
+    """Every file under `directory`, relative to it, but caches."""
+    return {
+        path.relative_to(directory)
+        for path in directory.rglob("*")
+        if path.is_file()
+        and "__pycache__" not in path.relative_to(directory).parts
+        and not path.name.endswith(".seanchai-staged")
+    }
 
 
 def _expand(
