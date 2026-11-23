@@ -1,0 +1,220 @@
+"""Information-element tables: a stage-3 procedure clause's per-command
+table, "Information element name | Mapping to Diameter AVP | Cat. |
+Description", each row an element, the AVPs it maps to and its category.
+
+The table's header is its exact structure. Which command a table describes
+is read from the clause's sentence mapping the procedure to a command pair,
+and only where the clause holds the two tables of that pair; anywhere else
+the block names no command and a correction supplies it."""
+
+from __future__ import annotations
+
+import re
+
+from ...dad import ast
+from ..errors import ExtractionError
+from ._base import _Section, _Table
+
+# The header, by label: TS 29.272's "Information element name", TS 29.128's
+# "Information Element Name", TS 29.336's "Cat" without a full stop.
+_NAME_LABELS = frozenset({"information element name"})
+_MAPPING_LABELS = frozenset({"mapping to diameter avp"})
+_CATEGORY_LABELS = frozenset({"cat.", "cat"})
+_DESCRIPTION_LABELS = frozenset({"description"})
+
+# The sentence mapping a procedure to its commands, in its three wordings:
+# "This procedure is mapped to the commands Update-Location-Request/Answer
+# (ULR/ULA) in the Diameter application specified in clause 7." (TS 29.272
+# clause 5.2.1.1.1 and most), "mapped to the Spending-Limit-Request/Answer
+# commands" (TS 29.219 clause 4.5.1.1, once with a space before the slash),
+# and "mapped to the Diameter command codes Push-Profile-Request (PPR) and
+# Push-Profile-Answer (PPA)" (TS 29.273 clause 8.1.2.3.1). A name printed
+# with spaces, "Insert Subscriber Data-Request/Answer" (TS 29.272 clause
+# 5.2.2.1.1), is no name, and an input patch hyphenates it.
+_PAIR_RES = (
+    re.compile(r"\bmapped to the commands (?P<name>\S+)-Request ?/ ?Answer\b"),
+    re.compile(r"\bmapped to the (?P<name>\S+)-Request ?/ ?Answer commands\b"),
+)
+_HALVES_RE = re.compile(
+    r"\bmapped to the Diameter command codes (?P<request>\S+)-Request"
+    r" \([A-Z]{2,5}\) and (?P<answer>\S+)-Answer \([A-Z]{2,5}\)"
+)
+_NAME_RE = re.compile(f"^{ast.AVP_NAME_PATTERN}$")
+# Where the sentence goes on to say the commands are specified: "in the
+# Diameter application specified in TS 29.229 [5]" (TS 29.228), "specified in
+# clause 7 of TS 29.272 [29]" (TS 29.273 clause 11.1.2.1.1), "specified in
+# IETF RFC 6733 [23]" (TS 29.219 clause 4.5.3.1). A clause alone is the
+# document's own.
+_SPECIFIED_RE = re.compile(r"\bspecified in (?P<where>.*?)(?:\.\s|\.$|$)")
+_DOCUMENT_RE = re.compile(
+    r"\b(?:3GPP )?TS (?P<ts>\d{2}\.\d{3})\b|\b(?:IETF )?RFC ?(?P<rfc>\d+)\b"
+)
+
+# What a mapping cell prints after a name, which names nothing: a citation,
+# "User-Name (See IETF RFC 6733 [61])", or a note, "Physical-Access-ID (NOTE
+# 1)" (TS 29.219 table 4.5.1.1/1).
+_ASIDE_RE = re.compile(r"\s*\((?:[Ss]ee|NOTE|Note)\b[^()]*\)")
+# "/" or "or" offers one of two AVPs; a comma joins AVPs carried together.
+_EITHER_RE = re.compile(r"\s*/\s*|\s+or\s+")
+_BOTH_RE = re.compile(r"\s*,\s*")
+
+
+def _header(table: _Table) -> list[str] | None:
+    """The table's labels where it is an information-element table, with an
+    adjacent repeat folded where the rows are that much narrower: TS 29.344
+    table 5.2.1-1 prints its first label over two cells."""
+    if not table.rows:
+        return None
+    labels = [cell.strip().lower() for cell in table.rows[0].cells]
+    widths = {len(row.cells) for row in table.rows[1:]}
+    if widths and len(labels) not in widths:
+        folded = [
+            label
+            for index, label in enumerate(labels)
+            if index == 0 or label != labels[index - 1]
+        ]
+        if len(folded) in widths:
+            labels = folded
+    if (
+        len(labels) == 4
+        and labels[0] in _NAME_LABELS
+        and labels[1] in _MAPPING_LABELS
+        and labels[2] in _CATEGORY_LABELS
+        and labels[3] in _DESCRIPTION_LABELS
+    ):
+        return labels
+    return None
+
+
+def _mapping(text: str) -> tuple[tuple[str, ...], bool, str | None]:
+    """A mapping cell as names, whether it offers one of them, and as
+    printed where it names no AVP: TS 29.273's "EAP payload", or a name the
+    document misprints with a space ("Trace- Reference")."""
+    if not text:
+        return (), False, None
+    cleaned = _ASIDE_RE.sub("", text).strip()
+    either = bool(_EITHER_RE.search(cleaned))
+    both = bool(_BOTH_RE.search(cleaned))
+    if either and both:
+        return (), False, text
+    parts = (_EITHER_RE if either else _BOTH_RE).split(cleaned)
+    names = tuple(part.removesuffix(" AVP") for part in parts)
+    if not all(_NAME_RE.match(name) for name in names):
+        return (), False, text
+    return names, either, None
+
+
+def _rows(table: _Table, section: str, warnings: list[str]) -> list[ast.ElementRow]:
+    rows = []
+    for row in table.rows[1:]:
+        cells = row.cells
+        if len(set(cells)) == 1:
+            continue  # a full-width NOTE row, prose
+        if len(cells) != 4:
+            raise ExtractionError(
+                f"{section}: information elements table {table.caption} has a row"
+                f" of {len(cells)} cells: {cells!r}"
+            )
+        name, mapping, category, _ = cells
+        if not name:
+            warnings.append(
+                f"{section}: information elements table {table.caption} has a row"
+                f" naming no element, skipped: {cells[:3]!r}"
+            )
+            continue
+        if category and category not in ast.Category:
+            raise ExtractionError(
+                f"{section}: information element {name!r} has category"
+                f" {category!r}, none of M, C and O"
+            )
+        avps, either, printed = _mapping(mapping)
+        rows.append(
+            ast.ElementRow(
+                name=name,
+                avps=avps,
+                either=either,
+                printed=printed,
+                category=ast.Category(category) if category else None,
+            )
+        )
+    return rows
+
+
+def _specifying(text: str, own: str) -> str | None:
+    """The document `text`, the sentence after its command pair, says
+    specifies the commands, or None for the document's own clause."""
+    specified = _SPECIFIED_RE.search(text)
+    if specified is None:
+        return None
+    document = _DOCUMENT_RE.search(specified["where"])
+    if document is None:
+        return None
+    reference = f"TS{document['ts']}" if document["ts"] else f"RFC{document['rfc']}"
+    return None if reference == own else reference
+
+
+def _commands(section: _Section, own: str) -> tuple[str, str, str | None] | None:
+    """The request and answer the clause's sentence maps its procedure to,
+    and the document it says specifies them, or None where it names none or
+    several pairs."""
+    pairs: set[tuple[str, str, str | None]] = set()
+    for paragraph in section.paragraphs:
+        text = paragraph.text
+        for pattern in _PAIR_RES:
+            for match in pattern.finditer(text):
+                pairs.add(
+                    (
+                        f"{match['name']}-Request",
+                        f"{match['name']}-Answer",
+                        _specifying(text[match.end() :], own),
+                    )
+                )
+        for match in _HALVES_RE.finditer(text):
+            pairs.add(
+                (
+                    f"{match['request']}-Request",
+                    f"{match['answer']}-Answer",
+                    _specifying(text[match.end() :], own),
+                )
+            )
+    named = {pair for pair in pairs if all(map(_NAME_RE.match, pair[:2]))}
+    return named.pop() if len(named) == 1 and len(pairs) == 1 else None
+
+
+def _element_tables(
+    sections: list[_Section], warnings: list[str], own: str
+) -> list[ast.InformationElements]:
+    """Every information-element table of the document, in document order.
+    A clause mapping its procedure to one command pair and holding two
+    tables gives the first the request and the second the answer."""
+    found = []
+    for section in sections:
+        tables = [table for table in section.tables if _header(table) is not None]
+        if not tables:
+            continue
+        pair = _commands(section, own)
+        if pair is not None and len(tables) != 2:
+            warnings.append(
+                f"{section.number}: {len(tables)} information elements tables"
+                f" under one command pair, {pair[0]}/Answer; a correction names"
+                " each table's command"
+            )
+            pair = None
+        for position, table in enumerate(tables):
+            rows = _rows(table, section.number, warnings)
+            if not rows:
+                warnings.append(
+                    f"{section.number}: information elements table"
+                    f" {table.caption} holds no element"
+                )
+                continue
+            found.append(
+                ast.InformationElements(
+                    command=None if pair is None else pair[position],
+                    origin=None if pair is None else pair[2],
+                    table=table.caption,
+                    source=ast.SourceRef(section=section.number),
+                    rows=tuple(rows),
+                )
+            )
+    return found

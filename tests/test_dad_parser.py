@@ -216,6 +216,39 @@ _GX = ("; Type: Application Scope", "; Name: Gx", "; Section: 5.1")
             id="registry-reservation",
         ),
         pytest.param(
+            _dad(
+                "; Type: Information Elements",
+                "; Section: 5.1",
+                "; Columns: Name AVP Cat",
+                "IMSI User-Name X",
+            ),
+            8,
+            "malformed Cat cell 'X'",
+            id="element-category",
+        ),
+        pytest.param(
+            _dad(
+                "; Type: Information Elements",
+                "; Section: 5.1",
+                "; Columns: Name AVP Cat",
+                "Result Result-Code/Experimental-Result,Other M",
+            ),
+            8,
+            "malformed AVP cell",
+            id="element-mapping-mixed",
+        ),
+        pytest.param(
+            _dad(
+                "; Type: Information Elements",
+                "; Section: 5.1",
+                "; Columns: Name Cat AVP",
+                "IMSI M User-Name",
+            ),
+            7,
+            "information elements have columns Name AVP Cat",
+            id="element-columns",
+        ),
+        pytest.param(
             _grouped(
                 "; Reprints: RFC 6733",
                 "Example ::= < AVP header: 1 >",

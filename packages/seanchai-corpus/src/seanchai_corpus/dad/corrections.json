@@ -254,7 +254,7 @@
      "targets": [
       [
        "sections",
-       13
+       27
       ]
      ]
     },
@@ -266,7 +266,7 @@
      "targets": [
       [
        "sections",
-       14
+       28
       ]
      ]
     },
@@ -1425,6 +1425,22 @@
   },
   "29219-j00": {
    "edits": {
+    "TS29.219.py#elements-command-sl-answer": {
+     "kind": "correction",
+     "reason": "clause 5.6.3 heads the command 'Spending-Limit-Answer (SLA) command' and prints its rule <SL-Answer>, the name the corpus gives it; the procedure's sentence names the heading's"
+    },
+    "TS29.219.py#elements-command-sl-request": {
+     "kind": "correction",
+     "reason": "clause 5.6.2 heads the command 'Spending-Limit-Request (SLR) command' and prints its rule <SL-Request>, the name the corpus gives it; the procedure's sentence names the heading's"
+    },
+    "TS29.219.py#elements-command-sn-answer": {
+     "kind": "correction",
+     "reason": "clause 5.6.5 heads the command 'Spending-Status-Notification-Answer (SNA) command' and prints its rule <SN-Answer>, the name the corpus gives it; the procedure's sentence names the heading's"
+    },
+    "TS29.219.py#elements-command-sn-request": {
+     "kind": "correction",
+     "reason": "clause 5.6.4 heads the command 'Spending-Status-Notification-Request (SNR) command' and prints its rule <SN-Request>, the name the corpus gives it; the procedure's sentence names the heading's"
+    },
     "TS29.219.py#logical-access-id-etsi-standard": {
      "kind": "correction",
      "reason": "table 5.4 cites [17], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that title and version as ES 283 034, and has no TS 283 034"
@@ -1445,6 +1461,65 @@
    "reference": "TS29.219",
    "renames": [],
    "version": "19.0.0"
+  },
+  "29228-j20": {
+   "edits": {
+    "TS29.228.py#elements-avp-6-3-2": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.2 is captioned 'Authentication Data content in Authentication Request', the element table 6.3.1 maps to SIP-Auth-Data-Item"
+    },
+    "TS29.228.py#elements-avp-6-3-5": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.5 is captioned 'Authentication Data information element content in Authentication Request Response', the element table 6.3.4 maps to SIP-Auth-Data-Item"
+    },
+    "TS29.228.py#elements-avp-6-3-7": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.7 is captioned 'Digest Authenticate information element content - Response for SIP Digest', the element table 6.3.5 maps to SIP-Digest-Authenticate"
+    },
+    "TS29.228.py#elements-command-6-3-1": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.1 is captioned 'Authentication Request'"
+    },
+    "TS29.228.py#elements-command-6-3-2": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.2 is captioned 'Authentication Data content in Authentication Request', the element table 6.3.1 maps to SIP-Auth-Data-Item"
+    },
+    "TS29.228.py#elements-command-6-3-4": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.4 is captioned 'Authentication Request Response'"
+    },
+    "TS29.228.py#elements-command-6-3-5": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.5 is captioned 'Authentication Data information element content in Authentication Request Response', the element table 6.3.4 maps to SIP-Auth-Data-Item"
+    },
+    "TS29.228.py#elements-command-6-3-7": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.7 is captioned 'Digest Authenticate information element content - Response for SIP Digest', the element table 6.3.5 maps to SIP-Digest-Authenticate"
+    },
+    "TS29.228.py#elements-origin-6-3-1": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.1 is captioned 'Authentication Request'"
+    },
+    "TS29.228.py#elements-origin-6-3-2": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.2 is captioned 'Authentication Data content in Authentication Request', the element table 6.3.1 maps to SIP-Auth-Data-Item"
+    },
+    "TS29.228.py#elements-origin-6-3-4": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.4 is captioned 'Authentication Request Response'"
+    },
+    "TS29.228.py#elements-origin-6-3-5": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.5 is captioned 'Authentication Data information element content in Authentication Request Response', the element table 6.3.4 maps to SIP-Auth-Data-Item"
+    },
+    "TS29.228.py#elements-origin-6-3-7": {
+     "kind": "correction",
+     "reason": "clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer 'in the Diameter application specified in TS 29.229 [5]', and table 6.3.7 is captioned 'Digest Authenticate information element content - Response for SIP Digest', the element table 6.3.5 maps to SIP-Digest-Authenticate"
+    }
+   },
+   "reference": "TS29.228",
+   "renames": [],
+   "version": "19.2.0"
   },
   "29229-j10": {
    "edits": {
@@ -2124,6 +2199,54 @@
      "kind": "correction",
      "reason": "table 7.3.25/1 bit 30 prints a space before the hyphen, where the column wraps the name, unlike the bit's every other Withdrawal"
     },
+    "TS29.272.py#elements-application-5-2-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.1.1 is a procedure of clause 5, the MME and SGSN to HSS interfaces S6a and S6d; clauses 7.2.9, 7.2.11 and 7.2.15 print Insert-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5-2-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.1.1 is a procedure of clause 5, the MME and SGSN to HSS interfaces S6a and S6d; clauses 7.2.9, 7.2.11 and 7.2.15 print Insert-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5-2-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.2.1 is a procedure of clause 5, the MME and SGSN to HSS interfaces S6a and S6d; clauses 7.2.9, 7.2.11 and 7.2.15 print Delete-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5-2-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.2.2.2.1 is a procedure of clause 5, the MME and SGSN to HSS interfaces S6a and S6d; clauses 7.2.9, 7.2.11 and 7.2.15 print Delete-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5-2-4-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.2.4.1.1 is a procedure of clause 5, the MME and SGSN to HSS interfaces S6a and S6d; clauses 7.2.9, 7.2.11 and 7.2.15 print Reset-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5-2-4-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.2.4.1.1 is a procedure of clause 5, the MME and SGSN to HSS interfaces S6a and S6d; clauses 7.2.9, 7.2.11 and 7.2.15 print Reset-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5a-2-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 5A.2.2.1.1 is a procedure of clause 5A, the MME and SGSN to CSS interfaces S7a and S7d; clauses 7.2.9, 7.2.11 and 7.2.15 print Insert-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5a-2-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 5A.2.2.1.1 is a procedure of clause 5A, the MME and SGSN to CSS interfaces S7a and S7d; clauses 7.2.9, 7.2.11 and 7.2.15 print Insert-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5a-2-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5A.2.2.2.1 is a procedure of clause 5A, the MME and SGSN to CSS interfaces S7a and S7d; clauses 7.2.9, 7.2.11 and 7.2.15 print Delete-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5a-2-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5A.2.2.2.1 is a procedure of clause 5A, the MME and SGSN to CSS interfaces S7a and S7d; clauses 7.2.9, 7.2.11 and 7.2.15 print Delete-Subscriber-Data-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5a-2-3-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 5A.2.3.1.1 is a procedure of clause 5A, the MME and SGSN to CSS interfaces S7a and S7d; clauses 7.2.9, 7.2.11 and 7.2.15 print Reset-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
+    "TS29.272.py#elements-application-5a-2-3-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 5A.2.3.1.1 is a procedure of clause 5A, the MME and SGSN to CSS interfaces S7a and S7d; clauses 7.2.9, 7.2.11 and 7.2.15 print Reset-Request/Answer once for S6a/S6d (16777251) and once for S7a/S7d (16777308)"
+    },
     "TS29.272.py#enodeb-id-in-mme-location-information": {
      "kind": "correction",
      "reason": "the MME-Location-Information body (clause 7.3.115) uses the re-used row's spelling; TS 29.217 defines eNodeB-Id"
@@ -2208,7 +2331,7 @@
      "targets": [
       [
        "sections",
-       136
+       164
       ]
      ]
     },
@@ -2220,7 +2343,7 @@
      "targets": [
       [
        "sections",
-       137
+       165
       ]
      ]
     },
@@ -2252,7 +2375,7 @@
      "targets": [
       [
        "sections",
-       138
+       166
       ]
      ]
     },
@@ -2356,6 +2479,14 @@
      "kind": "insert",
      "reason": "clause 4.2.1: 'The SWa reference point shall use the same Diameter application as the STa reference point'; clause 5.2.1 defines '\"STa\" with value 16777250'. The DER/DEA headers of 4.2.2.1.1 and 4.2.2.1.2 print no id"
     },
+    "TS29.273.py#elements-application-7-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.2.1 is an SWm procedure, and clause 7.2.1 says 'The Diameter application for the SWm reference point shall use the Diameter Application Id with value 16777264'; the document prints AA-Request/Answer for STa, SWm and S6b"
+    },
+    "TS29.273.py#elements-application-7-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.2.1 is an SWm procedure, and clause 7.2.1 says 'The Diameter application for the SWm reference point shall use the Diameter Application Id with value 16777264'; the document prints AA-Request/Answer for STa, SWm and S6b"
+    },
     "TS29.273.py#emergency-services-clause": {
      "kind": "correction",
      "reason": "Emergency-Services is defined in clause 7.2.3.4; clause 7.2.3.5 defines AAR-Flags."
@@ -2430,7 +2561,7 @@
      "targets": [
       [
        "sections",
-       82
+       133
       ]
      ]
     },
@@ -2619,7 +2750,7 @@
      "targets": [
       [
        "sections",
-       22
+       24
       ]
      ]
     },
@@ -2695,7 +2826,7 @@
      "targets": [
       [
        "sections",
-       21
+       23
       ]
      ]
     },
@@ -2755,7 +2886,7 @@
      "targets": [
       [
        "sections",
-       9
+       13
       ]
      ]
     },
@@ -2803,7 +2934,7 @@
      "targets": [
       [
        "sections",
-       8
+       12
       ]
      ]
     }
@@ -2831,7 +2962,7 @@
      "targets": [
       [
        "sections",
-       18
+       24
       ]
      ]
     },
@@ -3115,7 +3246,7 @@
      "targets": [
       [
        "sections",
-       10
+       18
       ]
      ]
     }

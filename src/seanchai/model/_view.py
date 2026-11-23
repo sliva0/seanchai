@@ -65,6 +65,8 @@ class _View:
     value_tables: list[ValueTable] = field(default_factory=list)
     # `<answer-message>` rules, in file order.
     answers: list[ast.AnswerMessage] = field(default_factory=list)
+    # Information-element tables, in file order.
+    elements: list[ast.InformationElements] = field(default_factory=list)
 
     @classmethod
     def index(cls, entry: corpus.Entry) -> _View:
@@ -107,6 +109,8 @@ class _View:
                 view.value_tables.append(_value_table(entry, section))
             elif isinstance(section, ast.AnswerMessage):
                 view.answers.append(section)
+            elif isinstance(section, ast.InformationElements):
+                view.elements.append(section)
         return view
 
     def cited_in(self, name: str) -> tuple[str, ...]:

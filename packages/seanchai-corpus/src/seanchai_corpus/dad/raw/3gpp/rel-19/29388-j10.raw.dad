@@ -215,6 +215,97 @@ DRMP                    RFC7944    MUST-NOT
 Load                    RFC8583    MUST-NOT
 
 
+; Type: Information Elements
+; Command: ProSe-Subscriber-Information-Request
+; Section: 5.2.1
+; Table: 5.2.1-1
+; Page: 9
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [6])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: ProSe-Subscriber-Information-Answer
+; Section: 5.2.1
+; Table: 5.2.1-2
+; Page: 9
+; Columns: Name                            AVP                               Cat
+"Result (See 6)"                           Result-Code/Experimental-Result   M
+"V2X Subscription Data (See 6.3.2)"        V2X-Subscription-Data             C
+"MSISDN (See TS 29.329 [11])"              MSISDN                            C
+"Visited PLMN Id (See TS 29.272 [10])"     Visited-PLMN-Id                   C
+"Supported Features (See TS 29.229 [6])"   Supported-Features                O
+"Reset-IDs (See TS 29.272 [10])"           Reset-ID                          O
+
+
+; Type: Information Elements
+; Command: Update-ProSe-Subscriber-Data-Request
+; Section: 5.3.1
+; Table: 5.3.1-1
+; Page: 10
+; Columns: Name                            AVP                     Cat
+IMSI                                       User-Name               M
+"Supported Features (See TS 29.229 [6])"   Supported-Features      O
+"V2X Subscription Data (See 6.3.2)"        V2X-Subscription-Data   C
+"Visited PLMN Id (See TS 29.272 [10])"     Visited-PLMN-Id         C
+"V2X Update Flags (See 6.3.4)"             V2X-Update-Flags        M
+"Reset-IDs (See TS 29.272 [10])"           Reset-ID                O
+
+
+; Type: Information Elements
+; Command: Update-ProSe-Subscriber-Data-Answer
+; Section: 5.3.1
+; Table: 5.3.1-2
+; Page: 10
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [6])"   Supported-Features                O
+"Result (See 6.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: ProSe-Notify-Request
+; Section: 5.4.1
+; Table: 5.4.1-1
+; Page: 12
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            C
+"Supported Features (See TS 29.229 [6])"   Supported-Features   O
+"PLMN ID (see TS 29.272 [10])"             Visited-PLMN-Id      C
+"V2X Notify Flags (see 6.3.5)"             V2X-Notify-Flags     C
+
+
+; Type: Information Elements
+; Command: ProSe-Notify-Answer
+; Section: 5.4.1
+; Table: 5.4.1-2
+; Page: 12
+; Columns: Name                            AVP                               Cat
+"Result (See 6)"                           Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [6])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Reset-Request
+; Section: 5.5.1
+; Table: 5.5.1-1
+; Page: 14
+; Columns: Name                            AVP                  Cat
+"User Id List (See TS 29.272 [10])"        User-Id              O
+"Supported Features (See TS 29.229 [6])"   Supported-Features   O
+"Reset-IDs (See TS 29.272 [10])"           Reset-ID             O
+
+
+; Type: Information Elements
+; Command: Reset-Answer
+; Section: 5.5.1
+; Table: 5.5.1-2
+; Page: 14
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [6])"   Supported-Features                O
+"Result (See 6.4)"                         Result-Code/Experimental-Result   M
+
+
 ; Type: Grouped AVP
 ; Name: V2X-Subscription-Data
 ; Section: 6.3.2

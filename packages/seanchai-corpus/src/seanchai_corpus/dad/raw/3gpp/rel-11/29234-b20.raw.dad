@@ -1138,6 +1138,454 @@ Secondary-OCS-Charging-Function-Name   317    10.1.30   DiameterIdentity   M,V  
 Maximum-Number-Accesses                319    10.1.38   Unsigned32         M,V    -     -       -       No
 
 
+; Type: Information Elements
+; Section: 4.3.1
+; Table: 4.3.1.1
+; Page: 13
+; Columns: Name                     AVP                    Cat
+"User Identity"                     User-Name              M
+"EAP payload"                       EAP-payload            M
+"Authentication Request Type"       "Auth Request-Type"    M
+"NAS-IP address"                    "NAS-IP Address"       C
+"NAS-Ipv6 address"                  "NAS-Ipv6 address"     C
+"WLAN UE MAC address"               "Calling Station-ID"   M
+"Supported 3GPP WLAN QoS profile"   QoS-Capability         O
+
+
+; Type: Information Elements
+; Section: 4.3.1
+; Table: 4.3.1.2
+; Page: 13
+; Columns: Name                      AVP                             Cat
+"User Identity"                      User-Name                       M
+"EAP payload"                        "EAP payload"                   M
+"Result code"                        Result-Code                     M
+"Session Alive Time"                 Session-Timeout                 O
+"Accounting Interim - Interval"      "Accounting Interim-Interval"   O
+"Pairwise Master Key"                EAP-Master-Session-Key          C
+"Filter Id"                          Filter-Id                       O
+"NAS Filter Rule"                    NAS-Filter-Rule                 O
+Tunneling                            Tunneling                       O
+"Authorized 3GPP WLAN QoS profile"   "QoS -Resources"                O
+
+
+; Type: Information Elements
+; Section: 4.3.2
+; Table: 4.3.2.1
+; Page: 14
+; Columns: Name   AVP         Cat
+"User Identity"   User-Name   M
+
+
+; Type: Information Elements
+; Section: 4.3.2
+; Table: 4.3.2.2
+; Page: 14
+; Columns: Name   AVP           Cat
+"User Identity"   User-Name     M
+Result-Code       Result-Code   M
+
+
+; Type: Information Elements
+; Section: 4.3.3
+; Table: 4.3.3.1
+; Page: 15
+; Columns: Name     AVP                   Cat
+"User Identity"     User-Name             M
+Termination-Cause   "Termination Cause"   M
+
+
+; Type: Information Elements
+; Section: 4.3.3
+; Table: 4.3.3.2
+; Page: 15
+; Columns: Name   AVP           Cat
+"User Identity"   User-Name     M
+"Result Code"     Result-Code   M
+
+
+; Type: Information Elements
+; Section: 4.3.4
+; Table: 4.3.4.1
+; Page: 15
+; Columns: Name          AVP                      Cat
+"User Identity"          User-Name                M
+"Re-Auth Request Type"   "Re-Auth–Request-Type"   M
+"Routing Information"    Destination-Host         M
+
+
+; Type: Information Elements
+; Section: 4.3.4
+; Table: 4.3.4.2
+; Page: 15
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+"User Identity"   User-Name                         M
+
+
+; Type: Information Elements
+; Section: 4.5.2.1
+; Table: 4.5.2.1
+; Page: 23
+; Columns: Name                    AVP                              Cat
+"User Identity"                    User-Name                        M
+"NAS-IP address"                   "NAS-IP Address"                 C
+"NAS-Ipv6 address"                 "NAS-Ipv6 address"               C
+"Accounting Record type"           "Accounting Record type"         M
+"Accounting Session-ID"            "Accounting Session-ID"          M
+Accounting-Input-Octets            Accounting-Input-Octets          O
+Accounting-Output-Octets           Accounting-Output-Octets         O
+Accounting-Input-Packets           Accounting-Input-Packets         O
+Accounting-Output-Packets          Accounting-Output-Packets        O
+Accounting-Session-Time            Accounting-Session-Time          C
+Termination-Cause                  Termination-Cause                C
+"Operator Name"                    Operator-Name                    M
+"Location Information"             Location-information             M
+"Location Data"                    Location-Data                    M
+"Basic Location Policy Rules"      Basic-Location-Policy-Rules      O
+"Extended Location Policy Rules"   Extended-Location-Policy-Rules   O
+
+
+; Type: Information Elements
+; Section: 4.5.2.1
+; Table: 4.5.2.2
+; Page: 23
+; Columns: Name   AVP             Cat
+"User Identity"   User-Name       M
+"Result code"     "Result Code"   M
+
+
+; Type: Information Elements
+; Section: 5.4.1
+; Table: 5.4.1.1
+; Page: 29
+; Columns: Name                     AVP                              Cat
+"User Identity"                     "User Name"                      M
+"EAP payload"                       "EAP payload"                    M
+"Authentication Request Type"       "Auth–Request-Type"              M
+"NAS-IP address"                    "NAS-IP Address"                 C
+"NAS-Ipv6 address"                  "NAS-Ipv6 address"               C
+Visited-Network-Identifier          Visited-Network-Identifier       C
+"WLAN UE MAC address"               "Calling Station-ID"             -
+"Supported 3GPP WLAN QoS profile"   QoS-Capability                   O
+"Operator Name"                     Operator-Name                    M
+"Location Information"              Location-Information             M
+"Location Data"                     Location-Data                    M
+"Basic Location Policy Rules"       Basic-Location-Policy-Rules      O
+"Extended Location Policy Rules"    Extended-Location-Policy-Rules   O
+"Location Capable"                  Location-Capable                 M
+
+
+; Type: Information Elements
+; Section: 5.4.1
+; Table: 5.4.1.2
+; Page: 29
+; Columns: Name                      AVP                              Cat
+"User Identity"                      "User Name"                      M
+"EAP payload"                        "EAP payload"                    M
+"Result code"                        "Result Code"                    M
+"Session Alive Time"                 Session-Timeout                  O
+"Accounting Interim-Interval"        "Accounting Interim-Interval"    O
+Subscription-ID                      Subscription-ID                  C
+"Pairwise Master Key"                EAP-Master-Session-Key           C
+"Authorized 3GPP WLAN QoS profile"   QoS-Resources                    O
+"Routing Policy"                     Routing-Policy                   O
+"Basic Location Policy Rules"        Basic-Location-Policy-Rules      O
+"Extended Location Policy Rules"     Extended-Location-Policy-Rules   O
+"Requested Location Info"            Requested-Location-Info          O
+"Error Cause"                        Error-Cause                      O
+
+
+; Type: Information Elements
+; Section: 6.3.1
+; Table: 6.3.1.1
+; Page: 38
+; Columns: Name                 AVP                          Cat
+"Permanent User Identity"       User-Name                    M
+"Visited Network Identifier"    Visited-Network-Identifier   C
+"Number Authentication Items"   SIP-Number-Auth-Items        M
+"Authentication Data"           SIP-Auth-Data-Item           C
+"Routing Information"           Destination-Host             C
+"Access Type"                   NAS-Port-Type                M
+
+
+; Type: Information Elements
+; Section: 6.3.1
+; Table: 6.3.1.2
+; Page: 38
+; Columns: Name           AVP                       Cat
+"Authentication Method"   "Authentication Method"   M
+
+
+; Type: Information Elements
+; Section: 6.3.1
+; Table: 6.3.1.3
+; Page: 38
+; Columns: Name               AVP                       Cat
+"Authentication Method"       "Authentication Method"   M
+"Authorization Information"   SIP-Authorization         M
+
+
+; Type: Information Elements
+; Section: 6.3.1
+; Table: 6.3.1.4
+; Page: 38
+; Columns: Name                 AVP                               Cat
+"Permanent User Identity"       User-Name                         M
+"Number Authentication Items"   SIP-Number-Auth-Items             C
+"Authentication Data"           SIP-Auth-Data-Item                C
+"3GPP AAA Server Name"          3GPP-AAA-Server-Name              C
+Result                          Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 6.3.1
+; Table: 6.3.1.5
+; Page: 38
+; Columns: Name                    AVP                                Cat
+"Item Number"                      SIP-Item-Number                    C
+"Authentication Method"            "Authentication Method"            M
+"Authentication Information AKA"   SIP-Authenticate                   C
+"Authorization Information AKA"    SIP-Authorization                  C
+"Confidentiality Key AKA"          Confidentiality-Key                C
+"Integrity Key AKA"                Integrity-Key                      C
+"Authentication Information SIM"   Authentication_Information_SIM     C
+"Authorization Information"        "Authorization_Information_ SIM"   C
+
+
+; Type: Information Elements
+; Section: 6.3.2.1
+; Table: 6.3.2.1
+; Page: 42
+; Columns: Name                           AVP                      Cat
+"Permanent User Identity"                 User-Name                M
+"Server Assignment Type"                  Server-Assignment-Type   M
+"Routing Information (See clause 7.13)"   Destination-Host         C
+
+
+; Type: Information Elements
+; Section: 6.3.2.1
+; Table: 6.3.2.2
+; Page: 42
+; Columns: Name             AVP                               Cat
+"Permanent User Identity"   User-Name                         M
+"Registration result"       Result-Code/Experimental-Result   M
+"User Profile"              WLAN-User-Data                    C
+"Charging Information"      Charging-Data                     C
+
+
+; Type: Information Elements
+; Section: 6.3.2.2
+; Table: 6.3.2.3
+; Page: 44
+; Columns: Name                AVP                     Cat
+"Permanent User Identity"      User-Name               M
+"Reason for de-registration"   Deregistration-Reason   M
+"Routing Information"          Destination-Host        M
+
+
+; Type: Information Elements
+; Section: 6.3.2.2
+; Table: 6.3.2.4
+; Page: 44
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 6.3.3.2
+; Table: 6.3.3.1
+; Page: 45
+; Columns: Name             AVP                Cat
+"Permanent User Identity"   User-Name          M
+"User profile"              WLAN-User-Data     C
+"Charging Information"      Charging-Data      C
+"Routing Information"       Destination-Host   M
+
+
+; Type: Information Elements
+; Section: 6.3.3.2
+; Table: 6.3.3.2
+; Page: 45
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 8.3.1
+; Table: 8.3.1.1
+; Page: 49
+; Columns: Name                     AVP                          Cat
+"User Identity"                     User-Name                    M
+"EAP payload"                       "EAP payload"                M
+"Authentication Request Type"       "Auth Req Type"              M
+"Visited Network Identifier"        Visited-Network-Identifier   C
+"Access Type"                       NAS-Port-Type                M
+W-APN-ID                            3GPP-WLAN-APN-Id             C
+"PDG Charging Identifier"           PDG-Charging-Id              C
+"Supported 3GPP WLAN QoS profile"   QoS-Capability               O
+
+
+; Type: Information Elements
+; Section: 8.3.1
+; Table: 8.3.1.2
+; Page: 49
+; Columns: Name                      AVP                                        Cat
+"EAP payload"                        "EAP payload"                              M
+Master-Session-Key                   Master-Session-Key                         C
+"Result code"                        "Result Code / Experimental-Result-Code"   M
+Subscription-ID                      Subscription-ID                            C
+Max-Subscribed-Bandwidth             Max-Requested-Bandwidth                    O
+"Charging Information"               Charging-Data                              C
+Framed-IP-Address                    Framed-IP-Address                          O
+Framed-IP-Prefix                     Framed-IP-Prefix                           O
+"Permanent User Identity"            User-Name                                  C
+"WLAN Session Identifier"            WLAN-Session-Id                            C
+"Authorized 3GPP WLAN QoS Profile"   QoS-Resources                              O
+"Routing Policy"                     Routing-Policy                             O
+
+
+; Type: Information Elements
+; Section: 8.3.2
+; Page: 53
+; Columns: Name                     AVP                          Cat
+"Permanent User Identity"           User-Name                    M
+"Diameter Session ID"               Session-Id                   M
+Request-Type                        "Session-Request -Type"      M
+"Visited Network Identifier"        Visited-Network-Identifier   C
+W-APN-ID                            3GPP-WLAN-APN-Id             C
+"Routing Policy"                    Routing-Policy               C
+"Routing Information"               Destination-Host             M
+"PDG Charging Identifier"           PDG-Charging-Id              C
+"Supported 3GPP WLAN QoS profile"   QoS-Capability               O
+
+
+; Type: Information Elements
+; Section: 8.3.2
+; Table: 8.3.2.2
+; Page: 53
+; Columns: Name                      AVP                                       Cat
+"Diameter Session ID"                Session-Id                                M
+"Registration Result"                "Result Code/ Experimental Result Code"   M
+Subscription-ID                      Subscription-ID                           C
+Max-Subscribed-Bandwidth             Max-Requested-Bandwidth                   O
+"Charging Information"               Charging-Data                             C
+Framed-IP-Address                    Framed-IP-Address                         O
+Framed-IP-Prefix                     Framed-IP-Prefix                          O
+"Permanent User Identity"            User-Name                                 C
+"WLAN Session Identifier"            WLAN-Session-Id                           C
+"Authorized 3GPP WLAN QoS Profile"   QoS-Resources                             O
+"Routing Policy"                     Routing-Policy                            O
+
+
+; Type: Information Elements
+; Section: 8.3.3
+; Table: 8.3.3.1
+; Page: 58
+; Columns: Name         AVP                Cat
+"User Identity"         User-Name          M
+W-APN-ID                3GPP-WLAN-APN-Id   M
+"Routing Information"   Destination-Host   M
+
+
+; Type: Information Elements
+; Section: 8.3.3
+; Table: 8.3.3.2
+; Page: 58
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 8.3.4
+; Table: 8.3.4.1
+; Page: 59
+; Columns: Name                   AVP                Cat
+"User Identity"                   User-Name          M
+"W-APN-Id (see clause 10.5.15)"   3GPP-WLAN-APN-Id   M
+"Routing Information"             Destination-Host   M
+
+
+; Type: Information Elements
+; Section: 8.3.4
+; Table: 8.3.4.2
+; Page: 59
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 8.3.5
+; Table: 8.3.5.1
+; Page: 60
+; Columns: Name          AVP                      Cat
+"User Identity"          User-Name                M
+"Re-Auth Request Type"   "Re-Auth–Request-Type"   M
+"Routing Information"    Destination-Host         M
+
+
+; Type: Information Elements
+; Section: 8.3.5
+; Table: 8.3.5.2
+; Page: 60
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+"User Identity"   User-Name                         M
+
+
+; Type: Information Elements
+; Section: 9.3.1
+; Table: 9.3.1.1
+; Page: 66
+; Columns: Name             AVP                Cat
+"Permanent User Identity"   User-Name          M
+"Routing Policy"            Routing-Policy     M
+"Routing Information"       Destination-Host   C
+"Subscription-ID AVP"       Subscription-ID    M
+
+
+; Type: Information Elements
+; Section: 9.3.1
+; Table: 9.3.1.2
+; Page: 66
+; Columns: Name         AVP                                       Cat
+"Registration Result"   "Result Code/ Experimental Result Code"   M
+
+
+; Type: Information Elements
+; Section: 9.3.2
+; Table: 9.3.2.1
+; Page: 67
+; Columns: Name             AVP                Cat
+"Permanent User Identity"   User-Name          M
+"Routing Information"       Destination-Host   M
+
+
+; Type: Information Elements
+; Section: 9.3.2
+; Table: 9.3.2.2
+; Page: 67
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 9.3.3
+; Table: 9.3.3.1
+; Page: 68
+; Columns: Name             AVP                Cat
+"Permanent User Identity"   User-Name          M
+"Routing Information"       Destination-Host   M
+
+
+; Type: Information Elements
+; Section: 9.3.3
+; Table: 9.3.3.2
+; Page: 68
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
 ; Type: Grouped AVP
 ; Name: SIP-Auth-Data-Item
 ; Section: 10.1.4
@@ -1274,3 +1722,59 @@ DIAMETER_ERROR_USER_NO_WLAN_SUBSCRIPTON           = 5041 ; 10.3.1.1
 DIAMETER_ERROR_W-APN_UNUSED_BY_USER               = 5042 ; 10.3.1.2
 DIAMETER_ERROR_NO_ACCESS_INDEPENDENT_SUBSCRIPTION = 5043 ; 10.3.1.3
 DIAMETER_ERROR_USER_NO_W-APN_SUBSCRIPTION         = 5044 ; 10.3.1.4
+
+
+; Type: Information Elements
+; Section: 11.3.1
+; Table: 11.3.1.1
+; Page: 82
+; Columns: Name                AVP                          Cat
+"Permanent User Identity"      User-Name                    M
+"Server Assignment Type"       Server-Assignment-Type       M
+"Visited Network Identifier"   Visited-Network-Identifier   C
+"Routing Information"          Destination-Host             C
+
+
+; Type: Information Elements
+; Section: 11.3.1
+; Table: 11.3.1.2
+; Page: 82
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 11.3.2
+; Table: 11.3.2.1
+; Page: 84
+; Columns: Name                AVP                          Cat
+"Permanent User Identity"      User-Name                    M
+"Visited Network Identifier"   Visited-Network-Identifier   C
+W-APN-ID                       3GPP-WLAN-APN-Id             M
+"Routing Information"          Destination-Host             C
+
+
+; Type: Information Elements
+; Section: 11.3.2
+; Table: 11.3.2.2
+; Page: 84
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 11.3.2.1.1
+; Table: 11.3.3.1
+; Page: 84
+; Columns: Name         AVP                Cat
+"User Identity"         User-Name          M
+W-APN-Id                3GPP-WLAN-APN-Id   M
+"Routing Information"   Destination-Host   M
+
+
+; Type: Information Elements
+; Section: 11.3.2.1.1
+; Table: 11.3.3.2
+; Page: 84
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M

@@ -105,6 +105,49 @@ Load                    TS29.229   -
 DRMP                    TS29.229   -
 
 
+; Type: Information Elements
+; Command: User-Data-Request
+; Section: 5.2.1.1
+; Table: 5.2.1-1
+; Page: 10
+; Columns: Name                                 AVP                  Cat
+"User Identity (See 3GPP TS 29.328 [4])"        User-Identity        M
+"Requested data (See 3GPP TS 29.328 [4])"       Data-Reference       M
+"Service Indication (See 3GPP TS 29.328 [4])"   Service-Indication   M
+
+
+; Type: Information Elements
+; Command: User-Data-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1-2
+; Page: 10
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental_Result   M
+Data              User-Data                         C
+
+
+; Type: Information Elements
+; Command: Profile-Update-Request
+; Section: 5.2.2.1
+; Table: 5.2.2-1
+; Page: 11
+; Columns: Name                             AVP              Cat
+"User Identity (See 3GPP TS 29.328 [4])"    User-Identity    M
+"Requested data (See 3GPP TS 29.328 [4])"   Data-Reference   M
+"Data (See 3GPP TS 29.328 [4])"             User-Data        M
+
+
+; Type: Information Elements
+; Command: Profile-Update-Answer
+; Section: 5.2.2.1
+; Table: 5.2.2-2
+; Page: 11
+; Columns: Name                                 AVP                               Cat
+"Result (See 3GPP TS 29.328 [4])"               Result-Code/Experimental-Result   M
+"Repository Data ID (See 3GPP TS 29.328 [4])"   Repository-Data-ID                O
+"Requested data (See 3GPP TS 29.328 [4])"       Data-Reference                    O
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes

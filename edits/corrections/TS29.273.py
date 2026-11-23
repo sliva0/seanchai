@@ -10,6 +10,7 @@ from seanchai.dad.corrections import (
     definition,
     flag_rules,
     header,
+    information_elements,
     reused_avps,
     reused_row,
     table_row,
@@ -502,5 +503,20 @@ CORRECTIONS += [
         " the document's own prose cites 'ETSI ES 283 034 [48]', which is how ETSI"
         " publishes that title, and it has no TS 283 034",
         versions="19.2.0",
+    ),
+    *(
+        Correction(
+            id=f"elements-application-{label.replace('/', '-').replace('.', '-')}",
+            target=information_elements(label),
+            field="application_id",
+            expect=None,
+            replace=16777264,
+            reason="clause 7.1.2.2.1 is an SWm procedure, and clause 7.2.1 says"
+            " 'The Diameter application for the SWm reference point shall use"
+            " the Diameter Application Id with value 16777264'; the document"
+            " prints AA-Request/Answer for STa, SWm and S6b",
+            versions="19.2.0",
+        )
+        for label in ("7.1.2.2.1/1", "7.1.2.2.1/2")
     ),
 ]

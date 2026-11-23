@@ -1,6 +1,11 @@
 """Corrections for 3GPP TS 29.219 — see docs/corrections.md."""
 
-from seanchai.dad.corrections import Correction, definition, reused_row
+from seanchai.dad.corrections import (
+    Correction,
+    definition,
+    information_elements,
+    reused_row,
+)
 
 # The two grouped-AVP clauses print `< AVP Header: nnn >` with no vendor-id,
 # while clause 5.3.0 sets "the Vendor-Id header of all AVPs defined in the
@@ -38,4 +43,29 @@ CORRECTIONS += [
         versions="19.0.0",
     )
     for name in ("Logical-Access-ID", "Physical-Access-ID")
+]
+
+# Clauses 4.5.1.1 and 4.5.2.1 map their procedures to the commands by their
+# headings' names; clauses 5.6.2-5.6.5 print the rules, which the corpus names
+# the commands by, abbreviated.
+_RULES = (
+    ("4.5.1.1/1", "Spending-Limit-Request", "SL-Request", "5.6.2", "SLR"),
+    ("4.5.1.1/2", "Spending-Limit-Answer", "SL-Answer", "5.6.3", "SLA"),
+    ("4.5.2.1/1", "Spending-Status-Notification-Request", "SN-Request", "5.6.4", "SNR"),
+    ("4.5.2.1/2", "Spending-Status-Notification-Answer", "SN-Answer", "5.6.5", "SNA"),
+)
+
+CORRECTIONS += [
+    Correction(
+        id=f"elements-command-{rule.lower()}",
+        target=information_elements(label),
+        field="command",
+        expect=printed,
+        replace=rule,
+        reason=f"clause {clause} heads the command '{printed} ({abbreviation})"
+        f" command' and prints its rule <{rule}>, the name the corpus gives it;"
+        " the procedure's sentence names the heading's",
+        versions="19.0.0",
+    )
+    for label, printed, rule, clause, abbreviation in _RULES
 ]

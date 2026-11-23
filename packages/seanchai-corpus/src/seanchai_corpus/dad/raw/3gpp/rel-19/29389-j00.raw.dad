@@ -82,6 +82,28 @@ Load                       RFC8583    MUST-NOT
 PC5-RAT-Type               TS29.388   MUST-NOT
 
 
+; Type: Information Elements
+; Command: ProSe-Authorization-Request
+; Section: 5.2.1
+; Table: 5.2.1-1
+; Page: 9
+; Columns: Name                                 AVP                  Cat
+"UE Identity (See 3GPP TS 29.336 [13])"         User-Identifier      M
+"PLMN Id (See 3GPP TS 29.272 [10])"             Visited-PLMN-Id      M
+"Supported Features (See 3GPP TS 29.229 [6])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: ProSe-Authorization-Answer
+; Section: 5.2.1
+; Table: 5.2.1-2
+; Page: 9
+; Columns: Name                                 AVP                               Cat
+"Result (See 6.4)"                              Result-Code/Experimental-Result   M
+"Supported Features (See 3GPP TS 29.229 [6])"   Supported-Features                O
+"V2X Authorization Data (See 6.3.2)"            V2X-Authorization-Data            C
+
+
 ; Type: Grouped AVP
 ; Name: V2X-Authorization-Data
 ; Section: 6.3.2

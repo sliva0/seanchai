@@ -188,6 +188,75 @@ OC-OLR                  RFC7683    MUST
 Load                    RFC8583    MUST-NOT
 
 
+; Type: Information Elements
+; Command: Data-Pull-Request
+; Section: 6.2.1.1
+; Table: 6.2.1-1
+; Page: 12
+; Columns: Name    AVP                   Cat
+"MC Service ID"    User-Identifier       M
+"Requested Data"   Data-Identification   M
+"DPR Flags"        DPR-Flags             O
+"User Data ID"     User-Data-Id          O
+
+
+; Type: Information Elements
+; Command: Data-Pull-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1-2
+; Page: 12
+; Columns: Name           AVP                               Cat
+Result                    Result-Code/Experimental_Result   M
+"Returned Data"           Data                              C
+"Failed Requested Data"   Data-Identification               C
+"DPA Flags"               DPA-Flags                         O
+
+
+; Type: Information Elements
+; Command: Data-Update-Request
+; Section: 6.2.2.1
+; Table: 6.2.2-1
+; Page: 14
+; Columns: Name    AVP               Cat
+"MC Service ID"    User-Identifier   M
+"Data To Update"   Data              M
+"DUR Flags"        DUR-Flags         O
+
+
+; Type: Information Elements
+; Command: Data-Update-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2-2
+; Page: 14
+; Columns: Name                  AVP                               Cat
+Result                           Result-Code/Experimental-Result   M
+"MC Service User Profile Data"   MC-Service-User-Profile-Data      C
+"Failed Requested Data"          Data-Identification               C
+"DUA Flags"                      DUA-Flags                         O
+
+
+; Type: Information Elements
+; Command: Notification-Data-Request
+; Section: 6.2.3.1
+; Table: 6.2.3-1
+; Page: 17
+; Columns: Name   AVP               Cat
+"MC Service ID"   User-Identifier   M
+"Returned Data"   Data              M
+"NDR Flags"       NDR-Flags         O
+
+
+; Type: Information Elements
+; Command: Notification-Data-Answer
+; Section: 6.2.3.1
+; Table: 6.2.3-2
+; Page: 17
+; Columns: Name           AVP                               Cat
+Result                    Result-Code/Experimental-Result   M
+"Failed Requested Data"   Data-Identification               C
+"NDA Flags"               NDA-Flags                         O
+
+
 ; Type: Grouped AVP
 ; Name: Data-Identification
 ; Section: 7.3.3

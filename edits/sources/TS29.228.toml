@@ -1,0 +1,27 @@
+# Source declarations for 3GPP TS 29.228 (IP Multimedia (IM) Subsystem Cx and
+# Dx interfaces; Signalling flows and message contents). Applied to normalized
+# source text before parsing; see src/seanchai/extractor/sources.py for the
+# format.
+
+[[quirk]]
+name = "elements-only"
+reason = """
+    the document holds information-element tables for TS 29.229's commands
+    (clause 6) and defines no AVP or command: 'This procedure is mapped to the
+    commands User-Authorization-Request/Answer in the Diameter application
+    specified in TS 29.229 [5]' (clause 6.1.1)
+    """
+first_version = "19.2.0"
+last_version = "19.2.0"
+
+[[patch]]
+find = "the commands Location Info Request/Answer"
+replace = "the commands Location-Info-Request/Answer"
+section = "6.1.4"
+reason = """
+    clause 6.1.4's sentence mapping the procedure to its commands spaces the
+    hyphens out of Location-Info-Request, the command TS 29.229 clause 6.1.5
+    prints
+    """
+first_version = "19.2.0"
+last_version = "19.2.0"

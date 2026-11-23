@@ -78,7 +78,7 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "match": "\\b(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
               "name": "storage.type.section.dad"
             },
             {
@@ -86,7 +86,7 @@
               "name": "constant.language.value-kind.dad"
             },
             {
-              "match": "\\b(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})\\b",
+              "match": "\\b(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)\\b",
               "name": "entity.name.tag.spec-ref.dad"
             },
             {
@@ -185,7 +185,7 @@
           "name": "string.unquoted.enum-note.dad",
           "patterns": [
             {
-              "match": "(?<=\\s)(from) (TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})(?=\\s|$)",
+              "match": "(?<=\\s)(from) (TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$)",
               "captures": {
                 "1": { "name": "keyword.other.from.dad" },
                 "2": { "name": "entity.name.tag.spec-ref.dad" }
@@ -214,7 +214,7 @@
               "name": "constant.language.dad"
             },
             {
-              "match": "(?<=\\s|^|,)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4})(?=\\s|$|,)",
+              "match": "(?<=\\s|^|,)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$|,)",
               "name": "entity.name.tag.spec-ref.dad"
             },
             {

@@ -259,7 +259,9 @@ def test_extract_reads_a_docx_and_attaches_the_pdfs_pages(
     spec = parser.parse(output.read_text())
     assert spec.specification == "3GPP TS 29.999"
     assert str(spec.link) == "https://example.com/spec.pdf"
-    assert [section.source.page for section in spec.sections] == [2, 3, 3, 4, 5, 6]
+    assert [section.source.page for section in spec.sections] == [
+        2, 3, 3, 4, 5, 6, 7, 7,
+    ]  # fmt: skip
     assert "warning:" not in result.stderr
 
 

@@ -1,0 +1,27 @@
+# Source declarations for 3GPP TS 29.328 (IP Multimedia (IM) Subsystem Sh
+# interface; Signalling flows and message contents). Applied to normalized
+# source text before parsing; see src/seanchai/extractor/sources.py for the
+# format.
+
+[[quirk]]
+name = "elements-only"
+reason = """
+    the document holds information-element tables for TS 29.329's commands
+    (clauses 6 and 7) and defines no AVP or command: 'This procedure is mapped
+    to the commands User-Data-Request/Answer in the Diameter application
+    specified in 3GPP TS 29.329 [5]' (clause 6.1.1)
+    """
+first_version = "19.2.0"
+last_version = "19.2.0"
+
+[[exclude]]
+section = "6.6"
+name = "Sh-ee"
+reason = """
+    clause 6.6's procedures are mapped to 'the commands Event-Subscribe-
+    Request/Answer in the Diameter application of Sh-ee ... specified in 3GPP
+    TS 29.329 [5]', and their tables describe those commands; TS 29.329's
+    clause 8, which prints them, is unfinished and excluded (TS29.329.toml),
+    so no command the tables describe is in the corpus
+    """
+first_version = "19.2.0"

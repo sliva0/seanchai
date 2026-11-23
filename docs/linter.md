@@ -96,6 +96,31 @@ RFC 6733 reserves, and a re-used table's M-bit column, which is the interface's
 own setting. Its message says which side the model follows
 ([consumers.md](consumers.md#the-model)).
 
+## Information elements
+
+An `Information Elements` block is held to the command it describes, the
+file's own, else the document its `; From:` names, else a `; Bases:`
+document's, as the model finds it
+([grammar.md](grammar.md#information-elements)). Without a corpus a command
+the file does not print is not judged.
+
+| Rule | Severity | Reports |
+|---|---|---|
+| `elements-unattached` | note | a table naming no command; a correction names the one it describes |
+| `elements-command-unknown` | error | a command neither the file nor the documents it cites for it print |
+| `elements-command-ambiguous` | error | a command the file prints for several applications, the table naming none |
+| `element-unmapped` | note | a row whose mapping cell names no AVP, kept as printed |
+| `element-not-in-command` | note | a row mapping an AVP the command's body, or the grouped AVP's the table describes, does not hold |
+| `element-required-in-abnf` | note | an AVP the body requires (`{ }` or `< >`) that a row gives category O or C |
+| `element-optional-in-abnf` | note | an AVP the body makes optional (`[ ]`) that a row gives category M |
+
+A row offering one of several AVPs ("Result-Code / Experimental-Result") is
+not compared, since its category is the choice's. The category notes stay
+notes: the table states what a command needs in a procedure, the ABNF what
+the wire carries, and documents differ on purpose (TS 29.283 marks
+`User-Identifier` M where its DPR's ABNF has `[ User-Identifier ]`). Each is
+countable by rule and acceptable through `Accept` like any note.
+
 ## The record of known holes
 
 With a corpus, a directory holding `holes.toml`
@@ -212,6 +237,10 @@ correcting them would invent something the documents do not say.
 | `registry-result-code-name` | TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`; TS 29.283's `DIAMETER_ERROR_DATA OUT_OF_SYNC` | no clause settles the name |
 | `registry-application-name` | TS 29.272's `S7a/S7d` for 16777308, "3GPP S7a" in table 4.1 | names differ |
 | `undefined-avp` | the names defined nowhere ([consumers.md](consumers.md#undefined-names)) | each block's reason lists what was searched |
+| `element-optional-in-abnf`, `element-required-in-abnf` | 24 and 3 rows, TS 29.283's six the most | the table and the ABNF say different things |
+| `element-not-in-command` | 18 rows, as TS 29.172's `Age-of-Location-Estimate` in PLA | the table lists what the body does not |
+| `element-unmapped` | 68 cells, 36 of them TS 29.234's | most print a name with a space or another's spelling; a correction may name the AVP |
+| `elements-unattached` | 107 tables: TS 29.273's 59, TS 29.234's 45, TS 29.140's 2 and TS 29.328 table 7.1.1 | no sentence the extractor reads names their commands; a correction names each |
 
 Accepted findings, each cited by `edits/corrections/<SpecRef>.py#<id>`:
 

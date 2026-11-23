@@ -478,6 +478,234 @@ Service-Result               TS29.336   -
 Load                         RFC8583    MUST-NOT
 
 
+; Type: Information Elements
+; Command: ProSe-Authorization-Request
+; Section: 5.2.1
+; Table: 5.2.1-1
+; Page: 11
+; Columns: Name                     AVP                  Cat
+"UE Identity (See 6.3.28)"          User-Identifier      M
+"PLMN Id (See 6.3.29)"              Visited-PLMN-Id      M
+"Supported Features (See 6.3.24)"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: ProSe-Authorization-Answer
+; Section: 5.2.1
+; Table: 5.2.1-2
+; Page: 11
+; Columns: Name                                          AVP                               Cat
+"Supported Features (See 6.3.24)"                        Supported-Features                O
+"Result (See 6.4)"                                       Result-Code/Experimental-Result   M
+"ProSe Direct Allowed (See 6.3.42)"                      ProSe-Direct-Allowed              C
+"Validity Time of Announcing (see.6.3.36)"               Validity-Time-Announce            C
+"Validity Time of Monitoring (see.6.3.37)"               Validity-Time-Monitor             C
+"Validity Time of Communication (see.6.3.38)"            Validity-Time-Communication       C
+"Authorized Discovery Range (See 3GPP TS 29.344 [14])"   Authorized-Discovery-Range        C
+
+
+; Type: Information Elements
+; Command: ProSe-Discovery-Request
+; Section: 5.3.1
+; Table: 5.3.1-1
+; Page: 13
+; Columns: Name                                  AVP                      Cat
+"Discovery Authorization Request (See 6.3.53)"   Discovery-Auth-Request   M
+"Supported Features (See 6.3.24)"                Supported-Features       O
+"Discovery Entry ID (See 6.3.59)"                Discovery-Entry-ID       C
+
+
+; Type: Information Elements
+; Command: ProSe-Discovery-Answer
+; Section: 5.3.1
+; Table: 5.3.1-2
+; Page: 13
+; Columns: Name                                   AVP                               Cat
+"Supported Features (See 6.3.24)"                 Supported-Features                O
+"Result (See 6.4)"                                Result-Code/Experimental-Result   M
+"Discovery Authorization Response (See 6.3.54)"   Discovery-Auth-Response           C
+"Discovery Entry ID (See 6.3.59)"                 Discovery-Entry-ID                C
+
+
+; Type: Information Elements
+; Command: ProSe-Match-Request
+; Section: 5.4.1
+; Table: 5.4.1-1
+; Page: 18
+; Columns: Name                     AVP                  Cat
+"Match Request (See 6.3.55)"        Match-Request        M
+"Supported Features (See 6.3.24)"   Supported-Features   O
+"PMR Flags (See 6.3.57)"            PMR-Flags            C
+
+
+; Type: Information Elements
+; Command: ProSe-Match-Answer
+; Section: 5.4.1
+; Table: 5.4.1-2
+; Page: 18
+; Columns: Name                      AVP                               Cat
+"Supported Features (See .6.3.24)"   Supported-Features                O
+"Result (See 6.4)"                   Result-Code/Experimental-Result   M
+"Match Report (See 6.3.12)"          Match-Report                      C
+
+
+; Type: Information Elements
+; Command: ProSe-Match-Report-Info-Request
+; Section: 5.5.1
+; Table: 5.5.1-1
+; Page: 20
+; Columns: Name                           AVP                  Cat
+"Match Report Information (See 6.3.56)"   Match-Report-Info    C
+"Supported Features (See 6.3.24)"         Supported-Features   O
+
+
+; Type: Information Elements
+; Command: ProSe-Match-Report-Info-Answer
+; Section: 5.5.1
+; Table: 5.5.1-2
+; Page: 20
+; Columns: Name                     AVP                               Cat
+"Supported Features (See 6.3.24)"   Supported-Features                O
+"Result (See 6.4)"                  Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: ProSe-Proximity-Request
+; Section: 5.6.1
+; Table: 5.6.1-1
+; Page: 22
+; Columns: Name                         AVP                       Cat
+"Requesting EPUID (See 6.3.23)"         Requesting-EPUID          M
+"Targeted EPUID (See 6.3.26)"           Targeted-EPUID            M
+"Time Window (See 6.3.27)"              Time-Window               M
+"Requesting UE Location (See 6.3.10)"   Location-Estimate         M
+"Location Update Trigger (See 6.3.a)"   Location-Update-Trigger   O
+"Supported Features (See 6.3.24)"       Supported-Features        O
+"PRR Flags (See 6.3.21)"                PRR-Flags                 M
+
+
+; Type: Information Elements
+; Command: ProSe-Proximity-Answer
+; Section: 5.6.1
+; Table: 5.6.1/2
+; Page: 22
+; Columns: Name                       AVP                               Cat
+"Supported Features (See 6.3.24)"     Supported-Features                O
+"Result (See 6.4)"                    Result-Code/Experimental-Result   M
+"Targeted UE Location (See 6.3.10)"   Location-estimate                 C
+"WLAN Link Layer ID (See 6.3.32)"     WLAN-Link-Layer-Id                C
+
+
+; Type: Information Elements
+; Command: ProSe-Location-Update-Request
+; Section: 5.7.1
+; Table: 5.7.1-1
+; Page: 24
+; Columns: Name                       AVP                  Cat
+"Targeted EPUID (See 6.3.26)"         Targeted-EPUID       M
+"Targeted UE Location (See 6.3.10)"   Location-Estimate    M
+"Supported Features (See 6.3.24)"     Supported-Features   O
+
+
+; Type: Information Elements
+; Command: ProSe-Location-Update-Answer
+; Section: 5.7.1
+; Table: 5.7.1-2
+; Page: 24
+; Columns: Name                     AVP                               Cat
+"Supported Features (See 6.3.24)"   Supported-Features                O
+"Result (See 6.4)"                  Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: ProSe-Cancellation-Request
+; Section: 5.8.1
+; Table: 5.8.1-1
+; Page: 25
+; Columns: Name                     AVP                  Cat
+"Requesting EPUID (See 6.3.23)"     Requesting-EPUID     M
+"Targeted EPUID (See 6.3.26)"       Targeted-EPUID       M
+"Supported Features (See 6.3.24)"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: ProSe-Cancellation-Answer
+; Section: 5.8.1
+; Table: 5.8.1-2
+; Page: 25
+; Columns: Name                     AVP                               Cat
+"Supported Features (See 6.3.24)"   Supported-Features                O
+"Result (See 6.4)"                  Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: ProSe-Alert-Request
+; Section: 5.9.1
+; Table: 5.9.1-1
+; Page: 26
+; Columns: Name                           AVP                         Cat
+"Application Layer User ID (See 6.3.2)"   Application-Layer-User-Id   M
+"Targeted EPUID (See 6.3.26)"             Targeted-EPUID              M
+"Assistance Information (See 6.3.3)"      Assistance-Info             O
+"Supported Features (See 6.3.24)"         Supported-Features          O
+
+
+; Type: Information Elements
+; Command: ProSe-Alert-Answer
+; Section: 5.9.1
+; Table: 5.9.1-2
+; Page: 26
+; Columns: Name                     AVP                               Cat
+"Supported Features (See 6.3.24)"   Supported-Features                O
+"Result (See 6.4)"                  Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: ProSe-Discovery-Request
+; Section: 5.10.1
+; Table: 5.10.1-1
+; Page: 28
+; Columns: Name                                  AVP                      Cat
+"Discovery Authorization Request (See 6.3.53)"   Discovery-Auth-Request   M
+"Supported Features (See 6.3.24)"                Supported-Features       O
+"Discovery Entry ID (See 6.3.59)"                Discovery-Entry-ID       C
+
+
+; Type: Information Elements
+; Command: ProSe-Discovery-Answer
+; Section: 5.10.1
+; Table: 5.10.1-2
+; Page: 28
+; Columns: Name                                   AVP                               Cat
+"Supported Features (See 6.3.24)"                 Supported-Features                O
+"Result (See 6.4)"                                Result-Code/Experimental-Result   M
+"Discovery Authorization Response (See 6.3.53)"   Discovery-Auth-Response           C
+"Discovery Entry ID (See 6.3.59)"                 Discovery-Entry-ID                C
+
+
+; Type: Information Elements
+; Command: ProSe-Discovery-Request
+; Section: 5.11.1
+; Table: 5.11.1-1
+; Page: 29
+; Columns: Name                                  AVP                      Cat
+"Discovery Authorization Request (See 6.3.53)"   Discovery-Auth-Request   M
+"Supported Features (See 6.3.24)"                Supported-Features       O
+"Discovery Entry ID (See 6.3.59)"                Discovery-Entry-ID       C
+
+
+; Type: Information Elements
+; Command: ProSe-Discovery-Answer
+; Section: 5.11.1
+; Table: 5.11.1-2
+; Page: 29
+; Columns: Name                                   AVP                               Cat
+"Supported Features (See 6.3.24)"                 Supported-Features                O
+"Result (See 6.4)"                                Result-Code/Experimental-Result   M
+"Discovery Authorization Response (See 6.3.53)"   Discovery-Auth-Response           C
+"Discovery Entry ID (See 6.3.59)"                 Discovery-Entry-ID                C
+
+
 ; Type: Grouped AVP
 ; Name: Assistance-Info
 ; Section: 6.3.3

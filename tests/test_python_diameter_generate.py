@@ -528,7 +528,7 @@ def test_the_pinned_dictionary_names_import_cleanly(generator, tmp_path):
     cx = _read(output, "ts29_229")
     assert (
         '"user_data", AVP_TGPP_CX_USER_DATA, VENDOR_TGPP, is_mandatory=True),'
-        "  # Wireshark: Cx-User-Data\n"
+        "  # Cat. C (TS29.228 table 6.1.2.2); Wireshark: Cx-User-Data\n"
     ) in cx
     found = _run(
         output,

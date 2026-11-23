@@ -195,3 +195,27 @@ no caption reading takes; 7.3.200-1 is the label clause 7.3.200 cites
 """
 first_version = "18.7.0"
 last_version = "19.6.0"
+
+[[patch]]
+find = "the commands Insert Subscriber Data-Request/Answer (IDR/IDA)"
+replace = "the commands Insert-Subscriber-Data-Request/Answer (IDR/IDA)"
+section = "5.2.2.1.1"
+reason = """
+    clause 5.2.2.1.1's sentence mapping the procedure to its commands spaces
+    two hyphens out of Insert-Subscriber-Data-Request, the command clause 7.2.9
+    prints
+    """
+first_version = "19.6.0"
+last_version = "19.6.0"
+
+[[patch]]
+find = "the commands Insert-Subscriber Data-Request/Answer (IDR/IDA)"
+replace = "the commands Insert-Subscriber-Data-Request/Answer (IDR/IDA)"
+section = "5A.2.2.1.1"
+reason = """
+    clause 5A.2.2.1.1's sentence mapping the procedure to its commands spaces a
+    hyphen out of Insert-Subscriber-Data-Request, the command clause 7.2.9
+    prints
+    """
+first_version = "19.6.0"
+last_version = "19.6.0"

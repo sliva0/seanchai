@@ -64,10 +64,12 @@ __all__ = [
     "avp_table",
     "definition",
     "edits",
+    "element_row",
     "enum_value",
     "flag_rules",
     "header",
     "in_release",
+    "information_elements",
     "load",
     "module_path",
     "notes",
@@ -496,6 +498,61 @@ class value_row(Selector):
         # The note stands among the table's own rows.
         suffix = "" if self.value is None else f" (= {self.value})"
         return f"value {self.name!r}{suffix}"
+
+
+@dataclass(frozen=True)
+class information_elements(Selector):
+    """An information-element table, by its printed label, or None and its
+    clause for a table printing none."""
+
+    label: str | None
+    section: str | None = None
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each table carrying the label, at `("sections", i)`."""
+        yield from (
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+            if isinstance(section, ast.InformationElements)
+            and section.table == self.label
+            and (self.section is None or section.source.section == self.section)
+        )
+
+    def describe(self) -> str:
+        if self.label is None:
+            return f"unlabelled information elements table (clause {self.section})"
+        return f"information elements table {self.label!r}"
+
+
+@dataclass(frozen=True)
+class element_row(Selector):
+    """One row of an information-element table, by the element's name as
+    printed; `occurrence` picks the n-th of several of one name."""
+
+    parent: information_elements
+    name: str
+    occurrence: int | None = None
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each matching row, at `("sections", i, "rows", j)`."""
+        for path, section in self.parent.locate(spec):
+            assert isinstance(section, ast.InformationElements)
+            found = [
+                ((*path, "rows", index), row)
+                for index, row in enumerate(section.rows)
+                if row.name == self.name
+            ]
+            if self.occurrence is None:
+                yield from found
+            elif self.occurrence <= len(found):
+                yield found[self.occurrence - 1]
+
+    def describe(self) -> str:
+        return f"{self.describe_in_place()} of {self.parent.describe()}"
+
+    def describe_in_place(self) -> str:
+        suffix = "" if self.occurrence is None else f" (#{self.occurrence})"
+        return f"element {self.name!r}{suffix}"
 
 
 @dataclass(frozen=True)
@@ -1727,6 +1784,7 @@ _SECTION_TYPES = (
     ast.Registry,
     ast.UndefinedAvp,
     ast.ValueTable,
+    ast.InformationElements,
 )
 
 
@@ -1803,7 +1861,13 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
         return result.path[:-1]
     if not isinstance(
         correction.target,
-        header | avp_table | reused_avps | application_scope | undefined | value_table,
+        header
+        | avp_table
+        | reused_avps
+        | application_scope
+        | undefined
+        | value_table
+        | information_elements,
     ):
         return result.path
     if result.new is not None and result.new != ():

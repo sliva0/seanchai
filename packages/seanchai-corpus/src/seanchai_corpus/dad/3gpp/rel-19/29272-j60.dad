@@ -979,6 +979,376 @@ SCEF-Reference-ID-Ext                   TS29.336   MUST-NOT
 SCEF-Reference-ID-for-Deletion-Ext      TS29.336   MUST-NOT
 
 
+; Type: Information Elements
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Columns: Name                                       AVP                                                 Cat
+IMSI                                                  User-Name                                           M
+"Supported Features (See TS 29.229 [9])"              Supported-Features                                  O
+"Terminal Information (See 7.3.3)"                    Terminal-Information                                O
+"ULR Flags (See 7.3.7)"                               ULR-Flags                                           M
+"Visited PLMN Id (See 7.3.9)"                         Visited-PLMN-Id                                     M
+"Equivalent PLMN List (See 7.3.151)"                  Equivalent-PLMN-List                                O
+"RAT Type (See 7.3.13)"                               RAT-Type                                            M
+"SGSN number (See 7.3.102)"                           SGSN-Number                                         C
+"Homogeneous Support of IMS Voice Over PS Sessions"   Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions   O
+"V-GMLC address"                                      GMLC-Address                                        C
+"Active APN"                                          Active-APN                                          O
+"UE SRVCC Capability"                                 UE-SRVCC-Capability                                 C
+"MME Number for MT SMS"                               MME-Number-for-MT-SMS                               C
+"SMS Register Request"                                SMS-Register-Request                                C
+"SGs MME identity"                                    SGs-MME-Identity                                    O
+"Coupled node's Diameter identity"                    Coupled-Node-Diameter-ID                            O
+"Adjacent PLMNs"                                      Adjacent-PLMNs                                      O
+"SF ULR Timestamp"                                    SF-ULR-Timestamp                                    O
+"SF Provisional Indication"                           SF-Provisional-Indication                           O
+"Supported Services (TS 29.336 [54])"                 Supported-Services                                  O
+
+
+; Type: Information Elements
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/2
+; Page: 18
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+Error-Diagnostic                           Error-Diagnostic                  O
+"ULA-Flags (See 7.3.8)"                    ULA-Flags                         C
+"Subscription Data (See 7.3.2)"            Subscription-Data                 C
+"Reset-IDs (See 7.3.184)"                  Reset-ID                          O
+
+
+; Type: Information Elements
+; Command: Cancel-Location-Request
+; Section: 5.2.1.2.1
+; Table: 5.2.1.2.1/1
+; Page: 31
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+"Cancellation Type (See 7.3.24)"           Cancellation-Type    M
+"CLR Flags (See 7.3.152)"                  CLR-Flags            O
+
+
+; Type: Information Elements
+; Command: Cancel-Location-Answer
+; Section: 5.2.1.2.1
+; Table: 5.2.1.2.1/2
+; Page: 31
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Purge-UE-Request
+; Section: 5.2.1.3.1
+; Table: 5.2.1.3.1/1
+; Page: 33
+; Columns: Name                            AVP                        Cat
+IMSI                                       User-Name                  M
+"Supported Features (See TS 29.229 [9])"   Supported-Features         O
+"PUR-Flags (See 7.3.149)"                  PUR-Flags                  O
+"EPS-Location-Information (See 7.3.111)"   EPS-Location-Information   C
+
+
+; Type: Information Elements
+; Command: Purge-UE-Answer
+; Section: 5.2.1.3.1
+; Table: 5.2.1.3.1/2
+; Page: 33
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+"PUA-Flags (See 7.3.48)"                   PUA-Flags                         C
+
+
+; Type: Information Elements
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-2-1-1-1)
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/1
+; Page: 35
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+"Subscription Data (See 7.3.2)"            Subscription-Data    M
+"IDR Flags (See 7.3.103)"                  IDR-Flags            C
+"Reset-IDs (See 7.3.184)"                  Reset-ID             O
+
+
+; Type: Information Elements
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-2-1-1-2)
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Columns: Name                                        AVP                                    Cat
+"Supported Features (See TS 29.229 [9])"               Supported-Features                     O
+"Result (See 7.4)"                                     Result-Code/Experimental-Result        M
+"IMS Voice over PS Sessions Supported (See 7.3.106)"   IMS-Voice-Over-PS-Sessions-Supported   C
+"Last UE Activity Time (See 7.3.108)"                  Last-UE-Activity-Time                  C
+"RAT Type (See 7.3.13)"                                RAT-Type                               C
+"IDA-Flags (See 7.3.47)"                               IDA-Flags                              C
+"EPS-User-State (See 7.3.110)"                         EPS-User-State                         C
+"EPS-Location-Information (See 7.3.111)"               EPS-Location-Information               C
+"Local Time Zone (See 7.3.156)"                        Local-Time-Zone                        C
+"Monitoring Event Report"                              Monitoring-Event-Report                C
+"Monitoring Event Config Status"                       Monitoring-Event-Config-Status         C
+"Supported Services (TS 29.336 [54])"                  Supported-Services                     O
+
+
+; Type: Information Elements
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-2-2-1-1)
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Columns: Name                            AVP                    Cat
+IMSI                                       User-Name              M
+"Supported Features (See TS 29.229 [9])"   Supported-Features     O
+"DSR Flags (See 7.3.25)"                   DSR-Flags              M
+"Trace Reference (See 7.3.64)"             "Trace- Reference"     C
+"Context Identifier (See 7.3.27)"          Context-Identifier     C
+"TS Code List (See 7.3.100)"               TS-Code                C
+"SS Code List (See 7.3.87)"                SS-Code                C
+"SCEF-Id (See TS 29.336 [54])"             SCEF-ID                C
+"eDRX Related RAT List"                    eDRX-Related-RAT       C
+"External Identifiers"                     External-Identifiers   O
+
+
+; Type: Information Elements
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-2-2-1-2)
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/2
+; Page: 43
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+"DSA Flags (See 7.3.26)"                   DSA-Flags                         C
+
+
+; Type: Information Elements
+; Command: Authentication-Information-Request
+; Section: 5.2.3.1.1
+; Table: 5.2.3.1.1/1
+; Page: 47
+; Columns: Name                                            AVP                                           Cat
+IMSI                                                       User-Name                                     M
+"Supported Features (See TS 29.229 [9])"                   Supported-Features                            O
+"Requested E-UTRAN Authentication Info (See 7.3.11)"       Requested-EUTRAN-Authentication-Info          C
+"Requested UTRAN/GERAN Authentication Info (See 7.3.12)"   "Requested-UTRAN-GERAN Authentication-Info"   C
+"Visited PLMN ID (See 7.3.9)"                              Visited-PLMN-ID                               M
+"AIR Flags (See 7.3.201)"                                  AIR-Flags                                     O
+
+
+; Type: Information Elements
+; Command: Authentication-Information-Answer
+; Section: 5.2.3.1.1
+; Table: 5.2.3.1.1/2
+; Page: 47
+; Columns: Name                            AVP                               Cat
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+Error-Diagnostic                           Error-Diagnostic                  O
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Authentication Info (See 7.3.17)"         Authentication-Info               C
+"UE Usage Type (See 7.3.202)"              UE-Usage-Type                     C
+
+
+; Type: Information Elements
+; Command: Reset-Request
+; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-4-1-1-1)
+; Section: 5.2.4.1.1
+; Table: 5.2.4.1.1/1
+; Page: 51
+; Columns: Name                              AVP                          Cat
+"User Id List (See 7.3.50)"                  User-Id                      O
+"Supported Features (See TS 29.229 [9])"     Supported-Features           O
+"Reset-IDs (See 7.3.184)"                    Reset-ID                     O
+"Subscription Data (See 7.3.2)"              Subscription-Data            O
+"Subscription Data Deletion (See 7.3.208)"   Subscription-Data-Deletion   O
+
+
+; Type: Information Elements
+; Command: Reset-Answer
+; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-4-1-1-2)
+; Section: 5.2.4.1.1
+; Table: 5.2.4.1.1/2
+; Page: 51
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Columns: Name                                                     AVP                                                 Cat
+IMSI                                                                User-Name                                           M
+"Supported Features (See TS 29.229 [9])"                            Supported-Features                                  O
+"Terminal Information (See 7.3.3)"                                  Terminal-Information                                C
+"PDN GW Identity (See 7.3.45)"                                      MIP6-Agent-Info                                     C
+"PGW PLMN ID"                                                       Visited-Network-Identifier                          C
+"Context Identifier (See 7.3.27)"                                   Context-Identifier                                  O
+"APN (See TS 23.008 [30])"                                          Service-Selection                                   C
+"Alert Reason (See 7.3.83)"                                         Alert-Reason                                        C
+"UE SRVCC Capability"                                               UE-SRVCC-Capability                                 C
+"NOR Flags (See 7.3.49)"                                            NOR-Flags                                           C
+"Homogeneous Support of IMS Voice Over PS Sessions (See 7.3.107)"   Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions   C
+"Maximum UE Availability Time"                                      Maximum-UE-Availability-Time                        O
+"Monitoring Event Config Status"                                    Monitoring-Event-Config-Status                      C
+"Emergency Services (See TS 29.273 [59])"                           Emergency-Services                                  C
+
+
+; Type: Information Elements
+; Command: Notify-Answer
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/2
+; Page: 54
+; Columns: Name                            AVP                               Cat
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Update-VCSG-Location-Request
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/1
+; Page: 61
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+MSISDN                                     MSISDN               C
+"UVR Flags (See 7.3.153)"                  UVR-Flags            M
+"SGSN number (See 7.3.102)"                SGSN-Number          C
+
+
+; Type: Information Elements
+; Command: Update-VCSG-Location-Answer
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/2
+; Page: 61
+; Columns: Name                               AVP                               Cat
+"Supported Features (See TS 29.229 [9])"      Supported-Features                O
+"Result (See 7.4)"                            Result-Code/Experimental-Result   M
+"VPLMN CSG Subscription Data (See 7.3.155)"   VPLMN-CSG-Subscription-Data       C
+"UVA Flags (See 7.3.154)"                     UVA-Flags                         C
+
+
+; Type: Information Elements
+; Command: Cancel-VCSG-Location-Request
+; Section: 5A.2.1.2.1
+; Table: 5A.2.1.2.1/1
+; Page: 63
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+"Cancellation Type (See 7.3.24)"           Cancellation-Type    M
+
+
+; Type: Information Elements
+; Command: Cancel-VCSG-Location-Answer
+; Section: 5A.2.1.2.1
+; Table: 5A.2.1.2.1/2
+; Page: 63
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-2-1-1-1)
+; Section: 5A.2.2.1.1
+; Table: 5A.2.2.1.1/1
+; Page: 64
+; Columns: Name                             AVP                           Cat
+IMSI                                        User-Name                     M
+"Supported Features (See TS 29.229 [9])"    Supported-Features            O
+"VPLMN CSG Subscription Data (See 7.3.2)"   VPLMN-CSG-Subscription-Data   M
+
+
+; Type: Information Elements
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-2-1-1-2)
+; Section: 5A.2.2.1.1
+; Table: 5A.2.2.1.1/2
+; Page: 64
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-2-2-1-1)
+; Section: 5A.2.2.2.1
+; Table: 5A.2.2.2.1/1
+; Page: 66
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+"DSR Flags (See 7.3.25)"                   DSR-Flags            M
+
+
+; Type: Information Elements
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-2-2-1-2)
+; Section: 5A.2.2.2.1
+; Table: 5A.2.2.2.1/2
+; Page: 66
+; Columns: Name                            AVP                               Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Reset-Request
+; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-3-1-1-1)
+; Section: 5A.2.3.1.1
+; Table: 5A.2.3.1.1/1
+; Page: 67
+; Columns: Name                            AVP                  Cat
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: Reset-Answer
+; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-3-1-1-2)
+; Section: 5A.2.3.1.1
+; Table: 5A.2.3.1.1/2
+; Page: 67
+; Columns: Name                            AVP                               Cat
+"Result (See 7.4)"                         Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [9])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: ME-Identity-Check-Request
+; Section: 6.2.1.1
+; Table: 6.2.1.1/1
+; Page: 69
+; Columns: Name                      AVP                    Cat
+"Terminal Information (See 7.3.3)"   Terminal-Information   M
+IMSI                                 User-Name              O
+
+
+; Type: Information Elements
+; Command: ME-Identity-Check-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Page: 69
+; Columns: Name                   AVP                               Cat
+"Result (See 7.4)"                Result-Code/Experimental-Result   M
+"Equipment Status (See 7.3.51)"   Equipment-Status                  C
+
+
 ; Type: Grouped AVP
 ; Name: Subscription-Data
 ; Section: 7.3.2

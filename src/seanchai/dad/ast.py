@@ -24,6 +24,7 @@ from ..errors import SeanchaiError
 __all__ = [
     "AVP_NAME_PATTERN",
     "BASE_PROTOCOL",
+    "ELEMENT_COLUMNS",
     "EXTERNAL_REF_PATTERN",
     "EXTERNAL_REF_RE",
     "IETF_VENDOR",
@@ -42,14 +43,17 @@ __all__ = [
     "AvpTable",
     "AvpTableColumn",
     "AvpTableRow",
+    "Category",
     "ClauseWildcard",
     "CommandFlag",
     "DataType",
+    "ElementRow",
     "EnumEntry",
     "EnumValue",
     "EnumValueName",
     "EnumeratedAvp",
     "GroupedAvp",
+    "InformationElements",
     "InlineText",
     "MBitOverride",
     "Mark",
@@ -1182,6 +1186,78 @@ class ValueTable(Node):
         return self
 
 
+class Category(enum.StrEnum):
+    """An information element's category, the "Cat." column of a stage-3
+    document's per-command tables (TS 29.272 clause 5.2: "M" mandatory, "C"
+    conditional, "O" optional)."""
+
+    MANDATORY = "M"
+    CONDITIONAL = "C"
+    OPTIONAL = "O"
+
+
+class ElementRow(Node):
+    """One row of an information-element table: the element as printed, the
+    AVPs its "Mapping to Diameter AVP" cell names, and its category. The
+    Description cell is prose and stays in the document, where `; Section:`,
+    `; Table:` and `; Page:` find it.
+
+    `avps` are the names the cell reads, without the "(See IETF RFC 6733
+    [61])" it prints after one; `either` says the cell separates them with
+    "/" or "or", one of them ("Result-Code / Experimental-Result"), where a
+    comma joins AVPs carried together ("Destination-Host,
+    Destination-Realm"). A cell that names no AVP as a name is `printed`, as
+    printed: TS 29.273's "EAP payload". A blank cell is neither."""
+
+    name: EnumValueName
+    avps: tuple[AvpName, ...] = ()
+    either: bool = False
+    printed: Mark | None = None
+    category: Category | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _one_mapping(self) -> ElementRow:
+        if self.printed is not None and self.avps:
+            raise ValueError(f"{self.name}: a mapping is names or printed text")
+        if self.either and len(self.avps) < 2:
+            raise ValueError(f"{self.name}: 'either' needs two AVPs to choose from")
+        return self
+
+
+class InformationElements(Node):
+    """`; Type: Information Elements`: a table mapping the information
+    elements of one command to its AVPs, with each element's category. About
+    eighteen Release 19 documents print one per command, "Information element
+    name | Mapping to Diameter AVP | Cat. | Description" (TS 29.272 table
+    5.2.1.1.1/1, Update Location Request).
+
+    `command` is the command the rows describe, by name, and
+    `application_id` the application, where the document prints that command
+    under several: TS 29.272 prints Insert-Subscriber-Data-Request for S6a and
+    for S7a. Absent where the document does not say which command in a way
+    the extractor reads; a correction supplies it. `origin` is the document
+    the clause says specifies the command, "specified in clause 7 of TS 29.272
+    [29]" (TS 29.273 clause 11.1.2.1.1), None for the document's own clause.
+    The command is the document's own where it prints one of that name, else
+    `origin`'s, else the first of its `; Bases:` printing it. `avp` is a
+    grouped AVP of the command whose members the rows describe instead, as TS
+    29.228 table 6.3.2 does SIP-Auth-Data-Item's."""
+
+    type: Literal["Information Elements"] = "Information Elements"
+    command: AvpName | None = None
+    application_id: Unsigned32 | None = None
+    origin: SpecRef | None = None
+    avp: AvpName | None = None
+    # None where the table prints no caption, as TS 29.234 V11.2.0 clause
+    # 8.3.2's first does.
+    table: TableLabel | None = None
+    source: SourceRef
+    rows: Annotated[tuple[ElementRow, ...], Field(min_length=1)]
+
+
+ELEMENT_COLUMNS = ("Name", "AVP", "Cat")
+
+
 def node_at(root: Node, path: TreePath) -> Any:
     """What `path` names under `root`: a node, or a field's value."""
     found: Any = root
@@ -1200,7 +1276,8 @@ Section = Annotated[
     | ReusedAvps
     | Registry
     | UndefinedAvp
-    | ValueTable,
+    | ValueTable
+    | InformationElements,
     Field(discriminator="type"),
 ]
 

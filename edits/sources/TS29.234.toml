@@ -68,6 +68,19 @@ first_version = "11.2.0"
 last_version = "11.2.0"
 
 [[patch]]
+find = "\uF043"
+replace = "C"
+exact = true
+section = "8.3.1"
+reason = """
+    table 8.3.1.2's Cat. cell for Permanent User Identity prints its C in the
+    Symbol font, a private-use character; every other cell of the column prints
+    M, C or O, and the PDF shows a C
+    """
+first_version = "11.2.0"
+last_version = "11.2.0"
+
+[[patch]]
 find = "Shall"
 replace = "Must"
 exact = true

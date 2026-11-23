@@ -306,6 +306,21 @@ class EnumEntry(_Model):
     description: str | None = None
 
 
+class ElementRow(_Model):
+    """A row of an Information Elements block at `line`, `cells` as a
+    `TableRow`'s: the element's `name` unquoted, the `avps` its mapping cell
+    names (`either`: one of them) or the cell as `printed`, and its
+    `category`, `M`, `C` or `O`."""
+
+    line: int
+    name: str
+    cells: tuple[str, ...]
+    avps: tuple[str, ...] = ()
+    either: bool = False
+    printed: str | None = None
+    category: ast.Category | None = None
+
+
 class Block(_Model):
     """A `; Type:` block of a file: lines `line` (its `; Type:` line) to
     `last`, comments included. `fields` holds its other directives as printed,
@@ -320,7 +335,11 @@ class Block(_Model):
     - `columns`, `allocations` and `reservations` for a Registry;
     - `value_kind`, `feature_list_id`, `application`, `avp_target` and
       `value_rows` for a Value Table, `avp_target` being where its `; AVP:`
-      line links.
+      line links;
+    - `columns`, `element_rows` and `described` for an Information Elements
+      block, `name` being the command it describes and `described` where the
+      model finds that command, none where the block names none or several
+      applications print it.
 
     `commands` marks where its lines name a command.
     """
@@ -346,6 +365,8 @@ class Block(_Model):
     application: str | None = None
     avp_target: Target | None = None
     value_rows: tuple[ValueRow, ...] = ()
+    element_rows: tuple[ElementRow, ...] = ()
+    described: tuple[Target, ...] = ()
     commands: tuple[CommandSpan, ...] = ()
 
 

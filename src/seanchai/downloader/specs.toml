@@ -86,12 +86,8 @@ title = "PCC spending-limit reporting over Sy"
 number = "29.228"
 title = "Cx/Dx signalling flows and message contents"
 reason = """
-    Defines application-level AVP presence rules that override the protocol
-    ABNF.
-    """
-out_of_scope = """
-    Holds Cx procedures and IE mappings: no Diameter ABNF or AVP tables. TS
-    29.229 defines the protocol.
+    Its information-element tables give each Cx and Dx command's elements a
+    category, M, C or O, for TS 29.229's commands; it defines no AVP.
     """
 
 [[tgpp]]
@@ -130,12 +126,8 @@ out_of_scope = """
 number = "29.328"
 title = "Sh signalling flows and message contents"
 reason = """
-    Companion Sh specification containing Diameter message and AVP content
-    rules.
-    """
-out_of_scope = """
-    Holds Sh procedures and IE mappings: no Diameter ABNF or AVP tables. TS
-    29.329 defines the protocol.
+    Its information-element tables give each Sh command's elements a
+    category, M, C or O, for TS 29.329's commands; it defines no AVP.
     """
 
 [[tgpp]]

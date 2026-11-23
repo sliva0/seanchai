@@ -1547,6 +1547,328 @@ User-Name              RFC6733    -
 Equipment-Status       TS29.272   -
 
 
+; Type: Information Elements
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/1
+; Page: 18
+; Columns: Name                             AVP                         Cat
+"User Identity"                             User-Name                   M
+"EAP payload"                               EAP-payload                 M
+"Authentication Request Type"               Auth-Request-Type           M
+"UE Layer-2 address"                        Calling-Station-ID          M
+"Access Type"                               RAT-Type                    C
+"Access Network Identity"                   ANID                        O
+"Full Name for Network"                     Full-Network-Name           O
+"Short Name for Network"                    Short-Network-Name          O
+"Transport Access Type"                     Transport-Access-Type       C
+"Supported Features (See TS 29.229 [24])"   Supported-Features          O
+"AAA Failure Indication"                    AAA-Failure-Indication      O
+"WLAN Location Information"                 Access-Network-Info         O
+"WLAN Location Timestamp"                   User-Location-Info-Time     O
+"High Priority Access Info"                 High-Priority-Access-Info   C
+
+
+; Type: Information Elements
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/2
+; Page: 18
+; Columns: Name                             AVP                                    Cat
+"User Identity"                             User-Name                              M
+"EAP payload"                               "EAP payload"                          M
+"Authentication Request Type"               Auth-Request-Type                      M
+"Result code"                               "Result-Code / Experimental- Result"   M
+"Session Alive Time"                        Session-Timeout                        O
+"Accounting Interim Interval"               "Accounting Interim-Interval"          O
+"Pairwise Master Key"                       EAP-Master-Session-Key                 C
+"3GPP AAA Server URI"                       Redirect-Host                          C
+"Trust Relationship Indicator"              AN-Trusted                             M
+"Supported Features (See TS 29.229 [24])"   Supported-Features                     O
+"Permanent User Identity"                   Mobile-Node-Identifier                 C
+"MPS Priority"                              MPS-Priority                           C
+
+
+; Type: Information Elements
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/1
+; Page: 22
+; Columns: Name             AVP                      Cat
+"Permanent User Identity"   User-Name                M
+"Re-Auth Request Type"      "Re-Auth–Request-Type"   M
+"Routing Information"       Destination-Host         M
+
+
+; Type: Information Elements
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/2
+; Page: 22
+; Columns: Name             AVP                               Cat
+"Permanent User Identity"   User-Name                         M
+Result                      Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/3
+; Page: 22
+; Columns: Name                 AVP                         Cat
+"User Identity"                 User-Name                   M
+"EAP payload"                   EAP-payload                 M
+"Authentication Request Type"   Auth-Request-Type           M
+"High Priority Access Info"     High-Priority-Access-Info   C
+
+
+; Type: Information Elements
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/4
+; Page: 22
+; Columns: Name                 AVP                                    Cat
+"User Identity"                 User-Name                              M
+"EAP payload"                   "EAP payload"                          O
+"Authentication Request Type"   Auth-Request-Type                      M
+"Result code"                   "Result-Code / Experimental- Result"   M
+"Session Alive Time"            Session-Timeout                        O
+"Accounting Interim Interval"   "Accounting Interim-Interval"          O
+"Pairwise Master Key"           EAP-Master-Session-Key                 C
+"MPS Priority"                  MPS-Priority                           C
+
+
+; Type: Information Elements
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Columns: Name                                   AVP                            Cat
+"User Identity"                                   User-Name                      M
+"EAP payload"                                     EAP-payload                    M
+"Authentication Request Type"                     Auth-Request-Type              M
+"UE Layer-2 address"                              Calling-Station-ID             M
+"Supported 3GPP QoS profile"                      QoS-Capability                 O
+"Mobility Capabilities"                           MIP6-Feature-Vector            C
+"Access Type"                                     RAT-Type                       M
+"Access Network Identity"                         ANID                           M
+"Full Name for Network"                           Full-Network-Name              O
+"Short Name for Network"                          Short-Network-Name             O
+"Visited Network Identifier"                      Visited-Network-Identifier     O
+"APN Id"                                          Service-Selection              O
+"Terminal Information"                            Terminal-Information           O
+"Supported Features (See TS 29.229 [24])"         Supported-Features             O
+"Selected Trusted WLAN Identifier"                WLAN-Identifier                O
+"AAA Failure Indication"                          AAA-Failure-Indication         O
+"DER Flags"                                       DER-Flags                      O
+"Transport Access Type"                           Transport-Access-Type          C
+"Supported TWAN Connection Modes"                 TWAN-Connection-Mode           O
+"Provided Connectivity Parameters"                TWAN-Connectivity-Parameters   C
+"TWAG Control Plane IP Address"                   TWAG-CP-Address                C
+"IMEI Check in VPLMN Result"                      IMEI-Check-In-VPLMN-Result     C
+"Domain-Specific Re-authentication Key Request"   ERP-RK-Request                 O
+"High Priority Access Info"                       High-Priority-Access-Info      C
+
+
+; Type: Information Elements
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Columns: Name                             AVP                                        Cat
+"User Identity"                             User-Name                                  M
+"EAP payload"                               "EAP payload"                              O
+"Authentication Request Type"               Auth-Request-Type                          M
+"Result code"                               "Result-Code / Experimental Result Code"   M
+"Session Alive Time"                        Session-Timeout                            O
+"Accounting Interim Interval"               "Accounting Interim-Interval"              O
+"Pairwise Master Key"                       EAP-Master-Session-Key                     C
+"Default APN"                               Context-Identifier                         C
+"APN-OI replacement"                        APN-OI-Replacement                         C
+"APN and PGW Data"                          APN-Configuration                          C
+"Serving GW Address"                        MIP6-Agent-Info                            O
+"Mobility Capabilities"                     MIP6-Feature-Vector                        C
+"Permanent User Identity"                   Mobile-Node-Identifier                     C
+"3GPP AAA Server URI"                       Redirect-Host                              C
+"UE Charging Data"                          3GPP-Charging-Characteristics              O
+"UE AMBR"                                   AMBR                                       C
+"Trust Relationship Indicator"              AN-Trusted                                 C
+"Supported Features (See TS 29.229 [24])"   Supported-Features                         O
+FA-RK                                       MIP-FA-RK                                  C
+FA-RK-SPI                                   MIP-FA-RK-SPI                              C
+"Trace information"                         Trace-Info                                 C
+MSISDN                                      Subscription-ID                            C
+"DEA Flags"                                 DEA-Flags                                  O
+"Selected TWAN Connection Mode"             TWAN-Connection-Mode                       C
+"Requested Connectivity Parameters"         TWAN-Connectivity-Parameters               C
+"WLCP Key"                                  WLCP-Key                                   C
+"Terminal Information"                      Terminal-Information                       C
+"Emergency Services"                        Emergency-Services                         C
+"Emergency Info"                            Emergency-Info                             C
+"ERP Keying Material"                       Key                                        C
+"ERP Realm"                                 ERP-Realm                                  C
+"UE Usage Type"                             UE-Usage-Type                              C
+"MPS Priority"                              MPS-Priority                               C
+
+
+; Type: Information Elements
+; Section: 5.1.2.2.1
+; Table: 5.1.2.2.1/1
+; Page: 49
+; Columns: Name             AVP                  Cat
+"Permanent User Identity"   User-Name            M
+Auth-Session-State          Auth-Session-State   O
+
+
+; Type: Information Elements
+; Section: 5.1.2.2.1
+; Table: 5.1.2.2.1/2
+; Page: 49
+; Columns: Name   AVP           Cat
+Result-Code       Result-Code   M
+
+
+; Type: Information Elements
+; Section: 5.1.2.2.1
+; Table: 5.1.2.2.1/3
+; Page: 49
+; Columns: Name     AVP                 Cat
+Termination-Cause   Termination-Cause   M
+
+
+; Type: Information Elements
+; Section: 5.1.2.2.1
+; Table: 5.1.2.2.1/4
+; Page: 49
+; Columns: Name   AVP           Cat
+Result-Code       Result-Code   M
+
+
+; Type: Information Elements
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/1
+; Page: 51
+; Columns: Name             AVP                      Cat
+"Permanent User Identity"   User-Name                M
+"Re-Auth Request Type"      "Re-Auth–Request-Type"   M
+"Routing Information"       Destination-Host         M
+
+
+; Type: Information Elements
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/2
+; Page: 51
+; Columns: Name             AVP                               Cat
+"Permanent User Identity"   User-Name                         M
+Result                      Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/3
+; Page: 51
+; Columns: Name                AVP                         Cat
+"Permanent User Identity"      User-Name                   M
+Request-Type                   Auth-Request-Type           M
+"Mobility Capabilities"        MIP6-Feature-Vector         C
+"Routing Information"          Destination-Host            M
+"Access Network Information"   Access-Network-Info         O
+"Local Time Zone"              Local-Time-Zone             O
+"High Priority Access Info"    High-Priority-Access-Info   C
+
+
+; Type: Information Elements
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Columns: Name                 AVP                                       Cat
+"Registration Result"           "Result Code/ Experimental Result Code"   M
+Request-Type                    Auth-Request-Type                         M
+"Session Alive Time"            Session-Timeout                           O
+"Accounting Interim Interval"   Acct-Interim-Interval                     O
+"Default APN"                   Context-Identifier                        C
+"APN-OI replacement"            APN-OI-Replacement                        C
+"APN and PGW Data"              APN-Configuration                         C
+"UE Charging Data"              3GPP-Charging-Characteristics             O
+"UE AMBR"                       AMBR                                      C
+"Mobility Capabilities"         MIP6-Feature-Vector                       C
+"Trace information"             Trace-Info                                C
+MSISDN                          Subscription-ID                           C
+"Emergency Info"                Emergency-Info                            C
+"UE Usage Type"                 UE-Usage-Type                             C
+"MPS Priority"                  MPS-Priority                              C
+
+
+; Type: Information Elements
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/5
+; Page: 51
+; Columns: Name                 AVP                         Cat
+"User Identity"                 User-Name                   M
+"EAP payload"                   EAP-payload                 M
+"Authentication Request Type"   Auth-Request-Type           M
+"High Priority Access Info"     High-Priority-Access-Info   C
+
+
+; Type: Information Elements
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Columns: Name                 AVP                                        Cat
+"User Identity"                 User-Name                                  M
+"EAP payload"                   "EAP payload"                              M
+"Authentication Request Type"   Auth-Request-Type                          M
+"Result code"                   "Result-Code / Experimental Result Code"   M
+"Session Alive Time"            Session-Timeout                            O
+"Accounting Interim Interval"   "Accounting Interim-Interval"              O
+"Pairwise Master Key"           EAP-Master-Session-Key                     C
+"Default APN"                   Context-Identifier                         C
+"APN-OI replacement"            APN-OI-Replacement                         C
+"APN and PGW Data"              APN-Configuration                          C
+"UE Charging Data"              3GPP-Charging-Characteristics              O
+"UE AMBR"                       AMBR                                       C
+FA-RK                           MIP-FA-RK                                  C
+FA-RK-SPI                       MIP-FA-RK-SPI                              C
+"Trace information"             Trace-Info                                 C
+MSISDN                          Subscription-ID                            C
+"WLCP Key"                      WLCP-Key                                   C
+"Emergency Info"                Emergency-Info                             C
+"UE Usage Type"                 UE-Usage-Type                              C
+"MPS Priority"                  MPS-Priority                               C
+
+
+; Type: Information Elements
+; Section: 5.1.2.4.1
+; Table: 5.1.2.4.1/1
+; Page: 63
+; Columns: Name             AVP                 Cat
+"Permanent User Identity"   User-Name           M
+"Termination Cause"         Termination-Cause   M
+
+
+; Type: Information Elements
+; Section: 5.1.2.4.1
+; Table: 5.1.2.4.1/2
+; Page: 63
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 5.1.2.5.1
+; Table: 5.1.2.5.1/1
+; Page: 64
+; Columns: Name                 AVP                 Cat
+KeyName-NAI                     User-Name           M
+EAP-Initiate                    EAP-payload         M
+"Authentication Request Type"   Auth-Request-Type   M
+DER-Flags                       DER-Flags           M
+
+
+; Type: Information Elements
+; Section: 5.1.2.5.1
+; Table: 5.1.2.5.1/2
+; Page: 64
+; Columns: Name                 AVP                                        Cat
+KeyName-NAI                     User-Name                                  M
+EAP-Finish                      "EAP payload"                              O
+"Authentication Request Type"   Auth-Request-Type                          M
+"Result code"                   "Result-Code / Experimental Result Code"   M
+"ERP Keying Material"           Key                                        C
+
+
 ; Type: Enumerated AVP
 ; Name: AN-Trusted
 ; Section: 5.2.3.9
@@ -1659,6 +1981,205 @@ Initial-Attach-Indicator = 0
 HPA_Configured = 0
 
 
+; Type: Information Elements
+; Section: 6.1.2.1.1
+; Table: 6.1.2.1.1-1
+; Page: 83
+; Columns: Name                                   AVP                            Cat
+"User Identity"                                   User-Name                      M
+"EAP payload"                                     EAP-payload                    M
+"Authentication Request Type"                     Auth-Request-Type              M
+"UE Layer-2 address"                              Calling-Station-ID             M
+"Supported 3GPP QoS profile"                      QoS-Capability                 O
+"Mobility Capabilities"                           MIP6-Feature-Vector            C
+"Access Type"                                     RAT-Type                       M
+"Access Network Identity"                         ANID                           M
+"Visited Network Identifier"                      Visited-Network-Identifier     M
+"Full Name for Network"                           Full-Network-Name              O
+"Short Name for Network"                          Short-Network-Name             O
+"APN Id"                                          Service-Selection              O
+"Terminal Information"                            Terminal-Information           O
+"Trust Relationship Indicator"                    AN-Trusted                     O
+"Selected Trusted WLAN Identifier"                WLAN-Identifier                O
+"DER Flags"                                       DER-Flags                      O
+"Transport Access Type"                           Transport-Access-Type          C
+"Supported TWAN Connection Modes"                 TWAN-Connection-Mode           O
+"Provided Connectivity Parameters"                TWAN-Connectivity-Parameters   C
+"TWAG Control Plane IP Address"                   TWAG-CP-Address                C
+"Domain-Specific Re-authentication Key Request"   ERP-RK-Request                 O
+"High Priority Access Info"                       High-Priority-Access-Info      C
+
+
+; Type: Information Elements
+; Section: 6.1.2.1.3
+; Table: 6.1.2.1.3/1
+; Page: 86
+; Columns: Name                AVP                          Cat
+"Permanent User Identity"      User-Name                    M
+Request-Type                   Auth-Req-Type                M
+"Visited Network Identifier"   Visited-Network-Identifier   M
+"Routing Information"          Destination-Host             M
+"Supported 3GPP QoS profile"   QoS-Capability               O
+"Access Type"                  RAT-Type                     O
+
+
+; Type: Information Elements
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Columns: Name                                AVP                          Cat
+"User Identity"                                User-Name                    M
+"EAP payload"                                  EAP-Payload                  M
+"Authentication Request Type"                  "Auth-Request- Type"         M
+APN                                            Service-Selection            C
+"Visited Network Identifier (See 9.2.3.1.2)"   Visited-Network-Identifier   C
+"Access Type"                                  RAT-Type                     C
+"Mobility features"                            MIP6-Feature-Vector          O
+"AAA Failure Indication"                       AAA-Failure-Indication       O
+"Supported Features (See TS 29.229 [24])"      Supported-Features           O
+"UE local IP address"                          UE-Local-IP-Address          O
+"Terminal Information"                         Terminal-Information         C
+"Emergency Services"                           Emergency-Services           C
+"High Priority Access Info"                    High-Priority-Access-Info    C
+
+
+; Type: Information Elements
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Columns: Name                             AVP                                    Cat
+"User Identity"                             User-Name                              O
+"EAP payload"                               EAP-Payload                            O
+Master-Session-Key                          EAP-Master-Session-Key                 C
+"Authentication Request Type"               Auth-Request-Type                      M
+"Result code"                               Result-Code/Experimental-Result-Code   M
+"3GPP AAA Server URI"                       Redirect-Host                          C
+"Mobility Capabilities"                     MIP6-Feature-Vector                    O
+"APN-OI replacement"                        APN-OI-Replacement                     C
+"APN and PGW Data"                          APN-Configuration                      C
+"Trace information"                         Trace-Info                             C
+MSISDN                                      Subscription-ID                        C
+"Session time"                              Session-Timeout                        C
+"Permanent User Identity"                   Mobile-Node-Identifier                 C
+"Serving GW Address"                        MIP6-Agent-Info                        O
+"UE Charging Data"                          3GPP-Charging-Characteristics          O
+"Supported Features (See TS 29.229 [24])"   Supported-Features                     O
+"WLAN Location Information"                 Access-Network-Info                    O
+"WLAN Location Timestamp"                   User-Location-Info-Time                C
+"Emergency Info"                            Emergency-Info                         C
+"UE Usage Type"                             UE-Usage-Type                          C
+"Core Network Restrictions"                 Core-Network-Restrictions              C
+"MPS Priority"                              MPS-Priority                           C
+
+
+; Type: Information Elements
+; Command: AA-Request
+; Application-ID: 16777264 ;; corrected: (TS29.273.py#elements-application-7-1-2-2-1-1)
+; From: RFC4005
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/1
+; Page: 107
+; Columns: Name               AVP                         Cat
+"Permanent User Identity"     User-Name                   M
+"Request Type"                "Auth-Request -Type"        M
+"AAR Flags"                   AAR-Flags                   O
+"UE local IP address"         UE-Local-IP-Address         C
+"High Priority Access Info"   High-Priority-Access-Info   C
+
+
+; Type: Information Elements
+; Command: AA-Answer
+; Application-ID: 16777264 ;; corrected: (TS29.273.py#elements-application-7-1-2-2-1-2)
+; From: RFC4005
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Columns: Name               AVP                                       Cat
+"Permanent User Identity"     User-Name                                 M
+"Request Type"                "Auth-Request -Type"                      M
+"Registration Result"         "Result-Code/ Experimental Result Code"   M
+"UE IPv4 Home Address"        PMIP6-IPv4-Home-Address                   O
+"APN-OI replacement"          APN-OI-Replacement                        C
+"APN and PGW Data"            APN-Configuration                         C
+"Trace information"           Trace-Info                                C
+MSISDN                        Subscription-ID                           C
+"UE Charging Data"            3GPP-Charging-Characteristics             O
+"Session time"                Session-Timeout                           C
+"WLAN Location Information"   Access-Network-Info                       O
+"WLAN Location Timestamp"     User-Location-Info-Time                   C
+"Core Network Restrictions"   Core-Network-Restrictions                 C
+"MPS Priority"                MPS-Priority                              C
+
+
+; Type: Information Elements
+; Section: 7.1.2.3.1
+; Table: 7.1.2.3.1/1
+; Page: 113
+; Columns: Name             AVP                 Cat
+"Permanent User Identity"   User-Name           M
+"Termination Cause"         Termination-Cause   M
+
+
+; Type: Information Elements
+; Section: 7.1.2.3.1
+; Table: 7.1.2.3.1/2
+; Page: 113
+; Columns: Name   AVP           Cat
+Result            Result-Code   M
+
+
+; Type: Information Elements
+; Section: 7.1.2.4.1
+; Table: 7.1.2.4.1/1
+; Page: 114
+; Columns: Name             AVP                  Cat
+"Permanent User Identity"   User-Name            M
+Auth-Session-State          Auth-Session-State   O
+
+
+; Type: Information Elements
+; Section: 7.1.2.4.1
+; Table: 7.1.2.4.1/2
+; Page: 114
+; Columns: Name   AVP           Cat
+Result            Result-Code   M
+
+
+; Type: Information Elements
+; Section: 7.1.2.4.1
+; Table: 7.1.2.4.1/3
+; Page: 114
+; Columns: Name     AVP                 Cat
+Termination-Cause   Termination-Cause   M
+
+
+; Type: Information Elements
+; Section: 7.1.2.4.1
+; Table: 7.1.2.4.1/4
+; Page: 114
+; Columns: Name   AVP           Cat
+Result-Code       Result-Code   M
+
+
+; Type: Information Elements
+; Section: 7.1.2.5.1
+; Table: 7.1.2.5.1/1
+; Page: 116
+; Columns: Name             AVP                    Cat
+"Permanent User Identity"   User-Name              M
+"Re-Auth Request Type"      Re-Auth-Request-Type   M
+"Routing Information"       Destination-Host       M
+
+
+; Type: Information Elements
+; Section: 7.1.2.5.1
+; Table: 7.1.2.5.1/2
+; Page: 116
+; Columns: Name             AVP           Cat
+"Permanent User Identity"   User-Name     M
+Result                      Result-Code   M
+
+
 ; Type: Value Table
 ; AVP: Emergency-Services
 ; Kind: bits
@@ -1675,6 +2196,183 @@ Emergency-Indication = 0
 ; Table: 7.2.3.5/1
 ; Page: 125
 WLAN-Location-Info-Request = 0
+
+
+; Type: Information Elements
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/1
+; Page: 125
+; Columns: Name                             AVP                          Cat
+IMSI                                        User-Name                    M
+"Visited Network Identifier"                Visited-Network-Identifier   C
+"Number Authentication Items"               SIP-Number-Auth-Items        M
+"Authentication Data"                       SIP-Auth-Data-Item           M
+"Routing Information"                       Destination-Host             C
+"Access Network Identity"                   ANID                         C
+"Access Type"                               RAT-Type                     M
+"Trust Relationship Indicator"              AN-Trusted                   O
+"Terminal Information"                      Terminal-Information         O
+"AAA Failure Indication"                    AAA-Failure-Indication       O
+"Supported Features (See TS 29.229 [24])"   Supported-Features           O
+
+
+; Type: Information Elements
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/2
+; Page: 125
+; Columns: Name           AVP                         Cat
+"Authentication Method"   SIP-Authentication-Scheme   M
+
+
+; Type: Information Elements
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/3
+; Page: 125
+; Columns: Name               AVP                         Cat
+"Authentication Method"       SIP-Authentication-Scheme   M
+"Authorization Information"   SIP-Authorization           M
+
+
+; Type: Information Elements
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/4
+; Page: 125
+; Columns: Name                             AVP                               Cat
+IMSI                                        User-Name                         M
+"Number Authentication Items"               SIP-Number-Auth-Items             C
+"Authentication Data"                       SIP-Auth-Data-Item                C
+"3GPP AAA Server Name"                      "3GPP-AAA- Server-Name"           C
+Result                                      Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/5
+; Page: 125
+; Columns: Name                    AVP                        Cat
+"Item Number"                      SIP-Item-Number            C
+"Authentication Method"            SIP-AuthenticationScheme   M
+"Authentication Information AKA"   SIP-Authenticate           M
+"Authorization Information AKA"    SIP-Authorization          M
+"Confidentiality Key AKA"          Confidentiality-Key        M
+"Integrity Key AKA"                Integrity-Key              M
+
+
+; Type: Information Elements
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Columns: Name                             AVP                          Cat
+IMSI                                        User-Name                    M
+"Server Assignment Type"                    Server-Assignment-Type       M
+"Routing Information"                       Destination-Host             C
+"PGW identity"                              MIP6-Agent-Info              C
+"PGW PLMN ID"                               Visited-Network-Identifier   C
+"Context Identifier"                        Context-Identifier           O
+"APN Id"                                    Service-Selection            C
+"Supported Features (See TS 29.229 [24])"   Supported-Features           O
+"Terminal Information"                      Terminal-Information         C
+"Emergency Services"                        Emergency-Services           C
+
+
+; Type: Information Elements
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/2
+; Columns: Name                             AVP                               Cat
+IMSI                                        User-Name                         M
+"Registration result"                       Result-Code/Experimental-Result   M
+"User Profile"                              Non-3GPP-User-Data                C
+"3GPP AAA Server Name"                      "3GPP-AAA- Server-Name"           C
+"Supported Features (See TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Section: 8.1.2.2.3.1
+; Table: 8.3.2.3
+; Columns: Name                             AVP                     Cat
+IMSI                                        User-Name               M
+"Reason for de-registration"                Deregistration-Reason   M
+"Routing Information"                       Destination-Host        M
+"Supported Features (See TS 29.229 [24])"   Supported-Features      O
+
+
+; Type: Information Elements
+; Section: 8.1.2.2.3.1
+; Table: 8.3.2.4
+; Columns: Name                             AVP                               Cat
+Result                                      Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Push-Profile-Request
+; From: TS29.229
+; Section: 8.1.2.3.1
+; Table: 8.1.2.3.1/1
+; Page: 135
+; Columns: Name                             AVP                  Cat
+IMSI                                        User-Name            M
+"User profile"                              Non-3GPP-User-Data   M
+"Routing Information"                       Destination-Host     M
+"PPR Flags"                                 PPR-Flags            O
+"Supported Features (See TS 29.229 [24])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: Push-Profile-Answer
+; From: TS29.229
+; Section: 8.1.2.3.1
+; Table: 8.1.2.3.1/2
+; Page: 135
+; Columns: Name                             AVP                               Cat
+Result                                      Result-Code/Experimental-Result   M
+"Access Network Information"                Access-Network-Info               O
+"Local Time Zone"                           Local-Time-Zone                   O
+"Supported Features (See TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Push-Profile-Request
+; From: TS29.229
+; Section: 8.1.2.4.1.1
+; Table: 8.1.2.4.1.1/1
+; Columns: Name                             AVP                  Cat
+"User List"                                 User-Name            M
+"Supported Features (See TS 29.229 [24])"   Supported-Features   O
+"PPR Flags"                                 PPR-Flags            M
+
+
+; Type: Information Elements
+; Command: Push-Profile-Answer
+; From: TS29.229
+; Section: 8.1.2.4.1.1
+; Table: 8.1.2.4.1.1/2
+; Columns: Name                             AVP                               Cat
+Result                                      Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Server-Assignment-Request
+; From: TS29.229
+; Section: 8.1.2.4.2.1
+; Table: 8.1.2.4.2.1/1
+; Columns: Name                             AVP                      Cat
+IMSI                                        User-Name                M
+"Server Assignment Type"                    Server-Assignment-Type   M
+"Active APN"                                Active-APN               C
+"Supported Features (See TS 29.229 [24])"   Supported-Features       O
+
+
+; Type: Information Elements
+; Command: Server-Assignment-Answer
+; From: TS29.229
+; Section: 8.1.2.4.2.1
+; Table: 8.1.2.4.2.1/2
+; Columns: Name                             AVP                               Cat
+IMSI                                        User-Name                         M
+"Registration result"                       Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [24])"   Supported-Features                O
 
 
 ; Type: Grouped AVP
@@ -1813,6 +2511,212 @@ NSWO-Access-Authorization = 1
 "AAA Failure" = 0
 
 
+; Type: Information Elements
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/1
+; Page: 157
+; Columns: Name                             AVP                          Cat
+"User identity"                             User-Name                    M
+"Authentication Request Type"               Auth-Request-Type            M
+"EAP Payload"                               EAP-Payload                  M
+"PGW PLMN ID"                               Visited-Network-Identifier   C
+"Access Type"                               RAT-Type                     C
+"PDN GW Identity"                           "MIP6 -Agent-Info"           M
+"MIP Subscriber Profile"                    MIP6-Feature-Vector          M
+APN                                         Service-Selection            O
+"QoS capabilities"                          QoS-Capability               O
+"Supported Features (See TS 29.229 [24])"   Supported-Features           O
+"Care of Address"                           MIP-Careof-Address           O
+"AAA Failure Indication"                    AAA-Failure-Indication       O
+"DER S6b Flags"                             DER-S6b-Flags                O
+"UE local IP address"                       UE-Local-IP-Address          O
+
+
+; Type: Information Elements
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Columns: Name                             AVP                                    Cat
+"User Identity"                             User-Name                              O
+"EAP Payload"                               EAP-Payload                            O
+"Master Session Key"                        EAP-Master-Session-Key                 C
+"Authentication Request Type"               Auth-Request-Type                      M
+"Result Code"                               Result-Code/Experimental-Result-Code   M
+"MIP Subscriber Profile"                    MIP6-Feature-Vector                    C
+"Permanent User Identity"                   Mobile-Node-Identifier                 C
+"APN and PGW Data"                          APN-Configuration                      C
+"Reallocated PGW Address"                   MIP6-Agent-Info                        C
+"Session Time"                              Session-Timeout                        C
+"QoS resources"                             QoS-Resources                          C
+"UE Charging Data"                          3GPP-Charging-Characteristics          O
+"3GPP AAA Server URI"                       Redirect-Host                          C
+"Trust Relationship Indicator"              AN-Trusted                             C
+"Trace information"                         Trace-Info                             C
+"Supported Features (See TS 29.229 [24])"   Supported-Features                     O
+
+
+; Type: Information Elements
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/1
+; Page: 163
+; Columns: Name                             AVP                          Cat
+"Permanent User Identity"                   User-Name                    M
+"Authentication Request Type"               Auth-Request-Type            M
+"PDN GW Identity"                           MIP6-Agent-Info              C
+"PGW PLMN ID"                               Visited-Network-Identifier   C
+"Mobility features"                         MIP6-Feature-Vector          M
+APN                                         Service-Selection            M
+"QoS capabilities"                          QoS-Capability               O
+"Supported Features (See TS 29.229 [24])"   Supported-Features           O
+"Origination Time Stamp"                    Origination-Time-Stamp       C
+"Maximum Wait Time"                         Maximum-Wait-Time            C
+"Emergency Services"                        Emergency-Services           C
+
+
+; Type: Information Elements
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/2
+; Page: 163
+; Columns: Name                             AVP                   Cat
+"Result code"                               Result-Code           M
+"Authentication Request Type"               Auth-Request-Type     M
+"Authorized mobility features"              MIP6-Feature-Vector   C
+"Session time"                              Session-Timeout       C
+"APN and PGW Data"                          APN-Configuration     C
+"QoS resources"                             QoS-Resources         C
+"3GPP AAA Server URI"                       Redirect-Host         C
+"Trace information"                         Trace-Info            C
+"Supported Features (See TS 29.229 [24])"   Supported-Features    O
+
+
+; Type: Information Elements
+; Section: 9.1.2.3.1
+; Table: 9.1.2.3.1/1
+; Page: 169
+; Columns: Name             AVP                 Cat
+"Permanent User Identity"   User-Name           M
+"Termination Cause"         Termination-Cause   M
+
+
+; Type: Information Elements
+; Section: 9.1.2.3.1
+; Table: 9.1.2.3.1/2
+; Page: 169
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 9.1.2.4.1
+; Table: 9.1.2.4.1/1
+; Page: 171
+; Columns: Name             AVP                  Cat
+"Permanent User Identity"   User-Name            M
+Auth-Session-State          Auth-Session-State   O
+
+
+; Type: Information Elements
+; Section: 9.1.2.4.1
+; Table: 9.1.2.4.1/2
+; Page: 171
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 9.1.2.4.1
+; Table: 9.1.2.4.1/3
+; Page: 171
+; Columns: Name     AVP                 Cat
+Termination-Cause   Termination-Cause   M
+
+
+; Type: Information Elements
+; Section: 9.1.2.4.1
+; Table: 9.1.2.4.1/4
+; Page: 171
+; Columns: Name   AVP           Cat
+Result-Code       Result-Code   M
+
+
+; Type: Information Elements
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/1
+; Page: 173
+; Columns: Name             AVP                    Cat
+"Permanent User Identity"   User-Name              M
+"Request Type"              Re-Auth-Request-Type   M
+"RAR Flags"                 RAR-Flags              C
+
+
+; Type: Information Elements
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/2
+; Page: 173
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/3
+; Page: 173
+; Columns: Name                 AVP                          Cat
+"User identity"                 User-Name                    M
+"Authentication Request Type"   Auth-Request-Type            M
+"PGW PLMN ID"                   Visited-Network-Identifier   C
+"Access Type"                   RAT-Type                     M
+"PDN GW Identity"               "MIP6 -Agent-Info"           M
+APN                             Service-Selection            O
+"QoS capabilities"              QoS-Capability               C
+
+
+; Type: Information Elements
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/4
+; Page: 173
+; Columns: Name                  AVP                                    Cat
+"Result Code"                    Result-Code/Experimental-Result-Code   M
+"Authentication Request Type"    Auth-Request-Type                      M
+"APN and PGW Data"               APN-Configuration                      C
+"Session Time"                   Session-Timeout                        C
+"QoS resources"                  QoS-Resources                          C
+"Trace information"              Trace-Info                             C
+"Trust Relationship Indicator"   AN-Trusted                             C
+
+
+; Type: Information Elements
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/1
+; Page: 178
+; Columns: Name                             AVP                          Cat
+"Permanent User Identity"                   User-Name                    M
+"Authentication Request Type"               Auth-Request-Type            M
+"PDN GW Identity"                           MIP6-Agent-Info              O
+"PGW PLMN ID"                               Visited-Network-Identifier   C
+"Mobility features"                         MIP6-Feature-Vector          M
+APN                                         Service-Selection            C
+"QoS capabilities"                          QoS-Capability               O
+"Supported Features (See TS 29.229 [24])"   Supported-Features           O
+"MN-HA security parameter index"            MIP-MN-HA-SPI                C
+
+
+; Type: Information Elements
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/2
+; Page: 178
+; Columns: Name                             AVP                   Cat
+"Result code"                               Result-Code           M
+"Authentication Request Type"               Auth-Request-Type     M
+"Authorized mobility features"              MIP6-Feature-Vector   C
+"Session time"                              Session-Timeout       C
+"QoS resources"                             QoS-Resources         C
+"3GPP AAA Server URI"                       Redirect-Host         C
+"Supported Features (See TS 29.229 [24])"   Supported-Features    O
+"MN-HA shared key"                          MIP-Session-Key       C
+"APN Data"                                  APN-Configuration     C
+
+
 ; Type: Value Table
 ; AVP: RAR-Flags
 ; Kind: bits
@@ -1916,3 +2820,25 @@ DIAMETER_ERROR_TIMED_OUT_REQUEST                     = 5454 ; 10.3.10
 DIAMETER_ERROR_ILLEGAL_EQUIPMENT                     = 5554 ; 10.3.11
 DIAMETER_ERROR_TRUSTED_NON_3GPP_ACCESS_NOT_ALLOWED   = 5455 ; 10.3.12
 DIAMETER_ERROR_UNTRUSTED_NON_3GPP_ACCESS_NOT_ALLOWED = 5456 ; 10.3.13
+
+
+; Type: Information Elements
+; Command: ME-Identity-Check-Request
+; From: TS29.272
+; Section: 11.1.2.1.1
+; Table: 11.1.2.1.1/1
+; Page: 196
+; Columns: Name          AVP                    Cat
+"Terminal Information"   Terminal-Information   M
+IMSI                     User-Name              O
+
+
+; Type: Information Elements
+; Command: ME-Identity-Check-Answer
+; From: TS29.272
+; Section: 11.1.2.1.1
+; Table: 11.1.2.1.1/2
+; Page: 196
+; Columns: Name      AVP                               Cat
+Result               Result-Code/Experimental-Result   M
+"Equipment Status"   Equipment-Status                  C

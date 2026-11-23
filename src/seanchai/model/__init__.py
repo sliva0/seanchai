@@ -13,7 +13,14 @@ citations.
 """
 
 from ..corpus import Missing
-from ..dad.ast import AvpFlag, CommandFlag, DataType, RegistryKind, ValueKind
+from ..dad.ast import (
+    AvpFlag,
+    Category,
+    CommandFlag,
+    DataType,
+    RegistryKind,
+    ValueKind,
+)
 from ._errors import IncompleteCorpusError, ModelError, StaleHoleRecordError
 from ._flags import FlagRules
 from ._model import Model
@@ -25,6 +32,8 @@ from ._types import (
     Application,
     Avp,
     Command,
+    Element,
+    ElementTable,
     Enumerated,
     Grouped,
     Hole,
@@ -52,9 +61,12 @@ __all__ = [
     "Application",
     "Avp",
     "AvpFlag",
+    "Category",
     "Command",
     "CommandFlag",
     "DataType",
+    "Element",
+    "ElementTable",
     "Enumerated",
     "FlagRules",
     "Grouped",

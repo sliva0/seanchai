@@ -321,6 +321,18 @@ def _resolve(
         return _Resolved(
             messages=[], pairs=[], definitions=[], registries=collected.registries
         )
+    if (
+        quirks.enabled("elements-only")
+        and not collected.avp_tables
+        and not collected.messages
+        and not collected.grouped
+        and not collected.reused_tables
+    ):
+        # TS 29.228 and 29.328 map their procedures' information elements to
+        # TS 29.229's and 29.329's commands, and define nothing: those tables
+        # are the whole file.
+        quirks.fire("elements-only")
+        return _Resolved(messages=[], pairs=[], definitions=[])
     if not collected.avp_tables:
         if (
             quirks.enabled("message-only")
@@ -501,12 +513,13 @@ def _assemble(
     reprints: Sequence[ast.GroupedAvp] = (),
     value_tables: Sequence[ast.ValueTable] = (),
     answers: Sequence[ast.AnswerMessage] = (),
+    elements: Sequence[ast.InformationElements] = (),
 ) -> tuple[ast.Section, ...]:
     """File order: applications, messages and answer messages in document
     order, what the document re-prints and registries, then each definition
     set's AVP table followed by its re-used table, then every definition, value
-    table and block of derived re-used rows in document order, each of these
-    after the definitions of its clause."""
+    table, information-element table and block of derived re-used rows in
+    document order, each of these after the definitions of its clause."""
     sections: list[ast.Section] = [
         *resolved.applications,
         *ast.in_document_order(resolved.messages, answers),
@@ -544,7 +557,7 @@ def _assemble(
     ]
     sections.extend(
         sorted(
-            (*resolved.definitions, *value_tables, *derived),
+            (*resolved.definitions, *value_tables, *elements, *derived),
             key=lambda definition: ast.section_sort_key(definition.source.section),
         )
     )

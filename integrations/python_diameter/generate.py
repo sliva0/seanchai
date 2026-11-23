@@ -651,6 +651,13 @@ def member_note(
             spelled.append(f"{column}: - (unused, table {row.table})")
         elif marks != ("All",):  # every access type restricts nothing
             spelled.append(f"{column}: {', '.join(marks)}")
+    # The category the command's information-element table gives the element
+    # mapping the member (TS 29.272 table 5.2.1.1.1/1: IMSI, User-Name, M).
+    spelled += [
+        f"Cat. {element.category} ({element.reference} table {element.table})"
+        for element in member.elements
+        if element.category is not None
+    ]
     return "; ".join(spelled) or None
 
 

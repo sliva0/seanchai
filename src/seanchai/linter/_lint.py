@@ -19,6 +19,7 @@ from ._definitions import (
     _vendor_specific_overlaps,
     _void_overlaps,
 )
+from ._elements import ELEMENT_RULES, _elements
 from ._findings import Finding, Severity, _ordered, accept
 from ._index import _index
 from ._origins import (
@@ -80,6 +81,7 @@ def lint(spec: ast.Specification) -> list[Finding]:
         *_registry_overlaps(spec),
         *_undefined_avps(index),
         *_section_references(spec, index),
+        *_elements(spec, index, None),
     ]
     return _ordered(findings)
 
@@ -105,7 +107,7 @@ def lint_with_corpus(
         resolved = origins.get(origin)
         return None if resolved is None else resolved.spec.vendor_id
 
-    superseded = {"local-and-reused", "duplicate-identity"}
+    superseded = {"local-and-reused", "duplicate-identity", *ELEMENT_RULES}
     findings = [
         finding
         for finding in lint(spec)
@@ -126,8 +128,18 @@ def lint_with_corpus(
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),
         *_against_registry(spec, index, books),
+        *_elements(spec, index, lambda reference: _cited(books, spec, reference)),
     ]
     return accept(spec, _ordered(findings), acceptances)
+
+
+def _cited(
+    books: corpus.Corpus, spec: ast.Specification, reference: str
+) -> ast.Specification | None:
+    """The copy of `reference` `spec` means, or None where the corpus lacks
+    it."""
+    entry = books.resolve(reference, like=spec)
+    return None if entry is None else entry.spec
 
 
 def lint_record(books: corpus.Corpus) -> list[Finding]:

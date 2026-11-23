@@ -203,6 +203,8 @@ applications[]     id, reference, version, application_id, clause, name,
                    application_id (on the wire), header_application_id,
                    defined_in, section, members[], dropped[], walk[],
                    answer_message
+    elements[]     name, category, avps, either, printed, within, reference,
+                   version, section, table, page: its information elements
   pairs[]          command_code, requests[], answers[]: indexes into commands
   marks[]          name, avp, table, section, marks: what the application's
                    tables mark about the names it reaches
@@ -226,7 +228,9 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   `min_occurs`, `max_occurs` (null is unbounded) and `kind`. Kind `avp` names
   an `avps[].id` in `avp`; `hole` names a `holes[].id` in `hole`;
   `placeholder` holds its block; `wildcard` is the `* [ AVP ]` line. `alias`
-  is set for a `model.Alias`.
+  is set for a `model.Alias`. A command's own member has `elements`, indexes
+  into the command's `elements[]` mapping it; a grouped AVP's member has
+  none.
 - `walk` lists every AVP `id` the command reaches, at any depth.
 - An AVP `id` depends on the reading and the corpus, never on the selection
   (`dictionary.avp_id`). The defining document's reading, `defining`, is
@@ -313,7 +317,7 @@ in the output.
 `seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
 `seanchai_version`, `corpus_version` and `applications[]` as the dictionary
 writes them, without `marks`, each command without `members`, `dropped`,
-`walk` and `answer_message`.
+`walk`, `answer_message` and `elements`.
 
 ## Installing the corpus
 
@@ -408,6 +412,7 @@ model.undefined("TS29.345")  # the names its Undefined AVP blocks declare
 model.across_releases()  # what citations resolved across releases
 model.registry(RegistryKind.APPLICATION_IDS, 16777216)  # TS 29.230's say
 model.value_tables("TS29.272", avp="ULR-Flags")  # the numbers a document names
+model.element_tables("TS29.228")  # information-element tables, with their commands
 model.value_tables(kind=ValueKind.FEATURES)  # one kind, the whole corpus
 model.feature_lists()["S6a/S6d", 1]  # a feature list, by application and list id
 model.definition("ULR-Flags").value_table  # the bits, read through resolution
@@ -439,7 +444,9 @@ model.avps("TS29.061", version="6.15.0")  # every document query takes version=
   `definition`, every distinct reading met as a `model.Met` with its
   `model.MemberPath`s, the value tables met with it, and `conflicts`.
 - A `Member` carries the ABNF `rule` as spelled, and `min_occurs` and
-  `max_occurs` as RFC 6733 section 3.2 reads them.
+  `max_occurs` as RFC 6733 section 3.2 reads them. A command's own member
+  carries `elements`, the information-element rows mapping it
+  ([below](#information-elements)).
 - `Enumerated.values` also holds `ast.ReservedValues` and `ast.VoidValues`,
   which a validator must refuse: a void value was assigned and withdrawn, a
   reserved one never assigned. `vendor_specific` holds the ranges a validator
@@ -764,6 +771,47 @@ the AVP's identity and does not make a second reading: a reading from
 `feature_lists()` keys feature tables by `(application, feature_list_id)`,
 spelled as the caption does. Where two documents print one list, the first
 in reference order answers.
+
+### Information elements
+
+Nineteen documents print, per command, a table of its information elements:
+each element's name, the AVPs it maps to and its category, M, C or O, which
+often says more than the ABNF's brackets do. `Message.elements` holds every
+row describing the command, as `model.Element`s, and each member the rows
+mapping it:
+
+```python
+from seanchai.model import Category, Model
+
+model = Model.installed()
+(s6a,) = model.applications("TS29.272", application_id=16777251)
+ulr = s6a.commands[0].request
+for member in ulr.avps:
+    for element in member.elements:  # TS 29.272 table 5.2.1.1.1/1
+        print(member.name, element.category, element.name, element.section)
+mandatory = [
+    member.name
+    for member in ulr.avps
+    if any(element.category is Category.MANDATORY for element in member.elements)
+]
+```
+
+An `Element` has the element's `name` as printed, `category` (None for a
+blank cell), the `avps` it maps to, `either` where it offers one of them
+("Result-Code / Experimental-Result"), `printed` for a mapping cell naming
+no AVP, and `within`, the grouped AVP whose members its table tabulates
+(TS 29.228 table 6.3.2, SIP-Auth-Data-Item's), none of which a member
+holds. `reference`, `version`, `section`, `table` and `page` locate the row,
+whose description the document holds: the corpus does not copy it.
+
+A table describes a command of its own document, or of the document it says
+specifies it (TS 29.228's describe TS 29.229's commands), or a base's
+([grammar.md](grammar.md#information-elements)). `element_tables(reference)`
+returns each table as a `model.ElementTable` with the `commands` it
+describes, none where it names no command or one printed for several
+applications it does not choose between; the linter reports those and where
+a category and the ABNF disagree
+([linter.md](linter.md#information-elements)).
 
 ### The registry
 

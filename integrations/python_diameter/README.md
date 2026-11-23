@@ -215,7 +215,9 @@ The ABNF decides a class's members. A document's table marks
 read from the tables of the command's interface clause: TS 29.212's Gxx module
 reads table 5a.4.0.1 and its Gx module 5.3.0.1. A TS 32.299 member marked `-`
 ("not used") stays, with a comment saying so. An `Acc-Type` of plain `All` is
-not repeated.
+not repeated. A member an information-element table maps gets its category,
+`Cat. M (TS29.272 table 5.2.1.1.1/1)`
+([consumers.md](../../docs/consumers.md#information-elements)).
 
 The application id comes from the command header, or from the `Application
 Scope` block where the headers print none; the module's docstring then names

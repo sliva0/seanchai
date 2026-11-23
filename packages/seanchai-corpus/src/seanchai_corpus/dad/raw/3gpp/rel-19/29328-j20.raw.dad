@@ -1,0 +1,150 @@
+; Specification: 3GPP TS 29.328
+; Version: 19.2.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+; Link: https://www.etsi.org/deliver/etsi_ts/129300_129399/129328/19.02.00_60/ts_129328v190200p.pdf
+
+
+;; excluded: clause 6.6 (Sh-ee), see TS29.328.toml
+
+
+; Type: Information Elements
+; Command: User-Data-Request
+; From: TS29.329
+; Section: 6.1.1
+; Table: 6.1.1.1
+; Page: 14
+; Columns: Name                                AVP                          Cat
+"User Identity (See 7.1)"                      User-Identity                M
+"Wildcarded PSI (See 7.1A)"                    Wildcarded-Public-Identity   O
+"Wildcarded Public User Identity (See 7.1B)"   Wildcarded-IMPU              O
+"Requested data (See 7.3)"                     Data-Reference               M
+"Requested Identity set (See 7.11)"            Identity-Set                 O
+"Requested domain (See 7.2)"                   Requested-Domain             C
+"Requested nodes (See 7.2A)"                   Requested-Nodes              O
+"Current Location (See 7.8)"                   Current-Location             C
+"Service Indication (See 7. 4)"                Service-Indication           C
+"Application Server Identity (See 7.9)"        Origin-Host                  M
+"Application Server Name (See 7.10)"           Server-Name                  C
+"DSAI Tag (See 7.14)"                          DSAI-Tag                     C
+"Session Priority (see 7.15)"                  Session-Priority             O
+"Private Identity (see 7.6.19)"                User-Name                    C
+"Serving Node Indication (See 7.2B)"           Serving-Node-Indication      O
+"Pre-paging Supported (See 7.18)"              Pre-paging-Supported         O
+"Local Time Zone Indication (See 7.19)"        Local-Time-Zone-Indication   O
+"UDR Flags (See 7.20)"                         UDR-Flags                    O
+"Call-Reference-Info (See 7.21)"               Call-Reference-Info          O
+
+
+; Type: Information Elements
+; Command: User-Data-Answer
+; From: TS29.329
+; Section: 6.1.1
+; Table: 6.1.1.2
+; Page: 14
+; Columns: Name                                AVP                               Cat
+"Result (See 7.5)"                             Result-Code/Experimental_Result   M
+"Wildcarded PSI (See 7.1A)"                    Wildcarded-Public-Identity        O
+"Wildcarded Public User Identity (See 7.1B)"   Wildcarded-IMPU                   O
+"Data (See 7.6)"                               User-Data                         C
+
+
+; Type: Information Elements
+; Command: Profile-Update-Request
+; From: TS29.329
+; Section: 6.1.2
+; Table: 6.1.2.1
+; Page: 20
+; Columns: Name                                AVP                          Cat
+"User Identity (See 7.1)"                      User-Identity                M
+"Wildcarded PSI (See 7.1A)"                    Wildcarded-Public-Identity   O
+"Wildcarded Public User Identity (See 7.1B)"   Wildcarded-IMPU              O
+"Requested data (See 7.3)"                     Data-Reference               M
+"Data (See 7.6)"                               User-Data                    M
+"Application Server Identity (See 7.9)"        Origin-Host                  M
+"Private identity (see 7.6.19)"                User-Name                    C
+
+
+; Type: Information Elements
+; Command: Profile-Update-Answer
+; From: TS29.329
+; Section: 6.1.2
+; Table: 6.1.2.2
+; Page: 20
+; Columns: Name                                AVP                               Cat
+"Result (See 7.5)"                             Result-Code/Experimental-Result   M
+"Wildcarded PSI (See 7.1A)"                    Wildcarded-Public-Identity        O
+"Wildcarded Public User Identity (See 7.1B)"   Wildcarded-IMPU                   O
+"Repository Data ID (See 7.17)"                Repository-Data-ID                O
+"Requested data (See 7.3)"                     Data-Reference                    O
+
+
+; Type: Information Elements
+; Command: Subscribe-Notifications-Request
+; From: TS29.329
+; Section: 6.1.3
+; Table: 6.1.3.1
+; Page: 25
+; Columns: Name                                           AVP                          Cat
+"User Identity (See 7.1)"                                 User-Identity                M
+"Wildcarded PSI (See 7.1A)"                               Wildcarded-Public-Identity   O
+"Wildcarded Public User Identity (See 7.1B)"              Wildcarded-IMPU              O
+"Requested Data (See 7.3)"                                Data-Reference               M
+"Subscription request type (See 7.7)"                     Subs-Req-Type                M
+"Send Data Indication (See 7.13)"                         Send-Data-Indication         O
+"Service Indication (See 7.4)"                            Service-Indication           C
+"Application Server Identity (See 7.9)"                   Origin-Host                  M
+"Application Server Name (See 7.10)"                      Server-Name                  C
+"Expiry Time (See 7.12)"                                  Expiry-Time                  O
+"Dynamic Service Activation Information Tag (see 7.14)"   DSAI-Tag                     C
+"Requested Identity set (See 7.11)"                       Identity-Set                 C
+"One time notification (See 7.16)"                        "One-Time- Notification"     C
+"Private identity (see 7.6.19)"                           User-Name                    O
+
+
+; Type: Information Elements
+; Command: Subscribe-Notifications-Answer
+; From: TS29.329
+; Section: 6.1.3
+; Table: 6.1.3.2
+; Page: 25
+; Columns: Name                                AVP                               Cat
+"Expiry Time (See 7.12)"                       Expiry-Time                       O
+"Data (See 7.6)"                               User-Data                         O
+"Wildcarded PSI (See 7.1A)"                    Wildcarded-Public-Identity        O
+"Wildcarded Public User Identity (See 7.1B)"   Wildcarded-IMPU                   O
+"Result (See 7.5)"                             Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Push-Notification-Request
+; From: TS29.329
+; Section: 6.1.4
+; Table: 6.1.4.1
+; Page: 29
+; Columns: Name                                AVP                          Cat
+"User Identity (See 7.1)"                      User-Identity                M
+"Wildcarded PSI (See 7.1A)"                    Wildcarded-Public-Identity   O
+"Wildcarded Public User Identity (See 7.1B)"   Wildcarded-IMPU              O
+"Data (See 7.6)"                               User-Data                    M
+"Private Identity (see 7.6.19)"                User-Name                    C
+
+
+; Type: Information Elements
+; Command: Push-Notification-Answer
+; From: TS29.329
+; Section: 6.1.4
+; Table: 6.1.4.2
+; Page: 29
+; Columns: Name      AVP                               Cat
+"Result (See 7.5)"   Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Section: 7.1
+; Table: 7.1.1
+; Page: 35
+; Columns: Name                                                    AVP                   Cat
+"IMS Public User Identity / Public Service Identity (See 7.1.1)"   Public-Identity       C
+"MSISDN (See 7.1.2)"                                               MSISDN                C
+"External Identifier (See 7.1.3)"                                  External-Identifier   C

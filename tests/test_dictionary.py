@@ -181,6 +181,19 @@ def test_a_conflict_only_an_obsoleted_document_dissents_from_is_marked(built):
     assert sta.conflicts and not any(conflict.obsolete for conflict in sta.conflicts)
 
 
+def test_a_command_carries_its_information_elements(s6a_and_cx):
+    """Each member indexes the command's rows mapping it; Cx's come from TS
+    29.228, which the output lists as read."""
+    s6a = next(a for a in s6a_and_cx.applications if a.application_id == _S6A)
+    ulr = next(c for c in s6a.commands if c.abbreviation == "ULR")
+    (user_name,) = [m for m in ulr.members if m.name == "User-Name"]
+    (index,) = user_name.elements
+    assert (ulr.elements[index].name, ulr.elements[index].category) == ("IMSI", "M")
+    assert all(not m.elements for avp in s6a_and_cx.avps for m in avp.members)
+    copies = {(each.reference, each.version) for each in s6a_and_cx.resolved}
+    assert ("TS29.228", "19.2.0") in copies
+
+
 def test_an_avp_carries_what_a_codec_needs(s6a_and_cx):
     by_name = {avp.name: avp for avp in s6a_and_cx.avps if avp.defining}
 

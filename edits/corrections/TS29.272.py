@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     avp_rule,
     definition,
     header,
+    information_elements,
     reused_avps,
     reused_row,
     table_row,
@@ -560,5 +561,30 @@ CORRECTIONS += [
         reason="table 7.3.25/1 bit 30 prints a space before the hyphen, where the "
         "column wraps the name, unlike the bit's every other Withdrawal",
         versions="18.7.0..19.6.0",
+    ),
+    *(
+        Correction(
+            id="elements-application-"
+            + label.replace("/", "-").replace(".", "-").lower(),
+            target=information_elements(label),
+            field="application_id",
+            expect=None,
+            replace=application_id,
+            reason=f"clause {label.split('/')[0]} is a procedure of clause"
+            f" {interface}, {name}; clauses 7.2.9, 7.2.11 and 7.2.15 print"
+            f" {command}-Request/Answer once for S6a/S6d (16777251) and once"
+            " for S7a/S7d (16777308)",
+            versions="19.6.0",
+        )
+        for interface, name, application_id in (
+            ("5", "the MME and SGSN to HSS interfaces S6a and S6d", 16777251),
+            ("5A", "the MME and SGSN to CSS interfaces S7a and S7d", 16777308),
+        )
+        for clause, command in (
+            ("2.2.1.1", "Insert-Subscriber-Data"),
+            ("2.2.2.1", "Delete-Subscriber-Data"),
+            ("2.4.1.1" if interface == "5" else "2.3.1.1", "Reset"),
+        )
+        for label in (f"{interface}.{clause}/1", f"{interface}.{clause}/2")
     ),
 ]

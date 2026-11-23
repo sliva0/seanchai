@@ -85,6 +85,43 @@ Status-Text                   1118   6.3.21    UTF8String    M,V    -     -     
 Routeing-Address-Resolution   1119   6.3.22    Enumerated    M,V    -     -       -       No
 
 
+; Type: Information Elements
+; Section: 4.1.1
+; Table: 4.1.1.1
+; Page: 9
+; Columns: Name               AVP                         Cat
+"Message Type"                "Diameter Command Code"     M
+"Trigger Event"               Trigger-Event               M
+"Served User Identity"        Served-User-Identity        M
+"Served User IMSI"            3GPP-IMSI                   C
+"Initial Recipient Address"   Initial-Recipient-Address   M
+"Originating Interface"       "Origination Interface"     M
+"Service Key"                 Service-Key                 C
+"Sender Address"              Sender-Address              C
+"Delivery Report"             Delivery-Report             C
+"Read Reply"                  Read-Reply                  C
+"Sender Visibility"           Sender-Visibility           C
+
+
+; Type: Information Elements
+; Section: 4.1.1
+; Table: 4.1.1.2
+; Page: 9
+; Columns: Name                 AVP                           Cat
+"Message Type"                  "Diameter Command Code"       M
+"Result Code"                   Result-Code                   M
+"Result Code"                   Status-Code                   O
+"Result Code"                   Status-Text                   O
+"Presentation Address"          Recipient-Address             O
+"Routeing Address"              Routeing-Address              O
+"Sender Address"                Sender-Address                O
+"Routeing Address Resolution"   Routeing-Address-Resolution   C
+"Delivery Report"               Delivery-Report               O
+"Sender Visibility"             Sender-Visibility             O
+"Read Reply"                    Read-Reply                    O
+"CDR Information"               Billing-Information           O
+
+
 ; Type: Grouped AVP
 ; Name: Served-User-Identity
 ; Section: 6.3.1

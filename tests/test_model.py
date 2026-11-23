@@ -86,6 +86,8 @@ def test_every_model_type_has_a_one_line_repr_and_a_json_dict(built):
         *model.VENDORS.values(),
         *built.messages("TS29.229"),
         *built.messages("TS29.229")[0].avps,
+        *built.messages("TS29.272")[0].elements,
+        *built.element_tables("TS29.228"),
         *built.resolve("TS29.234", "Charging-Data").members,
         built.answer_message("TS29.229"),
         *built.avps("TS32.299"),
@@ -389,6 +391,36 @@ def test_a_grouped_rule_reprinting_another_documents_defines_nothing(built):
     assert {section.reprints for section in reprints} == {"RFC6733"}
     assert built.definition((0, 260)).defined_in == "RFC6733"
     assert all(avp.identity != (0, 260) for avp in built.avps("TS29.109"))
+
+
+def test_a_commands_members_carry_the_information_elements_mapping_them(built):
+    """TS 29.272 table 5.2.1.1.1/1 gives ULR's elements; TS 29.228's tables
+    describe TS 29.229's commands, table 6.3.2 the SIP-Auth-Data-Item of
+    MAR, which no member holds."""
+    (s6a,) = built.applications("TS29.272", application_id=16777251)
+    ulr = s6a.commands[0].request
+    assert ulr is not None
+    by_name = {member.name: member.elements for member in ulr.avps}
+    (imsi,) = by_name["User-Name"]
+    assert (imsi.name, imsi.category) == ("IMSI", ast.Category.MANDATORY)
+    assert (imsi.reference, imsi.section, imsi.table) == (
+        "TS29.272",
+        "5.2.1.1.1",
+        "5.2.1.1.1/1",
+    )
+    assert by_name["Session-Id"] == ()
+
+    (cx,) = built.applications("TS29.229", application_id=16777216)
+    mar = next(m for m in cx.messages if m.abbreviation == "MAR")
+    assert {element.reference for element in mar.elements} == {"TS29.228"}
+    within = [element for element in mar.elements if element.within]
+    assert {element.within for element in within} == {"SIP-Auth-Data-Item"}
+    assert all(
+        element not in member.elements for member in mar.avps for element in within
+    )
+    tables = built.element_tables("TS29.228")
+    assert all(len(table.commands) == 1 for table in tables)
+    assert {table.commands[0].defined_in for table in tables} == {"TS29.229"}
 
 
 def test_a_reused_name_follows_its_origin_to_the_real_definition(built):

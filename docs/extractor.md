@@ -128,6 +128,7 @@ quirk; `grep -l '"<quirk>"' edits/sources/*.toml` lists them all.
 | `procedure-commands` | command names in a procedure clause's intro or step, or a heading such as `AAR Command` over `<AA-Request> ::=` | TS 29.273 |
 | `command-reference-only` | a command clause holding only a pointer | TS 29.273 |
 | `message-only` | commands and re-used AVPs with no local AVP table | TS 29.330 |
+| `elements-only` | a document holding only information-element tables, for another's commands ([below](#information-element-tables)) | TS 29.228 |
 | `access-type-headings` | `Name AVP (All access types)` headings | TS 29.212 |
 | `spaced-heading-numbers` | a space before the tab after a heading's number | TS 29.234 |
 | `body-clause-headings` | a clause heading printed as a body paragraph | TS 32.299 |
@@ -271,6 +272,7 @@ one of them finishes the clause. A version upgrade re-reads the exclusions
 | a "Feature bit, Feature, M/O, Description" table | `features` `ValueTable` |
 | a clause titled "Result-Code AVP values" or similar | `result-codes` `ValueTable` |
 | a sentence stating the application id | `ApplicationScope` |
+| an "Information element name, Mapping to Diameter AVP, Cat., Description" table | `InformationElements` |
 
 Bold runs mark the document's own AVPs. A rule name may be bracketed and the
 `::=` spaced. A message heading with no rule is not a definition. Any other
@@ -408,6 +410,38 @@ Under `elided-members`, a lone `…` line is kept the same way, as `;; …`.
 
 Other document shapes the code handles are explained in its comments.
 
+### Information-element tables
+
+A table headed "Information element name | Mapping to Diameter AVP | Cat. |
+Description" (any case, "Cat" without its full stop) becomes an
+`Information Elements` block, one per table, in its clause. TS 29.344 table
+5.2.1-1 prints its first label over two cells, which read as one.
+
+- A row is the element's name as printed, the AVPs its mapping cell names
+  and the Cat. cell, M, C or O; another category fails. A full-width NOTE row
+  is dropped, as the Description cell is.
+- The mapping cell drops what it prints after a name, a citation "(See IETF
+  RFC 6733 [61])" or a note "(NOTE 1)", and an " AVP" after one. Names split
+  at commas are carried together; at "/" or "or", the row offers one of them.
+  A cell whose parts are not all names, a name printed with a space in it
+  ("Trace- Reference") or words ("EAP payload"), is kept quoted as printed.
+- The clause's sentence "This procedure is mapped to the commands
+  X-Request/Answer ...", "mapped to the X-Request/Answer commands", or
+  "mapped to the Diameter command codes X-Request (XXR) and X-Answer (XXA)"
+  names the command pair. Where the clause holds two tables, the first
+  describes the request and the second the answer, as `; Command:`; any
+  other count names none and warns. A name printed with spaces is no name,
+  and an input patch hyphenates it (TS 29.272 clause 5.2.2.1.1).
+- Where the sentence goes on "specified in TS 29.229 [5]" or "in clause 7 of
+  TS 29.272 [29]", the document is `; From:`; a clause alone names none.
+- Which command a table without the sentence describes, the application of a
+  command printed for several, and the grouped AVP a content table
+  tabulates are corrections (`information_elements`), each citing the
+  clause: TS 29.272's S6a and S7a tables, TS 29.228 clause 6.3.
+
+TS 29.272 and 29.273 print most of these tables; nineteen documents do in
+all.
+
 ### Commands printed as tables
 
 Under `message-tables`, TS 32.299 V11.20.0 clause 6.4.5 prints a command as
@@ -485,11 +519,15 @@ annex A, the Mch binding to Diameter accounting, holds definitions.
 
 ## Out of scope
 
-TS 29.228, 29.328, 29.213 and 29.305 hold procedures and IE mappings, with no
-Diameter ABNF or AVP tables. TS 29.201 carries Rx over REST as an XML schema.
-The catalog marks each `out_of_scope`, and `regenerate --add` refuses it with
-that field's words. TS 32.296 prints unallocated codes and is not in the
-catalog. Nothing in the corpus cites any of them.
+TS 29.213 and 29.305 hold procedures and IE mappings, with no Diameter ABNF,
+AVP tables or information-element tables. TS 29.201 carries Rx over REST as
+an XML schema. The catalog marks each `out_of_scope`, and `regenerate --add`
+refuses it with that field's words. TS 32.296 prints unallocated codes and is
+not in the catalog. Nothing in the corpus cites any of them.
+
+TS 29.228 and 29.328 hold Cx's and Sh's procedures, mapped to TS 29.229's and
+29.329's commands, and define nothing; the corpus holds them for their
+information-element tables, under `elements-only`.
 
 ## The RFC plain-text extractor
 

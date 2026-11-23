@@ -17,7 +17,7 @@ syn match dadSection "\%(^\|\s\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\)\%(\.\d\+[A-Za-z
 " Cell keywords must stand alone as a whole cell (delimited by whitespace, or
 " a comma for spec-refs in `; Bases:` lists) — a type name embedded in a
 " longer AVP name like MIP-Home-Agent-Address is not a type.
-syn match dadSpecRef "\%(^\|[ ,]\)\zs\%(TS\d\{2}\.\d\{3}\|RFC\d\+\|ETSI-\%(TS\|ES\)\d\{3}\.\d\{3}\%(-\d\+\)\=\|3GPP2-[A-Z]\.[A-Z]\d\{4}\%(-\d\{3}\)\=\|OMA\%(-[A-Za-z0-9_]\+\)\+\|oneM2M-TS-\d\{4}\)\ze\%([ ,]\|$\)"
+syn match dadSpecRef "\%(^\|[ ,]\)\zs\%(TS\d\{2}\.\d\{3}\|RFC\d\+\|ETSI-\%(TS\|ES\)\d\{3}\.\d\{3}\%(-\d\+\)\=\|3GPP2-[A-Z]\.[A-Z]\d\{4}\%(-\d\{3}\)\=\|OMA\%(-[A-Za-z0-9_]\+\)\+\|oneM2M-TS-\d\{4}\|Private-[A-Za-z0-9][A-Za-z0-9_.-]*\)\ze\%([ ,]\|$\)"
 syn match dadDataType "\%(^\|\s\)\zs\%(OctetString\|Integer32\|Integer64\|Unsigned32\|Unsigned64\|Float32\|Float64\|Grouped\|Address\|Time\|UTF8String\|DiameterIdentity\|DiameterURI\|Enumerated\|IPFilterRule\|QoSFilterRule\)\ze\%(\s\|$\)"
 syn match dadCellConst "\%(^\|\s\)\zs\%(MUST-NOT\|MUST\|Yes\|No\)\ze\%(\s\|$\)"
 syn match dadFlagCell "\%(^\|\s\)\zs[MVP]\%(,\s\?[MVP]\)*\ze\%(\s\|$\)"
@@ -83,7 +83,7 @@ syn match dadRange "\d\+\.\.\d\+" contained
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
 syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadNumber,dadLink,dadComment
-syn match dadTypeValue "\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\)$" contained
+syn match dadTypeValue "\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\)$" contained
 " `; Registry:` kinds.
 syn match dadTypeValue "\%(Application IDs\|Command Codes\|AVP Codes\|Result Codes\)$" contained
 " `; Kind:` of a value table, whose rows read as enum values do.

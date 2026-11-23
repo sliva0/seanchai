@@ -933,6 +933,88 @@ def _parse_value_table(
         )
 
 
+def _element_mapping(
+    cell: str, lineno: int
+) -> tuple[tuple[str, ...], bool, str | None]:
+    """A Mapping to Diameter AVP cell: AVP names joined by `,` (carried
+    together) or `/` (one of them), a quoted cell as printed, or `-` for a
+    blank one. Returns the names, whether one of them is meant, and the
+    printed text."""
+    if cell == "-":
+        return (), False, None
+    if cell.startswith('"'):
+        return (), False, _text_cell(cell, lineno, "AVP")
+    either = "/" in cell
+    names = tuple(cell.split("/" if either else ","))
+    if not all(_AVP_NAME_RE.fullmatch(name) for name in names):
+        raise DadParseError(
+            lineno,
+            f"malformed AVP cell {cell!r}: names joined by ',' or '/', a quoted"
+            " cell, or '-'",
+        )
+    return names, either, None
+
+
+_AVP_NAME_RE = re.compile(ast.AVP_NAME_PATTERN)
+
+
+def _parse_information_elements(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.InformationElements:
+    # Optional: where the document does not say which command in a way the
+    # extractor reads, and where only one application prints it.
+    command = directives.pop("Command", None)
+    application_id = directives.pop("Application-ID", None)
+    origin = directives.pop("From", None)
+    avp = directives.pop("AVP", None)
+    table = directives.pop("Table", None)
+    columns = _pop(directives, "Columns", lineno)
+    source = _source_ref(directives, lineno)
+    _no_leftovers(directives, lineno)
+    if tuple(columns.value.split()) != ast.ELEMENT_COLUMNS:
+        raise DadParseError(
+            columns.lineno,
+            f"information elements have columns {' '.join(ast.ELEMENT_COLUMNS)}",
+        )
+    number = None
+    if application_id is not None:
+        number = _number(application_id.value, application_id.lineno, "Application-ID")
+    if table is not None:
+        with _validated(table.lineno):
+            _INLINE_TEXT.validate_python(table.value)
+    if origin is not None:
+        with _validated(origin.lineno):
+            _SPEC_REF.validate_python(origin.value)
+    rows = []
+    for row_lineno, (name, mapping, category) in _cells(body, 3):
+        element = _text_cell(name, row_lineno, "Name")
+        if element is None:
+            raise DadParseError(row_lineno, "an information element has a name")
+        if category != "-" and category not in ast.Category:
+            raise DadParseError(row_lineno, f"malformed Cat cell {category!r}")
+        avps, either, printed = _element_mapping(mapping, row_lineno)
+        with _validated(row_lineno):
+            rows.append(
+                ast.ElementRow(
+                    name=element,
+                    avps=avps,
+                    either=either,
+                    printed=printed,
+                    category=None if category == "-" else ast.Category(category),
+                )
+            )
+    with _validated(lineno):
+        return ast.InformationElements(
+            command=None if command is None else command.value,
+            application_id=number,
+            origin=None if origin is None else origin.value,
+            avp=None if avp is None else avp.value,
+            table=None if table is None else table.value,
+            source=source,
+            rows=tuple(rows),
+        )
+
+
 _SECTION_PARSERS = {
     "Application Scope": _parse_application_scope,
     "Message": _parse_message,
@@ -944,6 +1026,7 @@ _SECTION_PARSERS = {
     "Registry": _parse_registry,
     "Undefined AVP": _parse_undefined_avp,
     "Value Table": _parse_value_table,
+    "Information Elements": _parse_information_elements,
 }
 
 # Where each line's comments attach: the path of what the line states. A
@@ -975,6 +1058,8 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Registry": ("registry",),
     "Note": ("note",),
     "Reprints": ("reprints",),
+    "Command": ("command",),
+    "From": ("origin",),
     "AVP": ("avp",),
     "Kind": ("kind",),
     "Feature-List-ID": ("feature_list_id",),
@@ -993,6 +1078,7 @@ _BODIES = {
     "Registry": ("rows", 0),
     "Undefined AVP": ("", 0),
     "Value Table": ("rows", 0),
+    "Information Elements": ("rows", 0),
 }
 
 
@@ -1058,7 +1144,7 @@ def parse_with_layout(text: str) -> tuple[ast.Specification, Layout]:
         if len(path) == 4
         and isinstance(
             ast.node_at(spec, path),
-            ast.AvpTableRow | ast.ReusedAvpRow | ast.RegistryRow,
+            ast.AvpTableRow | ast.ReusedAvpRow | ast.RegistryRow | ast.ElementRow,
         )
     }
     return spec, Layout(layout.paths, sections, cells)

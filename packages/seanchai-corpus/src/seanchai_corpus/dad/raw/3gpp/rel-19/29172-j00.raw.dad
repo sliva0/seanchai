@@ -255,6 +255,118 @@ Visited-PLMN-Id           1407   TS29.272   OctetString
 DRMP                      301    RFC7944    Enumerated
 
 
+; Type: Information Elements
+; Command: Provide-Location-Request
+; Section: 6.2.2
+; Table: 6.2.2-1
+; Page: 13
+; Columns: Name                                  AVP                             Cat
+"Location Type"                                  SLg-Location-Type               M
+IMSI                                             User-Name                       C
+MSISDN                                           MSISDN                          C
+IMEI                                             IMEI                            C
+"Client Name"                                    LCS-EPS-Client-Name             M
+"Client Type"                                    LCS-Client-Type                 M
+"Requestor Name"                                 LCS-Requestor-Name              O
+Priority                                         LCS-Priority                    O
+QoS                                              LCS-QoS                         O
+"Velocity Requested"                             Velocity-Requested              O
+"Supported GAD Shapes"                           LCS-Supported-GAD-Shapes        O
+"Service Type ID"                                LCS-Service-Type-ID             O
+Codeword                                         LCS-Codeword                    O
+APN                                              Service-Selection               C
+"Session-Related Privacy Check"                  LCS-Privacy-Check-Session       O
+"Non-Session-Related Privacy Check"              LCS-Privacy-Check-Non-Session   O
+"Deferred Location Type"                         Deferred-Location-Type          O
+"LCS-Reference Number"                           LCS-Reference-Number            O
+"Area Event Info"                                Area-Event-Info                 O
+"H-GMLC Address"                                 GMLC-Address                    O
+"PLR Flags"                                      PLR-Flags                       O
+"Periodic LDR Information"                       Periodic-LDR-Information        O
+"Reporting PLMN List"                            Reporting-PLMN-List             O
+"Supported Features (See 3GPP TS 29.229 [17])"   Supported-Features              O
+"Motion Event Info"                              Motion-Event-Info               O
+
+
+; Type: Information Elements
+; Command: Provide-Location-Answer
+; Section: 6.2.2
+; Table: 6.2.2-2
+; Page: 13
+; Columns: Name                                  AVP                               Cat
+Result                                           Result-Code/Experimental-Result   M
+"Location Estimate"                              Location-Estimate                 O
+"Accuracy Fulfilment Indicator"                  Accuracy-Fulfilment-Indicator     O
+"Age of Location Estimate"                       Age-of-Location-Estimate          O
+"Velocity Estimate"                              Velocity-Estimate                 O
+"EUTRAN Positioning Data"                        EUTRAN-Positioning-Data           O
+ECGI                                             ECGI                              O
+"GERAN Positioning Info"                         GERAN-Positioning-Info            O
+CGI                                              Cell-Global-Identity              O
+"UTRAN Positioning Info"                         UTRAN-Positioning-Info            O
+SAI                                              Service-Area-Identity             O
+"Target Serving Node Identity"                   Serving-Node                      O
+"PLA Flags"                                      PLA-Flags                         O
+"E-SMLC provided Cell Info"                      ESMLC-Cell-Info                   O
+"Civic Address"                                  Civic-Address                     O
+"Barometric Pressure"                            Barometric-Pressure               O
+"Supported Features (See 3GPP TS 29.229 [17])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Location-Report-Request
+; Section: 6.3.2
+; Table: 6.3.2-1
+; Page: 20
+; Columns: Name                                  AVP                               Cat
+"Location Event"                                 Location-Event                    M
+IMSI                                             User-Name                         C
+MSISDN                                           MSISDN                            C
+IMEI                                             IMEI                              C
+"Client Name"                                    LCS-EPS-Client-Name               O
+"Location Estimate"                              Location-Estimate                 O
+"Accuracy Fulfilment Indicator"                  Accuracy-Fulfilment-Indicator     O
+"Age of Location Estimate"                       Age-of-Location-Estimate          O
+"Velocity Estimate"                              Velocity-Estimate                 O
+"EUTRAN Positioning Data"                        EUTRAN-Positioning-Data           O
+ECGI                                             ECGI                              O
+"GERAN Positioning Info"                         GERAN-Positioning-Info            O
+CGI                                              Cell-Global-Identity              O
+"UTRAN Positioning Info"                         UTRAN-Positioning-Info            O
+SAI                                              Service-Area-Identity             O
+"Service Type ID"                                LCS-Service-Type-ID               O
+"Pseudonym Indicator"                            Pseudonym-Indicator               O
+"Supported Features (See 3GPP TS 29.229 [17])"   Supported-Features                O
+"LCS QoS Class"                                  LCS-QoS-Class                     O
+"Target Serving Node Identity"                   Serving-Node                      O
+"LRR Flags (See 7.4.35)"                         LRR-Flags                         C
+"LCS-Reference Number"                           LCS-Reference-Number              O
+"Deferred MT-LR Data"                            Deferred-MT-LR-Data               O
+"H-GMLC Address"                                 GMLC-Address                      O
+"Sequence Number"                                Reporting-Amount                  O
+"Periodic LDR Information"                       Periodic-LDR-Information          O
+"E-SMLC provided Cell Info"                      ESMLC-Cell-Info                   O
+"1xRTT Reference Cell ID"                        1xRTT-RCID                        O
+"Delayed Location Reporting Data"                Delayed-Location-Reporting-Data   O
+"Civic Address"                                  Civic-Address                     O
+"Barometric Pressure"                            Barometric-Pressure               O
+"AMF Instance ID"                                AMF-Instance-Id                   -
+
+
+; Type: Information Elements
+; Command: Location-Report-Answer
+; Section: 6.3.2
+; Table: 6.3.2-2
+; Page: 20
+; Columns: Name                                  AVP                               Cat
+Result                                           Result-Code/Experimental-Result   M
+"H-GMLC Address"                                 GMLC-Address                      O
+"LRA Flags"                                      LRA-Flags                         O
+"Reporting PLMN List"                            Reporting-PLMN-List               O
+"LCS Reference Number"                           LCS-Reference-Number              O
+"Supported Features (See 3GPP TS 29.229 [17])"   Supported-Features                O
+
+
 ; Type: Enumerated AVP
 ; Name: SLg-Location-Type
 ; Section: 7.4.2

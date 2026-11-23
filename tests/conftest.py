@@ -120,6 +120,43 @@ def synthetic_spec_docx(tmp_path):
     heading = document.add_paragraph(style="Heading 3")
     heading.add_run("6.4.1.1\tDIAMETER_ERROR_EXAMPLE_UNKNOWN (5999)")
     document.add_paragraph("A message was received for an unknown example.")
+
+    # TS 29.272 clause 5.2.1.1.1's shape: the sentence mapping the procedure
+    # to its command pair, and a table per half, a full-width NOTE row in one.
+    heading = document.add_paragraph(style="Heading 1")
+    heading.add_run("7.1\tGeneral")
+    document.add_paragraph(
+        "This procedure is mapped to the commands Example-Request/Answer"
+        " (EXR/EXA) in the Diameter application specified in clause 6."
+    )
+    for label, rows in (
+        (
+            "Table 7.1/1: Example Request",
+            [
+                ["Local Element (See 6.3.1)", "Local-AVP", "M", "prose"],
+                ["Routing", "Destination-Host, Destination-Realm", "C", "prose"],
+                ["Payload", "Example payload", "O", "prose"],
+                ["NOTE 1: a note."] * 4,
+            ],
+        ),
+        (
+            "Table 7.1/2: Example Answer",
+            [["Result (See 7.4)", "Result-Code / Experimental-Result", "M", "-"]],
+        ),
+    ):
+        document.add_paragraph(label)
+        table = document.add_table(rows=1, cols=4)
+        _set_cells(
+            table.rows[0],
+            [
+                "Information element name",
+                "Mapping to Diameter AVP",
+                "Cat.",
+                "Description",
+            ],
+        )
+        for cells in rows:
+            _set_cells(table.add_row(), cells)
     document.save(path)
     return path
 
@@ -154,7 +191,7 @@ def _write_cover(writer, text):
 
 def _outlined_pdf(path, cover):
     writer = pypdf.PdfWriter()
-    for _ in range(6):
+    for _ in range(7):
         writer.add_blank_page(width=612, height=792)
     _write_cover(writer, cover)
     writer.add_outline_item("6.1 Messages", 1)
@@ -162,6 +199,7 @@ def _outlined_pdf(path, cover):
     writer.add_outline_item("6.3.1 Example-Group", 3, parent=parent)
     writer.add_outline_item("6.3.2 Example-Mode", 4, parent=parent)
     writer.add_outline_item("6.4 Result-Code AVP values", 5)
+    writer.add_outline_item("7.1 General", 6)
     with path.open("wb") as stream:
         writer.write(stream)
     return path

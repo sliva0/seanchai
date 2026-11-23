@@ -378,8 +378,71 @@ class Hole(_Plain):
 
 
 @dataclass(frozen=True)
+class Element(_Plain):
+    """One row of an information-element table describing a command: the
+    element as printed, its category (`ast.Category`, None for a blank cell)
+    and the AVPs it maps to, with where the row is printed: `reference`'s
+    clause `section`, `table` and `page`, which hold the row's description.
+
+    `either` says the row offers one of `avps` ("Result-Code /
+    Experimental-Result"); `printed` is a mapping cell naming no AVP, as
+    printed. `within` is the grouped AVP of the command whose members the
+    table describes, None for the command's own."""
+
+    name: str
+    category: ast.Category | None
+    avps: tuple[str, ...]
+    either: bool
+    printed: str | None
+    within: str | None
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
+
+    def __repr__(self) -> str:
+        return (
+            f"<Element {self.name!r} {self.category or '-'}"
+            f" {'/'.join(self.avps) or self.printed!r} in {self.reference}"
+            f" table {self.table}>"
+        )
+
+
+@dataclass(frozen=True)
+class ElementTable(_Plain):
+    """An information-element table as `reference` prints it, with the
+    commands it describes (`Model.element_tables`): `command`, of
+    `application_id` where it names one, the document's own or `origin`'s or
+    a base's, and `within` the grouped AVP whose members it tabulates.
+    `commands` is empty where it names no command or one printed under
+    several applications it does not choose between."""
+
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
+    command: str | None
+    application_id: int | None
+    origin: str | None
+    within: str | None
+    elements: tuple[Element, ...]
+    commands: tuple[Message, ...]
+
+    def __repr__(self) -> str:
+        return (
+            f"<ElementTable {self.reference} table {self.table} for"
+            f" {self.command or '-'}: {len(self.elements)} elements,"
+            f" {len(self.commands)} commands>"
+        )
+
+
+@dataclass(frozen=True)
 class Member(_Plain):
-    """One line of an ABNF body, with the name resolved to an object."""
+    """One line of an ABNF body, with the name resolved to an object.
+    `elements` are the information-element rows describing a command's own
+    member; a grouped AVP's members have none."""
 
     rule: ast.AvpRule
     # None for the `* [ AVP ]` wildcard, for a name the corpus cannot
@@ -391,6 +454,7 @@ class Member(_Plain):
     # The `Alias` `avp` was read through, for an undefined name the
     # consumer reads as another AVP: `avp.name` is then the alias's.
     alias: Alias | None = None
+    elements: tuple[Element, ...] = ()
 
     @property
     def name(self) -> str:
@@ -508,6 +572,10 @@ class Message(_Plain):
     header_application_id: int | None = None
     # The version of `defined_in` where the query read an older copy.
     version: str | None = None
+    # Every row of the information-element tables describing the command,
+    # its own document's or a citing document's (TS 29.228's for TS 29.229's
+    # commands), in file order; each member holds those mapping it.
+    elements: tuple[Element, ...] = ()
 
     @property
     def is_request(self) -> bool:

@@ -142,6 +142,63 @@ SMSF-3GPP-Realm           TS29.338   -
 SMSF-Non-3GPP-Realm       TS29.338   -
 
 
+; Type: Information Elements
+; Command: Device-Trigger-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1/1
+; Page: 10
+; Columns: Name                                                AVP                       Cat
+"User Identifier (See 3GPP TS 29.336 [12])"                    User-Identifier           M
+"SM RP SMEA (See 3GPP TS 29.338 [13])"                         SM-RP-SMEA                M
+"Payload(See 3GPP TS 29.368 [15])"                             Payload                   M
+"Serving Node Identity (See 3GPP TS 29.173 [14])"              Serving-Node              C
+"Additional Serving Node Identity (See 3GPP TS 29.173 [14])"   Additional-Serving-Node   C
+"Trigger Reference Number (See 3GPP TS 29.368 [15])"           Reference-Number          C
+"Old Trigger Reference Number (See 3GPP TS 29.368 [15])"       Old-Reference-Number      C
+"Validity Time (See 3GPP TS 29.368 [15])"                      Validity-Time             C
+"Priority Indication (See 3GPP TS 29.368 [15])"                Priority-Indication       C
+"SMS Application Port ID (See 3GPP TS 29.368 [15])"            SMS-Application-Port-ID   C
+"Supported Features (See 3GPP TS 29.229 [6])"                  Supported-Features        O
+"Trigger-Action (See 6.3.6)"                                   Trigger-Action            C
+
+
+; Type: Information Elements
+; Command: Device-Trigger-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 10
+; Columns: Name                                            AVP                               Cat
+"Result (See 7)"                                           Result-Code/Experimental-Result   M
+MTC-Error-Diagnostic                                       MTC-Error-Diagnostic              O
+"Supported Features (See 3GPP TS 29.229 [6])"              Supported-Features                O
+"Old Trigger Reference Number (See 3GPP TS 29.368 [15])"   Old-Reference-Number              C
+"Trigger-Action (see 6.3.6)"                               Trigger-Action                    C
+
+
+; Type: Information Elements
+; Command: Delivery-Report-Request
+; Section: 5.2.2.1
+; Table: 5.2.2.1/1
+; Page: 13
+; Columns: Name                                        AVP                               Cat
+"User Identifier (See 3GPP TS 29.336 [12])"            User-Identifier                   M
+"SM RP SMEA (See 3GPP TS 29.338 [13])"                 SM-RP-SMEA                        M
+"SM Delivery Outcome (See 6.3.1)"                      SM-Delivery-Outcome               M
+"Absent Subscriber Diagnostic SM (See 6.3.2)"          Absent-Subscriber-Diagnostic-SM   C
+"Trigger Reference Number (See 3GPP TS 29.368 [15])"   Reference-Number                  C
+"Supported Features (See 3GPP TS 29.229 [6])"          Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Delivery-Report-Answer
+; Section: 5.2.2.1
+; Table: 5.2.2.1/2
+; Page: 13
+; Columns: Name                                 AVP                               Cat
+"Result (See 7)"                                Result-Code/Experimental-Result   M
+"Supported Features (See 3GPP TS 29.229 [6])"   Supported-Features                O
+
+
 ; Type: Enumerated AVP
 ; Name: SM-Delivery-Outcome-T4
 ; Section: 6.3.1

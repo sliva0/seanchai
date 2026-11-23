@@ -38,7 +38,7 @@ version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
 section       = application-scope / message / grouped-avp
               / enumerated-avp / avp-table / reused-avps / registry
-              / undefined-avp / value-table
+              / undefined-avp / value-table / information-elements
 ```
 
 A `spec-ref` names a document without its version, as one token.
@@ -511,6 +511,69 @@ Names are written as enum value names and marks as table marks; `-` is no
 mark. Descriptions are dropped. A row printing no name and number pair (TS
 29.172's "1-31 None", or `DIAMETER_ERROR_ALREADY_BANNED (56x2)`) is a `;;`
 comment where it stood.
+
+### Information Elements
+
+```abnf
+information-elements = "; Type: Information Elements" NL
+                       ["; Command: " avp-name NL]
+                       ["; Application-ID: " application-id NL]
+                       ["; From: " spec-ref NL]
+                       ["; AVP: " avp-name NL]
+                       "; Section: " section-number NL
+                       ["; Table: " inline-text NL]
+                       ["; Page: " 1*DIGIT NL]
+                       "; Columns: Name" 1*SP "AVP" 1*SP "Cat" NL
+                       1*(element-row NL)
+element-row   = name-cell 1*SP mapping-cell 1*SP category-cell
+name-cell     = mark                    ; the element as printed
+mapping-cell  = avp-name *("," avp-name) / avp-name 1*("/" avp-name)
+              / quoted / "-"
+category-cell = "M" / "C" / "O" / "-"
+```
+
+A stage-3 document's table of one command's information elements,
+"Information element name | Mapping to Diameter AVP | Cat. | Description"
+(TS 29.272 table 5.2.1.1.1/1, Update Location Request):
+
+```dad
+; Type: Information Elements
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Columns: Name                            AVP                  Cat
+IMSI                                       User-Name            M
+"Supported Features (See TS 29.229 [9])"   Supported-Features   O
+```
+
+- A row is an element: its name as printed, quoted as a mark is; the AVPs
+  its mapping cell names, without what it prints after a name ("User-Name
+  (See IETF RFC 6733 [61])"); and its category, the Cat. cell. The
+  Description cell is prose and stays in the document, where `; Section:`,
+  `; Table:` and `; Page:` find it. A full-width NOTE row is no element.
+- AVPs joined by `,` are carried together ("Destination-Host,
+  Destination-Realm"); joined by `/` the row offers one of them, as the
+  document's "/" or "or" does ("Result-Code / Experimental-Result"). A
+  mapping cell naming no AVP is quoted as printed (TS 29.273's "EAP
+  payload"); `-` is a blank cell.
+- `; Command:` is the command the rows describe, which a procedure clause's
+  sentence names ("This procedure is mapped to the commands
+  Update-Location-Request/Answer (ULR/ULA) ..."). It is absent where the
+  document does not name it in a way the extractor reads, and a correction
+  supplies it.
+- The command is the file's own where it prints one of that name, compared
+  without regard to case; else the one of the document `; From:` names,
+  which the sentence says specifies it ("specified in TS 29.229 [5]", TS
+  29.228); else the first `; Bases:` document printing it.
+- `; Application-ID:` chooses among the applications the file prints the
+  command for: TS 29.272 prints Insert-Subscriber-Data-Request for S6a and
+  for S7a.
+- `; AVP:` names a grouped AVP of the command whose members the rows
+  describe instead (TS 29.228 table 6.3.2, SIP-Auth-Data-Item in
+  Multimedia-Auth-Request).
+- `; Table:` is absent where the table prints no caption (TS 29.234 V11.2.0
+  clause 8.3.2's first).
 
 ## Text values
 

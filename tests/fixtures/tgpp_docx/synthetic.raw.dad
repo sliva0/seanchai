@@ -56,3 +56,21 @@ Example-Role ::= < Enumerated AVP header: 12 10415 >
 ; Kind: result-codes
 ; Section: 6.4
 DIAMETER_ERROR_EXAMPLE_UNKNOWN = 5999 ; 6.4.1.1
+
+
+; Type: Information Elements
+; Command: Example-Request
+; Section: 7.1
+; Table: 7.1/1
+; Columns: Name               AVP                                  Cat
+"Local Element (See 6.3.1)"   Local-AVP                            M
+Routing                       Destination-Host,Destination-Realm   C
+Payload                       "Example payload"                    O
+
+
+; Type: Information Elements
+; Command: Example-Answer
+; Section: 7.1
+; Table: 7.1/2
+; Columns: Name      AVP                               Cat
+"Result (See 7.4)"   Result-Code/Experimental-Result   M

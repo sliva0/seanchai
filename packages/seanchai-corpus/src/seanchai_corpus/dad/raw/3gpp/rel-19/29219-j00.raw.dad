@@ -184,6 +184,65 @@ Physical-Access-ID      ETSI-TS283.034
 Supported-Features      TS29.229
 
 
+; Type: Information Elements
+; Command: Spending-Limit-Request
+; Section: 4.5.1.1
+; Table: 4.5.1.1/1
+; Page: 10
+; Columns: Name                               AVP                                                    Cat
+"User Identity"                               Subscription-Id,Logical-Access-ID,Physical-Access-ID   C
+"Request Type"                                SL-Request-Type                                        M
+"Subscribed Policy Counter Identifier List"   Policy-Counter-Identifier                              O
+
+
+; Type: Information Elements
+; Command: Spending-Limit-Answer
+; Section: 4.5.1.1
+; Table: 4.5.1.1/2
+; Page: 10
+; Columns: Name                  AVP                               Cat
+"Policy Counter Status Report"   Policy-Counter-Status-Report      O
+Result                           Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Spending-Status-Notification-Request
+; Section: 4.5.2.1
+; Table: 4.5.2.1/1
+; Page: 12
+; Columns: Name                  AVP                            Cat
+"Policy Counter Status Report"   Policy-Counter-Status-Report   M
+
+
+; Type: Information Elements
+; Command: Spending-Status-Notification-Answer
+; Section: 4.5.2.1
+; Table: 4.5.2.1/2
+; Page: 12
+; Columns: Name   AVP                               Cat
+Result            Result-Code/Experimental-Result   M
+
+
+; Type: Information Elements
+; Command: Session-Termination-Request
+; From: RFC6733
+; Section: 4.5.3.1
+; Table: 4.5.3.1/1
+; Page: 13
+; Columns: Name       AVP                 Cat
+"Termination Cause"   Termination-Cause   M
+
+
+; Type: Information Elements
+; Command: Session-Termination-Answer
+; From: RFC6733
+; Section: 4.5.3.1
+; Table: 4.5.3.1/2
+; Page: 13
+; Columns: Name   AVP           Cat
+Result            Result-Code   M
+
+
 ; Type: Value Table
 ; AVP: Feature-List
 ; Kind: features

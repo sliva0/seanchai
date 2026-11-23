@@ -18,8 +18,10 @@ from seanchai.dad.corrections import (
     avp_rule,
     avp_table,
     definition,
+    element_row,
     enum_value,
     header,
+    information_elements,
     reused_avps,
     reused_row,
     table_row,
@@ -123,7 +125,7 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             # replacement. 29.172, 29.344 and 29.388 all fix a copied-in rule
             # name this way; a registry row is selected by its code instead.
             target = dataclasses.replace(target, name=correction.replace)
-        elif correction.field == "avp":
+        elif correction.field == "avp" and isinstance(target, corrections.value_table):
             # The same for the AVP a value table's selector matches on: TS
             # 29.337 corrects the "Supported-Feature-List" its clause heads.
             target = dataclasses.replace(target, avp=correction.replace)
@@ -606,6 +608,14 @@ Bearer-Control-Mode ::= < Enumerated AVP header: 1023 10415 >
 ; Type: Undefined AVP
 ; Name: Event-Report-Indication
 ; Section: 4b.5.2
+
+
+; Type: Information Elements
+; Section: 4b.5.1
+; Table: 4b.5.1/1
+; Columns: Name AVP Cat
+Event "Event report" M
+Event Event-Report-Indication O
 """)
 _BCM = "Bearer-Control-Mode"
 _ERI = "Event-Report-Indication"
@@ -626,6 +636,34 @@ _GX_CCR = definition("CC-Request", application_id=_GX)
             lambda spec: spec.sections[3].note == _NOTE,
             None,
             id="undefined",
+        ),
+        pytest.param(
+            _fix(
+                element_row(information_elements("4b.5.1/1"), "Event", occurrence=1),
+                "printed",
+                "Event report",
+                None,
+            ),
+            lambda spec: spec.sections[4].rows[0].printed is None,
+            None,
+            id="element-row-occurrence",
+        ),
+        pytest.param(
+            _fix(
+                element_row(information_elements("4b.5.1/1"), "Event"),
+                "category",
+                "M",
+                "C",
+            ),
+            None,
+            "2 matches",
+            id="element-row-of-a-repeated-name",
+        ),
+        pytest.param(
+            _fix(information_elements("4b.5.1/1"), "command", None, "CC-Request"),
+            lambda spec: spec.sections[4].command == "CC-Request",
+            None,
+            id="information-elements",
         ),
         pytest.param(
             _fix(undefined("Session-Id"), "note", None, _NOTE),

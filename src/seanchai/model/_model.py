@@ -22,6 +22,8 @@ from ._types import (
     AnswerMessage,
     Application,
     Avp,
+    Element,
+    ElementTable,
     Grouped,
     Hole,
     HolePolicy,
@@ -304,23 +306,134 @@ class Model(_Resolver):
         return tuple(self._view(each) for each in self.references())
 
     def _messages_of(self, view: _View) -> tuple[Message, ...]:
-        return tuple(
-            Message(
-                name=message.name,
-                abbreviation=message.abbreviation,
-                command_code=message.command_code,
-                flags=message.flags,
-                application_id=_effective_id(message, _scope(view, message)),
-                header_application_id=message.application_id,
-                defined_in=view.entry.reference,
-                section=message.source.section,
-                avps=avps,
-                dropped=dropped,
-                version=self._older(view),
-            )
-            for message in view.messages
-            for avps, dropped in [self._split(self._body(view, message.avps))]
+        return tuple(self._message_of(view, message) for message in view.messages)
+
+    def _message_of(self, view: _View, message: ast.Message) -> Message:
+        avps, dropped = self._split(self._body(view, message.avps))
+        elements = tuple(
+            element
+            for printing, block in self._described.get(id(message), ())
+            for element in self._rows_of(printing, block)
         )
+        return Message(
+            name=message.name,
+            abbreviation=message.abbreviation,
+            command_code=message.command_code,
+            flags=message.flags,
+            application_id=_effective_id(message, _scope(view, message)),
+            header_application_id=message.application_id,
+            defined_in=view.entry.reference,
+            section=message.source.section,
+            avps=tuple(
+                replace(member, elements=mapping)
+                if (
+                    mapping := tuple(
+                        element
+                        for element in elements
+                        if element.within is None and member.name in element.avps
+                    )
+                )
+                else member
+                for member in avps
+            ),
+            dropped=dropped,
+            version=self._older(view),
+            elements=elements,
+        )
+
+    def _rows_of(
+        self, view: _View, block: ast.InformationElements
+    ) -> tuple[Element, ...]:
+        """`block`'s rows, as `view` prints them."""
+        return tuple(
+            Element(
+                name=row.name,
+                category=row.category,
+                avps=row.avps,
+                either=row.either,
+                printed=row.printed,
+                within=block.avp,
+                reference=view.entry.reference,
+                version=self._older(view),
+                section=block.source.section,
+                table=block.table,
+                page=block.source.page,
+            )
+            for row in block.rows
+        )
+
+    def element_tables(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[ElementTable, ...]:
+        """Every information-element table `reference` (or the corpus)
+        prints, in file order, each with the commands it describes: none
+        where it names no command, or one printed under several applications
+        it does not choose between. `version` selects an older held copy."""
+        return tuple(
+            ElementTable(
+                reference=view.entry.reference,
+                version=self._older(view),
+                section=block.source.section,
+                table=block.table,
+                page=block.source.page,
+                command=block.command,
+                application_id=block.application_id,
+                origin=block.origin,
+                within=block.avp,
+                elements=self._rows_of(view, block),
+                commands=tuple(
+                    self._message_of(printing, message)
+                    for printing, message in self._commanded(view, block, ())
+                ),
+            )
+            for view in self._selected_views(reference, version)
+            for block in view.elements
+        )
+
+    @cached_property
+    def _described(
+        self,
+    ) -> dict[int, list[tuple[_View, ast.InformationElements]]]:
+        """The information-element tables describing each command block, by
+        the block's identity, with the copy printing each table."""
+        found: dict[int, list[tuple[_View, ast.InformationElements]]] = {}
+        for view in self._copies.values():
+            for block in view.elements:
+                for _, message in self._commanded(view, block, ()):
+                    found.setdefault(id(message), []).append((view, block))
+        return found
+
+    def _commanded(
+        self, view: _View, block: ast.InformationElements, seen: tuple[Path, ...]
+    ) -> list[tuple[_View, ast.Message]]:
+        """The command blocks an information-element table describes: those
+        of its command in `view`, of its application where it states one, or
+        else in the document the table says specifies it, or else in the
+        first of `view`'s bases printing it, depth first. Names compare
+        without regard to case: TS 29.338 prints its SRA rule
+        `Send-Routing-info-for-SM-Answer`. None where the command prints under
+        several applications the table does not choose between; the linter
+        reports that."""
+        if block.command is None:
+            return []
+        named = [
+            message
+            for message in view.messages
+            if message.name.casefold() == block.command.casefold()
+            and block.application_id
+            in (None, _effective_id(message, _scope(view, message)))
+        ]
+        if named:
+            ids = {_effective_id(message, _scope(view, message)) for message in named}
+            return [(view, message) for message in named] if len(ids) == 1 else []
+        cited = [] if block.origin is None else [block.origin]
+        for base in (*cited, *view.entry.spec.bases):
+            cited, _ = self._cited(view, base)
+            if cited is None or cited.entry.path in seen:
+                continue
+            if found := self._commanded(cited, block, (*seen, view.entry.path)):
+                return found
+        return []
 
     def answer_message(
         self, reference: str, *, version: str | None = None

@@ -160,6 +160,15 @@ def _directives(
                     f"; Application: {section.application}", (*path, "application")
                 )
             )
+    if isinstance(section, ast.InformationElements):
+        for key, field, value in (
+            ("Command", "command", section.command),
+            ("Application-ID", "application_id", section.application_id),
+            ("From", "origin", section.origin),
+            ("AVP", "avp", section.avp),
+        ):
+            if value is not None:
+                lines.extend(notes.line(f"; {key}: {value}", (*path, field)))
     if name is not None:
         lines.extend(notes.line(f"; Name: {name}", (*path, "name")))
     lines.extend(
@@ -167,7 +176,12 @@ def _directives(
     )
     if (
         isinstance(
-            section, ast.AvpTable | ast.ReusedAvps | ast.Registry | ast.ValueTable
+            section,
+            ast.AvpTable
+            | ast.ReusedAvps
+            | ast.Registry
+            | ast.ValueTable
+            | ast.InformationElements,
         )
         and section.table is not None
     ):
@@ -568,6 +582,33 @@ def _format_value_table(
     return lines
 
 
+def _element_cells(row: ast.ElementRow) -> list[str]:
+    """A row's Name, AVP and Cat cells: the name quoted as a mark is, the
+    AVPs joined by `/` where the row chooses one, by `,` otherwise, a
+    printed mapping always quoted."""
+    if row.printed is not None:
+        mapping = _quoted(row.printed)
+    else:
+        mapping = ("/" if row.either else ",").join(row.avps) or "-"
+    category = "-" if row.category is None else row.category.value
+    return [_mark(row.name), mapping, category]
+
+
+def _format_information_elements(
+    table: ast.InformationElements, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    return [
+        *_directives(table, None, path, notes),
+        *_table(
+            list(ast.ELEMENT_COLUMNS),
+            [_element_cells(row) for row in table.rows],
+            "; Columns:",
+            path,
+            notes,
+        ),
+    ]
+
+
 # Keyed by exact type, not matched by isinstance: a subclass of `Message`
 # would otherwise be written out as a plain `Message`, silently dropping
 # whatever it added, and `.dad` output has to be exact.
@@ -582,6 +623,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.Registry: _format_registry,
     ast.UndefinedAvp: _format_undefined_avp,
     ast.ValueTable: _format_value_table,
+    ast.InformationElements: _format_information_elements,
 }
 
 

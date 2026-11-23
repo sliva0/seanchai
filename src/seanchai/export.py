@@ -53,6 +53,7 @@ from .export_schema import (
     CommandSpan,
     Document,
     DocumentSummary,
+    ElementRow,
     EnumEntry,
     Finding,
     Index,
@@ -319,7 +320,7 @@ def _tokens(
     source = section.source if section is not None else None
     directive = _DIRECTIVE.match(line)
     key = directive[1] if directive else None
-    naming = key in (None, "Name", "AVP") and not (
+    naming = key in (None, "Name", "AVP", "Command") and not (
         isinstance(section, ast.EnumeratedAvp | ast.ValueTable) and " = " in line
     )
     # A command or application names its own clause, whatever else in the file
@@ -353,6 +354,7 @@ def _tokens(
             "Bases",
             "Obsoletes",
             "Reprints",
+            "From",
             None,
         ):
             fields["target"] = links.references[value]
@@ -541,9 +543,16 @@ class _Placed:
 
 
 def _blocks(
-    text: str, spec: ast.Specification, layout: parser.Layout, links: _Links
+    text: str,
+    spec: ast.Specification,
+    layout: parser.Layout,
+    links: _Links,
+    described: dict[int, tuple[Target, ...]] | None = None,
 ) -> tuple[Block, ...]:
-    """`spec`'s sections as blocks of `text`'s lines, which `layout` places."""
+    """`spec`'s sections as blocks of `text`'s lines, which `layout` places.
+    `described` gives where each Information Elements block, by position,
+    finds its command."""
+    described = described or {}
     placed = _Placed.of(text, spec, layout, links)
     commands = _commands_of(spec)
     # A table's column names one of the file's commands by its abbreviation:
@@ -591,6 +600,22 @@ def _blocks(
             spans += _message_spans(placed, index, placement, section, commands[index])
         if isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
             fields["columns"] = tuple(str(column) for column in section.columns)
+        if isinstance(section, ast.InformationElements):
+            fields["name"] = section.command
+            fields["columns"] = ast.ELEMENT_COLUMNS
+            fields["element_rows"] = tuple(
+                ElementRow(
+                    line=placed.items[index, "rows", item],
+                    name=row.name,
+                    cells=placed.cells(placed.items[index, "rows", item]),
+                    avps=row.avps,
+                    either=row.either,
+                    printed=row.printed,
+                    category=row.category,
+                )
+                for item, row in enumerate(section.rows)
+            )
+            fields["described"] = described.get(index, ())
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
             fields["rows"] = _table_rows(placed, index, section)
             spans += _column_spans(placed.lines, spec, placement, abbreviations)
@@ -1271,6 +1296,39 @@ def _clause_names(entry: Entry) -> dict[str, Target]:
     }
 
 
+def _described(
+    corpus: _Lookups, entry: Entry
+) -> tuple[dict[int, tuple[Target, ...]], dict[str, Target]]:
+    """Where each Information Elements block of `entry`, by section index,
+    finds the command it describes, and where the names its lines print
+    link: the command, and each AVP its rows map as the command reads it."""
+    positions = [
+        index
+        for index, section in enumerate(entry.spec.sections)
+        if isinstance(section, ast.InformationElements)
+    ]
+    tables = corpus.model.element_tables(entry.reference, version=entry.spec.version)
+    described: dict[int, tuple[Target, ...]] = {}
+    names: dict[str, Target] = {}
+    for index, table in zip(positions, tables, strict=True):
+        targets = []
+        for message in table.commands:
+            version = message.version or corpus.model.version(message.defined_in)
+            printing = corpus.by_copy[message.defined_in, version]
+            target = Target(document=document_id(printing), section=message.section)
+            targets.append(target)
+            if table.command is not None:
+                names.setdefault(table.command, target)
+            members = list(message.walk())
+            for member in members:
+                if member.avp is not None:
+                    found = corpus.avp_target(printing, member.avp)
+                    if found is not None:
+                        names.setdefault(member.name, found)
+        described[index] = tuple(targets)
+    return described, names
+
+
 def _value_table_avps(
     corpus: _Lookups, entry: Entry, names: dict[str, Target | None]
 ) -> dict[str, Target | None]:
@@ -1606,6 +1664,9 @@ def _write_document(
     for name, target in _clause_names(entry).items():
         names.setdefault(name, target)
     names.update(_value_table_avps(corpus, entry, names))
+    described, element_names = _described(corpus, entry)
+    for name, target in element_names.items():
+        names.setdefault(name, target)
     links = _Links(entry, names, corpus.references(spec), corpus.row_references(spec))
     declared = declarations.of(entry)
     edits = dict(declared.edits) if declared else {}
@@ -1654,7 +1715,7 @@ def _write_document(
         source=sources.source(entry),
         sections=_sections(spec, corpus.citations[identifier]),
         lines=lines,
-        blocks=_blocks(text, spec, layout, links),
+        blocks=_blocks(text, spec, layout, links, described),
         corrections={
             cited: export_schema.Correction(kind=edit.kind, reason=edit.reason)
             for cited, edit in edits.items()

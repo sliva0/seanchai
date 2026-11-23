@@ -10,6 +10,7 @@ from conftest import _CORPUS_DIR, _ROOT, _RULES, _corpus
 
 from seanchai import corpus, linter
 from seanchai.dad import ast, corrections, parser
+from seanchai.linter._elements import ELEMENT_RULES
 
 _ERROR, _NOTE = linter.Severity.ERROR, linter.Severity.NOTE
 
@@ -65,13 +66,16 @@ def test_the_corrected_corpus_has_no_errors(path):
 # corrections exist to fix. Every entry was confirmed against the source clause
 # before it was written down; a file absent from here must lint clean raw.
 _RAW_ERRORS = {
-    "29273-j20.raw.dad": ["duplicate-definition", "duplicate-identity"],
+    # And clause 7.1.2.2.1's tables, for the AA-Request/Answer the document
+    # prints for three applications.
+    "29273-j20.raw.dad": ["duplicate-definition", "duplicate-identity"]
+    + ["elements-command-ambiguous"] * 2,
     "29172-j00.raw.dad": ["duplicate-identity"],
-    "29272-j60.raw.dad": [
-        "duplicate-identity",
-        "table-definition-mismatch",
-        "vendor-id-mismatch",
-    ],
+    # And twelve tables of clauses 5 and 5A, for commands it prints for S6a
+    # and for S7a.
+    "29272-j60.raw.dad": ["duplicate-identity"]
+    + ["elements-command-ambiguous"] * 12
+    + ["table-definition-mismatch", "vendor-id-mismatch"],
     "29344-j10.raw.dad": ["one-name-two-commands", "one-name-two-commands"],
     "29388-j10.raw.dad": [
         "duplicate-definition",
@@ -298,7 +302,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
     notes = [
         f
         for f in linter.lint(parser.parse(path.read_text(encoding="utf-8")))
-        if f.severity is linter.Severity.NOTE
+        if f.severity is linter.Severity.NOTE and f.rule not in ELEMENT_RULES
     ]
 
     stem = path.name.removesuffix(".dad")
@@ -720,6 +724,8 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
                 by_rule = accepted.setdefault(entry.path.name, {})
                 by_rule.setdefault(finding.rule, []).append(finding.accepted_by)
                 continue
+            if finding.rule in ELEMENT_RULES:
+                continue  # pinned by count, `_ELEMENT_NOTES`
             # Missing origins are grouped in one finding per file; all other
             # standing notes start with the affected AVP's name.
             subject = (
@@ -733,6 +739,60 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
             actual[entry.path.name] = notes
     assert actual == _STANDING_CORPUS_NOTES
     assert accepted == _ACCEPTED_CORPUS_NOTES
+
+
+# The information-element notes per corrected file and rule: tables no
+# correction yet names a command for (TS 29.273's, TS 29.234's, TS 29.140's and
+# TS 29.328's User Identity content), mapping cells naming no AVP, mostly a
+# misprinted name, rows mapping an AVP the command's body lacks, and rows whose
+# category the ABNF disagrees with (docs/linter.md#information-elements).
+_ELEMENT_NOTES = {
+    "29128-j20.dad": {"element-not-in-command": 1, "element-optional-in-abnf": 2},
+    "29140-700.dad": {"element-unmapped": 3, "elements-unattached": 2},
+    "29172-j00.dad": {"element-not-in-command": 4},
+    "29219-j00.dad": {"element-optional-in-abnf": 1},
+    "29228-j20.dad": {
+        "element-not-in-command": 2,
+        "element-optional-in-abnf": 2,
+        "element-required-in-abnf": 2,
+    },
+    "29234-b20.dad": {"element-unmapped": 36, "elements-unattached": 45},
+    "29272-j60.dad": {
+        "element-not-in-command": 2,
+        "element-optional-in-abnf": 1,
+        "element-unmapped": 2,
+    },
+    "29273-j20.dad": {
+        "element-not-in-command": 2,
+        "element-optional-in-abnf": 4,
+        "element-unmapped": 25,
+        "elements-unattached": 59,
+    },
+    "29283-j00.dad": {"element-optional-in-abnf": 6},
+    "29328-j20.dad": {
+        "element-optional-in-abnf": 3,
+        "element-unmapped": 1,
+        "elements-unattached": 1,
+    },
+    "29330-j00.dad": {"element-not-in-command": 1, "element-optional-in-abnf": 3},
+    "29336-j10.dad": {"element-not-in-command": 1},
+    "29337-j00.dad": {"element-not-in-command": 3},
+    "29338-j30.dad": {"element-optional-in-abnf": 2, "element-unmapped": 1},
+    "29345-j00.dad": {"element-not-in-command": 2, "element-required-in-abnf": 1},
+}
+
+
+def test_the_corrected_corpus_has_only_its_counted_element_notes():
+    books = corpus.Corpus.load([_CORPUS_DIR])
+    counted: dict[str, dict[str, int]] = {}
+    for entry in books:
+        for finding in linter.lint_with_corpus(entry.spec, books):
+            if finding.rule in ELEMENT_RULES:
+                assert finding.severity is linter.Severity.NOTE, finding
+                by_rule = counted.setdefault(entry.path.name, {})
+                by_rule[finding.rule] = by_rule.get(finding.rule, 0) + 1
+
+    assert counted == _ELEMENT_NOTES
 
 
 def test_the_committed_record_matches_the_corpus():
@@ -1203,6 +1263,29 @@ _TS29173 = _dad("3GPP TS 29.173", _grouped("Serving-Node", 2401, "SGSN-Number"))
             _NOTE,
             "16777251",
             id="registry-application-document",
+        ),
+        # A table naming a command its own document, the one it cites and its
+        # bases print none of: TS 29.219's sentences name its commands by
+        # their headings, which corrections replace by its rules' names.
+        pytest.param(
+            _dad(
+                "3GPP TS 29.228",
+                """\
+                ; Type: Information Elements
+                ; Command: Spending-Limit-Request
+                ; From: TS29.329
+                ; Section: 6.1.1
+                ; Table: 6.1.1.1
+                ; Columns: Name AVP Cat
+                IMSI User-Name M
+                """,
+                version="19.2.0",
+            ),
+            [_dad("3GPP TS 29.329", _ccr("6.1.1", "306, REQ, PXY, 16777217"))],
+            "elements-command-unknown",
+            _ERROR,
+            "Spending-Limit-Request, which neither the file nor",
+            id="elements-command-unknown",
         ),
     ],
 )

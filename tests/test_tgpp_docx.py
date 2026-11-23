@@ -363,7 +363,7 @@ def _second_avp_table(*, reused, code="10"):
             copies.append(("Table 7.3.2: Re-used AVPs", reused_table))
         for caption, table in copies:
             document.add_paragraph(caption)._p.addnext(copy.deepcopy(table._tbl))
-        document.tables[3].cell(2, 1).text = code
+        document.tables[len(document.tables) - len(copies)].cell(2, 1).text = code
 
     return edit
 

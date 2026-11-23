@@ -40,6 +40,7 @@ __all__ = [
     "CrossRelease",
     "Dictionary",
     "Document",
+    "Element",
     "FlagRules",
     "Hole",
     "HoleError",
@@ -83,7 +84,9 @@ class Member(_Model):
     `avps` in `avp`; `hole`, naming an entry of `holes` in `hole`; `placeholder`,
     an undefined name kept untyped, its block in `placeholder`; or `wildcard`,
     the `* [ AVP ]` line. `min_occurs` and `max_occurs` are RFC 6733 section
-    3.2's reading, `max_occurs` null where it is unbounded."""
+    3.2's reading, `max_occurs` null where it is unbounded. `elements` indexes
+    the command's `elements` mapping a command's own member, empty in a
+    grouped AVP's body."""
 
     name: str
     kind: Literal["avp", "hole", "placeholder", "wildcard"]
@@ -94,6 +97,29 @@ class Member(_Model):
     hole: str | None
     placeholder: UndefinedBlock | None
     alias: Alias | None
+    elements: tuple[int, ...]
+
+
+class Element(_Model):
+    """One row of an information-element table describing a command
+    (`model.Element`): the element as printed, its `category` (`M`, `C`, `O`,
+    null for a blank cell), the AVPs it maps to (`either`: one of them) or the
+    cell as `printed` where it names none, and `within`, the grouped AVP whose
+    members its table describes, null for the command's own. `reference`,
+    `version`, `section`, `table` and `page` locate the row, whose description
+    the document holds."""
+
+    name: str
+    category: ast.Category | None
+    avps: tuple[str, ...]
+    either: bool
+    printed: str | None
+    within: str | None
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
 
 
 class Value(_Model):
@@ -163,12 +189,14 @@ class Command(CommandHeading):
     """One command with its body. `members` is the body; `walk` is
     `Message.walk`, each AVP at any depth, by `id`. An answer's `answer_message`
     names the `answer_messages` entry it takes with the E bit set, null for a
-    request and where no document gives one."""
+    request and where no document gives one. `elements` are the rows of the
+    information-element tables describing it, which members index."""
 
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
     walk: tuple[str, ...]
     answer_message: str | None
+    elements: tuple[Element, ...]
 
 
 class CommandPair(_Model):
@@ -485,7 +513,9 @@ class _Builder:
                 )
             self.ids[avp] = identifier
 
-    def member(self, member: model.Member) -> Member:
+    def member(
+        self, member: model.Member, elements: Sequence[model.Element] = ()
+    ) -> Member:
         kind: Literal["avp", "hole", "placeholder", "wildcard"]
         if member.avp is not None:
             kind = "avp"
@@ -513,11 +543,20 @@ class _Builder:
                 name=member.alias.name,
                 source=member.alias.source,
             ),
+            elements=tuple(
+                index
+                for index, element in enumerate(elements)
+                if element in member.elements
+            ),
         )
 
-    def members(self, members: Iterable[model.Member]) -> tuple[Member, ...]:
+    def members(
+        self,
+        members: Iterable[model.Member],
+        elements: Sequence[model.Element] = (),
+    ) -> tuple[Member, ...]:
         return tuple(
-            self.member(member)
+            self.member(member, elements)
             for member in members
             # A body among its own descendants, `Message.walk`'s cut: the corpus
             # holds none, and the entry it would name is the one being read.
@@ -585,12 +624,16 @@ class _Builder:
     ) -> Command:
         return Command(
             **dict(_heading(message)),
-            members=self.members(message.avps),
-            dropped=self.members(message.dropped),
+            members=self.members(message.avps, message.elements),
+            dropped=self.members(message.dropped, message.elements),
             walk=self.walk(message.walk()),
             answer_message=None
             if message.is_request or answer is None
             else _answer_id(answer),
+            elements=tuple(
+                Element.model_validate(element.to_dict())
+                for element in message.elements
+            ),
         )
 
 
@@ -949,6 +992,8 @@ def build(
         resolved.copy(application.reference, application.version)
         for message in application.messages:
             builder.hold_members((*message.avps, *message.dropped))
+            for element in message.elements:
+                resolved.copy(element.reference, element.version)
         for reached in built.reached(application):
             paths.add(reached, identifier)
             readings = [met.avp for met in reached.readings]

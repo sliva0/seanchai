@@ -176,6 +176,10 @@ QUIRKS: dict[str, str] = {
         "read a body paragraph 'n.n.n Name AVP' as a clause heading (TS 32.299"
         " clause 7.2.135C)"
     ),
+    "elements-only": (
+        "retain a document holding only information-element tables, for"
+        " another document's commands (TS 29.228, 29.328)"
+    ),
     "message-only": (
         "retain commands and re-used AVPs without a local AVP table"
         " (TS 29.330 clause 6.3.1)"

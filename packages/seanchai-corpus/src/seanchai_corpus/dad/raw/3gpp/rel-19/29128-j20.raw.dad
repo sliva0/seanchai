@@ -334,6 +334,180 @@ SCEF-Reference-ID-Ext                 TS29.336
 SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 
 
+; Type: Information Elements
+; Command: Reporting-Information-Request
+; Section: 5.2.1
+; Table: 5.2.1-1
+; Page: 12
+; Columns: Name                                              AVP                       Cat
+"User Identity (See 6.4.16)"                                 User-Identifier           C
+"Monitoring Event Report (see TS 29.336 [5] clause 8.4.3)"   Monitoring-Event-Report   C
+"Supported Features (See TS 29.229 [4])"                     Supported-Features        O
+
+
+; Type: Information Elements
+; Command: Reporting-Information-Answer
+; Section: 5.2.1
+; Table: 5.2.1-2
+; Page: 12
+; Columns: Name                            AVP                               Cat
+"Result (See 6.3)"                         Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [4])"   Supported-Features                O
+"Monitoring Event Report Status"           Monitoring-Event-Report-Status    O
+
+
+; Type: Information Elements
+; Command: Configuration-Information-Request
+; Section: 5.3.1
+; Table: 5.3.1-1
+; Page: 15
+; Columns: Name                                       AVP                              Cat
+"Monitoring Event Configuration (see clause 6.4.2)"   Monitoring-Event-Configuration   C
+"Supported Features (See TS 29.229 [4])"              Supported-Features               O
+
+
+; Type: Information Elements
+; Command: Configuration-Information-Answer
+; Section: 5.3.1
+; Table: 5.3.1-2
+; Page: 15
+; Columns: Name                                                             AVP                               Cat
+"Result (See 6.3)"                                                          Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [4])"                                    Supported-Features                O
+"Monitoring Event Report (see TS 29.336 [5] clause 8.4.3)"                  Monitoring-Event-Report           C
+"Monitoring Event-Configuration Status (see TS 29.336 [5] clause 8.4.24)"   Monitoring-Event-Config-Status    O
+
+
+; Type: Information Elements
+; Command: Configuration-Information-Request
+; Section: 5.4.1
+; Table: 5.4.1-1
+; Page: 17
+; Columns: Name                                AVP                              Cat
+"Monitoring Event Configuration (see 6.4.2)"   Monitoring-Event-Configuration   C
+"Monitoring Event Report (see 6.4.3)"          Monitoring-Event-Report          C
+"Supported Features (See TS 29.229 [7])"       Supported-Features               O
+"User Identity (See 6.4.16)"                   User-Identifier                  O
+
+
+; Type: Information Elements
+; Command: Configuration-Information-Answer
+; Section: 5.4.1
+; Table: 5.4.1-2
+; Page: 17
+; Columns: Name                                                             AVP                               Cat
+"Result (See 6.3)"                                                          Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [7])"                                    Supported-Features                O
+"Monitoring Event-Configuration Status (see TS 29.336 [5] clause 8.4.24)"   Monitoring-Event-Config-Status    O
+
+
+; Type: Information Elements
+; Command: MO-Data-Request
+; Section: 5.5.1
+; Table: 5.5.1-1
+; Page: 19
+; Columns: Name                            AVP                  Cat
+"User Identity (See 6.4.16)"               User-Identifier      M
+"EPS Bearer Identity (See 6.4.17)"         Bearer-Identifier    M
+"Non IP data (See 6.4.19)"                 Non-IP-Data          C
+"Supported Features (See TS 29.229 [4])"   Supported-Features   O
+"MO Exception Data Counter (see 6.4.27)"   RRC-Cause-Counter    C
+
+
+; Type: Information Elements
+; Command: MO-Data-Answer
+; Section: 5.5.1
+; Table: 5.5.1-2
+; Page: 19
+; Columns: Name                            AVP                               Cat
+"Result (See 6.3)"                         Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [4])"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: MT-Data-Request
+; Section: 5.6.1
+; Table: 5.6.1-1
+; Page: 21
+; Columns: Name                                      AVP                           Cat
+"User Identity (See 6.4.16)"                         User-Identifier               M
+"EPS Bearer Identity (See 6.4.17)"                   Bearer-Identifier             M
+"Non-IP Data (See 6.4.19)"                           Non-IP-Data                   C
+"SCEF Wait Time (See 6.4.24)"                        SCEF-Wait-Time                O
+"Maximum Retransmission Time (See TS 29.338 [27])"   Maximum-Retransmission-Time   O
+"Supported Features (See TS 29.229 [4])"             Supported-Features            O
+
+
+; Type: Information Elements
+; Command: MT-Data-Answer
+; Section: 5.6.1
+; Table: 5.6.1-2
+; Page: 21
+; Columns: Name                                        AVP                               Cat
+"Result (See 6.3)"                                     Result-Code/Experimental-Result   M
+"Requested Retransmission Time (See TS 29.338 [27])"   Requested-Retransmission-Time     O
+"Supported Features (See TS 29.229 [4])"               Supported-Features                O
+"TDA Flags (See 6.4.31)"                               TDA-Flags                         O
+
+
+; Type: Information Elements
+; Command: Connection-Management-Request
+; Section: 5.7.1
+; Table: 5.7.1-1
+; Page: 23
+; Columns: Name                                       AVP                             Cat
+"User Identity (See 6.4.16)"                          User-Identifier                 M
+"EPS Bearer Identity (See 6.4.17)"                    Bearer-Identifier               M
+"T6a/b Connection Action (See 6.4.18)"                Connection-Action               M
+"APN (See 6.4.20)"                                    Service-Selection               C
+"Serving PLMN Rate Control (See 6.4.21)"              Serving-PLMN-Rate-Control       O
+"CMR Flags (See 6.4.25)"                              CMR-Flags                       O
+"Maximum UE Availability Time (See TS 29.338 [27])"   Maximum-UE-Availability-Time    O
+"Extended PCO"                                        Extended-PCO                    C
+"3GPP Charging Characteristics (See TS 32.298 [30]"   3GPP-Charging-Characteristics   C
+"RAT-Type (See TS 29.212 [10])"                       RAT-Type                        C
+"Supported Features (See TS 29.229 [4])"              Supported-Features              O
+"Terminal Information (See TS 29.272 [16])"           Terminal-Information            C
+"Visited PLMN ID (See TS 29.272 [16])"                Visited-PLMN-Id                 C
+"APN Rate Control Status (see 6.4.36)"                APN-Rate-Control-Status         O
+
+
+; Type: Information Elements
+; Command: Connection-Management-Answer
+; Section: 5.7.1
+; Table: 5.7.1-2
+; Page: 23
+; Columns: Name                                   AVP                               Cat
+"Result (See 6.3)"                                Result-Code/Experimental-Result   M
+"NIDD Charging Identifier (See TS 32.299 [22])"   PDN-Connection-Charging-Id        C
+"Extended PCO"                                    Extended-PCO                      C
+"Supported Features (See TS 29.229 [4])"          Supported-Features                O
+"APN Rate Control Status (see 6.4.36)"            APN-Rate-Control-Status           O
+
+
+; Type: Information Elements
+; Command: Connection-Management-Request
+; Section: 5.8.1
+; Table: 5.8.1-1
+; Page: 27
+; Columns: Name                            AVP                  Cat
+"User Identity (See 6.4.16)"               User-Identifier      M
+"EPS Bearer Identity (See 6.4.17)"         Bearer-Identifier    M
+"T6a/b Connection Action (See 6.4.18)"     Connection-Action    M
+"Extended PCO (see 6.4.26)"                Extended-PCO         C
+"Supported Features (See TS 29.229 [4])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: Connection-Management-Answer
+; Section: 5.8.1
+; Table: 5.8.1-2
+; Page: 27
+; Columns: Name                            AVP                               Cat
+"Result (See 6.3)"                         Result-Code/Experimental-Result   M
+"Supported Features (See TS 29.229 [4])"   Supported-Features                O
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes

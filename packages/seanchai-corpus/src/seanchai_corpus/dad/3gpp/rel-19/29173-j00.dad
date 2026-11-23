@@ -86,6 +86,36 @@ GMLC-Number            TS29.272
 3GPP-AAA-Server-Name   TS29.273
 
 
+; Type: Information Elements
+; Command: LCS-Routing-Info-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1/1
+; Page: 9
+; Columns: Name                                 AVP                  Cat
+IMSI                                            User-Name            C
+MSISDN                                          MSISDN               C
+"GMLC Number"                                   GMLC-Number          O
+"Supported Features (See 3GPP TS 29.229 [8])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Columns: Name                                 AVP                               Cat
+"Result (See 5.3.5)"                            Result-Code/Experimental-Result   M
+IMSI                                            User-Name                         C
+MSISDN                                          MSISDN                            C
+LMSI                                            LMSI                              C
+"Serving Node"                                  Serving-Node                      C
+"Additional Serving Node"                       Additional-Serving-Node           C
+"Home GMLC Address"                             GMLC-Address                      C
+"PPR Address"                                   PPR-Address                       C
+"RIA Flags"                                     RIA-Flags                         O
+"Supported Features (See 3GPP TS 29.229 [8])"   Supported-Features                O
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes

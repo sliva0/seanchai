@@ -27,10 +27,12 @@ seanchai dictionary --application 16777358 --strict -o nta.json   # refused
 ```
 
 `s6a.json` holds S6a's commands with their bodies, request and answer paired,
-the error answer RFC 6733 gives them, and every AVP they reach at any depth,
-whichever document defines it. Each AVP has its code, vendor, type and basic
-type, flag rules and Encrypt cell; each value table it carries comes too, and
-each feature list only for the application it numbers. `Emergency-Services`
+each member's information element and its category, M, C or O, from TS
+29.272's per-command tables, the error answer RFC 6733 gives them, and every
+AVP they reach at any depth, whichever document defines it. Each AVP has its
+code, vendor, type and basic type, flag rules and Encrypt cell; each value
+table it carries comes too, and each feature list only for the application it
+numbers. `Emergency-Services`
 is one TS 29.272 re-uses: `show` prints TS 29.273's definition and its bits,
 both in `s6a.json`. Where two documents read one AVP differently, the file
 lists the conflict and where each reading is met.

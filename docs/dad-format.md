@@ -42,6 +42,7 @@ blank lines. Each section starts with `; Type:`.
 | `Registry`          | codes a registry allocates, each to the documents defining it    |
 | `Undefined AVP`     | a name the document uses that the corpus finds defined nowhere   |
 | `Value Table`       | the names a document gives a numeric AVP's numbers: result codes, bits of a bit mask, features of a feature list |
+| `Information Elements` | a command's information elements, the AVPs each maps to and its category, M, C or O |
 
 ## Design
 

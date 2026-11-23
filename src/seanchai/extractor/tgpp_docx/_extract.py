@@ -22,6 +22,7 @@ from ._base import (
 )
 from ._collect import _assemble, _collect, _resolve
 from ._docx import _sections, _spec_and_version, _unwrap_smart_tags
+from ._elements import _element_tables
 from ._quirks import QUIRKS
 from ._values import _value_tables
 
@@ -117,12 +118,14 @@ def extract_with_comments(
         value_tables, value_notes = _value_tables(
             read, warnings, quirks, ast.spec_ref(specification)
         )
+        elements = _element_tables(read, warnings, ast.spec_ref(specification))
         patcher.finish()
         sections = _assemble(
             _resolve(collected, quirks, warnings),
             collected.reprints,
             value_tables,
             collected.answers,
+            elements,
         )
         quirks.finish()
         spec = ast.Specification(

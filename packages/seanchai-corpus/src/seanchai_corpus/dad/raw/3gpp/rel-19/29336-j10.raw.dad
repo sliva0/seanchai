@@ -386,6 +386,32 @@ Reachability-Cause                    TS29.128   MUST-NOT
 MPS-Priority                          TS29.272   MUST-NOT
 
 
+; Type: Information Elements
+; Command: Subscriber-Information-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1/1
+; Page: 14
+; Columns: Name                                 AVP                  Cat
+"User Identity (see 6.4.2)"                     User-Identifier      M
+"Requested Service (see 6.4.3)"                 Service-ID           O
+"SCS Identity (see 6.4.4)"                      SCS-Identity         O
+"Service Parameters (see 6.4.5)"                Service-Parameters   O
+"SIR Flags (see 6.4.10)"                        SIR-Flags            M
+"Supported Features (See 3GPP TS 29.229 [7])"   Supported-Features   O
+
+
+; Type: Information Elements
+; Command: Subscriber-Information-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 14
+; Columns: Name                                 AVP                               Cat
+"Result (See 6.3)"                              Result-Code/Experimental-Result   M
+"User Identity (see 6.4.2)"                     User-Identifier                   C
+"Service Data (see 6.4.7)"                      Service-Data                      C
+"Supported Features (See 3GPP TS 29.229 [7])"   Supported-Features                O
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes
@@ -508,6 +534,97 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
         [ MME-Number-for-MT-SMS ]
         [ MSC-Number ]
       * [ AVP ]
+
+
+; Type: Information Elements
+; Command: Configuration-Information-Request
+; Section: 7.2.1.1
+; Table: 7.2.1.1-1
+; Page: 28
+; Columns: Name                                  AVP                               Cat
+"User Identity (see 6.4.2)"                      User-Identifier                   M
+"Group Reporting Guard Timer (See 8.4.59)"       Group-Reporting-Guard-Timer       C
+"Supported Features (See 3GPP TS 29.229 [7])"    Supported-Features                O
+"Monitoring Event Configuration (see 8.4.2)"     Monitoring-Event-Configuration    O
+"AESE Communication Pattern (see 8.4.25)"        AESE-Communication-Pattern        O
+"CIR-Flags (see 8.4.39)"                         CIR-Flags                         O
+"Enhanced Coverage Restriction (see 8.4.51)"     Enhanced-Coverage-Restriction     O
+"Suggested Network Configuration (see 8.4.66)"   Suggested-Network-Configuration   O
+"Additional Identifiers (see 8.4.69)"            AdditionalIdentifiers             C
+
+
+; Type: Information Elements
+; Command: Configuration-Information-Answer
+; Section: 7.2.1.1
+; Table: 7.2.1.1-2
+; Page: 28
+; Columns: Name                                           AVP                                        Cat
+"Result (See 6.3)"                                        Result-Code/Experimental-Result            M
+"User Identity (see 6.4.2)"                               User-Identifier                            C
+"Number of UEs (See 3GPP TS 29.154 [25])"                 Number-of-UEs                              C
+"Supported Features (See 3GPP TS 29.229 [7])"             Supported-Features                         O
+"Monitoring Event Report (see 8.4.3)"                     Monitoring-Event-Report                    O
+"AESE Communication Pattern Config Status (see 8.4.32)"   AESE-Communication-Pattern-Config-Status   O
+"Monitoring Event-Config Status (see 8.4.24)"             Monitoring-Event-Config-Status             C
+"Supported Services (see 8.4.40)"                         Supported-Services                         O
+"S6t-HSS Cause (see 8.4.50)"                              S6t-HSS-Cause                              C
+"Enhanced Coverage Restriction Data (see 8.4.52)"         Enhanced-Coverage-Restriction-Data         C
+"CIA-Flags (see 8.4.60)"                                  CIA-Flags                                  O
+"Active Network Configuration (see 8.4.66)"               Suggested-Network-Configuration            O
+"IMSI Group Id (See 3GPP TS 29.272 [14])"                 IMSI-Group-Id                              C
+
+
+; Type: Information Elements
+; Command: Reporting-Information-Request
+; Section: 7.2.2.1
+; Table: 7.2.2.1-1
+; Page: 35
+; Columns: Name                                 AVP                       Cat
+"User Identity (see 8.4.36)"                    User-Identifier           C
+"Supported Features (See 3GPP TS 29.229 [7])"   Supported-Features        O
+"Monitoring Event Report (see 8.4.3)"           Monitoring-Event-Report   O
+"Group Report (see 8.4.61)"                     Group-Report              C
+"RIR-Flags (see 8.4.63)"                        RIR-Flags                 O
+"Supported Services (see 8.4.40)"               Supported-Services        C
+
+
+; Type: Information Elements
+; Command: Reporting-Information-Answer
+; Section: 7.2.2.1
+; Table: 7.2.2.1-2
+; Page: 35
+; Columns: Name                                 AVP                               Cat
+"Result (See 6.3)"                              Result-Code/Experimental-Result   M
+"Supported Features (See 3GPP TS 29.229 [7])"   Supported-Features                O
+"Monitoring Event Report Status"                Monitoring-Event-Report-Status    O
+
+
+; Type: Information Elements
+; Command: NIDD-Information-Request
+; Section: 7.2.3.1
+; Table: 7.2.3.1-1
+; Page: 39
+; Columns: Name                                 AVP                          Cat
+"User Identity (see 8.4.36)"                    User-Identifier              M
+"Supported Features (See 3GPP TS 29.229 [7])"   Supported-Features           O
+"NIDD Authorization Request (see 8.4.44)"       NIDD-Authorization-Request   O
+"NIDD Authorization Update (see 8.4.57)"        NIDD-Authorization-Update    O
+"NIR Flags"                                     NIR-Flags                    O
+"Group User Identifier List"                    Group-User-Identifier        C
+"MTC Provider Info"                             MTC-Provider-Info            O
+
+
+; Type: Information Elements
+; Command: NIDD-Information-Answer
+; Section: 7.2.3.1
+; Table: 7.2.3.1-2
+; Page: 39
+; Columns: Name                                 AVP                               Cat
+"Result (See 6.3)"                              Result-Code/Experimental-Result   M
+"Supported Features (See 3GPP TS 29.229 [7])"   Supported-Features                O
+"NIDD-Authorization-Response (see 8.4.45)"      NIDD-Authorization-Response       C
+"Group User Identifier List"                    Group-User-Identifier             C
+"NIA Flags"                                     NIA-Flags                         O
 
 
 ; Type: Value Table

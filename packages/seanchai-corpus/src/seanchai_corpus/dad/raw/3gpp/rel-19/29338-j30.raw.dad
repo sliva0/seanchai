@@ -387,6 +387,102 @@ MPS-Priority                TS29.272   MUST-NOT
 NR-Cell-Global-Identity     TS29.272   MUST-NOT
 
 
+; Type: Information Elements
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1-1
+; Page: 12
+; Columns: Name              AVP                        Cat
+MSISDN                       MSISDN                     C
+IMSI                         User-Name                  C
+"SMSMI Correlation ID"       SMSMI-Correlation-ID       C
+"Service Centre Address"     SC-Address                 M
+SM-RP-MTI                    SM-RP-MTI                  C
+SM-RP-SMEA                   SM-RP-SMEA                 C
+"SRR Flags"                  SRR-Flags                  C
+"SM-Delivery Not Intended"   SM-Delivery-Not-Intended   O
+"Supported Features"         Supported-Features         O
+
+
+; Type: Information Elements
+; Command: Send-Routing-Info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Page: 12
+; Columns: Name                             AVP                                       Cat
+Result                                      Result-Code/Experimental-Result           M
+IMSI                                        User-Name                                 C
+Serving-Node                                Serving-Node                              C
+LMSI                                        LMSI                                      C
+"Additional Serving Node"                   Additional-Serving-Node                   C
+"User Identifier Alert"                     User-Identifier                           C
+"MWD Status"                                MWD-Status                                C
+"MME Absent User Diagnostic SM"             MME-Absent-User-Diagnostic-SM             C
+"MSC Absent User Diagnostic SM"             MSC-Absent-User-Diagnostic-SM             C
+"SGSN Absent User Diagnostic SM"            SGSN-Absent-User-Diagnostic-SM            C
+"Supported Features"                        Supported-Features                        O
+"SMSF 3GPP Address"                         SMSF-3GPP-Address                         C
+"SMSF Non 3GPP Address"                     SMSF-Non-3GPP-Address                     C
+"SMSF 3GPP Absent User Diagnostic SM"       SMSF-3GPP-Absent-User-Diagnostic-SM       C
+"SMSF Non 3GPP Absent User Diagnostic SM"   SMSF-Non-3GPP-Absent-User-Diagnostic-SM   C
+
+
+; Type: Information Elements
+; Command: Alert-Service-Centre-Request
+; Section: 5.2.2.1
+; Table: 5.2.2.1-1
+; Page: 18
+; Columns: Name                  AVP                            Cat
+"Service Centre Address"         SC-Address                     M
+"User Identifier Alert"          User-Identifier                M
+"SMSMI Correlation ID"           SMSMI-Correlation-ID           C
+"Maximum UE Availability Time"   Maximum-UE-Availability-Time   C
+"Supported Features"             Supported-Features             O
+
+
+; Type: Information Elements
+; Command: Alert-Service-Centre-Answer
+; Section: 5.2.2.1
+; Table: 5.2.2.1-2
+; Page: 18
+; Columns: Name        AVP                               Cat
+Result                 Result-Code/Experimental-Result   M
+"Supported Features"   Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Report-SM-Delivery-Status-Request
+; Section: 5.2.3.1
+; Table: 5.2.3.1-1
+; Page: 20
+; Columns: Name                             AVP                       Cat
+"User Identifier"                           User-Identifier           M
+"SMSMI-Correlation ID"                      SMSMI-Correlation-ID      C
+"Service Centre Address"                    SC-Address                M
+"SM Delivery Outcome"                       SM-Delivery-Outcome       M
+"Serving-Node Failed Delivery"              Serving-Node              O
+"Additional Serving-Node Failed Delivery"   Additional-Serving-Node   O
+"SMSF 3GPP Address Failed Delivery"         SMSF-3GPP-Address         O
+"SMSF Non 3GPP Address Failed Delivery"     SMSF-Non-3GPP-Address     O
+"RDR Flags"                                 RDR-Flags                 O
+"Supported Features"                        Supported-Features        O
+
+
+; Type: Information Elements
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Page: 20
+; Columns: Name                   AVP                               Cat
+Result                            Result-Code/Experimental-Result   M
+"MSISDN- Alert"                   User-Identifier                   C
+"Serving-Node Alert"              Serving-Node                      O
+"Additional Serving-Node Alert"   Additional-Serving-Node           O
+"SMSF 3GPP Address-Alert"         SMSF-3GPP-Address                 C
+"SMSF Non 3GPP Address-Alert"     SMSF-Non-3GPP-Address             C
+"Supported Features"              Supported-Features                O
+
+
 ; Type: Enumerated AVP
 ; Name: SM-RP-MTI
 ; Section: 5.3.3.2
@@ -621,6 +717,97 @@ SMSF-Non-3GPP-SBI-Support-Indicator ::= < Enumerated AVP header: 3347 10415 >
 IP-SM-GW-SBI-Support-Indicator ::= < Enumerated AVP header: 3348 10415 >
         NOT_SUPPORT_SBI = 0
         SUPPORT_SBI     = 1
+
+
+; Type: Information Elements
+; Command: MO-Forward-Short-Message-Request
+; Section: 6.2.1.1
+; Table: 6.2.1.1/1
+; Page: 40
+; Columns: Name            AVP                        Cat
+"SM RP DA"                 SC-Address                 M
+"SM RP OA"                 User-Identifier            M
+"SM RP UI"                 SM-RP-UI                   M
+"SMSMI-Correlation ID"     SMSMI-Correlation-ID       C
+"OFR Flags"                OFR-Flags                  C
+EPS-Location-Information   EPS-Location-Information   O
+NR-Cell-Global-Identity    NR-Cell-Global-Identity    O
+"SM Delivery Outcome"      SM-Delivery-Outcome        C
+"Supported Features"       Supported-Features         O
+
+
+; Type: Information Elements
+; Command: MO-Forward-Short-Message-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Page: 40
+; Columns: Name               AVP                               Cat
+Result                        Result-Code/Experimental-Result   M
+"SM Delivery Failure Cause"   SM-Delivery-Failure-Cause         C
+"SM RP UI"                    SM-RP-UI                          O
+"Supported Features"          Supported-Features                O
+External-Identifier           External-Identifier               C
+
+
+; Type: Information Elements
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Page: 43
+; Columns: Name                 AVP                           Cat
+"SM RP DA"                      User-Name                     M
+"SM RP OA"                      SC-Address                    M
+"SMSMI Correlation ID"          SMSMI-Correlation-ID          C
+"SM RP UI"                      SM-RP-UI                      M
+"MME Number for MT SMS"         MME-Number-for-MT-SMS         C
+"SGSN Number"                   SGSN-Number                   C
+TFR-Flags                       TFR-Flags                     C
+"SM Delivery Timer"             SM-Delivery-Timer             C
+"SM Delivery Start Time"        "SM-Delivery- Start-Time"     C
+"Maximum Retransmission Time"   Maximum-Retransmission-Time   O
+"SMS-GMSC Address"              SMS-GMSC-Address              C
+"MPS Priority"                  MPS-Priority                  O
+"Supported Features"            Supported-Features            O
+
+
+; Type: Information Elements
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2.1/2
+; Page: 43
+; Columns: Name                   AVP                               Cat
+Result                            Result-Code/Experimental-Result   M
+"Absent User Diagnostic SM"       Absent-User-Diagnostic-SM         O
+"SM Delivery Failure Cause"       SM-Delivery-Failure-Cause         C
+"SM RP UI"                        SM-RP-UI                          O
+"Requested Retransmission Time"   Requested-Retransmission-Time     O
+"User Identifier Alert"           User-Identifier                   C
+EPS-Location-Information          EPS-Location-Information          O
+NR-Cell-Global-Identity           NR-Cell-Global-Identity           O
+"Supported Features"              Supported-Features                O
+
+
+; Type: Information Elements
+; Command: Alert-Service-Centre-Request
+; Section: 6.2.3.1
+; Table: 6.2.3.1-1
+; Page: 47
+; Columns: Name               AVP                    Cat
+"Service Centre Address"      SC-Address             M
+"User Identifier Alert"       User-Identifier        M
+"SMS-GMSC Alert Event"        SMS-GMSC-Alert-Event   M
+"New Serving Node Identity"   Serving-Node           C
+"Supported Features"          Supported-Features     O
+
+
+; Type: Information Elements
+; Command: Alert-Service-Centre-Answer
+; Section: 6.2.3.1
+; Table: 6.2.3.1-2
+; Page: 47
+; Columns: Name        AVP                               Cat
+Result                 Result-Code/Experimental-Result   M
+"Supported Features"   Supported-Features                O
 
 
 ; Type: Value Table

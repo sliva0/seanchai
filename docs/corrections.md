@@ -77,6 +77,9 @@ The node is rebuilt through pydantic, so a wrong `field` or value fails.
     `value_row(parent, name, value=)`, `parent` being a `value_table` or the
     AVP's name
   - `registry_row(registry, code)`, `registry_reservation(first, last)`
+  - `information_elements(label, section=)`, `None` and the clause for a
+    table printing no caption, and `element_row(parent, name, occurrence=)`,
+    `parent` an `information_elements`
 - `occurrence=n` picks the n-th of several identical rules or values of one
   name in one body, as in TS 29.229's RTA, which prints `< Session-Id >`
   twice. It fails once the name stops repeating.
@@ -202,7 +205,8 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
   flag rules, on the row.
 - A correction to a field of the file header, a table or an application
   scope is cited on the directive line that prints the field (`; Bases:`,
-  `; Table:`, `; Columns:`, `; Application-ID:`, `; Note:`), or on the
+  `; Table:`, `; Columns:`, `; Application-ID:`, `; Note:`, an information
+  element table's `; Command:`, `; From:` and `; AVP:`), or on the
   block's first line when it removes that line.
 - A deletion's note replaces the deleted line:
   `;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`.

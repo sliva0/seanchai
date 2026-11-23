@@ -106,7 +106,7 @@ def test_crosscheck_reports_without_failing_and_shows_accepted_renames(monkeypat
     assert result.exit_code == 0, result.output
     lines = result.output.splitlines()
     assert lines[-1] == (
-        "checked 77 files against the dictionary: 107 findings, 36 accepted renames"
+        "checked 79 files against the dictionary: 107 findings, 36 accepted renames"
     )
     assert any(
         line.startswith("skipped ") and "an older copy than the one checked" in line
