@@ -136,7 +136,7 @@ quirk; `grep -l '"<quirk>"' edits/sources/*.toml` lists them all.
 | `abnf-comments` | a member line's trailing `; comment`, dropped | TS 29.209 |
 | `struck-rules-unused` | struck members, which the legend says are unused ([below](#abnf-bodies)) | TS 32.299 |
 | `elided-members` | a body's lone `…` or `...` line, kept as a comment | TS 29.273 |
-| `reprinted-avps` | a grouped rule under "The content of X according IETF RFC n [m] is:" ([below](#re-printed-rules)) | TS 29.109 |
+| `reprinted-avps` | a grouped rule under "The content of X according IETF RFC n [m] is:", as `; Reprints:` ([below](#re-printed-rules)) | TS 29.109 |
 | `prose-avp-origins` | "The X AVP is defined in" as a re-used row ([below](#avp-origins-in-prose)) | TS 29.329 |
 | `bare-avp-citations` | with `prose-avp-origins`, "See 3GPP TS 29.229 [6] clause 6.3.56." as a whole clause | TS 29.329 |
 | `trailing-result-codes` | a result code printed as the last sentence of the previous code's paragraph | TS 32.299 |
@@ -429,21 +429,22 @@ and repetitions a category cannot state:
 
 Under `reprinted-avps`, TS 29.109 clauses 4.2, 5.2 and 5.4 print RFC 6733's
 `Vendor-Specific-Application-Id` rule after a command. Each copy becomes a
-`Reprinted AVP` block, with its glosses kept as `;;` comments:
+`Grouped AVP` block reprinting the RFC's, with its glosses kept as `;;`
+comments:
 
 ```dad
-; Type: Reprinted AVP
+; Type: Grouped AVP
 ; Name: Vendor-Specific-Application-Id
 ; Section: 4.2
 ; Page: 15
-; From: RFC6733
+; Reprints: RFC6733
 Vendor-Specific-Application-Id ::= < AVP header: 260 >
      1* [ Vendor-Id ] ;; 3GPP is 10415
      *1 { Auth-Application-Id } ;; 16777221
      *1 { Acct-Application-Id } ;; Omitted
 ```
 
-A `Reprinted AVP` is not a definition: `Model.definition((0, 260))` answers
+A reprint is not a definition: `Model.definition((0, 260))` answers
 with RFC 6733's, and `Model.avps("TS29.109")` does not list it. The linter
 holds each copy to the document it names
 ([linter.md](linter.md#cross-file-rules)). A grouped rule in a procedure clause

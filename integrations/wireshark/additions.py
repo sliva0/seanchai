@@ -153,7 +153,8 @@ def _definition(
     spec: ast.Specification, name: str
 ) -> ast.GroupedAvp | ast.EnumeratedAvp | None:
     for block in spec.sections:
-        if isinstance(block, ast.GroupedAvp | ast.EnumeratedAvp) and block.name == name:
+        if ast.defines(block) and block.name == name:
+            assert isinstance(block, ast.GroupedAvp | ast.EnumeratedAvp)
             return block
     return None
 

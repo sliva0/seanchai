@@ -35,8 +35,7 @@ blank lines. Each section starts with `; Type:`.
 | `Application Scope` | an application id the document states in prose, and its clauses  |
 | `Message`           | a command-code ABNF rule with its Diameter header                |
 | `Answer Message`    | the format an answer with the E bit set takes (RFC 6733 7.2)     |
-| `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body          |
-| `Reprinted AVP`     | another document's grouped rule, as this one prints it           |
+| `Grouped AVP`       | `Name ::= < AVP header: code vendor-id >` plus its body, or with `; Reprints:` another document's, as this one prints it |
 | `Enumerated AVP`    | the header rule plus values and value ranges, or their source    |
 | `AVP Table`         | the document's own AVP table, one AVP per row                    |
 | `Reused AVPs`       | AVPs defined elsewhere, mirroring "re-used Diameter AVPs" tables |

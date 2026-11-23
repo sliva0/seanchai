@@ -49,7 +49,7 @@ sorted keys; the grammar is copied as it stands. The same inputs give the
 same bytes: there are no timestamps.
 
 `seanchai.export_schema` holds the shapes as pydantic models.
-`SCHEMA_VERSION`, now 2, is written into every file except `schema.json` and
+`SCHEMA_VERSION`, now 3, is written into every file except `schema.json` and
 the grammar, and changes when a reader would have to. `schema.json`'s root is
 one of the five file shapes, so a fixture can be validated against it. A field
 with no default is always written, null where it says nothing. A field with
@@ -124,7 +124,7 @@ and in its raw mirror alike, each describing its own file's lines. Every
 `section`, `page`, `fields` (its other directives as printed, `Name` to
 `Applies-To`) and the `name` its `; Name:` or `; AVP:` gives. By type:
 
-- Message, Answer Message, Grouped AVP, Reprinted AVP: `rule`, with the
+- Message, Answer Message, Grouped AVP: `rule`, with the
   `::=` line and `members`. A member has `name`, `presence` (`fixed`,
   `required`, `optional`), `qualifier` as printed, `min` and `max` by RFC 6733
   clause 3.2 (`max` null for no bound), `bold`, `strikethrough` for a member
@@ -138,7 +138,9 @@ and in its raw mirror alike, each describing its own file's lines. Every
   else the one naming the application. Both are left out where no scope names
   it. An Answer Message has no `name`, as its `<answer-message>` names no
   command: its rule's `name`, `answer-message`, is what labels it. A Grouped
-  or Reprinted AVP has `avp`, its header's `code` and `vendor_id`.
+  AVP has `avp`, its header's `code` and `vendor_id`; one reprinting another
+  document's rule has `Reprints` in `fields`, its token targeting that
+  document.
 - Enumerated AVP: `avp` and `values`, each a `value` with its `name` or a
   `reserved`, `void` or `vendor-specific` range `first` to `last`.
 - AVP Table, Reused AVPs: `columns` and `rows`. A row has `name`, `cells` as

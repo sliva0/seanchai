@@ -498,7 +498,7 @@ def _enum_vendor_id(grouped: list[ast.GroupedAvp], publisher: int) -> int:
 
 def _assemble(
     resolved: _Resolved,
-    reprints: Sequence[ast.ReprintedAvp] = (),
+    reprints: Sequence[ast.GroupedAvp] = (),
     value_tables: Sequence[ast.ValueTable] = (),
     answers: Sequence[ast.AnswerMessage] = (),
 ) -> tuple[ast.Section, ...]:

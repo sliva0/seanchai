@@ -286,23 +286,14 @@ def _avp_header_items(code: int, vendor_id: int | None) -> str:
 def _format_grouped(
     avp: ast.GroupedAvp, path: ast.TreePath, notes: Comments
 ) -> list[str]:
+    reprints = (
+        []
+        if avp.reprints is None
+        else notes.line(f"; Reprints: {avp.reprints}", (*path, "reprints"))
+    )
     return [
         *_directives(avp, avp.name, path, notes),
-        *notes.line(
-            f"{avp.name} ::= < AVP header:"
-            f" {_avp_header_items(avp.code, avp.vendor_id)} >",
-            path,
-        ),
-        *_abnf_body(avp.avps, path, notes),
-    ]
-
-
-def _format_reprinted(
-    avp: ast.ReprintedAvp, path: ast.TreePath, notes: Comments
-) -> list[str]:
-    return [
-        *_directives(avp, avp.name, path, notes),
-        *notes.line(f"; From: {avp.origin}", (*path, "origin")),
+        *reprints,
         *notes.line(
             f"{avp.name} ::= < AVP header:"
             f" {_avp_header_items(avp.code, avp.vendor_id)} >",
@@ -585,7 +576,6 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.Message: _format_message,
     ast.AnswerMessage: _format_answer_message,
     ast.GroupedAvp: _format_grouped,
-    ast.ReprintedAvp: _format_reprinted,
     ast.EnumeratedAvp: _format_enumerated,
     ast.AvpTable: _format_avp_table,
     ast.ReusedAvps: _format_reused,

@@ -155,7 +155,7 @@ def _extract_messages(
     quirks: sources.Quirks,
     commented: _Commented,
     message_heading: bool = False,
-    reprints: list[ast.ReprintedAvp] | None = None,
+    reprints: list[ast.GroupedAvp] | None = None,
     glosses: _Glosses | None = None,
 ) -> list[ast.Message]:
     """A command section usually holds one ABNF, but can hold several — the
@@ -275,14 +275,14 @@ def _extract_reprint(
     index: int,
     quirks: sources.Quirks,
     warnings: list[str],
-    reprints: list[ast.ReprintedAvp],
+    reprints: list[ast.GroupedAvp],
     glosses: _Glosses,
 ) -> int:
     """A grouped rule printed in a procedure clause, under a sentence saying it
     copies another document's: TS 29.109 clauses 4.2, 5.2 and 5.4 print RFC
     6733's `<Vendor-Specific-Application-Id>` between their commands, glossing
     what its members hold there. No command and no definition, so a block of its
-    own, its glosses kept. Returns the index after its body."""
+    own that reprints the RFC's, its glosses kept. Returns the index after its body."""
     name = header["name"]
     if not quirks.enabled("reprinted-avps"):
         raise ExtractionError(
@@ -304,10 +304,10 @@ def _extract_reprint(
             f"{section.number}: {name}'s body is not one member a line, so its"
             " comments have no member to stay with"
         )
-    reprint = ast.ReprintedAvp(
+    reprint = ast.GroupedAvp(
         name=name,
         source=ast.SourceRef(section=section.number),
-        origin=f"RFC{intro['rfc']}",
+        reprints=f"RFC{intro['rfc']}",
         code=int(header["code"]),
         vendor_id=None if header["vendor"] is None else int(header["vendor"]),
         avps=avps,

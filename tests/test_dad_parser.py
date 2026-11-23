@@ -210,6 +210,15 @@ _GX = ("; Type: Application Scope", "; Name: Gx", "; Section: 5.1")
             id="registry-reservation",
         ),
         pytest.param(
+            _grouped(
+                "; Reprints: RFC 6733",
+                "Example ::= < AVP header: 1 >",
+            ),
+            8,
+            "String should match pattern",
+            id="reprints-not-a-reference",
+        ),
+        pytest.param(
             _dad(
                 "; Type: Value Table",
                 "; AVP: ULR-Flags",

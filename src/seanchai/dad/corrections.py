@@ -146,7 +146,7 @@ class definition(Selector):
         for index, section in enumerate(spec.sections):
             if not isinstance(
                 section, ast.Message | ast.GroupedAvp | ast.EnumeratedAvp
-            ):
+            ) or ast.is_reprint(section):
                 continue
             if section.name != self.name:
                 continue
@@ -1721,7 +1721,6 @@ _SECTION_TYPES = (
     ast.Message,
     ast.AnswerMessage,
     ast.GroupedAvp,
-    ast.ReprintedAvp,
     ast.EnumeratedAvp,
     ast.AvpTable,
     ast.ReusedAvps,

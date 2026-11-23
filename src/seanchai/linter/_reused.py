@@ -472,7 +472,8 @@ def _reprint_or_extension(index: _Index, origins: dict[str, _Origin]) -> list[Fi
 def _reprints_agree_with_origin(
     index: _Index, origins: dict[str, _Origin]
 ) -> list[Finding]:
-    """Check a `Reprinted AVP` block against the document it names.
+    """Check a grouped rule reprinting another document's against the
+    document its `; Reprints:` names.
 
     An origin lacking the name, or a different code, is an error. Different
     member names are a note. Occurrence qualifiers are not compared, since
@@ -480,7 +481,8 @@ def _reprints_agree_with_origin(
     """
     findings = []
     for reprint in index.reprints:
-        origin = reprint.origin
+        origin = reprint.reprints
+        assert origin is not None, "the index holds reprints only"
         resolved = origins.get(origin)
         if resolved is None:
             continue

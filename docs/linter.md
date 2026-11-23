@@ -30,7 +30,7 @@ Errors exit non-zero; notes do not.
 
 | Rule | Severity | Reports |
 |---|---|---|
-| `duplicate-definition` | error | one name defined by two clauses |
+| `duplicate-definition` | error | one name defined by two clauses; a block with `; Reprints:` defines nothing |
 | `one-name-two-commands` | error | one command name with two command codes; a repeated message name alone is normal |
 | `duplicate-enum-value` | error | an enumerated AVP using a value or value name twice |
 | `enum-value-out-of-range` | note | an enumerated value past 2147483647, which an Enumerated, an Integer32 on the wire, reads as negative (TS 29.214's `Media-Type` `OTHER`, 4294967295) |
@@ -73,9 +73,9 @@ With a corpus, each re-used row is resolved against the document it cites
 | `reused-reprint` | note | a local-and-reused AVP whose body matches the origin's |
 | `reused-extension` | note | one whose body adds members to the origin's |
 | `reused-body-differs` | note | one whose body lacks members of the origin's, or is another kind of AVP |
-| `reused-code-conflict` | error | two documents giving one AVP two codes, including a code a re-used table, `Reprinted AVP` block or AVP table prints for a re-used AVP |
-| `reprint-not-in-origin` | error | a `Reprinted AVP` naming a document that does not define the AVP |
-| `reprint-differs` | note | a `Reprinted AVP` listing other members than its document; occurrence qualifiers are not compared |
+| `reused-code-conflict` | error | two documents giving one AVP two codes, including a code a re-used table, reprinted rule or AVP table prints for a re-used AVP |
+| `reprint-not-in-origin` | error | a `Grouped AVP` whose `; Reprints:` names a document that does not define the AVP |
+| `reprint-differs` | note | such a block listing other members than its document; occurrence qualifiers are not compared |
 | `reused-row-mismatch` | note | a tabulated re-used AVP whose type, M or V flag, or encrypt differs from the origin's |
 | `reused-row-vendor-mismatch` | error | such a row placing the AVP in another vendor space |
 | `reused-avp-not-in-origin` | error | an origin that neither defines, tabulates nor re-uses the AVP |

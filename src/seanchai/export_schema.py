@@ -65,7 +65,7 @@ __all__ = [
     "json_schema",
 ]
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # What `index.json` says wrote it, and so what an export may replace.
 GENERATOR: Literal["seanchai"] = "seanchai"
@@ -312,8 +312,9 @@ class Block(_Model):
     `Name` to `Applies-To`; `name` and `abbreviation` are what its `; Name:`
     or `; AVP:` names. What else it holds depends on `type`:
 
-    - `rule` for a Message, Answer Message, Grouped AVP or Reprinted AVP, with
-      `command` for a Message and `avp` for a Grouped or Reprinted AVP;
+    - `rule` for a Message, Answer Message or Grouped AVP, with `command` for
+      a Message and `avp` for a Grouped AVP, whose `fields` hold `Reprints`
+      where it reprints another document's rule;
     - `avp` and `values` for an Enumerated AVP;
     - `columns` and `rows` for an AVP Table or Reused AVPs block;
     - `columns`, `allocations` and `reservations` for a Registry;

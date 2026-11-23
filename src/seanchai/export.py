@@ -103,14 +103,14 @@ def _avp_names(spec: ast.Specification) -> set[str]:
     for section in spec.sections:
         if isinstance(
             section,
-            ast.GroupedAvp | ast.ReprintedAvp | ast.EnumeratedAvp | ast.UndefinedAvp,
+            ast.GroupedAvp | ast.EnumeratedAvp | ast.UndefinedAvp,
         ):
             names.add(section.name)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
             names.update(row.name for row in section.rows)
         if isinstance(
             section,
-            ast.GroupedAvp | ast.ReprintedAvp | ast.Message | ast.AnswerMessage,
+            ast.GroupedAvp | ast.Message | ast.AnswerMessage,
         ):
             names.update(rule.name for rule in section.avps if rule.name != "AVP")
     return names
@@ -189,7 +189,8 @@ def _locations(spec: ast.Specification) -> dict[str, str]:
     """Where each AVP `spec` places is defined, a definition over a table row."""
     places: dict[str, str] = {}
     for section in spec.sections:
-        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
+        if ast.defines(section):
+            assert isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp)
             places[section.name] = section.source.section
     for section in spec.sections:
         if isinstance(section, ast.AvpTable):
@@ -348,7 +349,7 @@ def _tokens(
             pass
         elif key in ("Section", "Page") and source:
             fields["source"] = Citation(section=source.section, page=source.page)
-        elif value in links.references and key in ("Bases", "From", None):
+        elif value in links.references and key in ("Bases", "Reprints", None):
             fields["target"] = links.references[value]
             if isinstance(section, ast.ReusedAvps) and key is None:
                 fields["target"] = links.row_references.get(
@@ -389,7 +390,7 @@ def _tokens(
 
 
 # The sections whose block holds an ABNF rule.
-_RULED = (ast.Message, ast.AnswerMessage, ast.GroupedAvp, ast.ReprintedAvp)
+_RULED = (ast.Message, ast.AnswerMessage, ast.GroupedAvp)
 
 
 def _content(line: str) -> str:
@@ -575,7 +576,7 @@ def _blocks(
             fields["name"] = getattr(section, "name", None)
         if isinstance(section, _RULED):
             fields["rule"] = _rule(placed, index, placement, section)
-        if isinstance(section, ast.GroupedAvp | ast.ReprintedAvp | ast.EnumeratedAvp):
+        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
             fields["avp"] = AvpHeader(code=section.code, vendor_id=section.vendor_id)
         if isinstance(section, ast.EnumeratedAvp):
             fields["values"] = _enum_entries(placed, index, section)
@@ -602,7 +603,7 @@ def _rule(
     placed: _Placed,
     index: int,
     placement: parser.Placement,
-    section: ast.Message | ast.AnswerMessage | ast.GroupedAvp | ast.ReprintedAvp,
+    section: ast.Message | ast.AnswerMessage | ast.GroupedAvp,
 ) -> Rule:
     """A block's rule: its members as their lines print them, the struck
     ones the extractor comments out (TS 32.299 clause 6.2.2) included."""

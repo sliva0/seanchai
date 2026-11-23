@@ -70,6 +70,8 @@ class _View:
     def index(cls, entry: corpus.Entry) -> _View:
         view = cls(entry, {}, {}, {}, {}, [], [], {}, [])
         for section in entry.spec.sections:
+            if ast.is_reprint(section):
+                continue  # another document's rule, which defines nothing here
             if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
                 view.defined.setdefault(section.name, section)
             elif isinstance(section, ast.AvpTable):
@@ -115,6 +117,7 @@ class _View:
                 section.source.section
                 for section in self.entry.spec.sections
                 if isinstance(section, ast.Message | ast.AnswerMessage | ast.GroupedAvp)
+                and not ast.is_reprint(section)
                 and any(rule.name == name for rule in section.avps)
             )
         )

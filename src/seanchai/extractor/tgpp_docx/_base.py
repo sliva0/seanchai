@@ -119,7 +119,7 @@ class _Section:
 # standing for it, with the number of members before it.
 type _Commented = list[tuple[ast.Message | ast.GroupedAvp, list[tuple[int, str]]]]
 # What a re-printed rule glosses (`reprinted-avps`), by the block and the member.
-type _Glosses = list[tuple[ast.ReprintedAvp, int, str]]
+type _Glosses = list[tuple[ast.GroupedAvp, int, str]]
 
 
 type _ValueNotes = list[tuple[ast.ValueTable | ast.AvpTable, list[tuple[int, str]]]]
@@ -166,7 +166,7 @@ class _Collected:
     # TS 32.299 tabulates (`wildcard-avp-row`).
     table_notes: _ValueNotes = field(default_factory=list)
     # Behind `reprinted-avps`: another document's rule, as printed here.
-    reprints: list[ast.ReprintedAvp] = field(default_factory=list)
+    reprints: list[ast.GroupedAvp] = field(default_factory=list)
     glosses: _Glosses = field(default_factory=list)
     # Behind `vendor-avp-tables`: re-used blocks read from tables of other
     # vendors' AVPs, which pair with no AVP table (TS 32.299 7.3.1-7.5.1).

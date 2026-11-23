@@ -158,11 +158,7 @@ def _comments(
     file leaves out is a block of its own after the header."""
 
     def position_of(
-        body: ast.Message
-        | ast.GroupedAvp
-        | ast.ReprintedAvp
-        | ast.ValueTable
-        | ast.AvpTable,
+        body: ast.Message | ast.GroupedAvp | ast.ValueTable | ast.AvpTable,
     ) -> int:
         for index, section in enumerate(sections):
             if section is body:

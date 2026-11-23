@@ -196,7 +196,7 @@ def _section_references(spec: ast.Specification, index: _Index) -> list[Finding]
     holding: dict[str, list[str]] = defaultdict(list)
     for section in spec.sections:
         known |= _with_parents(section.source.section)
-        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp | ast.ReprintedAvp):
+        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
             holding[section.name].append(section.source.section)
         elif isinstance(section, ast.ValueTable):
             known.update(

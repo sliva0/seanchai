@@ -372,6 +372,25 @@ def test_a_documents_own_definition_comes_before_the_origin_it_cites(built):
     assert arp.flag_rules == FlagRules.printed(row.flag_rules)
 
 
+def test_a_grouped_rule_reprinting_another_documents_defines_nothing(built):
+    """TS 29.109 prints RFC 6733's Vendor-Specific-Application-Id three times,
+    each `; Reprints: RFC6733`: the identity stays RFC 6733's, and TS 29.109
+    lists no AVP of its own for it."""
+    (entry,) = [
+        each for each in corpus.Corpus.installed() if each.reference == "TS29.109"
+    ]
+    reprints = [
+        section
+        for section in entry.spec.sections
+        if isinstance(section, ast.GroupedAvp) and not section.defines
+    ]
+
+    assert [section.source.section for section in reprints] == ["4.2", "5.2", "5.4"]
+    assert {section.reprints for section in reprints} == {"RFC6733"}
+    assert built.definition((0, 260)).defined_in == "RFC6733"
+    assert all(avp.identity != (0, 260) for avp in built.avps("TS29.109"))
+
+
 def test_a_reused_name_follows_its_origin_to_the_real_definition(built):
     """TS 29.229 tabulates the Digest AVPs it re-uses from RFC 4590, yet RFC
     4590 defines them; TS 29.172 cites Service-Selection from TS 29.272,

@@ -317,7 +317,7 @@ def claims(spec: ast.Specification) -> list[Claim]:
     seen: set[tuple[str, int, int]] = set()
     for section in spec.sections:
         if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
-            if section.name in reused:
+            if section.name in reused or ast.is_reprint(section):
                 # The origin document's copy is the one to check; this file's
                 # re-print is compared against the origin by the linter.
                 continue

@@ -45,7 +45,7 @@ def _cited(index: _Index) -> list[str]:
     return sorted(
         {
             *index.reused.values(),
-            *(r.origin for r in index.reprints),
+            *(r.reprints for r in index.reprints if r.reprints),
             *(row.origin for _, row in index.reused_values if row.origin),
         }
     )

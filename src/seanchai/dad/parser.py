@@ -69,6 +69,7 @@ _VENDOR_SPECIFIC_RE = re.compile(
 _VERSION = pydantic.TypeAdapter(ast.Version)
 _INLINE_TEXT = pydantic.TypeAdapter(ast.InlineText)
 _UNSIGNED32 = pydantic.TypeAdapter(ast.Unsigned32)
+_SPEC_REF = pydantic.TypeAdapter(ast.SpecRef)
 
 
 class DadParseError(SeanchaiError, ValueError):
@@ -380,6 +381,8 @@ def _parse_grouped(
 ) -> ast.GroupedAvp:
     name = _pop(directives, "Name", lineno)
     source = _source_ref(directives, lineno)
+    # Optional: only a rule the clause says it copies names the document.
+    reprints = directives.pop("Reprints", None)
     _no_leftovers(directives, lineno)
     header_name, code, vendor_id = _avp_header(body, "AVP", lineno)
     if header_name != name.value:
@@ -387,34 +390,14 @@ def _parse_grouped(
             body[0][0], f"Name directive {name.value!r} != rule name {header_name!r}"
         )
     avps = _avp_rules(body[1:])
+    if reprints is not None:
+        with _validated(reprints.lineno):
+            _SPEC_REF.validate_python(reprints.value)
     with _validated(name.lineno):
         return ast.GroupedAvp(
             name=name.value,
             source=source,
-            code=code,
-            vendor_id=vendor_id,
-            avps=avps,
-        )
-
-
-def _parse_reprinted(
-    directives: _Directives, body: list[tuple[int, str]], lineno: int
-) -> ast.ReprintedAvp:
-    name = _pop(directives, "Name", lineno)
-    source = _source_ref(directives, lineno)
-    origin = _pop(directives, "From", lineno)
-    _no_leftovers(directives, lineno)
-    header_name, code, vendor_id = _avp_header(body, "AVP", lineno)
-    if header_name != name.value:
-        raise DadParseError(
-            body[0][0], f"Name directive {name.value!r} != rule name {header_name!r}"
-        )
-    avps = _avp_rules(body[1:])
-    with _validated(origin.lineno):
-        return ast.ReprintedAvp(
-            name=name.value,
-            source=source,
-            origin=origin.value,
+            reprints=None if reprints is None else reprints.value,
             code=code,
             vendor_id=vendor_id,
             avps=avps,
@@ -955,7 +938,6 @@ _SECTION_PARSERS = {
     "Message": _parse_message,
     "Answer Message": _parse_answer_message,
     "Grouped AVP": _parse_grouped,
-    "Reprinted AVP": _parse_reprinted,
     "Enumerated AVP": _parse_enumerated,
     "AVP Table": _parse_avp_table,
     "Reused AVPs": _parse_reused,
@@ -991,7 +973,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Applies-To": ("applies_to",),
     "Registry": ("registry",),
     "Note": ("note",),
-    "From": ("origin",),
+    "Reprints": ("reprints",),
     "AVP": ("avp",),
     "Kind": ("kind",),
     "Feature-List-ID": ("feature_list_id",),
@@ -1004,7 +986,6 @@ _BODIES = {
     "Message": ("avps", 1),
     "Answer Message": ("avps", 1),
     "Grouped AVP": ("avps", 1),
-    "Reprinted AVP": ("avps", 1),
     "Enumerated AVP": ("values", 1),
     "AVP Table": ("rows", 0),
     "Reused AVPs": ("rows", 0),

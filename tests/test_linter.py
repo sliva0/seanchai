@@ -934,10 +934,10 @@ def _grouped(
 
 # TS 29.109 clause 4.2 prints RFC 6733's Vendor-Specific-Application-Id.
 _REPRINT = """\
-    ; Type: Reprinted AVP
+    ; Type: Grouped AVP
     ; Name: Vendor-Specific-Application-Id
     ; Section: 4.2
-    ; From: RFC6733
+    ; Reprints: RFC6733
     Vendor-Specific-Application-Id ::= < AVP header: 260 >
     [ Vendor-Id ]
     """

@@ -31,7 +31,7 @@ link-line     = "; Link: " URI          ; RFC 3986, must parse as an http(s) URL
 transcribed-line = "; Transcribed: by hand from " URI   ; the rendering copied
 version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 
-section       = application-scope / message / grouped-avp / reprinted-avp
+section       = application-scope / message / grouped-avp
               / enumerated-avp / avp-table / reused-avps / registry
               / undefined-avp / value-table
 ```
@@ -154,6 +154,7 @@ X.S0013-006 clause 7.3.1 print their own, adding
 grouped-avp   = "; Type: Grouped AVP" NL
                 "; Name: " avp-name NL
                 source-ref
+                ["; Reprints: " spec-ref NL]
                 avp-header-rule NL
                 *(avp-rule NL)
 avp-header-rule = avp-name " ::= < AVP header: " code [SP vendor-id] " >"
@@ -161,24 +162,14 @@ code          = 1*DIGIT                 ; < 2^32
 vendor-id     = 1*DIGIT                 ; < 2^32; absent for IETF-space AVPs
 ```
 
-### Reprinted AVP
-
-```abnf
-reprinted-avp = "; Type: Reprinted AVP" NL
-                "; Name: " avp-name NL
-                source-ref
-                "; From: " spec-ref NL
-                avp-header-rule NL
-                *(avp-rule NL)
-```
-
-Another document's grouped AVP, printed under a sentence naming that
-document. It defines nothing, so a file can hold several of one name: TS
-29.109 prints RFC 6733's `Vendor-Specific-Application-Id` in clauses 4.2, 5.2
-and 5.4. What the document glosses about a member is a trailing comment
-(`*1 { Auth-Application-Id } ;; 16777221`). A clause printing its own body
-for a re-used AVP without such a sentence is a `Grouped AVP`, which the
-linter compares with the origin.
+`; Reprints:` marks another document's grouped AVP, printed under a sentence
+naming that document. Such a block defines nothing, so a file can hold
+several of one name: TS 29.109 prints RFC 6733's
+`Vendor-Specific-Application-Id` in clauses 4.2, 5.2 and 5.4, each block
+`; Reprints: RFC6733`. What the document glosses about a member is a
+trailing comment (`*1 { Auth-Application-Id } ;; 16777221`). A clause
+printing its own body for a re-used AVP without such a sentence has no
+`; Reprints:`, and the linter compares it with the origin.
 
 ### AVP rule
 

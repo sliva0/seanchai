@@ -17,8 +17,8 @@ class _Index:
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     # `Undefined AVP` blocks: names the file declares defined nowhere.
     undefined: list[ast.UndefinedAvp] = field(default_factory=list)
-    # `Reprinted AVP` blocks: another document's rule, as this one prints it.
-    reprints: list[ast.ReprintedAvp] = field(default_factory=list)
+    # Grouped rules reprinting another document's, as this one prints it.
+    reprints: list[ast.GroupedAvp] = field(default_factory=list)
     tables: list[ast.AvpTable] = field(default_factory=list)
     value_tables: list[ast.ValueTable] = field(default_factory=list)
     # Result codes whose text names the document defining them, with their
@@ -63,13 +63,15 @@ def _index(spec: ast.Specification) -> _Index:
     for position, section in enumerate(spec.sections):
         at: ast.TreePath = ("sections", position)
         index.paths[id(section)] = at
-        if isinstance(section, ast.Message | ast.GroupedAvp | ast.ReprintedAvp):
+        if isinstance(section, ast.Message | ast.GroupedAvp):
             for number, rule in enumerate(section.avps):
                 index.paths[id(rule)] = (*at, "avps", number)
         if isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.ValueTable):
             for number, row in enumerate(section.rows):
                 index.paths[id(row)] = (*at, "rows", number)
-        if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
+        if isinstance(section, ast.GroupedAvp) and not section.defines:
+            index.reprints.append(section)
+        elif isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
             index.definitions.append(section)
         elif isinstance(section, ast.Message):
             index.messages.append(section)
@@ -77,8 +79,6 @@ def _index(spec: ast.Specification) -> _Index:
             index.applications.append(section)
         elif isinstance(section, ast.UndefinedAvp):
             index.undefined.append(section)
-        elif isinstance(section, ast.ReprintedAvp):
-            index.reprints.append(section)
         elif isinstance(section, ast.AvpTable):
             index.tables.append(section)
         elif isinstance(section, ast.ValueTable):

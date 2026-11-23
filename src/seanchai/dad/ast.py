@@ -64,7 +64,6 @@ __all__ = [
     "RegistryReservation",
     "RegistryRow",
     "RegistryText",
-    "ReprintedAvp",
     "ReservedValues",
     "ReusedAvpRow",
     "ReusedAvps",
@@ -87,9 +86,11 @@ __all__ = [
     "VendorSpecificValues",
     "Version",
     "VoidValues",
+    "defines",
     "in_document_order",
     "interface_clause",
     "is_external",
+    "is_reprint",
     "mark_column",
     "node_at",
     "section_sort_key",
@@ -379,37 +380,46 @@ class UndefinedAvp(Node):
 
 
 class GroupedAvp(Node):
-    """`; Type: Grouped AVP` — `Name ::= < AVP header: code vendor-id >` plus body."""
+    """`; Type: Grouped AVP` — `Name ::= < AVP header: code vendor-id >` plus body.
+
+    With `reprints`, another document's grouped AVP as this one prints it,
+    naming the document it says it copies. TS 29.109 clauses 4.2, 5.2 and 5.4
+    each follow a command with "The content of Vendor-Specific-Application-ID
+    according IETF RFC 6733 [33] is:" and that rule, glossing what its members
+    hold there. A file records what its document says, and this says nothing
+    new about the AVP, so such a block defines nothing (`defines` is False):
+    everything reading definitions passes it by, and one document can print
+    it any number of times. What a copy glosses is a trailing `;;` comment on
+    its member.
+    """
 
     type: Literal["Grouped AVP"] = "Grouped AVP"
     name: AvpName
     source: SourceRef
+    # `; Reprints:` — the document the clause says the rule copies, the same
+    # reference a From cell holds; None for the document's own rule.
+    reprints: SpecRef | None = None
     code: Unsigned32
     vendor_id: Unsigned32 | None = None
     avps: tuple[AvpRule, ...]
 
+    @property
+    def defines(self) -> bool:
+        """Whether the block defines the AVP: it is no reprint."""
+        return self.reprints is None
 
-class ReprintedAvp(Node):
-    """`; Type: Reprinted AVP` — another document's grouped AVP as this one
-    prints it, naming the document it says it copies.
 
-    TS 29.109 clauses 4.2, 5.2 and 5.4 each follow a command with "The content
-    of Vendor-Specific-Application-ID according IETF RFC 6733 [33] is:" and that
-    rule, glossing what its members hold there. A file records what its document
-    says, and this says nothing new about the AVP, so the block defines nothing:
-    its own type keeps it out of everything that reads `GroupedAvp`, and one
-    document can print it any number of times. What a copy glosses is a trailing
-    `;;` comment on its member.
-    """
+def defines(section: object) -> bool:
+    """Whether `section` is a definition: an enumerated AVP, or a grouped AVP
+    that reprints no other document's."""
+    return isinstance(section, EnumeratedAvp) or (
+        isinstance(section, GroupedAvp) and section.defines
+    )
 
-    type: Literal["Reprinted AVP"] = "Reprinted AVP"
-    name: AvpName
-    source: SourceRef
-    # The document the clause says it copies, the same reference a From cell holds.
-    origin: SpecRef
-    code: Unsigned32
-    vendor_id: Unsigned32 | None = None
-    avps: tuple[AvpRule, ...]
+
+def is_reprint(section: object) -> bool:
+    """Whether `section` is a grouped rule reprinted from another document."""
+    return isinstance(section, GroupedAvp) and not section.defines
 
 
 class EnumValue(Node):
@@ -1175,7 +1185,6 @@ Section = Annotated[
     | Message
     | AnswerMessage
     | GroupedAvp
-    | ReprintedAvp
     | EnumeratedAvp
     | AvpTable
     | ReusedAvps

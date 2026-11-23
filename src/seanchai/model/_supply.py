@@ -32,6 +32,8 @@ def supplied_from(*paths: Path) -> dict[str, Supplied]:
         defined: dict[str, ast.GroupedAvp | ast.EnumeratedAvp] = {}
         rows: dict[str, ast.AvpTableRow] = {}
         for section in spec.sections:
+            if ast.is_reprint(section):
+                continue
             if isinstance(section, ast.GroupedAvp | ast.EnumeratedAvp):
                 if section.name in defined:
                     raise ModelError(f"{path}: {section.name} is defined twice")
