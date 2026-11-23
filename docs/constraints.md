@@ -171,3 +171,34 @@ tell (a predicate, an `element`, `text-only`).
 
 Only a 3GPP docx can be checked against its source so far: an `Interpret` for
 an RFC or a transcription is refused.
+
+## TS 29.272
+
+TS 29.272 V19.6.0 is read completely: every AVP clause of clause 7.3 and every
+C row of its information-element tables.
+
+| | |
+|---|---|
+| AVP clauses (clause 7.3, not its General and Void clauses) | 247 |
+| with something to declare | 99, in 119 blocks |
+| with nothing to declare | 148 |
+| information-element C rows | 45, of which 35 state a condition, 10 of them typed |
+| blocks | 154: 87 on an AVP wherever read, 32 within a grouped AVP, 35 within a command |
+| readings | 174 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 20: `e164-tbcd` 6, `plmn-id` 3, `digits` 3, `ip-address` 2, `plmn-id-prefix`, `labels`, `apn`, `plmn-domain`, `epc-plmn-domain`, `time-zone` |
+| `encoding element` | 43 |
+| `length` | 8: 6 in octets, 2 in digits |
+| `range` | 7 |
+| `exclude` | 3 |
+| `requires`, `present-if`, `absent-if` | 17, 2, 2 |
+| `text-only` | 78 |
+
+The text-only rules are mostly conditions on the node, the interface, an
+earlier message or a feature (an information element's "shall be present if
+the MME supports SMS in MME"), default values and what an absent AVP means,
+rules on the bits of one AVP's own value (DSR-Flags' "Bits 3 and 6 are
+excluding alternatives and shall not both be set"), and conditions on an
+OctetString's value (PDP-Type's, whose octets the clauses do not spell out).

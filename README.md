@@ -34,8 +34,12 @@ code, vendor, type and basic type, flag rules and Encrypt cell; each value
 table it carries comes too, and each feature list only for the application it
 numbers. `Emergency-Services`
 is one TS 29.272 re-uses: `show` prints TS 29.273's definition and its bits,
-both in `s6a.json`. Where two documents read one AVP differently, the file
-lists the conflict and where each reading is met.
+both in `s6a.json`. TS 29.272's clauses are also read for what their prose
+says of each AVP's value and presence (a PLMN identity's layout, a range, a
+member allowed only beside another), as
+[interpreted constraints][constraints], each pinned to the sentences read.
+Where two documents read one AVP differently, the file lists the conflict and
+where each reading is met.
 
 `--strict` refuses a selection reaching what the corpus cannot complete. TS
 29.154's Nta names `External-Group-Identifier`, which no document defines;

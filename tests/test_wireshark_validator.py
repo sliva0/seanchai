@@ -920,3 +920,118 @@ def test_no_finding_citing_any_place_lacks_an_explorer_link(whole, tmp_path):
     )
 
     assert done.stdout.splitlines() == ["missing 0"]
+
+
+# TS 29.272's interpreted constraints, as S6a messages break them.
+S6A = 16777251
+
+
+def _s6a_base(origin: bytes) -> list[bytes]:
+    return [
+        avp(263, origin + b";1;2"),
+        avp(260, avp(266, u32(TGPP)) + avp(258, u32(S6A))),
+        avp(277, u32(1)),
+        avp(264, origin + b".example.com"),
+        avp(296, b"example.com"),
+    ]
+
+
+def s6a_ulr(visited: bytes, sgsn: bytes = b"\x21\x43\xf5") -> bytes:
+    return message(
+        316,
+        R | P,
+        S6A,
+        *_s6a_base(b"mme"),
+        avp(283, b"example.com"),
+        avp(1, b"001010123456789"),
+        avp(1032, u32(1004), vendor=TGPP),
+        avp(1405, u32(0), vendor=TGPP),
+        avp(1407, visited, vendor=TGPP),
+        avp(1489, sgsn, vendor=TGPP),
+    )
+
+
+def s6a_ula(result: int) -> bytes:
+    return message(
+        316,
+        P,
+        S6A,
+        avp(263, b"mme;1;2"),
+        avp(260, avp(266, u32(TGPP)) + avp(258, u32(S6A))),
+        avp(268, u32(result)),
+        avp(277, u32(1)),
+        avp(264, b"hss.example.com"),
+        avp(296, b"example.com"),
+        avp(1406, u32(0), vendor=TGPP),
+    )
+
+
+def s6a_dsr(flags: int, context: int) -> bytes:
+    return message(
+        320,
+        R | P,
+        S6A,
+        *_s6a_base(b"hss"),
+        avp(293, b"mme.example.com"),
+        avp(283, b"example.com"),
+        avp(1, b"001010123456789"),
+        avp(1421, u32(flags), vendor=TGPP),
+        avp(1423, u32(context), vendor=TGPP),
+    )
+
+
+@pytest.fixture(scope="module")
+def s6a_rules(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("rules") / "rules.lua"
+    return _rules(out, "--application", str(S6A), "--rules-only")
+
+
+def _constraint_findings(result: dict) -> list[tuple[str, str]]:
+    return [
+        (rule, text)
+        for kind, rule, text in result["findings"]
+        if rule.startswith("constraint-") and kind == "warn"
+    ]
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_interpreted_constraints_are_checked_and_cited(lua, s6a_rules, tmp_path):
+    clean = _validate(
+        lua,
+        s6a_rules,
+        tmp_path,
+        s6a_ulr(b"\x62\xf2\x10"),
+        s6a_ula(2001),
+        s6a_dsr(1 << 3, 5),
+    )
+    broken_plmn, broken_sgsn, failed_ula, broken_dsr = _validate(
+        lua,
+        s6a_rules,
+        tmp_path,
+        s6a_ulr(b"\x62\xe2\x10"),
+        s6a_ulr(b"\x62\xf2\x10", sgsn=b"\x21\xf3\x65"),
+        s6a_ula(5001),
+        s6a_dsr(1, 0),
+    )
+
+    for result in clean:
+        assert _constraint_findings(result) == [], result
+    ((rule, text),) = _constraint_findings(broken_plmn)
+    assert rule == "constraint-encoding"
+    assert "Visited-PLMN-Id is no plmn-id" in text
+    assert "an interpreted rule, read in TS 29.272 clause 7.3.9" in text
+    cited = _cited(broken_plmn, "constraint-encoding")
+    assert [(each["clause"], each["page"]) for each in cited] == [("7.3.9", "103")]
+    assert [rule for rule, _ in _constraint_findings(broken_sgsn)] == [
+        "constraint-encoding"
+    ]
+    ((rule, text),) = _constraint_findings(failed_ula)
+    assert rule == "constraint-requires"
+    assert "Result-Code = DIAMETER_SUCCESS" in text
+    assert sorted(rule for rule, _ in _constraint_findings(broken_dsr)) == [
+        "constraint-exclude",
+        "constraint-requires",
+    ]
+    (table,) = {each["table"] for each in _cited(broken_dsr, "constraint-exclude")}
+    assert table == "5.2.2.2.1/1"

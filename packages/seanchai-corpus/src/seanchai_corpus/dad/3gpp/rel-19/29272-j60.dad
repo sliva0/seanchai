@@ -1021,6 +1021,73 @@ Error-Diagnostic                           Error-Diagnostic                  O
 "Reset-IDs (See 7.3.184)"                  Reset-ID                          O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ula-ula-flags)
+; AVP: ULA-Flags
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/2
+; Page: 18
+; Versions: 19.6.0
+"It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ula-subscription-data)
+; AVP: Subscription-Data
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/2
+; Page: 18
+; Versions: 19.6.0
+"It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-sgsn-number)
+; AVP: SGSN-Number
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 19.6.0
+"It shall be present when the message is sent on the S6d interface and the SGSN supports LCS (using MAP based Lg interface) or SMS functionalities or the Gs interface."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-ue-srvcc-capability)
+; AVP: UE-SRVCC-Capability
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 19.6.0
+"shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-mme-number-for-mt-sms)
+; AVP: MME-Number-for-MT-SMS
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 19.6.0
+"It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-sms-register-request)
+; AVP: SMS-Register-Request
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 19.6.0
+"It shall be present when the MME supports SMS in MME and requests to be registered for SMS."
+"It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Cancel-Location-Request
 ; Section: 5.2.1.2.1
@@ -1066,6 +1133,17 @@ IMSI                                       User-Name                  M
 "PUA-Flags (See 7.3.48)"                   PUA-Flags                         C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pua-pua-flags)
+; AVP: PUA-Flags
+; Command: Purge-UE-Answer
+; Section: 5.2.1.3.1
+; Table: 5.2.1.3.1/2
+; Page: 33
+; Versions: 19.6.0
+"It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
 ; Type: Information Elements
 ; Command: Insert-Subscriber-Data-Request
 ; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-2-1-1-1)
@@ -1101,6 +1179,102 @@ IMSI                                       User-Name            M
 "Supported Services (TS 29.336 [54])"                  Supported-Services                     O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-ims-voice-over-ps-sessions-supported)
+; AVP: IMS-Voice-Over-PS-Sessions-Supported
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"If the UE is in detached state, this information element shall not be included in the response."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-last-ue-activity-time)
+; AVP: Last-UE-Activity-Time
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"If the UE is in detached state, this information element shall not be included in the response."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-rat-type)
+; AVP: RAT-Type
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"If the UE is in detached state, this information element shall not be included in the response."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-eps-user-state)
+; AVP: EPS-User-State
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"It shall be present if EPS user state was requested within IDR."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-eps-location-information)
+; AVP: EPS-Location-Information
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"It shall be present if EPS location information was requested within IDR."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-local-time-zone)
+; AVP: Local-Time-Zone
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"It shall be present if the Local Time Zone was requested within IDR."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-monitoring-event-report)
+; AVP: Monitoring-Event-Report
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-monitoring-event-config-status)
+; AVP: Monitoring-Event-Config-Status
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 35
+; Versions: 19.6.0
+"This Information Element shall be present if Monitoring event configuration is included in IDR."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-2-2-1-1)
@@ -1132,6 +1306,82 @@ IMSI                                       User-Name              M
 "DSA Flags (See 7.3.26)"                   DSA-Flags                         C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-trace-reference)
+; AVP: Trace-Reference
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present only if the \"Trace Data Withdrawal\" bit is set in the DSR-Flags."
+    requires DSR-Flags bit "Trace Data Withdrawal"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-context-identifier)
+; AVP: Context-Identifier
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags."
+    requires DSR-Flags bit "PDN subscription contexts Withdrawal" or DSR-Flags bit "PDP contexts Withdrawal"
+"In the \"PDN subscription contexts Withdrawal\" case, the Context-Identifier shall not be associated with the default APN configuration."
+    text-only
+"For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero."
+    exclude 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-ts-code)
+; AVP: TS-Code
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted."
+    requires DSR-Flags bit "SMS Withdrawal"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-ss-code)
+; AVP: SS-Code
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present only if the \"SMS Withdrawal\" bit is set or the \"LCS Withdrawal\" bit is set in the DSR-Flags."
+    requires DSR-Flags bit "SMS Withdrawal" or DSR-Flags bit "LCS Withdrawal"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-scef-id)
+; AVP: SCEF-ID
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present if the \"Delete monitoring events\" bit is set in the DSR-Flags."
+    present-if DSR-Flags bit "Delete monitoring events"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-edrx-related-rat)
+; AVP: eDRX-Related-RAT
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 43
+; Versions: 19.6.0
+"This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted."
+    requires DSR-Flags bit eDRX-Cycle-Length-Withdrawal
+
+
 ; Type: Information Elements
 ; Command: Authentication-Information-Request
 ; Section: 5.2.3.1.1
@@ -1157,6 +1407,17 @@ Error-Diagnostic                           Error-Diagnostic                  O
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
 "Authentication Info (See 7.3.17)"         Authentication-Info               C
 "UE Usage Type (See 7.3.202)"              UE-Usage-Type                     C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#aia-ue-usage-type)
+; AVP: UE-Usage-Type
+; Command: Authentication-Information-Answer
+; Section: 5.2.3.1.1
+; Table: 5.2.3.1.1/2
+; Page: 47
+; Versions: 19.6.0
+"This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription."
+    text-only
 
 
 ; Type: Information Elements
@@ -1216,6 +1477,118 @@ IMSI                                                                User-Name   
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-terminal-information)
+; AVP: Terminal-Information
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-mip6-agent-info)
+; AVP: MIP6-Agent-Info
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"It shall be present when the PDN GW Identity is present and does not contain an FQDN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-service-selection)
+; AVP: Service-Selection
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"For establishment of non-emergency PDN connections, it shall be present if the selected PDN-GW is present and is particular for one specific APN and not common to all the APNs."
+    text-only
+"For establishment of emergency PDN connections (i.e., the Emergency-Services AVP is present, with the Emergency-Indication flag set), this AVP shall be left absent."
+    absent-if Emergency-Services bit Emergency-Indication
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-alert-reason)
+; AVP: Alert-Reason
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-ue-srvcc-capability)
+; AVP: UE-SRVCC-Capability
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-nor-flags)
+; AVP: NOR-Flags
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"Absence of this information element shall be interpreted as all bits set to 0."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-homogeneous-support)
+; AVP: Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"This Information Element shall be present if Homogeneous Support of IMS Voice Over PS Sessions is modified to one of the values \"SUPPORTED\" or \"NOT_SUPPORTED\"."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-monitoring-event-config-status)
+; AVP: Monitoring-Event-Config-Status
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-emergency-services)
+; AVP: Emergency-Services
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 54
+; Versions: 19.6.0
+"The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection"
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Update-VCSG-Location-Request
 ; Section: 5A.2.1.1.1
@@ -1239,6 +1612,28 @@ MSISDN                                     MSISDN               C
 "Result (See 7.4)"                            Result-Code/Experimental-Result   M
 "VPLMN CSG Subscription Data (See 7.3.155)"   VPLMN-CSG-Subscription-Data       C
 "UVA Flags (See 7.3.154)"                     UVA-Flags                         C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#uvr-sgsn-number)
+; AVP: SGSN-Number
+; Command: Update-VCSG-Location-Request
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/1
+; Page: 61
+; Versions: 19.6.0
+"It shall be present when the message is sent on the S7d interface."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#uva-vplmn-csg-subscription-data)
+; AVP: VPLMN-CSG-Subscription-Data
+; Command: Update-VCSG-Location-Answer
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/2
+; Page: 61
+; Versions: 19.6.0
+"It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set."
+    text-only
 
 
 ; Type: Information Elements
@@ -1349,6 +1744,17 @@ IMSI                                 User-Name              O
 "Equipment Status (See 7.3.51)"   Equipment-Status                  C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#eca-equipment-status)
+; AVP: Equipment-Status
+; Command: ME-Identity-Check-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Page: 69
+; Versions: 19.6.0
+"It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
 ; Type: Grouped AVP
 ; Name: Subscription-Data
 ; Section: 7.3.2
@@ -1407,6 +1813,16 @@ Subscription-Data ::= < AVP header: 1400 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#subscription-data-ambr-not-both-zero)
+; AVP: AMBR
+; Within: Subscription-Data
+; Section: 7.3.2
+; Page: 98
+; Versions: 19.6.0
+"Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\"."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Terminal-Information
 ; Section: 7.3.3
@@ -1416,6 +1832,36 @@ Terminal-Information ::= < AVP header: 1401 10415 >
         [ 3GPP2-MEID ]
         [ Software-Version ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#imei-digits)
+; AVP: IMEI
+; Section: 7.3.4
+; Page: 100
+; Versions: 19.6.0
+"It should consist of 14 digits, including the 8-digit Type Allocation Code (TAC) and the 6-digit Serial Number (SNR). It may also include a 15th digit."
+    encoding digits
+    length 14..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#software-version-digits)
+; AVP: Software-Version
+; Section: 7.3.5
+; Page: 100
+; Versions: 19.6.0
+"This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3]."
+    encoding digits
+    length 2 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#3gpp2-meid-element)
+; AVP: 3GPP2-MEID
+; Section: 7.3.6
+; Page: 100
+; Versions: 19.6.0
+"For further details on the encoding of the AVP data, refer to the encoding of the Mobile Identity (MEID) octets 3 to 10 in 3GPP2 A.S0022 [28] Annex A."
+    encoding element 3GPP2-A.S0022 A "Mobile Identity (MEID)"
+    length 8 octets
 
 
 ; Type: Value Table
@@ -1447,6 +1893,17 @@ Disaster-Roaming-service-in-EPS-Indication   = 12
 ; Page: 103
 "Separation Indication"  = 0
 "MME Registered for SMS" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#visited-plmn-id-layout)
+; AVP: Visited-PLMN-Id
+; Section: 7.3.9
+; Page: 103
+; Versions: 19.6.0
+"This AVP shall contain the concatenation of MCC and MNC."
+"The content of this AVP shall be encoded as an octet string according to table 7.3.9-1."
+"If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
+    encoding plmn-id
 
 
 ; Type: Value Table
@@ -1680,6 +2137,18 @@ eDRX-Cycle-Length-Withdrawal                     = 30 ;; corrected: (TS29.272.py
 Service-Gap-Time-Withdrawal                      = 31
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-flags-exclusive-bits)
+; AVP: DSR-Flags
+; Section: 7.3.25
+; Table: 7.3.25/1
+; Page: 122
+; Versions: 19.6.0
+"Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set."
+    text-only
+"Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared."
+    text-only
+
+
 ; Type: Value Table
 ; AVP: DSA-Flags
 ; Kind: bits
@@ -1754,6 +2223,25 @@ Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
 "NR eRedCap not allowed as primary RAT"                                                                       = 30
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#access-restriction-data-bits)
+; AVP: Access-Restriction-Data
+; Section: 7.3.31
+; Table: 7.3.31/1
+; Page: 126
+; Versions: 19.6.0
+"NOTE 2: Bits 11 and 12 are only used when bit 4 is not set."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-oi-replacement-labels)
+; AVP: APN-OI-Replacement
+; Section: 7.3.32
+; Page: 127
+; Versions: 19.6.0
+"The contents of the APN-OI-Replacement AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\")."
+    encoding labels
+
+
 ; Type: Enumerated AVP
 ; Name: All-APN-Configurations-Included-Indicator
 ; Section: 7.3.33
@@ -1774,6 +2262,36 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
         { All-APN-Configurations-Included-Indicator }
      1* { APN-Configuration }
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-profile-default-context)
+; AVP: Context-Identifier
+; Within: APN-Configuration-Profile
+; Section: 7.3.34
+; Page: 128
+; Versions: 19.6.0
+"The Context-Identifier AVP shall identify the per subscriber's default APN configuration."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-profile-additional-context)
+; AVP: Additional-Context-Identifier
+; Within: APN-Configuration-Profile
+; Section: 7.3.34
+; Page: 128
+; Versions: 19.6.0
+"If present, the Additional-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than one types of APNs"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-profile-third-context)
+; AVP: Third-Context-Identifier
+; Within: APN-Configuration-Profile
+; Section: 7.3.34
+; Page: 128
+; Versions: 19.6.0
+"If present, the Third-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than two types of APNs"
+    text-only
 
 
 ; Type: Grouped AVP
@@ -1811,6 +2329,93 @@ APN-Configuration ::= < AVP header: 1430 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-context-identifier)
+; AVP: Context-Identifier
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero."
+    exclude 0
+"Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription."
+    text-only
+"NOTE: If interworking with MAP is needed, the Context-Identifier will be in the range of 1 and 50."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-service-selection)
+; AVP: Service-Selection
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-served-party-ip-address)
+; AVP: Served-Party-IP-Address
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"These AVPs shall be present if static IP address allocation is used for the UE"
+    text-only
+"For the IPv6 prefix, the lower 64 bits of the address shall be set to zero."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-pdn-gw-allocation-type)
+; AVP: PDN-GW-Allocation-Type
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info AVP. Therefore, it shall not be present if MIP6-Agent-Info is not present."
+    requires MIP6-Agent-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-non-ip-delivery)
+; AVP: Non-IP-Data-Delivery-Mechanism
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1)."
+    requires Non-IP-PDN-Type-Indicator = TRUE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-scef-id)
+; AVP: SCEF-ID
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1)."
+    requires Non-IP-PDN-Type-Indicator = TRUE
+    requires Non-IP-Data-Delivery-Mechanism = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-scef-realm)
+; AVP: SCEF-Realm
+; Within: APN-Configuration
+; Section: 7.3.35
+; Page: 128
+; Versions: 19.6.0
+"The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1)."
+    requires Non-IP-PDN-Type-Indicator = TRUE
+    requires Non-IP-Data-Delivery-Mechanism = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#service-selection-apn)
+; AVP: Service-Selection
+; Section: 7.3.36
+; Page: 130
+; Versions: 19.6.0
+"The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\"), or as the wild card APN, i.e., consisting of only one ASCII label, \"*\"."
+    encoding apn
+
+
 ; Type: Grouped AVP
 ; Name: EPS-Subscribed-QoS-Profile
 ; Section: 7.3.37
@@ -1821,6 +2426,18 @@ EPS-Subscribed-QoS-Profile ::= < AVP header: 1431 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#eps-subscribed-qos-profile-non-gbr)
+; AVP: QoS-Class-Identifier
+; Within: EPS-Subscribed-QoS-Profile
+; Section: 7.3.37
+; Page: 130
+; Versions: 19.6.0
+"values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to GBR bearers, cannot be sent over S6a/S6d."
+    exclude 1, 2, 3, 4
+"The values allowed for this AVP over the S6a/S6d interface are only those associated to non-GBR bearers, as indicated in TS 23.008 [30]"
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: VPLMN-Dynamic-Address-Allowed
 ; Section: 7.3.38
@@ -1828,6 +2445,16 @@ EPS-Subscribed-QoS-Profile ::= < AVP header: 1431 10415 >
 VPLMN-Dynamic-Address-Allowed ::= < Enumerated AVP header: 1432 10415 >
         NOTALLOWED = 0
         ALLOWED    = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#stn-sr-e164)
+; AVP: STN-SR
+; Section: 7.3.39
+; Page: 131
+; Versions: 19.6.0
+"This AVP contains an STN-SR, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
 
 
 ; Type: Grouped AVP
@@ -1840,6 +2467,26 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
         [ Pre-emption-Vulnerability ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#allocation-retention-priority-pre-emption-capability-default)
+; AVP: Pre-emption-Capability
+; Within: Allocation-Retention-Priority
+; Section: 7.3.40
+; Page: 131
+; Versions: 19.6.0
+"If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#allocation-retention-priority-pre-emption-vulnerability-default)
+; AVP: Pre-emption-Vulnerability
+; Within: Allocation-Retention-Priority
+; Section: 7.3.40
+; Page: 131
+; Versions: 19.6.0
+"If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0)."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: AMBR
 ; Section: 7.3.41
@@ -1850,6 +2497,49 @@ AMBR ::= < AVP header: 1435 10415 >
         [ Extended-Max-Requested-BW-UL ]
         [ Extended-Max-Requested-BW-DL ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ambr-extended-max-requested-bw-ul)
+; AVP: Extended-Max-Requested-BW-UL
+; Within: AMBR
+; Section: 7.3.41
+; Page: 131
+; Versions: 19.6.0
+"When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent."
+"When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295"
+    requires Max-Requested-Bandwidth-UL = 4294967295
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ambr-extended-max-requested-bw-dl)
+; AVP: Extended-Max-Requested-BW-DL
+; Within: AMBR
+; Section: 7.3.41
+; Page: 131
+; Versions: 19.6.0
+"When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent."
+"When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295"
+    requires Max-Requested-Bandwidth-DL = 4294967295
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip-home-agent-host-destination-host)
+; AVP: Destination-Host
+; Within: MIP-Home-Agent-Host
+; Section: 7.3.43
+; Page: 132
+; Versions: 19.6.0
+"Destination-Host shall contain the hostname of the PDN-GW, formatted as described in TS 29.303 [38], clause 4.3.2."
+    encoding element TS29.303 4.3.2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip-home-agent-host-destination-realm)
+; AVP: Destination-Realm
+; Within: MIP-Home-Agent-Host
+; Section: 7.3.43
+; Page: 132
+; Versions: 19.6.0
+"Destination-Realm shall be formatted as:"
+"epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+    encoding epc-plmn-domain
 
 
 ; Type: Enumerated AVP
@@ -1870,6 +2560,35 @@ MIP6-Agent-Info ::= < AVP header: 486 >
         [ MIP-Home-Agent-Host ]
         [ MIP6-Home-Link-Prefix ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip6-agent-info-fqdn-preferred)
+; AVP: MIP-Home-Agent-Host
+; Within: MIP6-Agent-Info
+; Section: 7.3.45
+; Page: 132
+; Versions: 19.6.0
+"FQDN shall be used if known to the MME/SGSN/HSS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip6-agent-info-home-link-prefix)
+; AVP: MIP6-Home-Link-Prefix
+; Within: MIP6-Agent-Info
+; Section: 7.3.45
+; Page: 132
+; Versions: 19.6.0
+"The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#rat-frequency-selection-priority-id-range)
+; AVP: RAT-Frequency-Selection-Priority-ID
+; Section: 7.3.46
+; Page: 133
+; Versions: 19.6.0
+"Values shall be in the range of 1 to 256."
+    range 1..256
 
 
 ; Type: Value Table
@@ -1909,6 +2628,15 @@ Reserved                                            = 4
 "Removal of MME Registration for SMS"               = 9
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#user-id-digits)
+; AVP: User-Id
+; Section: 7.3.50
+; Page: 134
+; Versions: 19.6.0
+"It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string."
+    encoding digits
+
+
 ; Type: Enumerated AVP
 ; Name: Equipment-Status
 ; Section: 7.3.51
@@ -1917,6 +2645,60 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
         PERMITTEDLISTED  = 0
         PROHIBITEDLISTED = 1
         TRACKINGLISTED   = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#regional-subscription-zone-code-element)
+; AVP: Regional-Subscription-Zone-Code
+; Section: 7.3.52
+; Page: 135
+; Versions: 19.6.0
+"It shall contain a Zone Code (ZC) as defined in TS 23.003 [3], clause 4.4."
+    encoding element TS23.003 4.4 "Zone Code"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#rand-element)
+; AVP: RAND
+; Section: 7.3.53
+; Page: 135
+; Versions: 19.6.0
+"This AVP shall contain the RAND. See TS 33.401 [5]."
+    encoding element TS33.401 "RAND"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#xres-element)
+; AVP: XRES
+; Section: 7.3.54
+; Page: 135
+; Versions: 19.6.0
+"This AVP shall contain the XRES. See TS 33.401 [5]."
+    encoding element TS33.401 "XRES"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#autn-element)
+; AVP: AUTN
+; Section: 7.3.55
+; Page: 135
+; Versions: 19.6.0
+"This AVP shall contain the AUTN. See TS 33.401 [5]."
+    encoding element TS33.401 "AUTN"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#kasme-element)
+; AVP: KASME
+; Section: 7.3.56
+; Page: 135
+; Versions: 19.6.0
+"This AVP shall contain the K_ASME. See TS 33.401 [5]."
+    encoding element TS33.401 "K_ASME"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sres-element)
+; AVP: SRES
+; Section: 7.3.60
+; Page: 135
+; Versions: 19.6.0
+"This AVP shall contain the SRES. See TS 33.102 [18]."
+    encoding element TS33.102 "SRES"
 
 
 ; Type: Enumerated AVP
@@ -1948,6 +2730,18 @@ Trace-Data ::= < AVP header: 1458 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-reference-layout)
+; AVP: Trace-Reference
+; Section: 7.3.64
+; Page: 136
+; Versions: 19.6.0
+"This AVP shall contain the concatenation of MCC, MNC and Trace ID, where the Trace ID is a 3 byte Octet String."
+"The content of this AVP shall be encoded as octet strings according to table 7.3.64/1."
+"If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
+    encoding plmn-id-prefix
+    length 6 octets
+
+
 ; Type: Enumerated AVP
 ; Name: Trace-Depth
 ; Section: 7.3.67
@@ -1963,6 +2757,42 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
         MinimumOnlyVendorSpecificTraceRecord  = 6 ;; supplied: (TS29.272.py#trace-depth-values)
         MediumOnlyVendorSpecificTraceRecord   = 7 ;; supplied: (TS29.272.py#trace-depth-values)
         MaximumOnlyVendorSpecificTraceRecord  = 8 ;; supplied: (TS29.272.py#trace-depth-values)
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-ne-type-list-element)
+; AVP: Trace-NE-Type-List
+; Section: 7.3.68
+; Page: 137
+; Versions: 19.6.0
+"Octets are coded according to TS 32.422 [23]."
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-interface-list-element)
+; AVP: Trace-Interface-List
+; Section: 7.3.69
+; Page: 137
+; Versions: 19.6.0
+"Octets are coded according to TS 32.422 [23]."
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-event-list-element)
+; AVP: Trace-Event-List
+; Section: 7.3.70
+; Page: 137
+; Versions: 19.6.0
+"Octets are coded according to TS 32.422 [23]."
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#omc-id-element)
+; AVP: OMC-Id
+; Section: 7.3.71
+; Page: 137
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24]."
+    encoding element TS29.002
 
 
 ; Type: Grouped AVP
@@ -2009,6 +2839,77 @@ PDP-Context ::= < AVP header: 1469 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-ext-pdp-address)
+; AVP: Ext-PDP-Address
+; Within: PDP-Context
+; Section: 7.3.74
+; Page: 138
+; Versions: 19.6.0
+"The Ext-PDP-Address AVP may be present only if the PDP-Address AVP is present."
+    requires PDP-Address
+"If the Ext-PDP-Address AVP is present, then it shall not contain the same address type (IPv4 or IPv6) as the PDP-Address AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-ext-pdp-type)
+; AVP: Ext-PDP-Type
+; Within: PDP-Context
+; Section: 7.3.74
+; Page: 138
+; Versions: 19.6.0
+"When PDP-Type takes the value Non-IP (HEX 02), the Ext-PDP-Type AVP shall be absent."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-non-ip-delivery)
+; AVP: Non-IP-Data-Delivery-Mechanism
+; Within: PDP-Context
+; Section: 7.3.74
+; Page: 138
+; Versions: 19.6.0
+"The Non-IP-Data-Delivery-Mechanism shall only be present when PDP-Type takes the value Non-IP (HEX 02)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-scef-id)
+; AVP: SCEF-ID
+; Within: PDP-Context
+; Section: 7.3.74
+; Page: 138
+; Versions: 19.6.0
+"The SCEF-ID shall only be present when Non-IP-Data-Delivery-Mechanism takes the value SCEF-BASED-DATA-DELIVERY (1)."
+    requires Non-IP-Data-Delivery-Mechanism = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-type-element)
+; AVP: PDP-Type
+; Section: 7.3.75
+; Page: 139
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24]."
+    encoding element TS29.002
+"The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ext-pdp-type-value)
+; AVP: Ext-PDP-Type
+; Section: 7.3.75A
+; Page: 139
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#qos-subscribed-element)
+; AVP: QoS-Subscribed
+; Section: 7.3.77
+; Page: 139
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated)."
+    encoding element TS29.002
+
+
 ; Type: Grouped AVP
 ; Name: CSG-Subscription-Data
 ; Section: 7.3.78
@@ -2019,6 +2920,17 @@ CSG-Subscription-Data ::= < AVP header: 1436 10415 >
       * [ Service-Selection ]
         [ Visited-PLMN-Id ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#csg-id-element)
+; AVP: CSG-Id
+; Section: 7.3.79
+; Page: 139
+; Versions: 19.6.0
+"Values are coded according to TS 23.003 [3]."
+    encoding element TS23.003
+"Unused bits (least significant) shall be padded with zeros."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -2038,6 +2950,16 @@ Specific-APN-Info ::= < AVP header: 1472 10415 >
         { MIP6-Agent-Info }
         [ Visited-Network-Identifier ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-specific-apn-info)
+; AVP: Specific-APN-Info
+; Within: APN-Configuration
+; Section: 7.3.82
+; Page: 140
+; Versions: 19.6.0
+"It shall only be present in the APN configuration when the APN is a wild card APN."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -2060,6 +2982,16 @@ LCS-Info ::= < AVP header: 1473 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#gmlc-number-e164)
+; AVP: GMLC-Number
+; Section: 7.3.85
+; Page: 140
+; Versions: 19.6.0
+"This AVP shall contain the ISDN number of the GMLC in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
 ; Type: Grouped AVP
 ; Name: LCS-PrivacyException
 ; Section: 7.3.86
@@ -2072,6 +3004,24 @@ LCS-PrivacyException ::= < AVP header: 1475 10415 >
       * [ PLMN-Client ]
       * [ Service-Type ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ss-code-element)
+; AVP: SS-Code
+; Section: 7.3.87
+; Page: 141
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ss-status-element)
+; AVP: SS-Status
+; Section: 7.3.88
+; Page: 141
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24]."
+    encoding element TS29.002
 
 
 ; Type: Enumerated AVP
@@ -2094,6 +3044,16 @@ External-Client ::= < AVP header: 1479 10415 >
         [ GMLC-Restriction ]
         [ Notification-To-UE-User ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#client-identity-e164)
+; AVP: Client-Identity
+; Section: 7.3.91
+; Page: 141
+; Versions: 19.6.0
+"The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
 
 
 ; Type: Enumerated AVP
@@ -2128,6 +3088,15 @@ Service-Type ::= < AVP header: 1483 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#servicetypeidentity-element)
+; AVP: ServiceTypeIdentity
+; Section: 7.3.95
+; Page: 142
+; Versions: 19.6.0
+"For details on the values of this AVP, see TS 29.002 [24]."
+    encoding element TS29.002
+
+
 ; Type: Grouped AVP
 ; Name: MO-LR
 ; Section: 7.3.96
@@ -2136,6 +3105,15 @@ MO-LR ::= < AVP header: 1485 10415 >
         { SS-Code }
         { SS-Status }
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-collection-entity-ip)
+; AVP: Trace-Collection-Entity
+; Section: 7.3.98
+; Page: 143
+; Versions: 19.6.0
+"The Trace-Collection-Entity AVP is of type Address and contains the IPv4 or IPv6 address of the Trace Collection Entity, as defined in TS 32.422 [23], clause 5.9."
+    encoding ip-address
 
 
 ; Type: Grouped AVP
@@ -2147,6 +3125,15 @@ Teleservice-List ::= < AVP header: 1486 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ts-code-element)
+; AVP: TS-Code
+; Section: 7.3.100
+; Page: 143
+; Versions: 19.6.0
+"Octets are coded according to TS 29.002 [24]."
+    encoding element TS29.002
+
+
 ; Type: Grouped AVP
 ; Name: Call-Barring-Info
 ; Section: 7.3.101
@@ -2155,6 +3142,16 @@ Call-Barring-Info ::= < AVP header: 1488 10415 >
         { SS-Code }
         { SS-Status }
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sgsn-number-e164)
+; AVP: SGSN-Number
+; Section: 7.3.102
+; Page: 143
+; Versions: 19.6.0
+"This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
 
 
 ; Type: Value Table
@@ -2183,6 +3180,16 @@ ICS-Indicator ::= < Enumerated AVP header: 1491 10415 >
         TRUE  = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#visited-network-identifier-domain)
+; AVP: Visited-Network-Identifier
+; Section: 7.3.105
+; Page: 144
+; Versions: 19.6.0
+"The AVP shall be encoded as:"
+"mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+    encoding plmn-domain
+
+
 ; Type: Enumerated AVP
 ; Name: IMS-Voice-Over-PS-Sessions-Supported
 ; Section: 7.3.106
@@ -2199,6 +3206,15 @@ IMS-Voice-Over-PS-Sessions-Supported ::= < Enumerated AVP header: 1492 10415 >
 Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ::= < Enumerated AVP header: 1493 10415 >
         NOT_SUPPORTED = 0
         SUPPORTED     = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#gmlc-address-ip)
+; AVP: GMLC-Address
+; Section: 7.3.109
+; Page: 145
+; Versions: 19.6.0
+"The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of the V-GMLC associated with the serving node."
+    encoding ip-address
 
 
 ; Type: Grouped AVP
@@ -2252,6 +3268,15 @@ User-State ::= < Enumerated AVP header: 1499 10415 >
         RESERVED                           = 5
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#user-state-reserved)
+; AVP: User-State
+; Section: 7.3.114
+; Page: 146
+; Versions: 19.6.0
+"This value should not be used by MME or SGSN over S6a/S6d."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: MME-Location-Information
 ; Section: 7.3.115
@@ -2286,6 +3311,78 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#e-utran-cell-global-identity-element)
+; AVP: E-UTRAN-Cell-Global-Identity
+; Section: 7.3.117
+; Page: 148
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#tracking-area-identity-element)
+; AVP: Tracking-Area-Identity
+; Section: 7.3.118
+; Page: 148
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#cell-global-identity-element)
+; AVP: Cell-Global-Identity
+; Section: 7.3.119
+; Page: 148
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#routing-area-identity-element)
+; AVP: Routing-Area-Identity
+; Section: 7.3.120
+; Page: 148
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#location-area-identity-element)
+; AVP: Location-Area-Identity
+; Section: 7.3.121
+; Page: 148
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#service-area-identity-element)
+; AVP: Service-Area-Identity
+; Section: 7.3.122
+; Page: 148
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#geographical-information-element)
+; AVP: Geographical-Information
+; Section: 7.3.123
+; Page: 148
+; Versions: 19.6.0
+"For details and octet encoding, see TS 29.002 [24]."
+    encoding element TS29.002
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#geodetic-information-element)
+; AVP: Geodetic-Information
+; Section: 7.3.124
+; Page: 148
+; Versions: 19.6.0
+"For details and octet encoding, see TS 29.002 [24]."
+    encoding element TS29.002
+
+
 ; Type: Enumerated AVP
 ; Name: Current-Location-Retrieved
 ; Section: 7.3.125
@@ -2317,6 +3414,16 @@ Error-Diagnostic ::= < Enumerated AVP header: 1614 10415 >
         ODB_ALL_APN             = 2
         ODB_HPLMN_APN           = 3
         ODB_VPLMN_APN           = 4
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#error-diagnostic-values)
+; AVP: Error-Diagnostic
+; Section: 7.3.128
+; Page: 149
+; Versions: 19.6.0
+"This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user."
+"This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30)."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -2430,6 +3537,26 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#list-of-measurements-element)
+; AVP: List-Of-Measurements
+; Section: 7.3.139
+; Page: 152
+; Versions: 19.6.0
+"The meaning of the bits is defined in TS 32.422 [23]."
+"The most significant bit is bit 8 of the first octet."
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#reporting-trigger-element)
+; AVP: Reporting-Trigger
+; Section: 7.3.140
+; Page: 152
+; Versions: 19.6.0
+"The meaning of the bits is defined in TS 32.422 [23]."
+"The most significant bit is bit 8 of the first octet."
+    encoding element TS32.422
+
+
 ; Type: Enumerated AVP
 ; Name: Report-Interval
 ; Section: 7.3.141
@@ -2452,6 +3579,24 @@ Report-Amount ::= < Enumerated AVP header: 1628 10415 >
         32       = 5 ;; supplied: (TS29.272.py#report-amount-values)
         64       = 6 ;; supplied: (TS29.272.py#report-amount-values)
         infinity = 7 ;; supplied: (TS29.272.py#report-amount-values)
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-rsrp-element)
+; AVP: Event-Threshold-RSRP
+; Section: 7.3.143
+; Page: 152
+; Versions: 19.6.0
+"See TS 32.422 [23] for allowed values"
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-rsrq-element)
+; AVP: Event-Threshold-RSRQ
+; Section: 7.3.144
+; Page: 152
+; Versions: 19.6.0
+"See TS 32.422 [23] for allowed values"
+    encoding element TS32.422
 
 
 ; Type: Enumerated AVP
@@ -2496,6 +3641,15 @@ Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
         RELAY_NODE     = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#relay-node-indicator-default)
+; AVP: Relay-Node-Indicator
+; Section: 7.3.147
+; Page: 153
+; Versions: 19.6.0
+"The default value when this AVP is not present is NOT_RELAY_NODE (0)."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: MDT-User-Consent
 ; Section: 7.3.148
@@ -2503,6 +3657,16 @@ Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
 MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
         CONSENT_NOT_GIVEN = 0
         CONSENT_GIVEN     = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mdt-user-consent-absence)
+; AVP: MDT-User-Consent
+; Section: 7.3.148
+; Page: 153
+; Versions: 19.6.0
+"The default value when this AVP is not present in ULA is CONSENT_NOT_GIVEN (0)."
+"Absence of this AVP in IDR shall be interpreted as the MDT-User-Consent has not been modified."
+    text-only
 
 
 ; Type: Value Table
@@ -2521,6 +3685,16 @@ MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
 ; Page: 153
 Subscribed-VSRVCC ::= < Enumerated AVP header: 1636 10415 >
         VSRVCC_SUBSCRIBED = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#subscribed-vsrvcc-absence)
+; AVP: Subscribed-VSRVCC
+; Section: 7.3.150
+; Page: 153
+; Versions: 19.6.0
+"Absence of this AVP in IDR shall be interpreted as the Subscribed-VSRVCC has not been modified."
+"Absence of this AVP in ULA shall be interpreted as the user is not subscribed to the vSRVCC."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2580,6 +3754,26 @@ Local-Time-Zone ::= < AVP header: 1649 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#a-msisdn-e164)
+; AVP: A-MSISDN
+; Section: 7.3.157
+; Page: 155
+; Versions: 19.6.0
+"This AVP contains an A-MSISDN, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mme-number-for-mt-sms-e164)
+; AVP: MME-Number-for-MT-SMS
+; Section: 7.3.159
+; Page: 156
+; Versions: 19.6.0
+"This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
 ; Type: Enumerated AVP
 ; Name: SMS-Register-Request
 ; Section: 7.3.162
@@ -2588,6 +3782,27 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
         SMS_REGISTRATION_REQUIRED      = 0
         SMS_REGISTRATION_NOT_PREFERRED = 1
         NO_PREFERENCE                  = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sms-register-request-skip-subscriber-data)
+; AVP: SMS-Register-Request
+; Section: 7.3.162
+; Page: 156
+; Versions: 19.6.0
+"When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP."
+    text-only
+"Absence of this AVP in the Update Location Request message shall be interpreted as if the MME or SGSN does not request to HSS any change in its registration status for SMS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#time-zone-format)
+; AVP: Time-Zone
+; Section: 7.3.163
+; Page: 156
+; Versions: 19.6.0
+"The contents of the Time-Zone AVP shall be formatted as a character string with the following format:"
+"Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC."
+    encoding time-zone
 
 
 ; Type: Enumerated AVP
@@ -2683,6 +3898,73 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
         "6000 ms" = 7 ;; supplied: (TS29.272.py#collection-period-rrm-umts-values)
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#positioning-method-octet)
+; AVP: Positioning-Method
+; Section: 7.3.170
+; Page: 158
+; Versions: 19.6.0
+"It contains one octet carrying a bit map of 8 bits."
+    length 1 octets
+"The possible values are those defined in TS 32.422 [23] for Positioning Method."
+    encoding element TS32.422 "Positioning Method"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#measurement-quantity-octet)
+; AVP: Measurement-Quantity
+; Section: 7.3.171
+; Page: 158
+; Versions: 19.6.0
+"It contains one octet carrying a bit map of 8 bits."
+    length 1 octets
+"The possible values are those defined in TS 32.422 [23] for Measurement quantity."
+    encoding element TS32.422 "Measurement quantity"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-event-1f-element)
+; AVP: Event-Threshold-Event-1F
+; Section: 7.3.172
+; Page: 158
+; Versions: 19.6.0
+"See TS 32.422 [23] for allowed values"
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-event-1i-element)
+; AVP: Event-Threshold-Event-1I
+; Section: 7.3.173
+; Page: 158
+; Versions: 19.6.0
+"See TS 32.422 [23] for allowed values"
+    encoding element TS32.422
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#restoration-priority-range)
+; AVP: Restoration-Priority
+; Section: 7.3.174
+; Page: 158
+; Versions: 19.6.0
+"Values 1 to 16 are defined, with value 1 as the highest level of priority."
+    range 1..16
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sgs-mme-identity-element)
+; AVP: SGs-MME-Identity
+; Section: 7.3.175
+; Page: 158
+; Versions: 19.6.0
+"This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4."
+    encoding element TS23.003 19.4.2.4 "MME identity"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#coupled-node-diameter-id-element)
+; AVP: Coupled-Node-Diameter-ID
+; Section: 7.3.177
+; Page: 158
+; Versions: 19.6.0
+"This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6."
+    encoding element TS23.003
+
+
 ; Type: Grouped AVP
 ; Name: ProSe-Subscription-Data
 ; Section: 7.3.180
@@ -2720,6 +4002,17 @@ WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py#wl
 "WLAN offloadability for UTRAN" = 0
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mdt-allowed-plmn-id-layout)
+; AVP: MDT-Allowed-PLMN-Id
+; Section: 7.3.185
+; Page: 160
+; Versions: 19.6.0
+"This AVP shall contain the concatenation of MCC and MNC."
+"The content of this AVP shall be encoded as an octet string according to table 7.3.185/1."
+"If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
+    encoding plmn-id
+
+
 ; Type: Grouped AVP
 ; Name: Adjacent-PLMNs
 ; Section: 7.3.186
@@ -2739,6 +4032,17 @@ Adjacent-Access-Restriction-Data ::= < AVP header: 1673 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dl-buffering-suggested-packet-count-range)
+; AVP: DL-Buffering-Suggested-Packet-Count
+; Section: 7.3.188
+; Page: 161
+; Versions: 19.6.0
+"\"Extended DL Data Buffering NOT REQUESTED\" 0"
+"\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1"
+"\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0"
+    range -1..*
+
+
 ; Type: Grouped AVP
 ; Name: IMSI-Group-Id
 ; Section: 7.3.189
@@ -2748,6 +4052,26 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
         { Group-PLMN-Id }
         { Local-Group-Id }
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#group-service-id-operator-range)
+; AVP: Group-Service-Id
+; Section: 7.3.190
+; Page: 161
+; Versions: 19.6.0
+"IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#group-plmn-id-layout)
+; AVP: Group-PLMN-Id
+; Section: 7.3.191
+; Page: 161
+; Versions: 19.6.0
+"This AVP shall contain the concatenation of MCC and MNC."
+"The content of this AVP shall be encoded as an octet string according to table 7.3.191-1."
+"If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
+    encoding plmn-id
 
 
 ; Type: Grouped AVP
@@ -2763,6 +4087,17 @@ AESE-Communication-Pattern ::= < AVP header: 3113 10415 >
       * [ Communication-Pattern-Set ]
         [ MTC-Provider-Info ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#aese-communication-pattern-reference-ids)
+; AVP: AESE-Communication-Pattern
+; Section: 7.3.193
+; Page: 162
+; Versions: 19.6.0
+"At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present."
+    text-only
+"When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2804,6 +4139,47 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-extended-ids)
+; AVP: Monitoring-Event-Configuration
+; Section: 7.3.195
+; Page: 163
+; Versions: 19.6.0
+"When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-scef-realm)
+; AVP: SCEF-Realm
+; Within: Monitoring-Event-Configuration
+; Section: 7.3.195
+; Page: 163
+; Versions: 19.6.0
+"When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-monitoring-type)
+; AVP: Monitoring-Type
+; Within: Monitoring-Event-Configuration
+; Section: 7.3.195
+; Page: 163
+; Versions: 19.6.0
+"Monitoring-Type AVP shall be ignored for deletion of an event (i.e. when SCEF-Reference-ID-for-Deletion/SCEF-Reference-ID-for-Deletion-Ext AVP is present)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-maximum-number-of-reports)
+; AVP: Maximum-Number-of-Reports
+; Within: Monitoring-Event-Configuration
+; Section: 7.3.195
+; Page: 163
+; Versions: 19.6.0
+"Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6)."
+    absent-if Monitoring-Type = 6
+"Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1)."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Monitoring-Event-Report
 ; Section: 7.3.196
@@ -2823,6 +4199,36 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-report-reachability-information)
+; AVP: Reachability-Information
+; Within: Monitoring-Event-Report
+; Section: 7.3.196
+; Page: 164
+; Versions: 19.6.0
+"For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-report-pdn-connectivity)
+; AVP: PDN-Connectivity-Status-Report
+; Within: Monitoring-Event-Report
+; Section: 7.3.196
+; Page: 164
+; Versions: 19.6.0
+"each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\"."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-report-scef-reference-id)
+; AVP: SCEF-Reference-ID
+; Within: Monitoring-Event-Report
+; Section: 7.3.196
+; Page: 164
+; Versions: 19.6.0
+"When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext AVP shall be used instead of SCEF-Reference-ID; in such case, the required AVP \"SCEF-Reference-ID\" shall be included in the grouped AVP by the sender, but its content shall be discarded by the receiver."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: UE-Reachability-Configuration
 ; Section: 7.3.197
@@ -2831,6 +4237,16 @@ UE-Reachability-Configuration ::= < AVP header: 3129 10415 >
         [ Reachability-Type ]
         [ Maximum-Response-Time ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ue-reachability-configuration-reachability-type)
+; AVP: Reachability-Type
+; Within: UE-Reachability-Configuration
+; Section: 7.3.197
+; Page: 165
+; Versions: 19.6.0
+"For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2870,6 +4286,15 @@ SAT-SF-Operation                                  = 9
 Disaster-Roaming-service-in-EPS-Indication = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ue-usage-type-range)
+; AVP: UE-Usage-Type
+; Section: 7.3.202
+; Page: 166
+; Versions: 19.6.0
+"The allowed values of UE-Usage-Type shall be in the range of 0 to 255."
+    range 0..255
+
+
 ; Type: Enumerated AVP
 ; Name: Non-IP-PDN-Type-Indicator
 ; Section: 7.3.204
@@ -2877,6 +4302,24 @@ Disaster-Roaming-service-in-EPS-Indication = 1
 Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
         FALSE = 0
         TRUE  = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#non-ip-pdn-type-indicator-default)
+; AVP: Non-IP-PDN-Type-Indicator
+; Section: 7.3.204
+; Page: 167
+; Versions: 19.6.0
+"The default value when this AVP is not present is FALSE (0)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#non-ip-data-delivery-mechanism-default)
+; AVP: Non-IP-Data-Delivery-Mechanism
+; Section: 7.3.205
+; Page: 167
+; Versions: 19.6.0
+"The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0)."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2901,6 +4344,16 @@ Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
 ; Page: 168
 "Data over User Plane Preferred"    = 0
 "Data over Control Plane Preferred" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#preferred-data-mode-bits)
+; AVP: Preferred-Data-Mode
+; Section: 7.3.209
+; Table: 7.3.209/1
+; Page: 168
+; Versions: 19.6.0
+"NOTE 2: At least one of the bits 0 and 1 shall be set to 1."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2942,6 +4395,19 @@ eDRX-Cycle-Length ::= < AVP header: 1691 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#edrx-cycle-length-value-octet)
+; AVP: eDRX-Cycle-Length-Value
+; Section: 7.3.216
+; Page: 169
+; Versions: 19.6.0
+"The contents of eDRX-Cycle-Length-Value shall consist of 1 octet."
+    length 1 octets
+"The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\""
+    encoding element TS24.008 10.5.5.32 "Extended DRX parameter"
+"the 4 most significant bits of the octet in this AVP shall be set to 0."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: MBSFN-Area
 ; Section: 7.3.219
@@ -2952,6 +4418,24 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mbsfn-area-id-range)
+; AVP: MBSFN-Area-ID
+; Section: 7.3.220
+; Page: 170
+; Versions: 19.6.0
+"it shall contain the MBSFN Area ID value, in the range of 0..255 (see TS 36.331 [62])."
+    range 0..255
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#carrier-frequency-range)
+; AVP: Carrier-Frequency
+; Section: 7.3.221
+; Page: 170
+; Versions: 19.6.0
+"it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62])."
+    range 0..262143
+
+
 ; Type: Enumerated AVP
 ; Name: RDS-Indicator
 ; Section: 7.3.222
@@ -2959,6 +4443,15 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
 RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
         DISABLED = 0
         ENABLED  = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#rds-indicator-default)
+; AVP: RDS-Indicator
+; Section: 7.3.222
+; Page: 170
+; Versions: 19.6.0
+"The default value when this AVP is not present is DISABLED (0)."
+    text-only
 
 
 ; Type: Value Table
@@ -3024,6 +4517,28 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#operation-mode-range)
+; AVP: Operation-Mode
+; Section: 7.3.227
+; Page: 174
+; Versions: 19.6.0
+"The allowed values of Operation-Mode shall be in the range of 0 to 255."
+    range 0..255
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#paging-time-window-length-octet)
+; AVP: Paging-Time-Window-Length
+; Section: 7.3.228
+; Page: 175
+; Versions: 19.6.0
+"The contents of Paging-Time-Window-Length shall consist of 1 octet."
+    length 1 octets
+"The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\""
+    encoding element TS24.008 10.5.5.32 "Extended DRX parameter"
+"the 4 least significant bits of the octet in this AVP shall be set to 0."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: eDRX-Related-RAT
 ; Section: 7.3.229
@@ -3052,6 +4567,15 @@ Interworking-5GS-Indicator ::= < Enumerated AVP header: 1706 10415 >
         SUBSCRIBED     = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#interworking-5gs-indicator-default)
+; AVP: Interworking-5GS-Indicator
+; Section: 7.3.231
+; Page: 175
+; Versions: 19.6.0
+"The default value when this AVP is not present is NOT-SUBSCRIBED (0)."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Ethernet-PDN-Type-Indicator
 ; Section: 7.3.232
@@ -3059,6 +4583,15 @@ Interworking-5GS-Indicator ::= < Enumerated AVP header: 1706 10415 >
 Ethernet-PDN-Type-Indicator ::= < Enumerated AVP header: 1707 10415 >
         FALSE = 0
         TRUE  = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ethernet-pdn-type-indicator-default)
+; AVP: Ethernet-PDN-Type-Indicator
+; Section: 7.3.232
+; Page: 175
+; Versions: 19.6.0
+"The default value when this AVP is not present is FALSE (0)."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -3102,6 +4635,15 @@ PC5-QoS-Flow ::= < AVP header: 1712 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#5qi-element)
+; AVP: 5QI
+; Section: 7.3.238
+; Page: 177
+; Versions: 19.6.0
+"See TS 23.501 [69] for allowed values."
+    encoding element TS23.501 "5QI"
+
+
 ; Type: Grouped AVP
 ; Name: PC5-Flow-Bitrates
 ; Section: 7.3.239
@@ -3132,6 +4674,15 @@ MDT-Configuration-NR ::= < AVP header: 1720 10415 >
       * [ Sensor-Measurement ]
       * [ MDT-Allowed-PLMN-Id ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-sinr-element)
+; AVP: Event-Threshold-SINR
+; Section: 7.3.246
+; Page: 178
+; Versions: 19.6.0
+"See TS 32.422 [23] for allowed values"
+    encoding element TS32.422
 
 
 ; Type: Enumerated AVP
@@ -3169,6 +4720,15 @@ Collection-Period-M6-NR ::= < Enumerated AVP header: 1723 10415 >
         "30 min"   = 13 ;; supplied: (TS29.272.py#collection-period-m6-nr-values)
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#collection-period-m7-nr-element)
+; AVP: Collection-Period-M7-NR
+; Section: 7.3.249
+; Page: 178
+; Versions: 19.6.0
+"The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes."
+    encoding element TS32.422 "Collection period M7 in NR"
+
+
 ; Type: Enumerated AVP
 ; Name: Sensor-Measurement
 ; Section: 7.3.250
@@ -3177,6 +4737,15 @@ Sensor-Measurement ::= < Enumerated AVP header: 1725 10415 >
         BAROMETRIC_PRESSURE = 0
         UE_SPEED            = 1
         UE_ORIENTATION      = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nr-cell-global-identity-element)
+; AVP: NR-Cell-Global-Identity
+; Section: 7.3.251
+; Page: 179
+; Versions: 19.6.0
+"Octets are coded as described in TS 29.002 [24]."
+    encoding element TS29.002
 
 
 ; Type: Value Table
@@ -3191,6 +4760,16 @@ Sensor-Measurement ::= < Enumerated AVP header: 1725 10415 >
 "Restriction to NR access subjected to the serving PLMN operator policy"                     = 3
 "Restriction to E-UTRAN over satellite access subjected to the serving PLMN operator policy" = 4
 "Restriction to NR over satellite access subjected to the serving PLMN operator policy"      = 5
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#plmn-rat-usage-control-restricted)
+; AVP: PLMN-RAT-Usage-Control
+; Section: 7.3.253
+; Table: 7.3.253/1
+; Page: 179
+; Versions: 19.6.0
+"RAT restricted by the Access-Restriction-Data AVP shall not be set as restricted in PLMN-RAT-Usage-Control AVP."
+    text-only
 
 
 ; Type: Enumerated AVP
