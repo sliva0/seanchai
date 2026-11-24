@@ -240,6 +240,14 @@ def _holds(
         )
     if rule.kind == "encoding" and rule.codec is not None:
         return constraints.codec_problem(rule.codec, payload) is None
+    if rule.kind == "bits":
+        value = constraints.integer_value(data_type, payload)
+        if value is None:
+            return True
+        held = sum(1 for each in rule.bits if value >> each & 1)
+        if rule.relation is ast.BitsRelation.AT_MOST_ONE:
+            return held <= 1
+        return held >= 1
     return True
 
 
@@ -247,7 +255,7 @@ def _value_rules(rules: Sequence[dictionary.Rule]) -> list[dictionary.Rule]:
     return [
         rule
         for rule in rules
-        if rule.kind in ("length", "range", "exclude", "encoding")
+        if rule.kind in ("length", "range", "exclude", "encoding", "bits")
         and not (rule.kind == "encoding" and rule.codec is ast.Codec.ELEMENT)
     ]
 
@@ -326,6 +334,11 @@ def _payload(
             for rule in rules:
                 if rule.kind == "range":
                     numbers += [n for n in (rule.low, rule.high) if n is not None]
+                if (
+                    rule.kind == "bits"
+                    and rule.relation is ast.BitsRelation.AT_LEAST_ONE
+                ):
+                    numbers.insert(0, 1 << rule.bits[0])
             numbers += [0, 1]
         if data_type in (ast.DataType.FLOAT32, ast.DataType.FLOAT64):
             return b"\0" * _FIXED[data_type]
@@ -1267,6 +1280,13 @@ class _Negatives:
                         or (rule.low is not None and value < rule.low)
                     ):
                         candidates.append(_integer(data_type, value))
+        elif rule.kind == "bits" and data_type in _FIXED:
+            value = (
+                sum(1 << each for each in rule.bits)
+                if rule.relation is ast.BitsRelation.AT_MOST_ONE
+                else 0
+            )
+            candidates.append(_integer(data_type, value))
         elif rule.kind == "exclude":
             candidates += [
                 _integer(data_type, value)
@@ -1472,6 +1492,8 @@ def _rule_text(rule: dictionary.Rule) -> str:
         return "exclude " + ", ".join(map(str, rule.values))
     if rule.kind == "encoding":
         return f"encoding {rule.codec}"
+    if rule.kind == "bits":
+        return f"bits {rule.relation} {' '.join(map(str, rule.bits))}"
     conditions = " or ".join(
         c.avp
         + (f" = {c.value}" if c.value is not None else "")

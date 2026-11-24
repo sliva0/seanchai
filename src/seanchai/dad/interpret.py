@@ -45,8 +45,11 @@ __all__ = [
     "Interpret",
     "absent_if",
     "bit",
+    "bits_at_least_one",
+    "bits_at_most_one",
     "characters",
     "check_quotes",
+    "default",
     "digits",
     "element",
     "encoding",
@@ -168,6 +171,23 @@ def requires(*conditions: ast.Condition | str) -> ast.PredicateRule:
 def excludes(*conditions: ast.Condition | str) -> ast.PredicateRule:
     """`excludes C [or C ...]`."""
     return _predicate(ast.PredicateKind.EXCLUDES, conditions)
+
+
+def default(value: int | str) -> ast.DefaultRule:
+    """`default VALUE`: what the AVP is read as when absent, a number or a
+    value's name."""
+    return ast.DefaultRule(value=value)
+
+
+def bits_at_most_one(*bits: int) -> ast.BitsRule:
+    """`bits at-most-one B B ...`: of these bits of the AVP's own value, at
+    most one is set."""
+    return ast.BitsRule(relation=ast.BitsRelation.AT_MOST_ONE, bits=bits)
+
+
+def bits_at_least_one(*bits: int) -> ast.BitsRule:
+    """`bits at-least-one B B ...`: of these bits, at least one is set."""
+    return ast.BitsRule(relation=ast.BitsRelation.AT_LEAST_ONE, bits=bits)
 
 
 def text_only() -> ast.TextOnly:

@@ -79,6 +79,8 @@ TS 29.272's file prints it:
 | `absent-if` | `absent-if Emergency-Services bit Emergency-Indication` | the AVP is absent when a condition holds |
 | `requires` | `requires DSR-Flags bit "Trace Data Withdrawal"` | a condition holds when the AVP is present |
 | `excludes` | `excludes Other-AVP` | no condition holds when the AVP is present |
+| `default` | `default FALSE`, `default 0` | (what an absent AVP is read as) |
+| `bits` | `bits at-most-one 3 6`, `bits at-least-one 0 1` | of these bits of the AVP's own value, at most one is set, or at least one |
 | `text-only` | `text-only` | (a reader decides) |
 
 A predicate's conditions are alternatives (`or`), each on a sibling in the
@@ -118,7 +120,8 @@ document without stating a layout ("Octets are coded according to TS 29.002
 payload)` says why a payload is no such layout, `digit_count` counts its
 digits, and `check(rule, payload, data_type, codec)` tells whether a length,
 range, exclude or encoding rule holds, None where the payload alone cannot
-tell (a predicate, an `element`, `text-only`).
+tell (a predicate, an `element`, a `default`, `text-only`). A `bits` rule
+holds of an unsigned integer's payload.
 
 ## Reading them
 
@@ -142,7 +145,8 @@ tell (a predicate, an `element`, `text-only`).
   and rules that cannot all hold
   ([linter.md](linter.md#interpreted-constraints)).
 - The Wireshark plugin checks lengths, ranges, exclusions, the codecs but
-  `element`, and the predicates whose names resolve
+  `element`, `bits` rules, and the predicates whose names resolve; a
+  `default` breaks nothing on the wire
   ([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)).
 
 ## Adding them for another document
@@ -194,11 +198,14 @@ C row of its information-element tables.
 | `range` | 7 |
 | `exclude` | 3 |
 | `requires`, `present-if`, `absent-if` | 17, 2, 2 |
-| `text-only` | 78 |
+| `default` | 9 |
+| `bits` | 2: `at-most-one` (DSR-Flags), `at-least-one` (Preferred-Data-Mode) |
+| `text-only` | 67 |
 
 The text-only rules are mostly conditions on the node, the interface, an
 earlier message or a feature (an information element's "shall be present if
-the MME supports SMS in MME"), default values and what an absent AVP means,
-rules on the bits of one AVP's own value (DSR-Flags' "Bits 3 and 6 are
-excluding alternatives and shall not both be set"), and conditions on an
+the MME supports SMS in MME"), what an absent AVP means where that is no
+value or differs between commands (MDT-User-Consent's in ULA and IDR), rules
+on bits that depend on another bit or the interface (Access-Restriction-Data's
+"Bits 11 and 12 are only used when bit 4 is not set"), and conditions on an
 OctetString's value (PDP-Type's, whose octets the clauses do not spell out).

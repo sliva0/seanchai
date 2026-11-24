@@ -11,7 +11,10 @@ from seanchai.dad.interpret import (
     Interpret,
     absent_if,
     bit,
+    bits_at_least_one,
+    bits_at_most_one,
     characters,
+    default,
     digits,
     element,
     encoding,
@@ -72,6 +75,10 @@ _EVERY_RULE = _dad(
     '    present-if Result-Code = DIAMETER_SUCCESS or Mode = "a b" or Other',
     "    absent-if Emergency-Services bit Emergency-Indication",
     "    excludes Level = -1",
+    "    default FALSE",
+    "    default 0",
+    "    bits at-most-one 3 6",
+    "    bits at-least-one 0 1",
     '"Third."',
     "    text-only",
 )
@@ -99,6 +106,12 @@ def test_every_rule_reads_and_writes_back():
     assert second.rules[1] == ast.RangeRule(low=-1, high=None)
     assert second.rules[3] == ast.RangeRule(low=7, high=7)
     assert second.rules[5] == ast.LengthRule(unit=ast.LengthUnit.OCTETS, low=3, high=3)
+    assert second.rules[-4:] == (
+        ast.DefaultRule(value="FALSE"),
+        ast.DefaultRule(value=0),
+        ast.BitsRule(relation=ast.BitsRelation.AT_MOST_ONE, bits=(3, 6)),
+        ast.BitsRule(relation=ast.BitsRelation.AT_LEAST_ONE, bits=(0, 1)),
+    )
     assert third.rules == (ast.TextOnly(),)
     assert formatter.format_spec(spec, comments) == _EVERY_RULE
 
@@ -135,6 +148,18 @@ def test_every_rule_reads_and_writes_back():
         ),
         pytest.param(
             _block('"Q."', "    must-have X"), 11, "malformed rule", id="kind"
+        ),
+        pytest.param(
+            _block('"Q."', "    bits exactly-one 1 2"),
+            11,
+            "unknown relation",
+            id="bits-relation",
+        ),
+        pytest.param(
+            _block('"Q."', "    bits at-most-one 2 2"),
+            11,
+            "names a bit twice",
+            id="bits-twice",
         ),
         pytest.param(_block('"Q."', "length 3 octets"), 11, "indented", id="flush"),
         pytest.param(
@@ -201,6 +226,9 @@ def test_the_builders_spell_the_rules_the_file_prints():
         present_if(bit("DSR-Flags", "Delete monitoring events")),
         absent_if("MIP6-Agent-Info"),
         excludes(equals("Level", 2), "Other"),
+        default("NOT_RELAY_NODE"),
+        bits_at_most_one(3, 6),
+        bits_at_least_one(0, 1),
         text_only(),
     ]
 
@@ -217,6 +245,9 @@ def test_the_builders_spell_the_rules_the_file_prints():
         'present-if DSR-Flags bit "Delete monitoring events"',
         "absent-if MIP6-Agent-Info",
         "excludes Level = 2 or Other",
+        "default NOT_RELAY_NODE",
+        "bits at-most-one 3 6",
+        "bits at-least-one 0 1",
         "text-only",
     ]
 
@@ -493,6 +524,24 @@ _BROKEN = _dad(
     "; Versions: 19.0.0",
     '"Q."',
     "    length 4 characters",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Example-Mode",
+    "; Section: 6.3.5",
+    "; Versions: 19.0.0",
+    '"Q."',
+    "    default MAYBE",
+    "    bits at-most-one 1 2",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Example-Flags",
+    "; Section: 6.3.4",
+    "; Versions: 19.0.0",
+    '"Q."',
+    "    bits at-least-one 0 7",
+    "    default -1",
 )
 
 
@@ -542,8 +591,16 @@ def test_the_linter_reports_what_cannot_hold():
         ),
         (
             "constraint-type-mismatch",
+            "Example-Flags: -1 is beyond what Unsigned32 holds",
+        ),
+        (
+            "constraint-type-mismatch",
             "Example-Mode in Example-Group: a character length needs text, not"
             " Enumerated",
+        ),
+        (
+            "constraint-type-mismatch",
+            "Example-Mode: a bits rule needs an unsigned integer, not Enumerated",
         ),
         (
             "constraint-type-mismatch",
@@ -556,6 +613,14 @@ def test_the_linter_reports_what_cannot_hold():
         (
             "constraint-value-unknown",
             "Example-Flags in Example-Request: Example-Mode names no value 'NOPE'",
+        ),
+        (
+            "constraint-value-unknown",
+            "Example-Flags: Example-Flags's bit table names no bit 7",
+        ),
+        (
+            "constraint-value-unknown",
+            "Example-Mode: Example-Mode names no value 'MAYBE'",
         ),
     ]
 

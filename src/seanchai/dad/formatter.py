@@ -659,6 +659,10 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
         case ast.PredicateRule():
             conditions = " or ".join(_condition(each) for each in rule.conditions)
             return f"{rule.kind} {conditions}"
+        case ast.DefaultRule():
+            return f"default {_value_ref(rule.value)}"
+        case ast.BitsRule():
+            return f"bits {rule.relation} {' '.join(map(str, rule.bits))}"
         case ast.TextOnly():
             return "text-only"
 

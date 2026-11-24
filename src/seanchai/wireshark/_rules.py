@@ -502,14 +502,15 @@ def _constraint(
 ) -> str | None:
     """A constraint as `{at=n, rules={...}}`, each rule `{k=kind, ...}`:
     `u`, `lo`, `hi` for a length, `lo` and `hi` for a range, `v` for exclude,
-    `codec` for an encoding, `c` for a predicate's conditions, each `{avp=,
+    `codec` for an encoding, `r` and `b` for a bits rule's relation and bits,
+    `c` for a predicate's conditions, each `{avp=,
     t=, v=}` (a value) or `{avp=, t=, b=}` (a bit) or `{avp=, t=}` (present).
     `siblings`
     maps a member name to its reading's id, where the scope has members; a
     condition's `t` is as the file spells it. A
-    predicate whose names do not resolve, an `element` and `text-only` are
-    left out: what the plugin cannot check it does not report. None for a
-    constraint left with no rule."""
+    predicate whose names do not resolve, an `element`, a `default` and
+    `text-only` are left out: what the plugin cannot check it does not
+    report. None for a constraint left with no rule."""
     rules = []
     for reading in constraint.readings:
         for rule in reading.rules:
@@ -533,6 +534,15 @@ def _constraint(
                     rules.append(
                         f"{{k='encoding',codec={lua_string(rule.codec.value)}}}"
                     )
+            elif kind == "bits":
+                assert rule.relation is not None
+                numbers = ",".join(str(each) for each in rule.bits)
+                rules.append(
+                    f"{{k='bits',r={lua_string(rule.relation.value)},b={{{numbers}}}}}"
+                )
+            elif kind == "default":
+                # What an absent AVP is read as: nothing on the wire breaks it.
+                continue
             elif kind != "text-only":
                 conditions = []
                 for condition in rule.conditions:

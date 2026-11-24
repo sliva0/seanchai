@@ -43,6 +43,8 @@ __all__ = [
     "AvpTable",
     "AvpTableColumn",
     "AvpTableRow",
+    "BitsRelation",
+    "BitsRule",
     "Category",
     "ClauseWildcard",
     "Codec",
@@ -50,6 +52,7 @@ __all__ = [
     "Condition",
     "ConstraintRule",
     "DataType",
+    "DefaultRule",
     "ElementRow",
     "EncodingRule",
     "EnumEntry",
@@ -1484,6 +1487,40 @@ class PredicateRule(Node):
     conditions: Annotated[tuple[Condition, ...], Field(min_length=1)]
 
 
+class DefaultRule(Node):
+    """`default FALSE`, `default 0`: what an absent AVP is read as, a number
+    or a name its values give ("The default value when this AVP is not
+    present is FALSE (0)", TS 29.272 clause 7.3.204). Nothing on the wire
+    breaks it; a receiver reads the absence so."""
+
+    kind: Literal["default"] = "default"
+    value: ValueRef
+
+
+class BitsRelation(enum.StrEnum):
+    """What a `bits` rule says of the bits it names: at most one of them set
+    ("excluding alternatives", "shall not both be set"), or at least one."""
+
+    AT_MOST_ONE = "at-most-one"
+    AT_LEAST_ONE = "at-least-one"
+
+
+class BitsRule(Node):
+    """`bits at-most-one 3 6`: a rule on the AVP's own bits, by number as its
+    bit table numbers them ("Bits 3 and 6 are excluding alternatives and
+    shall not both be set", TS 29.272 table 7.3.25/1)."""
+
+    kind: Literal["bits"] = "bits"
+    relation: BitsRelation
+    bits: Annotated[tuple[Annotated[int, Field(ge=0, le=63)], ...], Field(min_length=2)]
+
+    @pydantic.model_validator(mode="after")
+    def _distinct(self) -> BitsRule:
+        if len(set(self.bits)) != len(self.bits):
+            raise ValueError(f"bits {list(self.bits)} names a bit twice")
+        return self
+
+
 class TextOnly(Node):
     """`text-only`: a rule the quote states that no kind expresses, such as
     one depending on an earlier message, a negotiated feature or the
@@ -1493,7 +1530,14 @@ class TextOnly(Node):
 
 
 ConstraintRule = Annotated[
-    LengthRule | RangeRule | ExcludeRule | EncodingRule | PredicateRule | TextOnly,
+    LengthRule
+    | RangeRule
+    | ExcludeRule
+    | EncodingRule
+    | PredicateRule
+    | DefaultRule
+    | BitsRule
+    | TextOnly,
     Field(discriminator="kind"),
 ]
 

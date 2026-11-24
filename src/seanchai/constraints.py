@@ -272,6 +272,17 @@ def check(
                 return Check(None)
             problem = codec_problem(rule.codec, payload)
             return Check(problem is None, problem)
+        case ast.BitsRule():
+            value = integer_value(data_type, payload)
+            if value is None:
+                return Check(None)
+            held = [bit for bit in rule.bits if value >> bit & 1]
+            if rule.relation is ast.BitsRelation.AT_MOST_ONE and len(held) > 1:
+                return Check(False, f"bits {', '.join(map(str, held))} are all set")
+            if rule.relation is ast.BitsRelation.AT_LEAST_ONE and not held:
+                named = ", ".join(map(str, rule.bits))
+                return Check(False, f"none of bits {named} is set")
+            return Check(True)
         case _:
             return Check(None)
     if _within(count, rule.low, rule.high):

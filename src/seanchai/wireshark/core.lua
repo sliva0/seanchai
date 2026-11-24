@@ -640,6 +640,27 @@ local function check_constraints(ctx, avp, reading, path, scoped)
           if problem then
             problem = "is no " .. rule.codec .. ": it " .. problem
           end
+        elseif rule.k == "bits" then
+          local value = integer_value(reading.type, data)
+          if value then
+            local held = {}
+            for _, each in ipairs(rule.b) do
+              if has(value, 2 ^ each) then
+                held[#held + 1] = tostring(each)
+              end
+            end
+            if rule.r == "at-most-one" and #held > 1 then
+              problem = string.format("sets bits %s, of which at most one may be",
+                table.concat(held, " and "))
+            elseif rule.r == "at-least-one" and #held == 0 then
+              local named = {}
+              for _, each in ipairs(rule.b) do
+                named[#named + 1] = tostring(each)
+              end
+              problem = string.format("sets none of bits %s, one of which must be",
+                table.concat(named, ", "))
+            end
+          end
         end
         if problem then
           interpreted(ctx, cons, rule.k, reading.name .. " " .. problem, avp.data,

@@ -693,6 +693,10 @@ def _constraint_readings(
                     ConstraintCondition(avp=each.avp, value=each.value, bit=each.bit)
                     for each in node.conditions
                 )
+            case ast.DefaultRule():
+                fields["value"] = node.value
+            case ast.BitsRule():
+                fields |= {"relation": node.relation, "bits": node.bits}
             case ast.TextOnly():
                 pass
         rules.append(ConstraintRule(**fields))

@@ -1029,6 +1029,8 @@ _ENCODING_RE = re.compile(
     rf"(?: (?P<element>{_QUOTED}))?$"
 )
 _PREDICATE_RE = re.compile(r"^(?P<kind>[a-z-]+) (?P<conditions>.+)$")
+_DEFAULT_RE = re.compile(rf"^default (?P<value>{_NAME_OR_NUMBER})$")
+_BITS_RE = re.compile(r"^bits (?P<relation>[a-z-]+) (?P<bits>[0-9]+(?: [0-9]+)+)$")
 _CONDITION_RE = re.compile(
     r"(?P<avp>[A-Za-z0-9][A-Za-z0-9_-]*)"
     rf"(?: = (?P<value>{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
@@ -1120,6 +1122,21 @@ def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
                 element=None
                 if element is None
                 else _ESCAPE_RE.sub(r"\1", element[1:-1]),
+            )
+        if match := _DEFAULT_RE.match(text):
+            value = _name_or_number(match["value"])
+            assert value is not None
+            return ast.DefaultRule(value=value)
+        if match := _BITS_RE.match(text):
+            if match["relation"] not in ast.BitsRelation:
+                known = ", ".join(each.value for each in ast.BitsRelation)
+                raise DadParseError(
+                    lineno,
+                    f"unknown relation {match['relation']!r} (expected one of {known})",
+                )
+            return ast.BitsRule(
+                relation=ast.BitsRelation(match["relation"]),
+                bits=tuple(int(each) for each in match["bits"].split()),
             )
         if (match := _PREDICATE_RE.match(text)) and match["kind"] in ast.PredicateKind:
             return ast.PredicateRule(

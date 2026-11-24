@@ -1553,7 +1553,7 @@ IMSI                                                                User-Name   
 ; Page: 54
 ; Versions: 19.6.0
 "Absence of this information element shall be interpreted as all bits set to 0."
-    text-only
+    default 0
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-homogeneous-support)
@@ -2144,7 +2144,7 @@ Service-Gap-Time-Withdrawal                      = 31
 ; Page: 122
 ; Versions: 19.6.0
 "Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set."
-    text-only
+    bits at-most-one 3 6
 "Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared."
     text-only
 
@@ -2474,7 +2474,7 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
 ; Page: 131
 ; Versions: 19.6.0
 "If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1)."
-    text-only
+    default PRE-EMPTION_CAPABILITY_DISABLED
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#allocation-retention-priority-pre-emption-vulnerability-default)
@@ -2484,7 +2484,7 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
 ; Page: 131
 ; Versions: 19.6.0
 "If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0)."
-    text-only
+    default PRE-EMPTION_VULNERABILITY_ENABLED
 
 
 ; Type: Grouped AVP
@@ -3647,7 +3647,7 @@ Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
 ; Page: 153
 ; Versions: 19.6.0
 "The default value when this AVP is not present is NOT_RELAY_NODE (0)."
-    text-only
+    default NOT_RELAY_NODE
 
 
 ; Type: Enumerated AVP
@@ -4310,7 +4310,7 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
 ; Page: 167
 ; Versions: 19.6.0
 "The default value when this AVP is not present is FALSE (0)."
-    text-only
+    default FALSE
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#non-ip-data-delivery-mechanism-default)
@@ -4319,7 +4319,7 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
 ; Page: 167
 ; Versions: 19.6.0
 "The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0)."
-    text-only
+    default SGi-BASED-DATA-DELIVERY
 
 
 ; Type: Grouped AVP
@@ -4353,7 +4353,7 @@ Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
 ; Page: 168
 ; Versions: 19.6.0
 "NOTE 2: At least one of the bits 0 and 1 shall be set to 1."
-    text-only
+    bits at-least-one 0 1
 
 
 ; Type: Grouped AVP
@@ -4451,7 +4451,7 @@ RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
 ; Page: 170
 ; Versions: 19.6.0
 "The default value when this AVP is not present is DISABLED (0)."
-    text-only
+    default DISABLED
 
 
 ; Type: Value Table
@@ -4573,7 +4573,7 @@ Interworking-5GS-Indicator ::= < Enumerated AVP header: 1706 10415 >
 ; Page: 175
 ; Versions: 19.6.0
 "The default value when this AVP is not present is NOT-SUBSCRIBED (0)."
-    text-only
+    default NOT-SUBSCRIBED
 
 
 ; Type: Enumerated AVP
@@ -4591,7 +4591,7 @@ Ethernet-PDN-Type-Indicator ::= < Enumerated AVP header: 1707 10415 >
 ; Page: 175
 ; Versions: 19.6.0
 "The default value when this AVP is not present is FALSE (0)."
-    text-only
+    default FALSE
 
 
 ; Type: Enumerated AVP

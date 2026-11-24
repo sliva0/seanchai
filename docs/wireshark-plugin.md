@@ -81,7 +81,8 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
 - Interpreted constraints ([constraints.md](constraints.md)), what a person
   read in the clauses' prose, each a warning saying the rule is interpreted:
   a length in octets, digits or characters, a range, an excluded value, an
-  encoding (`constraint-length`, `-range`, `-exclude`, `-encoding`), for the
+  encoding, a rule on the AVP's own bits (`constraint-length`, `-range`,
+  `-exclude`, `-encoding`, `-bits`), for the
   AVP wherever its reading's document reads it and as a member of the command
   or grouped AVP holding it; and the predicates tying a member's presence to
   its siblings (`constraint-present-if`, `-absent-if`, `-requires`,

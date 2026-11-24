@@ -79,6 +79,7 @@ def test_every_command_gets_valid_and_negative_vectors_in_a_fixed_order(s6a, bui
         "constraint-requires",
         "constraint-present-if",
         "constraint-absent-if",
+        "constraint-bits",
     }
     assert "vectors" in json.dumps(vectors.json_schema())
 

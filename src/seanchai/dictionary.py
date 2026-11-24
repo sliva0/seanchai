@@ -142,8 +142,10 @@ class Rule(_Model):
     inclusive `low` and `high`, null where open. `range`: `low` and `high`.
     `exclude`: `values`. `encoding`: `codec`, and for an `element` the
     `document`, `clause` and `element` name. `present-if`, `absent-if`,
-    `requires` and `excludes`: `conditions`, alternatives. `text-only`: no
-    field; a checker reports it unknown."""
+    `requires` and `excludes`: `conditions`, alternatives. `default`: `value`,
+    a number or a name its values give, what the AVP is read as when absent.
+    `bits`: `relation` (`at-most-one`, `at-least-one`) of the AVP's own
+    `bits`, by number. `text-only`: no field; a checker reports it unknown."""
 
     kind: Literal[
         "length",
@@ -154,6 +156,8 @@ class Rule(_Model):
         "absent-if",
         "requires",
         "excludes",
+        "default",
+        "bits",
         "text-only",
     ]
     unit: ast.LengthUnit | None
@@ -165,6 +169,9 @@ class Rule(_Model):
     clause: str | None
     element: str | None
     conditions: tuple[Condition, ...]
+    value: int | str | None
+    relation: ast.BitsRelation | None
+    bits: tuple[int, ...]
 
 
 class Reading(_Model):
@@ -794,6 +801,9 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
         "clause": None,
         "element": None,
         "conditions": (),
+        "value": None,
+        "relation": None,
+        "bits": (),
     }
     match rule:
         case ast.LengthRule():
@@ -814,6 +824,10 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
                 Condition(avp=each.avp, value=each.value, bit=each.bit)
                 for each in rule.conditions
             )
+        case ast.DefaultRule():
+            fields["value"] = rule.value
+        case ast.BitsRule():
+            fields |= {"relation": rule.relation, "bits": rule.bits}
         case ast.TextOnly():
             pass
     return Rule.model_validate(fields)

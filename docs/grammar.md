@@ -594,7 +594,8 @@ version-bound = version / "*"
 reading       = 1*(quote-line NL) 1*(rule-line NL)
 quote-line    = DQUOTE 1*(name-char / SP) DQUOTE   ; as inline-text, escaped
 rule-line     = 4SP rule
-rule          = length / range / exclude / encoding / predicate / "text-only"
+rule          = length / range / exclude / encoding / predicate / default
+              / bits / "text-only"
 length        = "length " bounds SP ("octets" / "digits" / "characters")
 range         = "range " bounds
 exclude       = "exclude " integer *(", " integer)
@@ -611,6 +612,8 @@ predicate     = predicate-kind SP condition *(" or " condition)
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
 condition     = avp-name [" = " value-ref / " bit " value-ref]
 value-ref     = integer / enum-name
+default       = "default " value-ref
+bits          = "bits " ("at-most-one" / "at-least-one") 2*(SP 1*DIGIT)
 ```
 
 What a clause states in prose about one AVP's value or presence, as a person
@@ -666,6 +669,9 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   `excludes` (none holds when it is present). A condition is a sibling's
   presence, its value, a number or a name its values or result codes give
   it, or a bit, by number or by its bit table's name.
+- `default` is what the AVP is read as when absent, a number or a name its
+  values give. `bits` is a rule on the AVP's own bits, numbered as its bit
+  table numbers them: at most one of them set, or at least one.
 - `text-only` is a rule the quote states that no kind expresses: one
   depending on an earlier message, a feature, the node or the subscriber,
   or on more than the kinds can say. It is a reading's only rule.
@@ -700,7 +706,7 @@ Checked by the AST after parsing:
 - An Interpreted Constraints block's bounds are ordered and an `exclude`
   names a value once; `; Application-ID:` needs `; Command:`, which excludes
   `; Within:`; a condition tests a value or a bit, not both; only `element`
-  takes a document, and it needs one.
+  takes a document, and it needs one; a `bits` rule names a bit once.
 - Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
   value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
   and at least 1.

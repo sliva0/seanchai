@@ -289,7 +289,8 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   kind uses, the others null or empty: a length's `unit`, `low` and `high`,
   a range's `low` and `high`, exclude's `values`, an encoding's `codec` and
   an `element`'s `document`, `clause` and `element`, a predicate's
-  `conditions` (`avp`, and `value` or `bit`).
+  `conditions` (`avp`, and `value` or `bit`), a default's `value`, and a
+  bits rule's `relation` and `bits`.
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included: the copy of
   the document printing an error answer that its base resolved to.
@@ -967,7 +968,8 @@ for message in s6a.messages:
   `table` and `page`, `versions`, the range of versions the quotes were
   checked against, and `readings`, each an `ast.Reading` of `quotes` and
   `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`, `EncodingRule`,
-  `PredicateRule`, `TextOnly`). `interpreted` is always True.
+  `PredicateRule`, `DefaultRule`, `BitsRule`, `TextOnly`). `interpreted` is
+  always True.
 - `seanchai.constraints.check(rule, payload, data_type, codec)` tells
   whether a value rule holds of a payload, and `codec_problem` why a payload
   is no such layout ([constraints.md](constraints.md#codecs)).

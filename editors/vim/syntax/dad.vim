@@ -83,9 +83,9 @@ syn match dadRange "\d\+\.\.\d\+" contained
 " indented four spaces under a keyword of the closed set.
 syn match dadConstraintQuote #^"\%([^"\\]\|\\["\\]\)*"\s*\%(;;.*\)\?$# contains=dadQuote,dadComment
 syn match dadQuote #^"\%([^"\\]\|\\["\\]\)*"# contained
-syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|text-only\)\>.*$" contains=dadConstraintKw,dadConstraintWord,dadCodec,dadUnit,dadSpecRef,dadSection,dadConstraintNumber,dadQuotedCell,dadComment
-syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|text-only\)\>" contained
-syn match dadConstraintWord "\s\zs\%(or\|bit\)\ze\s" contained
+syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|text-only\)\>.*$" contains=dadConstraintKw,dadConstraintWord,dadCodec,dadUnit,dadSpecRef,dadSection,dadConstraintNumber,dadQuotedCell,dadComment
+syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|text-only\)\>" contained
+syn match dadConstraintWord "\s\zs\%(or\|bit\|at-most-one\|at-least-one\)\ze\s" contained
 syn match dadCodec "\s\zs\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-address\|time-zone\|element\)\ze\%(\s\|$\)" contained
 syn match dadUnit "\s\zs\%(octets\|digits\|characters\)$" contained
 syn match dadConstraintNumber "\%(\s\|\.\.\)\zs-\?\d\+\ze\%(\s\|$\|\.\.\|,\)" contained

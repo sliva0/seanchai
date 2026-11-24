@@ -193,6 +193,20 @@ def _type_problems(rule: ast.ConstraintRule, data_type: ast.DataType) -> Iterabl
         case ast.EncodingRule():
             if data_type not in checks.CODEC_TYPES[rule.codec]:
                 yield f"{rule.codec} does not encode {data_type}"
+        case ast.DefaultRule():
+            bounds = checks.integer_bounds(data_type)
+            if bounds is None:
+                yield f"a default needs an integer, not {data_type}"
+            elif isinstance(rule.value, int) and not (
+                bounds[0] <= rule.value <= bounds[1]
+            ):
+                yield f"{rule.value} is beyond what {data_type} holds"
+        case ast.BitsRule():
+            width = _BITS.get(data_type)
+            if width is None:
+                yield f"a bits rule needs an unsigned integer, not {data_type}"
+            elif any(each >= width for each in rule.bits):
+                yield f"{data_type} has no bit {max(rule.bits)}"
         case _:
             pass
 
@@ -274,7 +288,8 @@ def _constraints(
     type can meet, as a range on an OctetString or a codec for another
     type, or a condition testing a value or bit of an AVP that has none.
     `constraint-value-unknown` (error): a condition naming a value or bit
-    the AVP's values, result codes or bit table do not name.
+    the AVP's values, result codes or bit table do not name, and a default
+    or bits rule naming a value or bit the AVP's own do not.
     `constraint-contradiction` (error): rules on one AVP in one place that
     cannot all hold. A type, value or bit no document read states is not
     judged."""
@@ -338,11 +353,32 @@ def _constraints(
                         f"a condition tests {condition.avp}, which the body of"
                         f" {block.command or block.within} does not hold",
                     )
-        data_type = fact(block.avp).data_type if block.avp in held else None
+        own = fact(block.avp) if block.avp in held else _Facts()
+        data_type = own.data_type
         for rule in block.body:
             if data_type is not None and not isinstance(rule, ast.Quote):
                 for problem in _type_problems(rule, data_type):
                     found("constraint-type-mismatch", block, problem)
+            if (
+                isinstance(rule, ast.DefaultRule)
+                and isinstance(rule.value, str)
+                and own.values is not None
+                and rule.value not in own.values
+            ):
+                found(
+                    "constraint-value-unknown",
+                    block,
+                    f"{block.avp} names no value {rule.value!r}",
+                )
+            if isinstance(rule, ast.BitsRule) and own.bits is not None:
+                numbered = set(own.bits.values())
+                for each in rule.bits:
+                    if each not in numbered:
+                        found(
+                            "constraint-value-unknown",
+                            block,
+                            f"{block.avp}'s bit table names no bit {each}",
+                        )
         for condition in conditions:
             if condition.avp not in held:
                 continue

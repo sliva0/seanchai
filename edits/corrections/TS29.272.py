@@ -21,6 +21,9 @@ from seanchai.dad.interpret import (
     Interpret,
     absent_if,
     bit,
+    bits_at_least_one,
+    bits_at_most_one,
+    default,
     digits,
     element,
     encoding,
@@ -718,7 +721,7 @@ CORRECTIONS += [
             reading(
                 "Note 4: Bits 3 and 6 are excluding alternatives and shall not"
                 " both be set.",
-                text_only(),
+                bits_at_most_one(3, 6),
             ),
             reading(
                 "Note 5: When this AVP is transferred over the S7a/S7d"
@@ -986,15 +989,15 @@ CORRECTIONS += [
                 reading(
                     f"If the {name} AVP is not present in the"
                     " Allocation-Retention-Priority AVP, the default value shall"
-                    f" be {default}.",
-                    text_only(),
+                    f" be {value} ({number}).",
+                    default(value),
                 ),
             ),
             versions="19.6.0",
         )
-        for name, default in (
-            ("Pre-emption-Capability", "PRE-EMPTION_CAPABILITY_DISABLED (1)"),
-            ("Pre-emption-Vulnerability", "PRE-EMPTION_VULNERABILITY_ENABLED (0)"),
+        for name, value, number in (
+            ("Pre-emption-Capability", "PRE-EMPTION_CAPABILITY_DISABLED", 1),
+            ("Pre-emption-Vulnerability", "PRE-EMPTION_VULNERABILITY_ENABLED", 0),
         )
     ),
     *(
@@ -1577,7 +1580,7 @@ CORRECTIONS += [
         readings=(
             reading(
                 "The default value when this AVP is not present is NOT_RELAY_NODE (0).",
-                text_only(),
+                default("NOT_RELAY_NODE"),
             ),
         ),
         versions="19.6.0",
@@ -2001,23 +2004,23 @@ CORRECTIONS += [
             page=page,
             readings=(
                 reading(
-                    f"The default value when this AVP is not present is {default}.",
-                    text_only(),
+                    f"The default value when this AVP is not present is {value} (0).",
+                    default(value),
                 ),
             ),
             versions="19.6.0",
         )
-        for avp, section, page, default in (
-            ("Non-IP-PDN-Type-Indicator", "7.3.204", 167, "FALSE (0)"),
+        for avp, section, page, value in (
+            ("Non-IP-PDN-Type-Indicator", "7.3.204", 167, "FALSE"),
             (
                 "Non-IP-Data-Delivery-Mechanism",
                 "7.3.205",
                 167,
-                "SGi-BASED-DATA-DELIVERY (0)",
+                "SGi-BASED-DATA-DELIVERY",
             ),
-            ("RDS-Indicator", "7.3.222", 170, "DISABLED (0)"),
-            ("Interworking-5GS-Indicator", "7.3.231", 175, "NOT-SUBSCRIBED (0)"),
-            ("Ethernet-PDN-Type-Indicator", "7.3.232", 175, "FALSE (0)"),
+            ("RDS-Indicator", "7.3.222", 170, "DISABLED"),
+            ("Interworking-5GS-Indicator", "7.3.231", 175, "NOT-SUBSCRIBED"),
+            ("Ethernet-PDN-Type-Indicator", "7.3.232", 175, "FALSE"),
         )
     ),
     Interpret(
@@ -2029,7 +2032,7 @@ CORRECTIONS += [
         readings=(
             reading(
                 "NOTE 2: At least one of the bits 0 and 1 shall be set to 1.",
-                text_only(),
+                bits_at_least_one(0, 1),
             ),
         ),
         versions="19.6.0",
@@ -2667,7 +2670,7 @@ CORRECTIONS += [
             reading(
                 "Absence of this information element shall be interpreted as all"
                 " bits set to 0.",
-                text_only(),
+                default(0),
             ),
         ),
         versions="19.6.0",

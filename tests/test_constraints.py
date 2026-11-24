@@ -14,7 +14,16 @@ import pytest
 from seanchai import constraints, wireshark
 from seanchai.dad import ast
 from seanchai.dad.ast import Codec, DataType
-from seanchai.dad.interpret import characters, digits, exclude, octets, range_of
+from seanchai.dad.interpret import (
+    bits_at_least_one,
+    bits_at_most_one,
+    characters,
+    default,
+    digits,
+    exclude,
+    octets,
+    range_of,
+)
 
 CORE = Path(wireshark.__file__).parent / "core.lua"
 LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.which(name)]
@@ -245,6 +254,31 @@ def _u32(value: int) -> bytes:
         pytest.param(
             ast.TextOnly(), b"", DataType.OCTET_STRING, None, None, id="text-only"
         ),
+        pytest.param(
+            bits_at_most_one(3, 6),
+            _u32(8),
+            DataType.UNSIGNED32,
+            None,
+            True,
+            id="one-bit",
+        ),
+        pytest.param(
+            bits_at_most_one(3, 6),
+            _u32(8 | 64),
+            DataType.UNSIGNED32,
+            None,
+            False,
+            id="both-bits",
+        ),
+        pytest.param(
+            bits_at_least_one(0, 1),
+            _u32(4),
+            DataType.UNSIGNED32,
+            None,
+            False,
+            id="no-bit",
+        ),
+        pytest.param(default(0), b"", DataType.UNSIGNED32, None, None, id="default"),
     ],
 )
 def test_each_value_rule_holds_or_breaks(rule, payload, data_type, codec, holds):

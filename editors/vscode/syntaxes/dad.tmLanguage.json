@@ -186,7 +186,7 @@
       }
     },
     "constraint-rule": {
-      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|text-only)\\b(.*?)(\\s*;;.*)?$",
+      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|text-only)\\b(.*?)(\\s*;;.*)?$",
       "captures": {
         "2": { "name": "keyword.control.constraint.dad" },
         "3": {
@@ -204,7 +204,7 @@
               "name": "support.type.codec.dad"
             },
             {
-              "match": "(?<=\\s)(or|bit)(?=\\s)",
+              "match": "(?<=\\s)(or|bit|at-most-one|at-least-one)(?=\\s)",
               "name": "keyword.operator.condition.dad"
             },
             {

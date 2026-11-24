@@ -360,7 +360,8 @@ class ConstraintRule(_Model):
     `low` and `high`; `exclude` `values`; `encoding` `codec`, and an
     `element`'s `document`, `clause` and `element`; `present-if`,
     `absent-if`, `requires` and `excludes` their `conditions`, alternatives;
-    `text-only` nothing."""
+    `default` its `value`; `bits` its `relation` and `bits`; `text-only`
+    nothing."""
 
     line: int
     kind: Literal[
@@ -372,6 +373,8 @@ class ConstraintRule(_Model):
         "absent-if",
         "requires",
         "excludes",
+        "default",
+        "bits",
         "text-only",
     ]
     unit: ast.LengthUnit | None = None
@@ -383,6 +386,9 @@ class ConstraintRule(_Model):
     clause: str | None = None
     element: str | None = None
     conditions: tuple[ConstraintCondition, ...] = ()
+    value: int | str | None = None
+    relation: ast.BitsRelation | None = None
+    bits: tuple[int, ...] = ()
 
 
 class ConstraintReading(_Model):
