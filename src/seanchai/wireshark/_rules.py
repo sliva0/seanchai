@@ -22,7 +22,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from urllib.parse import urlparse
 
-from .. import corpus, dictionary, model
+from .. import corpus, dictionary, elements, model
 from ..dad import ast, formatter
 
 # The RFC 6733 sections the checks of the header, the AVP framing and the
@@ -471,6 +471,8 @@ class _Names:
 
     def __init__(self, built: dictionary.Dictionary) -> None:
         self.avps = {avp.id: avp for avp in built.avps}
+        # The element registry's entries the rules name, numbered as met.
+        self.elements: dict[elements.Element, int] = {}
         self.codes: dict[str, dict[str, int]] = defaultdict(dict)
         self.bits: dict[str, dict[str, int]] = defaultdict(dict)
         for table in built.value_tables:
@@ -497,6 +499,64 @@ class _Names:
             return which
         return None if avp is None else self.bits.get(avp, {}).get(which)
 
+    def element(self, entry: elements.Element) -> int:
+        """`entry`'s number in the rules' `elements`."""
+        return self.elements.setdefault(entry, len(self.elements) + 1)
+
+    def element_lines(self) -> list[str]:
+        return [
+            f"elements[{number}]={_element(entry)}"
+            for entry, number in self.elements.items()
+        ]
+
+
+def _element(entry: elements.Element) -> str:
+    """An element registry entry as `{said=, read=, check=, c={...}}`: the
+    element as its rule names it, the documents read, its checks in words
+    and the checks, each `{s=shape, ...}` (docs: core.lua's
+    `element_problem`)."""
+    shapes = []
+    for shape in entry.checks:
+        match shape:
+            case elements.Octets():
+                shapes.append(
+                    f"{{s='octets',lo={shape.low}{_bound('hi', shape.high)},"
+                    f"t={lua_string(shape.bounds_text())}}}"
+                )
+            case elements.Plmn():
+                shapes.append(f"{{s='plmn',o={shape.octet}}}")
+            case elements.Field():
+                allowed = ",".join(f"{{{low},{high}}}" for low, high in shape.allowed)
+                last = shape.octet if shape.last is None else shape.last
+                shapes.append(
+                    f"{{s='field',o={shape.octet},l={last},hi={shape.high},"
+                    f"lo={shape.low},w={shape.width},a={{{allowed}}},"
+                    f"p={lua_string(f'{shape.place()} ({shape.name})')},"
+                    f"t={lua_string(shape.allowed_text())}}}"
+                )
+            case elements.OneBit():
+                shapes.append(f"{{s='onebit',o={shape.octet}}}")
+            case elements.Integer():
+                shapes.append(
+                    f"{{s='integer'{_bound('lo', shape.low)}{_bound('hi', shape.high)},"
+                    f"t={lua_string(shape.bounds_text())}}}"
+                )
+            case elements.Tbcd():
+                shapes.append(f"{{s='tbcd',o={shape.first}}}")
+            case elements.Fqdn():
+                patterns = ",".join(
+                    lua_string(shape.lua(each)) for each in shape.templates
+                )
+                said = "not " + " or ".join(
+                    shape.shown(each) for each in shape.templates
+                )
+                shapes.append(f"{{s='fqdn',p={{{patterns}}},t={lua_string(said)}}}")
+    read = ", ".join(dict.fromkeys(source.read() for source in entry.sources))
+    return (
+        f"{{said={lua_string(entry.cited())},read={lua_string(read)},"
+        f"check={lua_string(entry.said())},c={{{','.join(shapes)}}}}}"
+    )
+
 
 def _constraint(
     constraint: dictionary.Constraint,
@@ -507,7 +567,8 @@ def _constraint(
 ) -> str | None:
     """A constraint as `{at=n, rules={...}}`, each rule `{k=kind, ...}`:
     `u`, `lo`, `hi` for a length, `lo` and `hi` for a range, `v` for exclude,
-    `codec` for an encoding, `r` and `b` for a bits rule's relation and bits,
+    `codec` for an encoding, `e` for an element's number in the rules'
+    `elements`, `r` and `b` for a bits rule's relation and bits,
     `r` and `m` for a members rule's relation and the identities of the
     members it names, `i` for a unique rule's member identity, `c` for a
     predicate's conditions, and `v` and `c` for a values rule, each condition
@@ -515,9 +576,10 @@ def _constraint(
     (present). `siblings` maps a member name to its reading's id, where the
     scope has members; `subject` is the AVP's own reading where the caller
     knows it, else its sibling's. A condition's `t` is as the file spells
-    it. A predicate whose names do not resolve, an `element`, a `default` and
-    `text-only` are left out: what the plugin cannot check it does not
-    report. None for a constraint left with no rule."""
+    it. A predicate whose names do not resolve, an `element` the registry
+    does not have or checks nothing of, a `default` and `text-only` are left
+    out: what the plugin cannot check it does not report. None for a
+    constraint left with no rule."""
     if subject is None and constraint.avp in siblings:
         subject = names.avps.get(siblings[constraint.avp])
     rules = []
@@ -543,6 +605,17 @@ def _constraint(
                     rules.append(
                         f"{{k='encoding',codec={lua_string(rule.codec.value)}}}"
                     )
+                elif (
+                    rule.document is not None
+                    and (
+                        entry := elements.lookup(
+                            rule.document, rule.clause, rule.element
+                        )
+                    )
+                    is not None
+                    and entry.checks
+                ):
+                    rules.append(f"{{k='element',e={names.element(entry)}}}")
             elif kind == "bits":
                 assert rule.relation is not None
                 numbers = ",".join(str(each) for each in rule.bits)
@@ -745,7 +818,7 @@ def rules_chunk(
         "end",
         "local avps, commands, answers = {}, {}, {}",
         "local result_codes, bits, bits_at = {}, {}, {}",
-        "local docs, cites, base = {}, {}, {}",
+        "local docs, cites, base, elements = {}, {}, {}, {}",
     ]
     readings: dict[str, list[str]] = defaultdict(list)
     names = _Names(built)
@@ -808,9 +881,9 @@ def rules_chunk(
                 masks[identity].update(row.value for row in table.rows)
                 if (at := places.table(table)) is not None:
                     masks_at.setdefault(identity, at)
-    for vendor, names in sorted(codes.items()):
+    for vendor, named in sorted(codes.items()):
         entries = ",".join(
-            f"[{value}]={lua_string(name)}" for value, name in sorted(names.items())
+            f"[{value}]={lua_string(name)}" for value, name in sorted(named.items())
         )
         lines.append(f"result_codes[{vendor}]={{{entries}}}")
     for identity, numbers in sorted(masks.items()):
@@ -821,10 +894,12 @@ def rules_chunk(
     for kind, (clause, page) in BASE_SECTIONS.items():
         if (at := places.base(clause, page)) is not None:
             lines.append(f"base.{kind}={at}")
+    lines.extend(names.element_lines())
     lines.extend(places.lua())
     lines.append(
         "return {avps=avps, commands=commands, answers=answers,"
         " result_codes=result_codes, bits=bits, bits_at=bits_at, docs=docs,"
+        " elements=elements,"
         f" cites=cites, base=base, base_answer={lua_string(BASE_ANSWER)},"
         f" explorer={lua_string(explorer) if explorer else 'nil'},"
         f" corpus={lua_string(versions(built))}}}"

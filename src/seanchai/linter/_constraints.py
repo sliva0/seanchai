@@ -8,6 +8,7 @@ from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 
 from .. import constraints as checks
+from .. import elements
 from ..dad import ast
 from ._elements import _application_id, _grouped
 from ._findings import Finding, Severity
@@ -23,6 +24,7 @@ CONSTRAINT_RULES = frozenset(
         "constraint-type-mismatch",
         "constraint-value-unknown",
         "constraint-contradiction",
+        "constraint-element-unknown",
     }
 )
 
@@ -193,6 +195,10 @@ def _type_problems(rule: ast.ConstraintRule, data_type: ast.DataType) -> Iterabl
         case ast.EncodingRule():
             if data_type not in checks.CODEC_TYPES[rule.codec]:
                 yield f"{rule.codec} does not encode {data_type}"
+            entry = elements.of_rule(rule)
+            types = None if entry is None else elements.data_types(entry)
+            if entry is not None and types is not None and data_type not in types:
+                yield f"element {entry.cited()} is checked as no {data_type}"
         case ast.DefaultRule():
             bounds = checks.integer_bounds(data_type)
             if bounds is None:
@@ -319,8 +325,11 @@ def _constraints(
     naming a member the grouped AVP's body does not hold is
     `constraint-not-member`.
     `constraint-contradiction` (error): rules on one AVP in one place that
-    cannot all hold. A type, value or bit no document read states is not
-    judged."""
+    cannot all hold. `constraint-element-unknown` (note): an `encoding
+    element` rule naming an element the element registry
+    (`seanchai.elements`) has no entry for, which nothing checks; another
+    document's interpretations may name elements the registry has yet to
+    learn. A type, value or bit no document read states is not judged."""
     findings: list[Finding] = []
     held = _held(spec)
     blocks = [
@@ -339,6 +348,24 @@ def _constraints(
                 paths=(index.path(block),),
             )
         )
+
+    for block in blocks:
+        for rule in block.body:
+            if (
+                isinstance(rule, ast.EncodingRule)
+                and rule.codec is ast.Codec.ELEMENT
+                and elements.of_rule(rule) is None
+            ):
+                findings.append(
+                    Finding(
+                        Severity.NOTE,
+                        "constraint-element-unknown",
+                        f"{_scope(block)}: the element registry has no"
+                        f" {_element_text(rule)}; nothing checks it",
+                        block.source.section,
+                        paths=(index.path(block),),
+                    )
+                )
 
     facts: dict[str, _Facts] = {}
 
@@ -493,6 +520,16 @@ def _constraints(
         for problem in dict.fromkeys(_contradictions(rules)):
             found("constraint-contradiction", here[0], problem)
     return findings
+
+
+def _element_text(rule: ast.EncodingRule) -> str:
+    """The element as the rule writes it: `TS29.002 17.7.8 "E-UTRAN-CGI"`."""
+    parts = [str(rule.document)]
+    if rule.clause is not None:
+        parts.append(rule.clause)
+    if rule.element is not None:
+        parts.append(f'"{rule.element}"')
+    return " ".join(parts)
 
 
 def _scope(block: ast.InterpretedConstraints) -> str:

@@ -14,7 +14,14 @@ from typing import Annotated, Any, Literal
 import pydantic
 from pydantic.json_schema import models_json_schema
 
-from ._json import CrossRelease, FlagRules, Hole, UndefinedBlock
+from ._json import (
+    CrossRelease,
+    ElementEntry,
+    ElementSource,
+    FlagRules,
+    Hole,
+    UndefinedBlock,
+)
 from ._json import dumps as _dumps
 from .dad import ast
 from .linter import Severity
@@ -40,7 +47,9 @@ __all__ = [
     "CrossRelease",
     "Document",
     "DocumentSummary",
+    "ElementEntry",
     "ElementIdentity",
+    "ElementSource",
     "ElementTableRef",
     "EnumEntry",
     "Finding",
@@ -358,7 +367,9 @@ class ConstraintRule(_Model):
     """A rule of an Interpreted Constraints block at `line`, by `kind`, as
     the dictionary's `Rule`: `length` has `unit`, `low` and `high`; `range`
     `low` and `high`; `exclude` `values`; `encoding` `codec`, and an
-    `element`'s `document`, `clause` and `element`; `present-if`,
+    `element`'s `document`, `clause` and `element`, with `element_entry`,
+    the element registry's entry for it, omitted where it has none;
+    `present-if`,
     `absent-if`, `requires` and `excludes` their `conditions`, alternatives;
     `default` its `value`; `bits` its `relation` and `bits`; `members` its
     `relation` and `members`; `values` its `values` and `conditions`;
@@ -389,6 +400,7 @@ class ConstraintRule(_Model):
     document: str | None = None
     clause: str | None = None
     element: str | None = None
+    element_entry: ElementEntry | None = None
     conditions: tuple[ConstraintCondition, ...] = ()
     value: int | str | None = None
     relation: ast.BitsRelation | None = None

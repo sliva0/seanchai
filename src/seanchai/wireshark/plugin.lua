@@ -42,6 +42,7 @@ local fields = {
   finding = ProtoField.string("seanchai.finding", "Finding"),
   rule = ProtoField.string("seanchai.rule", "Rule"),
   path = ProtoField.string("seanchai.path", "Path"),
+  element = ProtoField.string("seanchai.element", "Element"),
   candidate = ProtoField.string("seanchai.candidate", "Other definition"),
   corpus = ProtoField.string("seanchai.corpus", "Corpus"),
   reference = ProtoField.string("seanchai.reference", "Reference"),
@@ -52,7 +53,7 @@ local fields = {
 proto.fields = {
   fields.command, fields.document, fields.section, fields.form, fields.errors,
   fields.warnings, fields.notes, fields.finding, fields.rule, fields.path,
-  fields.candidate,
+  fields.element, fields.candidate,
   fields.corpus, fields.reference, fields.cited, fields.url, fields.explorer,
 }
 
@@ -181,6 +182,10 @@ function proto.dissector(tvb, pinfo, tree)
       local item = subtree:add(fields.finding, at, line, line)
       item:add(fields.rule, at, each.rule)
       item:add(fields.path, at, each.path):set_generated()
+      if each.element then
+        -- The element another document defines, and where it was read.
+        item:add(fields.element, at, each.element):set_generated()
+      end
       cite(item, at, each.reference)
       item:add_proto_expert_info(
         each.interpreted and experts.interpreted or experts[each.severity], each.full)

@@ -82,16 +82,18 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   read in the clauses' prose, each a note whose line ends in `interpreted`,
   since the reading is ours however firmly the quote words it:
   a length in octets, digits or characters, a range, an excluded value, an
-  encoding, a rule on the AVP's own bits, the members a grouped AVP holds
-  (`constraint-length`, `-range`, `-exclude`, `-encoding`, `-bits`,
-  `-members`), for the AVP wherever its reading's document reads it and as
+  encoding, another document's element as far as the element registry reads
+  it ([constraints.md](constraints.md#elements)), a rule on the AVP's own
+  bits, the members a grouped AVP holds (`constraint-length`, `-range`,
+  `-exclude`, `-encoding`, `-element`, `-bits`, `-members`), for the AVP
+  wherever its reading's document reads it and as
   a member of the command or grouped AVP holding it; the predicates tying a
   member's presence to its siblings (`constraint-present-if`, `-absent-if`,
   `-requires`, `-excludes`), a value a sibling's condition restricts
   (`constraint-values`), and a member two grouped AVPs beside each other
-  hold with one value (`constraint-unique`). An `element` is checked no
-  further than a length beside it, `text-only` not at all, and a rule naming
-  a value or bit no table numbers is left out.
+  hold with one value (`constraint-unique`). An element the registry has no
+  entry for or checks nothing of is not checked, `text-only` not at all, and
+  a rule naming a value or bit no table numbers is left out.
 
 It cannot check what the documents say only in prose and no one has read as
 a constraint, what depends on negotiated features, or anything across
@@ -128,7 +130,16 @@ A line is `Severity: place: problem [source]`:
   the table and page, and the links.
 
 A members rule naming more than three members lists two and how many more on
-the line, and all of them in the expert info.
+the line, and all of them in the expert info. An element's finding cites TS
+29.272's clause, which names the element, and says beneath it, as
+`seanchai.element`, the element, the documents its layout was read from and
+what is checked:
+
+```text
+Note: … > Trace-Data > Trace-NE-Type-List: 4 octets, not 3 [TS 29.272 7.3.68, interpreted]
+    [Path: Subscription-Data > Trace-Data > Trace-NE-Type-List]
+    [Element: TS 32.422 5.4 List of NE Types (TS 32.422 V19.7.0): 3 octets; octet 3 bits 8-7 (spare) 00]
+```
 
 | Severity | Expert info, to filter on | Group | For |
 |---|---|---|---|
@@ -269,6 +280,7 @@ the two lines.
 | `seanchai.finding`   | one finding's line, on the octets it is about         |
 | `seanchai.rule`      | the finding's kind, as `avp-missing` or `flag-must`   |
 | `seanchai.path`      | the AVP or body it is about, from the message's top   |
+| `seanchai.element`   | an element's finding: the element, where it was read  |
 | `seanchai.candidate` | another definition, with its counts                   |
 | `seanchai.corpus`    | the seanchai and corpus versions the rules came from  |
 | `seanchai.reference` | where a finding's rule, or the command, is written    |

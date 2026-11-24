@@ -430,7 +430,8 @@ end
 -- carries `cons`, its own; a grouped reading `member_cons[name]`, its
 -- members'; a command candidate `cons[name]`, its members'. Each is {at=n,
 -- rules={...}}, a rule {k=kind, ...}: a length's `u`, `lo` and `hi`, a range's
--- `lo` and `hi`, exclude's `v`, an encoding's `codec`, a bits rule's
+-- `lo` and `hi`, exclude's `v`, an encoding's `codec`, an element's `e`, its
+-- entry's number in the rules' `elements` (`element_problem`), a bits rule's
 -- relation `r` and bits `b`, a members rule's `r` and member identities `m`,
 -- a unique rule's member identity `i`, a predicate's `c`, conditions on
 -- siblings {avp=identity, t=text, v=value or b=bit}, and a values rule's `v`
@@ -662,6 +663,102 @@ local function bits_problem(rule, set, width)
   return nil
 end
 
+-- A field's value as the documents print it: in binary up to 8 bits, else
+-- in hexadecimal.
+local function field_text(value, width)
+  if width > 8 then
+    return string.format("0x%0" .. math.ceil(width / 4) .. "x", value)
+  end
+  local digits = {}
+  for bit = width - 1, 0, -1 do
+    digits[#digits + 1] = has(value, 2 ^ bit) and "1" or "0"
+  end
+  return table.concat(digits)
+end
+
+-- Why `s`, an AVP's data of `kind`, is not laid out as the element registry's
+-- entry `entry` says (seanchai.elements), or nil: the first check broken.
+-- Each check is {s=shape, ...}: `octets` (`lo`, `hi`, `t` the bounds in
+-- words), `plmn` (a PLMN identity at octet `o`), `field` (bits `hi` of octet
+-- `o` to bit `lo` of octet `l`, `w` bits wide, a value in one of the ranges
+-- `a`; `p` its place and `t` the values in words), `onebit` (at most one bit
+-- of octet `o`), `integer` (`lo`, `hi`, `t`), `tbcd` (TBCD digits from octet
+-- `o`) and `fqdn` (text matching one of the patterns `p`, lowercased; `t`
+-- what it is not).
+local function element_problem(entry, s, kind)
+  for _, check in ipairs(entry.c) do
+    local shape = check.s
+    if shape == "octets" then
+      if #s < check.lo or (check.hi and #s > check.hi) then
+        return string.format("%d octets, not %s", #s, check.t)
+      end
+    elseif shape == "plmn" then
+      local part = s:sub(check.o, check.o + 2)
+      if #part < 3 then
+        return string.format("no PLMN identity in octets %d to %d", check.o,
+          check.o + 2)
+      end
+      local problem = plmn_problem(part)
+      if problem then
+        return "PLMN identity: " .. problem
+      end
+    elseif shape == "field" then
+      if #s >= check.l then
+        local number = 0
+        for i = check.o, check.l do
+          number = number * 256 + string.byte(s, i)
+        end
+        local value = math.floor(number / 2 ^ (check.lo - 1)) % 2 ^ check.w
+        local ok = false
+        for _, range in ipairs(check.a) do
+          ok = ok or (value >= range[1] and value <= range[2])
+        end
+        if not ok then
+          return string.format("%s %s, not %s", check.p, field_text(value, check.w),
+            check.t)
+        end
+      end
+    elseif shape == "onebit" then
+      if #s >= check.o then
+        local octet, held = string.byte(s, check.o), {}
+        for bit = 8, 1, -1 do
+          if has(octet, 2 ^ (bit - 1)) then
+            held[#held + 1] = tostring(bit)
+          end
+        end
+        if #held > 1 then
+          return string.format("bits %s of octet %d set, at most one may be",
+            table.concat(held, " and "), check.o)
+        end
+      end
+    elseif shape == "integer" then
+      local value = integer_value(kind, s)
+      if value and not within(value, check.lo, check.hi) then
+        return string.format("%s, not %s", number(value), check.t)
+      end
+    elseif shape == "tbcd" then
+      for i = check.o, #s do
+        local octet = string.byte(s, i)
+        if octet % 16 == 15 or (math.floor(octet / 16) == 15 and i < #s) then
+          return string.format("octet %d: '1111' filler before the last digit", i)
+        end
+      end
+    elseif shape == "fqdn" then
+      if not valid_utf8(s, 1, #s) then
+        return "not UTF-8 text"
+      end
+      local text, ok = s:lower(), false
+      for _, pattern in ipairs(check.p) do
+        ok = ok or text:match(pattern) ~= nil
+      end
+      if not ok then
+        return check.t
+      end
+    end
+  end
+  return nil
+end
+
 local function interpreted(ctx, cons, rule, message, offset, length, path, name)
   local found = finding(ctx.findings, NOTE, "constraint-" .. rule, message, offset,
     length, path, cons.at, name)
@@ -708,7 +805,7 @@ local function check_constraints(ctx, avp, reading, path, scoped)
   for _, list in ipairs(lists) do
     for _, cons in ipairs(list) do
       for _, rule in ipairs(cons.rules) do
-        local problem, detail
+        local problem, detail, element
         if rule.k == "length" then
           local count
           if rule.u == "octets" then
@@ -736,6 +833,9 @@ local function check_constraints(ctx, avp, reading, path, scoped)
           end
         elseif rule.k == "encoding" then
           problem = codec_problem(rule.codec, data)
+        elseif rule.k == "element" then
+          element = ctx.rules.elements[rule.e]
+          problem = element and element_problem(element, data, reading.type)
         elseif rule.k == "bits" then
           local set, width = bit_reader(reading.type, data)
           if set then
@@ -769,8 +869,14 @@ local function check_constraints(ctx, avp, reading, path, scoped)
           end
         end
         if problem then
-          interpreted(ctx, cons, rule.k, problem, avp.data, avp.size, path,
-            reading.name).detail = detail
+          local found = interpreted(ctx, cons, rule.k, problem, avp.data, avp.size,
+            path, reading.name)
+          found.detail = detail
+          if rule.k == "element" then
+            -- Beneath the line, the element and where its layout is read.
+            found.element = string.format("%s (%s): %s", element.said,
+              element.read, element.check)
+          end
         end
       end
     end
@@ -1720,6 +1826,7 @@ end
 
 M.parse_avps = parse_avps
 M.codec_problem = codec_problem
+M.element_problem = element_problem
 M.digit_count = digit_count
 
 -- Why a bits rule {r=relation, b={bits}} does not hold of an AVP's data of

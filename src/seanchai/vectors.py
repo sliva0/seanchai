@@ -32,7 +32,7 @@ from typing import Annotated, Any, Literal
 import pydantic
 from pydantic.json_schema import models_json_schema
 
-from . import __version__, constraints, dictionary
+from . import __version__, constraints, dictionary, elements
 from .dad import ast
 from .errors import SeanchaiError
 
@@ -209,7 +209,26 @@ def _integer(data_type: ast.DataType, value: int) -> bytes:
 
 
 def _codec_of(rules: Sequence[dictionary.Rule]) -> ast.Codec | None:
-    return next((rule.codec for rule in rules if rule.kind == "encoding"), None)
+    """The codec the rules give the payload, an element being none."""
+    return next(
+        (
+            rule.codec
+            for rule in rules
+            if rule.kind == "encoding" and rule.codec is not ast.Codec.ELEMENT
+        ),
+        None,
+    )
+
+
+def _element_of(rule: dictionary.Rule) -> elements.Element | None:
+    """The registry's entry for an `encoding element` rule, where it checks
+    something."""
+    if rule.kind != "encoding" or rule.codec is not ast.Codec.ELEMENT:
+        return None
+    if rule.document is None:
+        return None
+    found = elements.lookup(rule.document, rule.clause, rule.element)
+    return found if found is not None and found.checks else None
 
 
 def _holds(
@@ -243,6 +262,8 @@ def _holds(
         return (rule.low is None or value >= rule.low) and (
             rule.high is None or value <= rule.high
         )
+    if rule.kind == "encoding" and (entry := _element_of(rule)) is not None:
+        return elements.problem(entry, payload, data_type) is None
     if rule.kind == "encoding" and rule.codec is not None:
         return constraints.codec_problem(rule.codec, payload) is None
     if rule.kind == "bits" and rule.relation is not None:
@@ -270,7 +291,11 @@ def _value_rules(rules: Sequence[dictionary.Rule]) -> list[dictionary.Rule]:
         rule
         for rule in rules
         if rule.kind in ("length", "range", "exclude", "encoding", "bits")
-        and not (rule.kind == "encoding" and rule.codec is ast.Codec.ELEMENT)
+        and not (
+            rule.kind == "encoding"
+            and rule.codec is ast.Codec.ELEMENT
+            and _element_of(rule) is None
+        )
     ]
 
 
@@ -326,6 +351,12 @@ def _payload(
     rules = _value_rules(rules)
     codec = _codec_of(rules)
     data_type = avp.data_type
+    laid_out = [
+        found
+        for rule in rules
+        if (entry := _element_of(rule)) is not None
+        and (found := elements.sample(entry, data_type)) is not None
+    ]
     candidates: list[bytes] = []
     if data_type in _FIXED:
         numbers: list[int] = []
@@ -356,6 +387,11 @@ def _payload(
             if required := _set_bits(rules):
                 numbers.insert(0, required)
             numbers += [0, 1]
+        for rule in rules:
+            entry = _element_of(rule)
+            for shape in () if entry is None else entry.checks:
+                if isinstance(shape, elements.Integer):
+                    numbers += [n for n in (shape.low, shape.high) if n is not None]
         if data_type in (ast.DataType.FLOAT32, ast.DataType.FLOAT64):
             return b"\0" * _FIXED[data_type]
         bounds = constraints.integer_bounds(data_type) or (0, 2**32 - 1)
@@ -395,6 +431,7 @@ def _payload(
             required = _set_bits(rules)
             if required < 1 << 8 * size:
                 candidates.insert(0, required.to_bytes(size, "big"))
+        candidates[:0] = laid_out
     for payload in candidates:
         if all(_holds(rule, payload, data_type, codec) for rule in rules):
             return payload
@@ -1391,11 +1428,12 @@ class _Negatives:
                         trial = message.copy()
                         target = self.find(trial, node)
                         target.payload = payload
+                        kind = "element" if _element_of(rule) else rule.kind
                         self.emit(
                             trial,
-                            f"constraint-{rule.kind}/{name}/{each.section}",
+                            f"constraint-{kind}/{name}/{each.section}",
                             self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
-                            f"constraint-{rule.kind}",
+                            f"constraint-{kind}",
                             "note",
                         )
         self.predicate_vectors()
@@ -1649,6 +1687,8 @@ class _Negatives:
                 for value in rule.values
                 if data_type in _FIXED
             ]
+        elif rule.kind == "encoding" and (entry := _element_of(rule)) is not None:
+            candidates += elements.breaking(entry, good, data_type)
         elif (
             rule.kind == "encoding"
             and (broken := _BROKEN_CODEC.get(rule.codec) if rule.codec else None)
@@ -1864,6 +1904,9 @@ def _rule_text(rule: dictionary.Rule) -> str:
         return f"range {_span(rule.low, rule.high)}"
     if rule.kind == "exclude":
         return "exclude " + ", ".join(map(str, rule.values))
+    if rule.kind == "encoding" and rule.codec is ast.Codec.ELEMENT:
+        named = [rule.document, rule.clause, rule.element and f'"{rule.element}"']
+        return "encoding element " + " ".join(each for each in named if each)
     if rule.kind == "encoding":
         return f"encoding {rule.codec}"
     if rule.kind == "bits":

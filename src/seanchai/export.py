@@ -689,6 +689,7 @@ def _constraint_readings(
                     "document": node.document,
                     "clause": node.clause,
                     "element": node.element,
+                    "element_entry": _json.element_entry(node),
                 }
             case ast.PredicateRule():
                 fields["conditions"] = tuple(

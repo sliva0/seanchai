@@ -828,7 +828,7 @@
 ; Section: 7.3.68
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 32.422 [23]."
-    encoding element TS32.422
+    encoding element TS32.422 5.4 "List of NE Types"
 
 
 ; Type: Interpreted Constraints
@@ -837,7 +837,7 @@
 ; Section: 7.3.69
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 32.422 [23]."
-    encoding element TS32.422
+    encoding element TS32.422 5.5 "List of Interfaces"
 
 
 ; Type: Interpreted Constraints
@@ -846,7 +846,7 @@
 ; Section: 7.3.70
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 32.422 [23]."
-    encoding element TS32.422
+    encoding element TS32.422 5.1 "Triggering Events"
 
 
 ; Type: Interpreted Constraints
@@ -855,7 +855,7 @@
 ; Section: 7.3.71
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "AddressString"
 
 
 ; Type: Interpreted Constraints
@@ -908,7 +908,7 @@
 ; Section: 7.3.75
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.1 "PDP-Type"
 "The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02)."
     text-only
 
@@ -928,7 +928,7 @@
 ; Section: 7.3.77
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated)."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.1 "QoS-Subscribed"
 
 
 ; Type: Interpreted Constraints
@@ -937,9 +937,9 @@
 ; Section: 7.3.79
 ; Versions: 18.7.0..19.6.0
 "Values are coded according to TS 23.003 [3]."
-    encoding element TS23.003
+    encoding element TS23.003 4.7 "CSG-ID"
 "Unused bits (least significant) shall be padded with zeros."
-    text-only
+    bits clear 0 1 2 3 4
 
 
 ; Type: Interpreted Constraints
@@ -968,7 +968,7 @@
 ; Section: 7.3.87
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.5 "SS-Code"
 
 
 ; Type: Interpreted Constraints
@@ -977,7 +977,7 @@
 ; Section: 7.3.88
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.4 "SS-Status"
 
 
 ; Type: Interpreted Constraints
@@ -996,7 +996,7 @@
 ; Section: 7.3.95
 ; Versions: 18.7.0..19.6.0
 "For details on the values of this AVP, see TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "LCSServiceTypeID"
 
 
 ; Type: Interpreted Constraints
@@ -1014,7 +1014,7 @@
 ; Section: 7.3.100
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.9 "TeleserviceCode"
 
 
 ; Type: Interpreted Constraints
@@ -1063,7 +1063,7 @@
 ; Section: 7.3.117
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "E-UTRAN-CGI"
 
 
 ; Type: Interpreted Constraints
@@ -1072,7 +1072,7 @@
 ; Section: 7.3.118
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "TA-Id"
 
 
 ; Type: Interpreted Constraints
@@ -1081,7 +1081,7 @@
 ; Section: 7.3.119
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "CellGlobalIdOrServiceAreaIdFixedLength"
 
 
 ; Type: Interpreted Constraints
@@ -1090,7 +1090,7 @@
 ; Section: 7.3.120
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "RAIdentity"
 
 
 ; Type: Interpreted Constraints
@@ -1099,7 +1099,7 @@
 ; Section: 7.3.121
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "LAIFixedLength"
 
 
 ; Type: Interpreted Constraints
@@ -1108,7 +1108,7 @@
 ; Section: 7.3.122
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "CellGlobalIdOrServiceAreaIdFixedLength"
 
 
 ; Type: Interpreted Constraints
@@ -1117,7 +1117,7 @@
 ; Section: 7.3.123
 ; Versions: 18.7.0..19.6.0
 "For details and octet encoding, see TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.1 "GeographicalInformation"
 
 
 ; Type: Interpreted Constraints
@@ -1126,7 +1126,7 @@
 ; Section: 7.3.124
 ; Versions: 18.7.0..19.6.0
 "For details and octet encoding, see TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.1 "GeodeticInformation"
 
 
 ; Type: Interpreted Constraints
@@ -1146,7 +1146,7 @@
 ; Versions: 18.7.0..19.6.0
 "The meaning of the bits is defined in TS 32.422 [23]."
 "The most significant bit is bit 8 of the first octet."
-    encoding element TS32.422
+    encoding element TS32.422 5.10.3 "List of Measurements"
 
 
 ; Type: Interpreted Constraints
@@ -1156,7 +1156,7 @@
 ; Versions: 18.7.0..19.6.0
 "The meaning of the bits is defined in TS 32.422 [23]."
 "The most significant bit is bit 8 of the first octet."
-    encoding element TS32.422
+    encoding element TS32.422 5.10.4 "Reporting Trigger"
 
 
 ; Type: Interpreted Constraints
@@ -1165,7 +1165,7 @@
 ; Section: 7.3.143
 ; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
-    encoding element TS32.422
+    encoding element TS32.422 5.10.7 "Event Threshold for Event A2"
 
 
 ; Type: Interpreted Constraints
@@ -1174,7 +1174,7 @@
 ; Section: 7.3.144
 ; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
-    encoding element TS32.422
+    encoding element TS32.422 5.10.7 "Event Threshold for Event A2"
 
 
 ; Type: Interpreted Constraints
@@ -1265,7 +1265,7 @@
 "It contains one octet carrying a bit map of 8 bits."
     length 1 octets
 "The possible values are those defined in TS 32.422 [23] for Positioning Method."
-    encoding element TS32.422 "Positioning Method"
+    encoding element TS32.422 5.10.19 "Positioning Method"
 
 
 ; Type: Interpreted Constraints
@@ -1276,7 +1276,7 @@
 "It contains one octet carrying a bit map of 8 bits."
     length 1 octets
 "The possible values are those defined in TS 32.422 [23] for Measurement quantity."
-    encoding element TS32.422 "Measurement quantity"
+    encoding element TS32.422 5.10.15 "Measurement Quantity"
 
 
 ; Type: Interpreted Constraints
@@ -1285,7 +1285,7 @@
 ; Section: 7.3.172
 ; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
-    encoding element TS32.422
+    encoding element TS32.422 5.10.13 "Event Threshold for Event 1f"
 
 
 ; Type: Interpreted Constraints
@@ -1294,7 +1294,7 @@
 ; Section: 7.3.173
 ; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
-    encoding element TS32.422
+    encoding element TS32.422 5.10.14 "Event Threshold for Event 1i"
 
 
 ; Type: Interpreted Constraints
@@ -1312,7 +1312,7 @@
 ; Section: 7.3.175
 ; Versions: 18.7.0..19.6.0
 "This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4."
-    encoding element TS23.003 19.4.2.4 "MME identity"
+    encoding element TS23.003 19.4.2.4 "MME node FQDN"
 
 
 ; Type: Interpreted Constraints
@@ -1321,7 +1321,7 @@
 ; Section: 7.3.177
 ; Versions: 18.7.0..19.6.0
 "This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6."
-    encoding element TS23.003
+    encoding element TS23.003 19.4.2 "MME or SGSN node FQDN"
 
 
 ; Type: Interpreted Constraints
@@ -1516,7 +1516,7 @@
 "The contents of eDRX-Cycle-Length-Value shall consist of 1 octet."
     length 1 octets
 "The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\""
-    encoding element TS24.008 10.5.5.32 "Extended DRX parameter"
+    encoding element TS24.008 10.5.5.32 "eDRX value"
 "the 4 most significant bits of the octet in this AVP shall be set to 0."
     bits clear 4 5 6 7
 
@@ -1565,7 +1565,7 @@
 "The contents of Paging-Time-Window-Length shall consist of 1 octet."
     length 1 octets
 "The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\""
-    encoding element TS24.008 10.5.5.32 "Extended DRX parameter"
+    encoding element TS24.008 10.5.5.32 "Paging Time Window"
 "the 4 least significant bits of the octet in this AVP shall be set to 0."
     bits clear 0 1 2 3
 
@@ -1603,7 +1603,7 @@
 ; Section: 7.3.246
 ; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
-    encoding element TS32.422
+    encoding element TS32.422 5.10.7 "Event Threshold for Event A2"
 
 
 ; Type: Interpreted Constraints
@@ -1612,7 +1612,7 @@
 ; Section: 7.3.249
 ; Versions: 18.7.0..19.6.0
 "The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes."
-    encoding element TS32.422 "Collection period M7 in NR"
+    encoding element TS32.422 5.10.35 "Collection Period M7 in NR"
 
 
 ; Type: Interpreted Constraints
@@ -1621,7 +1621,7 @@
 ; Section: 7.3.251
 ; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
-    encoding element TS29.002
+    encoding element TS29.002 17.7.8 "NR-CGI"
 
 
 ; Type: Interpreted Constraints

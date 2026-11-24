@@ -82,7 +82,7 @@ TS 29.272's file prints it:
 | `length` | `length 3 octets`, `length 14..15 digits`, `length 1..* characters` | the payload's octets, the digits its encoding carries, or its UTF-8 characters are within the bounds |
 | `range` | `range 0..255`, `range -1..*` | the integer value is within the bounds |
 | `exclude` | `exclude 0` | the integer value is none of these |
-| `encoding` | `encoding plmn-id`, `encoding element TS24.008 10.5.5.32 "Extended DRX parameter"` | the payload is laid out as the codec says |
+| `encoding` | `encoding plmn-id`, `encoding element TS29.002 17.7.8 "E-UTRAN-CGI"` | the payload is laid out as the codec, or the element registry's entry, says |
 | `present-if` | `present-if Result-Code = DIAMETER_SUCCESS` | the AVP is present when a condition holds |
 | `absent-if` | `absent-if Emergency-Services bit Emergency-Indication` | the AVP is absent when a condition holds |
 | `requires` | `requires DSR-Flags bit "Trace Data Withdrawal"` | a condition holds when the AVP is present |
@@ -130,20 +130,128 @@ no clause states is not here.
 | `epc-plmn-domain` | `epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org` | TS 29.272 clause 7.3.43 |
 | `ip-address` | an Address of family 1 (IPv4, 4 octets) or 2 (IPv6, 16) | RFC 6733 clause 4.3.1, as TS 29.272 clauses 7.3.98 and 7.3.109 restrict it |
 | `time-zone` | a sign and decimal digits, the offset from UTC in 15 minutes: `+8` | TS 29.272 clause 7.3.163 |
-| `element` | another document's information element, carried whole: its document, and the clause and name where the clause gives them | the cited document |
+| `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
-An `element` is checked no further than a `length` beside it says: the corpus
-does not implement other documents' elements. A clause pointing at another
-document without stating a layout ("Octets are coded according to TS 29.002
-[24]") is an `element` of that document.
+A clause pointing at another document without stating a layout ("Octets are
+coded according to TS 29.002 [24]") is an `element` of that document, named
+as specifically as the clause allows: the MAP type an AVP's name and clause
+mean (`TS29.002 17.7.5 "SS-Code"`), the parameter of TS 32.422 it takes its
+values from (`TS32.422 5.10.19 "Positioning Method"`).
 
 `seanchai.constraints` checks a payload in Python: `codec_problem(codec,
 payload)` says why a payload is no such layout, `digit_count` counts its
-digits, and `check(rule, payload, data_type, codec)` tells whether a length,
-range, exclude, encoding or bits rule holds, None where the payload alone
-cannot tell (a predicate, a `values`, `members` or `unique` rule, an
-`element`, a `default`, `text-only`). A `bits` rule holds of an unsigned
-integer's payload or an OctetString's (`bits_value`, `bits_problem`).
+digits, `element_problem(rule, payload, data_type)` why it is not the element
+an `encoding element` rule names, and `check(rule, payload, data_type, codec)`
+tells whether a length, range, exclude, encoding or bits rule holds, None
+where the payload alone cannot tell (a predicate, a `values`, `members` or
+`unique` rule, an element the registry does not have or checks nothing of, a
+`default`, `text-only`). A `bits` rule holds of an unsigned integer's payload
+or an OctetString's (`bits_value`, `bits_problem`).
+
+## Elements
+
+What an element looks like is not written in the `.dadx` file, which only
+names it, but in the library's element registry, `seanchai.elements`: one
+`Element` per document, clause and name, read from the defining document and
+built from a closed set of declarative shapes, so that no file carries code:
+
+| Shape | Holds when |
+|---|---|
+| `Octets` | the payload has so many octets, or a range of them |
+| `Plmn` | three octets from a given one are a PLMN identity, as `plmn-id` |
+| `Field` | bits of an octet, or running across octets, numbered 8 to 1 as the documents number them, take one of a set or range of values; a spare field takes the value it is coded with |
+| `OneBit` | at most one bit of an octet is set |
+| `Integer` | an integer-typed payload's value is within bounds |
+| `Tbcd` | the octets from a given one are TBCD digits, "1111" filling only the last octet's bits 8-5 |
+| `Fqdn` | the text is one of a few domain-name templates, `mmec<MMEC:hex:2>.mmegi<MMEGI:hex:4>.mme.epc...`, in any case |
+
+Each entry cites every clause its layout was read from, with the edition read
+(`Source`: TS 29.002 V19.1.0 clause 17.7.8, `E-UTRAN-CGI ::= OCTET STRING
+(SIZE (7))`), following the references as far as they are concrete: MAP's
+E-UTRAN-CGI to TS 29.118 clause 9.4.3a and on to TS 29.274's ECGI field. The
+editions are Release 19's latest of each document TS 29.272 cites
+non-specifically, as its references clause means; 3GPP2 publishes A.S0022-0
+v2.0 as its newest. Release 18's copy of TS 29.272 is held to the same
+entries, though its references mean Release 18's editions, which were not
+read: where an element differs between the releases (a trace bitmap of TS
+32.422 with fewer octets), a Release 18 sender draws a note it does not
+deserve. Each says how deep its check goes, its `depth`:
+
+- `full`: everything the document lets a sender get wrong is checked;
+- `partial`: some of it, the entry saying what is not and why;
+- `length`: the octet count alone;
+- `none`: nothing, the entry saying why.
+
+A spare bit is checked to be what the document codes it as, unless the
+document tells the receiver to ignore it, as TS 24.008 clause 10.5 and TS
+29.274 clause 8.1 do: such a bit is no error of the message. A reserved
+code point is checked only where the document says it is not sent; one a
+receiver reads as another (TS 24.008's "All other values shall be
+interpreted as 0000") is not. Where the AVP alone does not say which
+variant applies, a RAT's table of bits or a measurement quantity's range,
+only what every variant shares is checked.
+
+A finding is a note like any other interpreted rule's, `constraint-element`,
+its line citing TS 29.272's clause and, beneath it, the element and the
+documents read ([wireshark-plugin.md](wireshark-plugin.md#findings)).
+`elements.problem(entry, payload, data_type)` checks a payload against an
+entry, `elements.lookup(document, clause, name)` finds one, `sample` and
+`breaking` give the payloads `seanchai vectors` sends, and the dictionary's
+and the export's rules carry the entry as `element_entry`
+([consumers.md](consumers.md#the-dictionary), [website.md](website.md#blocks)).
+The linter notes an element the registry has no entry for as
+`constraint-element-unknown`: another document's interpretations may name
+one before the registry learns it, and nothing checks it meanwhile.
+
+TS 29.272's 43 `encoding element` rules name 40 entries, of which 34 check
+something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| 3GPP2-MEID | 3GPP2 A.S0022 A Mobile Identity (MEID) | 3GPP2 A.S0022-0 v2.0 Annex A | 8 octets; octet 1 bits 4-1 (odd/even indicator 0, type of identity 001) 0001; octet 8 bits 8-5 (fill) 1111 | full | the 14 MEID hex digits take any value 0H to FH. 3gpp2.org publishes A.S0022-0 v2.0 (April 2010) as the newest revision; later revisions TIA republishes were not read |
+| Destination-Host | TS 29.303 4.3.2 | TS 29.303 V19.1.0 4.3.2 | nothing | none | the clause binds the operator provisioning host names to the form, and tells implementations to treat a host name not of the form as valid, so a breach is no error of the message; the host name itself is checked as a DiameterIdentity |
+| Regional-Subscription-Zone-Code | TS 23.003 4.4 Zone Code | TS 23.003 V19.8.0 4.4 | 2 octets | full | the code is in full hexadecimal representation: any value |
+| RAND | TS 33.401 RAND | TS 33.401 V19.2.0 6.1.2; TS 33.102 V19.1.0 6.3.7 | 16 octets | full | a random number: any value |
+| XRES | TS 33.401 XRES | TS 33.401 V19.2.0 6.1.2; TS 33.102 V19.1.0 6.3.7 | 4 to 16 octets | full | a function's output: any value |
+| AUTN | TS 33.401 AUTN | TS 33.401 V19.2.0 6.1.2; TS 33.102 V19.1.0 6.3.2; TS 33.102 V19.1.0 6.3.7 | 16 octets | full | its fields take any value: the AMF's bits are the operator's |
+| KASME | TS 33.401 K_ASME | TS 33.401 V19.2.0 6.2 | 32 octets | full | a key: any value |
+| SRES | TS 33.102 SRES | TS 33.102 V19.1.0 6.8.1.2 | 4 octets | full | a function's output: any value |
+| Trace-NE-Type-List | TS 32.422 5.4 List of NE Types | TS 32.422 V19.7.0 5.4 | 3 octets; octet 3 bits 8-7 (spare) 00 | full | every other bit is an NE type, set or not |
+| Trace-Interface-List | TS 32.422 5.5 List of Interfaces | TS 32.422 V19.7.0 5.5 | 23 octets | length | the spare bits in each network element's bitmap are not checked: several of the bitmaps print fewer cells than bits, so which bits a spare cell spans is not certain, and NOTE 5 says the bitmaps may number bits otherwise than the signalling specifications do |
+| Trace-Event-List | TS 32.422 5.1 Triggering Events | TS 32.422 V19.7.0 5.1 | 17 octets | length | the spare bits in each network element's bitmap are not checked: several of the bitmaps print fewer cells than bits, so which bits a spare cell spans is not certain |
+| OMC-Id | TS 29.002 17.7.8 AddressString | TS 29.002 V19.1.0 17.7.2; TS 29.002 V19.1.0 17.7.8 | 1 to 20 octets; octet 1 bit 8 (extension, 1 for no extension) 1; octets 2 on TBCD digits (0-9, *, #, a, b, c), '1111' filling only the last octet's bits 8-5 | full | the nature of address and numbering plan values the type marks reserved are not refused, since it does not say they are not sent |
+| PDP-Type | TS 29.002 17.7.1 PDP-Type | TS 29.002 V19.1.0 17.7.1; TS 29.060 V19.0.0 7.7.27 | 2 octets; octet 1 bits 8-5 (spare) 1111; octet 1 bit 4 to octet 2 bit 1 (PDP type organisation and number) PPP (0x001), Non-IP (0x002), IPv4 (0x121) or IPv6 (0x157) | full |  |
+| QoS-Subscribed | TS 29.002 17.7.1 QoS-Subscribed | TS 29.002 V19.1.0 17.7.1; TS 24.008 V19.5.0 10.5.6.5 | 3 to 18 octets | length | the octets' fields are not checked: TS 24.008 has the receiver map a reserved value to another rather than refuse it, and its spare bits are ignored by the receiving side (clause 10.5) |
+| CSG-Id | TS 23.003 4.7 CSG-ID | TS 23.003 V19.8.0 4.7 | nothing | none | the document fixes only the identity's 27 bits; where they sit in the Unsigned32 AVP is TS 29.272's own sentence, read as a bits rule beside it |
+| SS-Code | TS 29.002 17.7.5 SS-Code | TS 29.002 V19.1.0 17.7.5 | 1 octet; octet 1 (SS-Code) a code clause 17.7.5 defines | full |  |
+| SS-Status | TS 29.002 17.7.4 SS-Status | TS 29.002 V19.1.0 17.7.4 | 1 octet; octet 1 bits 8-5 (unused) 0000 | full |  |
+| ServiceTypeIdentity | TS 29.002 17.7.8 LCSServiceTypeID | TS 29.002 V19.1.0 17.7.8 | an integer 0 to 127 | full | a standard type the clause has not yet named is reserved for one, not refused |
+| TS-Code | TS 29.002 17.7.9 TeleserviceCode | TS 29.002 V19.1.0 17.7.9 | 1 octet; octet 1 (TeleserviceCode) a code clause 17.7.9 defines | full | Ext-TeleserviceCode's octets 2 to 5, reserved for future use, are not the type named |
+| E-UTRAN-Cell-Global-Identity | TS 29.002 17.7.8 E-UTRAN-CGI | TS 29.002 V19.1.0 17.7.8; TS 29.118 V19.1.0 9.4.3a; TS 29.274 V19.6.0 8.21.5 | 7 octets; a PLMN identity in octets 1 to 3 | full | octet 4's bits 8-5 are the spare bits TS 29.274 clause 8.1 says are sent as 0 and not evaluated by the receiver; the ECI takes any value |
+| Tracking-Area-Identity | TS 29.002 17.7.8 TA-Id | TS 29.002 V19.1.0 17.7.8; TS 29.118 V19.1.0 9.4.21a; TS 29.274 V19.6.0 8.21.4 | 5 octets; a PLMN identity in octets 1 to 3 | full | the tracking area code takes any value, its coding being each administration's |
+| Cell-Global-Identity | TS 29.002 17.7.8 CellGlobalIdOrServiceAreaIdFixedLength | TS 29.002 V19.1.0 17.7.8 | 7 octets; a PLMN identity in octets 1 to 3 | full | the location area code and the cell identity or service area code take any value |
+| Routing-Area-Identity | TS 29.002 17.7.8 RAIdentity | TS 29.002 V19.1.0 17.7.8; TS 29.060 V19.0.0 7.7.3 | 6 octets; a PLMN identity in octets 1 to 3 | full | the location and routing area codes take any value |
+| Location-Area-Identity | TS 29.002 17.7.8 LAIFixedLength | TS 29.002 V19.1.0 17.7.8 | 5 octets; a PLMN identity in octets 1 to 3 | full | the location area code takes any value |
+| Service-Area-Identity | TS 29.002 17.7.8 CellGlobalIdOrServiceAreaIdFixedLength | TS 29.002 V19.1.0 17.7.8 | 7 octets; a PLMN identity in octets 1 to 3 | full | the location area code and the cell identity or service area code take any value |
+| Geographical-Information | TS 29.002 17.7.1 GeographicalInformation | TS 29.002 V19.1.0 17.7.1; TS 23.032 V19.0.0 7.3.2; TS 23.032 V19.0.0 7.2 | 8 octets; octet 1 bits 8-5 (type of shape) 0001; octet 1 bits 4-1 (spare) 0000; octet 8 bit 8 (spare) 0 | full | the latitude, longitude and uncertainty code take any value |
+| Geodetic-Information | TS 29.002 17.7.1 GeodeticInformation | TS 29.002 V19.1.0 17.7.1; ITU-T Q.763 (12/1999) 3.88 | 10 octets; octet 1 bits 8-5 (spare) 0000; octet 2 bits 7-1 (type of shape) 0000001; octet 9 bit 8 (spare) 0; octet 10 bit 8 (spare) 0; octet 10 bits 7-1 (confidence) 0 to 100 | full | the extension bit's value for a parameter of one octet of shape is not stated; the LPRI's spare code 11 is one for future use, not refused |
+| List-Of-Measurements | TS 32.422 5.10.3 List of Measurements | TS 32.422 V19.7.0 5.10.3 | octet 2 bit 8 (spare) 0; octets 3 to 4 (spare) all 0 | partial | only the bits spare in every RAT's table are checked: the AVP does not say which RAT its bits are read for, and octet 2's other spare bits are measurements in another RAT |
+| Reporting-Trigger | TS 32.422 5.10.4 Reporting Trigger | TS 32.422 V19.7.0 5.10.4 | nothing | none | the document defines one octet, TS 29.272 an Unsigned32 whose most significant bit is bit 8 of its first octet, so which of the four octets holds the bitmap is said by neither |
+| Event-Threshold-RSRP | TS 32.422 5.10.7 Event Threshold for Event A2 | TS 32.422 V19.7.0 5.10.7 | an integer 0 to 127 | partial | an LTE threshold's narrower range (RSRP 0-97, RSRQ 0-34) is not checked: the AVP does not say which RAT it is for |
+| Event-Threshold-RSRQ | TS 32.422 5.10.7 Event Threshold for Event A2 | TS 32.422 V19.7.0 5.10.7 | an integer 0 to 127 | partial | an LTE threshold's narrower range (RSRP 0-97, RSRQ 0-34) is not checked: the AVP does not say which RAT it is for |
+| Positioning-Method | TS 32.422 5.10.19 Positioning Method | TS 32.422 V19.7.0 5.10.19 | octet 1 bits 8-3 (spare) 000000 | partial | bit 2, spare in NR, is E-Cell ID in LTE, and the AVP does not say which RAT it is for |
+| Measurement-Quantity | TS 32.422 5.10.15 Measurement Quantity | TS 32.422 V19.7.0 5.10.15 | at most one bit of octet 1 set | full | bits 8-4 are reserved, not refused, since the clause does not say they are not sent |
+| Event-Threshold-Event-1F | TS 32.422 5.10.13 Event Threshold for Event 1f | TS 32.422 V19.7.0 5.10.13 | an integer -120 to 165 | partial | the narrower range of the measurement quantity (CPICH RSCP -120..-25, Ec/No -24..0, pathloss 30..165) is not checked: it is another AVP's |
+| Event-Threshold-Event-1I | TS 32.422 5.10.14 Event Threshold for Event 1i | TS 32.422 V19.7.0 5.10.14 | an integer -120 to -25 | full |  |
+| SGs-MME-Identity | TS 23.003 19.4.2.4 MME node FQDN | TS 23.003 V19.8.0 19.4.2.4; TS 23.003 V19.8.0 19.2 | mmec<MMEC>.mmegi<MMEGI>.mme.epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org (MMEC 2 hexadecimal digits, MMEGI 4 hexadecimal digits, MNC 3 digits, MCC 3 digits), in any case | full |  |
+| Coupled-Node-Diameter-ID | TS 23.003 19.4.2 MME or SGSN node FQDN | TS 23.003 V19.8.0 19.4.2.4; TS 23.003 V19.8.0 19.4.2.6; TS 23.003 V19.8.0 19.2 | mmec<MMEC>.mmegi<MMEGI>.mme.epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org or nri-sgsn<NRI>.rac<RAC>.lac<LAC>.rac.epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org (MMEC 2 hexadecimal digits, MMEGI 4 hexadecimal digits, MNC 3 digits, MCC 3 digits, NRI 4 hexadecimal digits, RAC 4 hexadecimal digits, LAC 4 hexadecimal digits), in any case | full |  |
+| eDRX-Cycle-Length-Value | TS 24.008 10.5.5.32 eDRX value | TS 24.008 V19.5.0 10.5.5.32 | nothing | full | every 4-bit value is received, those undefined read as 0000, so nothing is refused; the octet carrying the field is TS 29.272's own length and bits rules |
+| Paging-Time-Window-Length | TS 24.008 10.5.5.32 Paging Time Window | TS 24.008 V19.5.0 10.5.5.32 | nothing | full | every 4-bit value is defined, so nothing is refused; the octet carrying the field is TS 29.272's own length and bits rules |
+| 5QI | TS 23.501 5QI | TS 23.501 V19.9.0 5.7.2.1 | nothing | none | the document gives no range: beside the standardized values a 5QI may be a pre-configured or dynamically assigned one |
+| Event-Threshold-SINR | TS 32.422 5.10.7 Event Threshold for Event A2 | TS 32.422 V19.7.0 5.10.7 | an integer 0 to 127 | partial | an LTE threshold's narrower range (RSRP 0-97, RSRQ 0-34) is not checked: the AVP does not say which RAT it is for |
+| Collection-Period-M7-NR | TS 32.422 5.10.35 Collection Period M7 in NR | TS 32.422 V19.7.0 5.10.35 | an integer 1 to 60 | full |  |
+| NR-Cell-Global-Identity | TS 29.002 17.7.8 NR-CGI | TS 29.002 V19.1.0 17.7.8; TS 38.413 V19.4.0 9.3.1.7 | 8 octets; a PLMN identity in octets 1 to 3 | partial | where the 36 bits of the NR cell identity sit in the last five octets, and what the other four are, neither document says |
+
 
 ## Reading them
 
@@ -166,10 +274,10 @@ integer's payload or an OctetString's (`bits_value`, `bits_problem`).
   not hold, a rule the AVP's type cannot meet, a value or bit no table names,
   and rules that cannot all hold
   ([linter.md](linter.md#interpreted-constraints)).
-- The Wireshark plugin checks lengths, ranges, exclusions, the codecs but
-  `element`, `bits`, `members` and `unique` rules, and the predicates and
-  `values` rules whose names resolve; a `default` breaks nothing on the
-  wire
+- The Wireshark plugin checks lengths, ranges, exclusions, the codecs, an
+  `element` as far as its registry entry does, `bits`, `members` and `unique`
+  rules, and the predicates and `values` rules whose names resolve; a
+  `default` breaks nothing on the wire
   ([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)).
 
 ## The interpretations file
@@ -269,7 +377,7 @@ file may hold them, with no source to hold their quotes to.
    on an earlier message, a feature, the node, the interface or the
    subscriber is `text-only`; so is a NOTE outside a table, which states no
    requirement. A clause pointing at another document for a layout is an
-   `element`.
+   `element`, named by its clause and name in that document.
 4. Run `uv run seanchai format edits/interpretations/<SpecRef>.dadx` and
    `uv run seanchai lint edits/interpretations/<SpecRef>.dadx`, then
    `uv run seanchai corpus regenerate --spec <SpecRef>`. A quote the clause
@@ -277,6 +385,13 @@ file may hold them, with no source to hold their quotes to.
 5. A layout no codec describes needs a codec, defined with its clause in
    `ast.Codec`, `seanchai.constraints`, the plugin's `core.lua` and this
    page, with byte vectors in `tests/test_constraints.py`.
+6. An element the registry lacks (`constraint-element-unknown`) needs an
+   entry in `seanchai.elements`, read from the defining document, a copy
+   fetched for the purpose: its sources with the edition read, its checks in
+   the shapes above, its depth and what it leaves unchecked, and an example
+   payload. `tests/test_elements.py` holds every entry to its example, to the
+   payloads breaking it and to `core.lua`, which reads the shapes the plugin
+   is generated with.
 
 ## TS 29.272
 
@@ -295,17 +410,17 @@ C row of its information-element tables.
 | Rules | |
 |---|---|
 | `encoding`, a codec | 20: `e164-tbcd` 6, `plmn-id` 3, `digits` 3, `ip-address` 2, `plmn-id-prefix`, `labels`, `apn`, `plmn-domain`, `epc-plmn-domain`, `time-zone` |
-| `encoding element` | 43 |
+| `encoding element` | 43, naming 40 entries of the registry; 37 rules checked, 6 not ([above](#elements)) |
 | `length` | 8: 6 in octets, 2 in digits |
 | `range` | 7 |
 | `exclude` | 4 |
 | `requires`, `present-if`, `absent-if`, `excludes` | 17, 2, 2, 1 |
 | `default` | 9 |
-| `bits` | 9: `at-most-one` 3 (DSR-Flags), `at-least-one` (Preferred-Data-Mode), `clear` 3 (Reachability-Type, eDRX-Cycle-Length-Value, Paging-Time-Window-Length), `set` (Reachability-Type), `only` (DSR-Flags on S7a) |
+| `bits` | 10: `at-most-one` 3 (DSR-Flags), `at-least-one` (Preferred-Data-Mode), `clear` 4 (Reachability-Type, eDRX-Cycle-Length-Value, Paging-Time-Window-Length, CSG-Id), `set` (Reachability-Type), `only` (DSR-Flags on S7a) |
 | `members` | 3: `at-least-one` 2 (AESE-Communication-Pattern, Monitoring-Event-Configuration), `only` (Terminal-Information in NOR) |
 | `unique` | 2: Context-Identifier and Service-Selection in APN-Configuration |
 | `values` | 1: Reachability-Information in Monitoring-Event-Report |
-| `text-only` | 55 |
+| `text-only` | 54 |
 
 The text-only rules are mostly conditions on the node, the interface, an
 earlier message or a feature (an information element's "shall be present if

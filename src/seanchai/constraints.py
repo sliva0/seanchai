@@ -2,11 +2,13 @@
 (`model.Constraint`), and what each codec implies of the payload.
 
 `check` tells whether one rule holds of a payload, as the Wireshark plugin
-checks it: length, range, exclude, bits and every codec but `element`. A
+checks it: length, range, exclude, bits, every codec, and an `element` as
+far as the element registry (`seanchai.elements`) reads its document. A
 predicate, a `values`, `members` or `unique` rule needs the message around
-the AVP, an `element` the other document's layout, and `text-only` a reader,
-so `check` answers None for them: unknown, never a guess.
-docs/constraints.md#codecs gives each codec's clause.
+the AVP, an element the registry does not have or checks nothing of its
+document's layout, and `text-only` a reader, so `check` answers None for
+them: unknown, never a guess. docs/constraints.md#codecs gives each codec's
+clause, and docs/constraints.md#elements each element's.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ import re
 from collections.abc import Sequence
 from typing import NamedTuple
 
+from . import elements
 from .dad import ast
 
 __all__ = [
@@ -27,6 +30,8 @@ __all__ = [
     "codec_octets",
     "codec_problem",
     "digit_count",
+    "element_of",
+    "element_problem",
     "integer_bounds",
     "integer_value",
 ]
@@ -126,7 +131,7 @@ _TIME_ZONE = re.compile(r"[+-][0-9]+")
 
 def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
     """Why `payload` is not laid out as `codec` says, or None if it is, or
-    if `codec` is an `element`, which is not checked."""
+    if `codec` is an `element`, whose layout `element_problem` checks."""
     match codec:
         case ast.Codec.E164_TBCD:
             if not 1 <= len(payload) <= 8:
@@ -177,6 +182,22 @@ def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
             ok = _TIME_ZONE.fullmatch(text)
             return None if ok else "not a sign and a number of 15 minutes"
     raise AssertionError(codec)
+
+
+def element_of(rule: ast.EncodingRule) -> elements.Element | None:
+    """The registry's entry for the element an `encoding element` rule
+    names, or None for another codec or an element it does not have."""
+    return elements.of_rule(rule)
+
+
+def element_problem(
+    rule: ast.EncodingRule, payload: bytes, data_type: ast.DataType | None = None
+) -> str | None:
+    """Why `payload`, of `data_type`, is not the element `rule` names, as
+    far as the registry checks it; None if it is, or where the registry has
+    no entry or its entry checks nothing."""
+    found = element_of(rule)
+    return None if found is None else elements.problem(found, payload, data_type)
 
 
 def digit_count(codec: ast.Codec, payload: bytes) -> int | None:
@@ -311,7 +332,13 @@ def check(
             return Check(False, f"{value} is not {_bounds(rule.low, rule.high)}")
         case ast.EncodingRule():
             if rule.codec is ast.Codec.ELEMENT:
-                return Check(None)
+                found = element_of(rule)
+                if found is None or not found.checks:
+                    return Check(None)
+                if found.integer and integer_value(data_type, payload) is None:
+                    return Check(None)
+                problem = elements.problem(found, payload, data_type)
+                return Check(problem is None, problem)
             problem = codec_problem(rule.codec, payload)
             return Check(problem is None, problem)
         case ast.BitsRule():

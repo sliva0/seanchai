@@ -158,8 +158,11 @@ class Rule(_Model):
     null or empty. `length`: `unit` (`octets`, `digits`, `characters`) and
     inclusive `low` and `high`, null where open. `range`: `low` and `high`.
     `exclude`: `values`. `encoding`: `codec`, and for an `element` the
-    `document`, `clause` and `element` name. `present-if`, `absent-if`,
-    `requires` and `excludes`: `conditions`, alternatives. `default`: `value`,
+    `document`, `clause` and `element` name, with `element_entry`, the
+    element registry's entry for it (its check in words, how deep it goes and
+    the documents read), null where the registry has none. `present-if`,
+    `absent-if`, `requires` and `excludes`: `conditions`, alternatives.
+    `default`: `value`,
     a number or a name its values give, what the AVP is read as when absent.
     `bits`: `relation` (`at-most-one`, `at-least-one`, `set`, `clear`,
     `only`) of the AVP's own `bits`, by number. `members`: `relation`
@@ -193,6 +196,7 @@ class Rule(_Model):
     document: str | None
     clause: str | None
     element: str | None
+    element_entry: _json.ElementEntry | None
     conditions: tuple[Condition, ...]
     value: int | str | None
     relation: ast.BitsRelation | None
@@ -826,6 +830,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
         "document": None,
         "clause": None,
         "element": None,
+        "element_entry": None,
         "conditions": (),
         "value": None,
         "relation": None,
@@ -845,6 +850,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
                 "document": rule.document,
                 "clause": rule.clause,
                 "element": rule.element,
+                "element_entry": _json.element_entry(rule),
             }
         case ast.PredicateRule():
             fields["conditions"] = tuple(

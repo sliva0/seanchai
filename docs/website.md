@@ -180,7 +180,10 @@ and in its raw mirror alike, each describing its own file's lines. Every
   a person read in the clause's prose ([constraints.md](constraints.md));
   its scope and `Versions` in `fields`; and `readings`, each `quotes` (`line`
   and `text`, unescaped) and `rules`, each at its `line`, with `kind` and the
-  fields of the dictionary's rule ([consumers.md](consumers.md#the-dictionary)).
+  fields of the dictionary's rule ([consumers.md](consumers.md#the-dictionary)),
+  an `encoding element` rule's `element_entry` being omitted where the
+  element registry has no entry for the element
+  ([constraints.md](constraints.md#elements)).
   A clause nothing printed stands in, as a simple-typed AVP's, reads
   "Interpreted Constraints IMEI" in `sections`.
 

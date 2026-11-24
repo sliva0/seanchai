@@ -8,7 +8,7 @@ the export's shapes on them. Both serialise with `dumps`.
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import pydantic
 
@@ -44,6 +44,64 @@ class CrossRelease(_Model):
     cited_revision: str | None
     revision: str | None
     meant: str | None
+
+
+class ElementSource(_Model):
+    """Where an element's layout is written (`elements.Source`): the
+    `document`, the `edition` read as its cover prints it (`V19.1.0`), the
+    `clause`, and `where` in it, a table, figure or ASN.1 type."""
+
+    document: str
+    edition: str
+    clause: str
+    where: str
+
+
+class ElementEntry(_Model):
+    """The element registry's entry for an `encoding element` rule
+    (`elements.Element`): the element as the rule names it (`document`,
+    `clause`, `name`), `title`, what it is, `check`, its checks in words,
+    `depth` (`full`, `partial`, `length` or `none`), `unchecked`, what the
+    checks leave out and why, and the `sources` read."""
+
+    document: str
+    clause: str | None
+    name: str | None
+    title: str
+    check: str
+    depth: Literal["full", "partial", "length", "none"]
+    unchecked: str | None
+    sources: tuple[ElementSource, ...]
+
+
+def element_entry(rule: ast.ConstraintRule) -> ElementEntry | None:
+    """The registry's entry for an `encoding element` rule, None for
+    another rule or an element the registry does not have."""
+    from . import elements
+
+    if not isinstance(rule, ast.EncodingRule):
+        return None
+    found = elements.of_rule(rule)
+    if found is None:
+        return None
+    return ElementEntry(
+        document=found.document,
+        clause=found.clause,
+        name=found.name,
+        title=found.title,
+        check=found.said(),
+        depth=found.depth.value,
+        unchecked=found.unchecked,
+        sources=tuple(
+            ElementSource(
+                document=source.document,
+                edition=source.edition,
+                clause=source.clause,
+                where=source.where,
+            )
+            for source in found.sources
+        ),
+    )
 
 
 class UndefinedBlock(_Model):

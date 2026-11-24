@@ -289,7 +289,11 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   ([below](#interpreted-constraints)). A rule has `kind` and the fields its
   kind uses, the others null or empty: a length's `unit`, `low` and `high`,
   a range's `low` and `high`, exclude's `values`, an encoding's `codec` and
-  an `element`'s `document`, `clause` and `element`, a predicate's
+  an `element`'s `document`, `clause` and `element`, with `element_entry`,
+  the element registry's entry for it or null where it has none (`title`,
+  `check` in words, `depth`, `unchecked`, what it leaves and why, and
+  `sources`, each `document`, `edition`, `clause` and `where`;
+  [constraints.md](constraints.md#elements)), a predicate's
   `conditions` (`avp`, and `value` or `bit`), a default's `value`, a bits
   rule's `relation` and `bits`, a members rule's `relation` and `members`,
   and a values rule's `values` and `conditions`; `unique` has none.
@@ -397,14 +401,16 @@ suite, per command of the selection (`--application`, `--document`):
   names, UTF-8 that is not, an integer of three octets, an AVP the rule does
   not admit where it has no `* [ AVP ]`, an answer with the E bit and a
   Result-Code that is no protocol error, and each interpreted constraint the
-  plugin checks: a length, a range, an excluded value, a codec's layout, a
-  rule on bits, a predicate on a command's own member, a members, unique or
-  values rule.
+  plugin checks: a length, a range, an excluded value, a codec's layout,
+  another document's element as the element registry checks it, a rule on
+  bits, a predicate on a command's own member, a members, unique or values
+  rule.
 
 Values are valid for their type and for every constraint read of the AVP: a
-codec's layout (a PLMN identity is MCC 123, MNC 45), a length, a range, bits, a
-predicate's siblings, the members a grouped AVP must or may not hold, a
-distinct value of a `unique` member in each repeated grouped AVP. A command a
+codec's layout (a PLMN identity is MCC 123, MNC 45), an element's, a length, a
+range, bits, a predicate's siblings, the members a grouped AVP must or may not
+hold, a distinct value of a `unique` member in each repeated grouped AVP. A
+command a
 required member of which the corpus cannot complete is listed in `skipped` (TS
 29.154's ECR under `--policy hole`); an optional one is left out. A command
 printing no application id is sent in application 0.
@@ -1035,8 +1041,11 @@ for message in s6a.messages:
   `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`, `UniqueRule`,
   `ValuesRule`, `TextOnly`). `interpreted` is always True.
 - `seanchai.constraints.check(rule, payload, data_type, codec)` tells
-  whether a value rule holds of a payload, and `codec_problem` why a payload
-  is no such layout ([constraints.md](constraints.md#codecs)).
+  whether a value rule holds of a payload, `codec_problem` why a payload is
+  no such layout ([constraints.md](constraints.md#codecs)), and
+  `element_problem` why it is not the element an `encoding element` rule
+  names, as `seanchai.elements` reads its document
+  ([constraints.md](constraints.md#elements)).
 
 ### The registry
 
