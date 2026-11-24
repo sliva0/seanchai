@@ -1,5 +1,6 @@
-"""The consumer commands: `show`, `commands`, `dictionary`, `diff`, `export`
-and `wireshark-plugin`, which read the installed corpus or another."""
+"""The consumer commands: `show`, `commands`, `dictionary`, `diff`, `vectors`,
+`export` and `wireshark-plugin`, which read the installed corpus or
+another."""
 
 from __future__ import annotations
 
@@ -820,3 +821,112 @@ def _raw_mirror(path: Path) -> Path | None:
         if candidate.is_file():
             return candidate
     return None
+
+
+@main.command("vectors")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="The JSON file to write. Required unless --schema is given.",
+)
+@click.option(
+    "--application",
+    "application_ids",
+    multiple=True,
+    type=int,
+    metavar="ID",
+    help="Only this application id's commands. Repeatable.",
+)
+@click.option(
+    "--document",
+    "documents",
+    multiple=True,
+    metavar="REF",
+    help="Only this document's commands. Repeatable.",
+)
+@click.option(
+    "--policy",
+    type=click.Choice(["hole", "drop", "placeholder"]),
+    default="hole",
+    help="How to handle names the corpus declares undefined, as `dictionary`"
+    " does; a required one the corpus cannot complete skips its command.",
+)
+@click.option(
+    "--pcap",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Also write the vectors as a capture, TCP to port 3868.",
+)
+@click.option(
+    "--schema",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Also write the file's JSON Schema here.",
+)
+@_corpus_options
+def vectors_command(
+    output: Path | None,
+    application_ids: tuple[int, ...],
+    documents: tuple[str, ...],
+    policy: str,
+    pcap: Path | None,
+    schema: Path | None,
+    corpus_paths: tuple[Path, ...],
+    layers: tuple[Path, ...],
+) -> None:
+    """Write test messages for a stack's own tests.
+
+    Per command: a minimal valid message, a maximal one, and negative ones,
+    each breaking one rule (a required AVP missing, an M bit against its rule,
+    a void value, an interpreted constraint...), with its octets, a readable
+    tree, the rule and where it is written, and the finding the Wireshark
+    plugin reports (docs/consumers.md).
+
+    \b
+    S6a's, as JSON and as a capture:
+        seanchai vectors --application 16777251 -o s6a.json --pcap s6a.pcap
+    """
+    import json
+
+    from .. import vectors
+    from ..dictionary import build
+    from ..model import Model, UndefinedPolicy
+
+    if output is None and schema is None:
+        raise click.UsageError("give -o/--output, --schema or both")
+    if schema is not None:
+        _write_text(
+            schema,
+            json.dumps(
+                vectors.json_schema(), ensure_ascii=False, sort_keys=True, indent=2
+            )
+            + "\n",
+        )
+        click.echo(f"wrote {click.style(str(schema), bold=True)}", err=True)
+    if output is None:
+        return
+    with reported():
+        books, holes = _corpus(corpus_paths, layers)
+        built = Model.build(books, holes=holes, undefined=UndefinedPolicy(policy))
+        written = vectors.build(
+            build(
+                built,
+                corpus_version=books.version,
+                documents=documents,
+                application_ids=application_ids,
+            ),
+            vectors.pages_of(books),
+        )
+    _write_text(output, vectors.dumps(written))
+    if pcap is not None:
+        try:
+            pcap.parent.mkdir(parents=True, exist_ok=True)
+            pcap.write_bytes(vectors.pcap(written))
+        except OSError as error:
+            raise click.ClickException(str(error)) from None
+    negative = sum(1 for each in written.vectors if each.kind == "negative")
+    click.echo(
+        f"wrote {click.style(str(output), bold=True)}"
+        f" ({len(written.vectors)} vectors, {negative} negative,"
+        f" {len(written.skipped)} skipped)",
+        err=True,
+    )

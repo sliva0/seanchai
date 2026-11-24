@@ -542,3 +542,55 @@ def test_the_pinned_dictionary_names_import_cleanly(generator, tmp_path):
         """,
     )
     assert found == "ok\n"
+
+
+def test_the_vectors_decode_through_the_library_as_the_plugin_reads_them(
+    package, tmp_path
+):
+    """`seanchai vectors` for S6a, Cx and Gx, through the library's codec
+    with the additions registered: every valid message decodes, and each
+    breaking a data format (an integer's length, UTF-8) is refused, as the
+    plugin's `data-length` and `utf8` say. The library checks no ABNF,
+    flags or constraints, so the other negative vectors decode."""
+    from seanchai import dictionary, vectors
+
+    books = corpus.Corpus.installed()
+    written = vectors.build(
+        dictionary.build(
+            model.Model.build(books), application_ids=(16777216, 16777238, 16777251)
+        )
+    )
+    path = tmp_path / "vectors.json"
+    path.write_text(vectors.dumps(written))
+    output = _run(
+        package,
+        f"""
+        import json
+        from diameter.message import Message
+        from generated import additions
+
+        additions.register(corrections=True)
+
+        def values(avps):
+            for avp in avps:
+                if isinstance(avp.value, list):
+                    values(avp.value)
+
+        refused = []
+        for each in json.loads(open({str(path)!r}).read())["vectors"]:
+            try:
+                octets = bytes.fromhex(each["octets"])
+                values(Message.from_bytes(octets, plain_msg=True).avps)
+            except Exception:
+                refused.append(each["id"])
+        print(json.dumps(refused))
+        """,
+    )
+    refused = set(json.loads(output))
+    formats = {
+        v.id
+        for v in written.vectors
+        if v.expected and v.expected[0].rule in ("data-length", "utf8")
+    }
+    assert formats
+    assert refused == formats

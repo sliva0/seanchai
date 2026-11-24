@@ -86,6 +86,7 @@ seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
 seanchai wireshark-plugin -o FILE.lua   # a Wireshark plugin checking traffic
 seanchai diff OLD.dad NEW.dad [--json]  # what changed for a stack, and where from
+seanchai vectors -o OUT.json [--pcap F] # test messages, valid and breaking one rule
 ```
 
 Check and rewrite `.dad` files, the corpus's or your own sidecars:

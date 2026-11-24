@@ -214,6 +214,7 @@ def test_the_commands_are_the_documented_ones():
         "commands",
         "dictionary",
         "diff",
+        "vectors",
         "export",
         "wireshark-plugin",
         "lint",

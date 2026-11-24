@@ -379,6 +379,54 @@ documents=..., raw=(old_raw_corpus, new_raw_corpus))` returns it,
 `diff.compare` compares two dictionaries, and `diff.overlay(corpus, files)`
 reads a file in place of a corpus's copy.
 
+### Test messages
+
+`seanchai vectors -o FILE.json` writes test messages for a stack's own test
+suite, per command of the selection (`--application`, `--document`):
+
+- `minimal`: the fixed and required members only, a grouped AVP filled the
+  same way at any depth;
+- `maximal`: every optional member too, a repeatable one twice;
+- `negative`: one per rule broken, each from the minimal or maximal message
+  with one thing changed: a required AVP missing, an AVP once too often, a
+  fixed AVP out of place, the M bit clear where it must be set, the V bit
+  set on an IETF AVP, a reserved or void Enumerated value, a bit no document
+  names, UTF-8 that is not, an integer of three octets, an AVP the rule does
+  not admit where it has no `* [ AVP ]`, an answer with the E bit and a
+  Result-Code that is no protocol error, and each interpreted constraint the
+  plugin checks: a length, a range, an excluded value, a codec's layout, a
+  predicate.
+
+Values are valid for their type and for every constraint read of the AVP:
+a codec's layout (a PLMN identity is MCC 123, MNC 45), a length, a range, a
+predicate's siblings. A command a required member of which the corpus
+cannot complete is listed in `skipped` (TS 29.154's ECR under `--policy
+hole`); an optional one is left out. A command printing no application id
+is sent in application 0.
+
+```text
+format_version     1, changes when a reader would have to
+seanchai_version, corpus_version, application_ids
+vectors[]          id (application/abbreviation/kind[/what]), kind, application_id,
+                   command, abbreviation, command_code, is_request, error_bit,
+                   document, section, octets (hex), tree[], breaks, expected[]
+  tree[]           name, code, vendor_id (null without V), flags, data (hex),
+                   children[]
+  breaks           rule, reference, version, section, page, table
+  expected[]       rule and severity: the finding the Wireshark plugin reports
+skipped[]          command, what, reason
+```
+
+`--pcap FILE` also writes the messages as a capture, each over TCP to port
+3868, which Wireshark opens with the plugin. `--schema FILE` writes the JSON
+Schema. From Python, `seanchai.vectors.build(dictionary)` returns the same.
+
+The vectors are the plugin's end-to-end test (`tests/test_vectors.py`): each
+valid one draws no error or warning, each negative one exactly the finding it
+expects, under every Lua and tshark. Read through python-diameter's codec,
+which checks types and no rule, the library refuses exactly the vectors
+breaking a data format.
+
 ### Commands
 
 `seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
@@ -429,13 +477,13 @@ Every error the library raises derives from `seanchai.SeanchaiError`.
 
 - the names in the `__all__` of `seanchai`, `seanchai.model`,
   `seanchai.corpus`, `seanchai.dictionary`, `seanchai.constraints`,
-  `seanchai.diff` and `seanchai.errors`;
-- the dictionary's JSON, versioned by its `format_version`, and `diff`'s, by
-  its own;
+  `seanchai.diff`, `seanchai.vectors` and `seanchai.errors`;
+- the dictionary's JSON, versioned by its `format_version`, and `diff`'s and
+  `vectors`', by their own;
 - the `.dad` grammar and the corpus format it reads, `corpus.FORMATS`;
 - the consumer commands' options, output and exit statuses: `show`,
-  `commands`, `dictionary`, `diff`, `export`, `wireshark-plugin`, `lint` and
-  `format`.
+  `commands`, `dictionary`, `diff`, `vectors`, `export`, `wireshark-plugin`,
+  `lint` and `format`.
 
 The rest may change in any minor release: the Python of `seanchai.dad` (the
 AST, parser, formatter and corrections), `seanchai.linter`'s internals and

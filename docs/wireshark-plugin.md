@@ -54,12 +54,16 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   padding to 4 octets, all zero; reserved flags clear (section 4.1).
 - The command's ABNF: required AVPs present, none more often than allowed,
   fixed AVPs in place, and no unlisted AVP unless the rule ends in
-  `* [ AVP ]`. An answer with the E bit set is held to its document's
+  `* [ AVP ]`. An AVP a rule lists on two lines (TS 29.234's RAR, `{
+  Destination-Host }` and `[ Destination-Host ]`) may occur as often as the
+  lines together allow. An answer with the E bit set is held to its document's
   `<answer-message>` instead: TS 29.229's for Cx, RFC 6733 section 7.2's for
   most.
 - Grouped AVPs: the same, against the members of the reading the command's
   document means, at any depth. `Failed-AVP` is checked only for its
   `1* { AVP }`, since section 7.5 lets it hold the failed AVP as received.
+  One a table types Grouped and no document prints a rule for (TS 29.128's
+  `APN-Rate-Control-Status`) is checked for its framing only.
 - Flags, per that reading's flag rules: a bit clear under Must or set under
   Must not is an error, and a bit set under Should not is a warning. An M bit
   left to the application is not checked. A P bit no rule allows is a warning.
@@ -68,9 +72,10 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   DiameterIdentity as an ASCII host name; DiameterURI and IPFilterRule by
   section 4.3.1's syntax.
 - Values: an Enumerated value the reading defines or leaves to vendors, and not
-  one it reserves or voids; a Result-Code some document defines; bits some
-  document names; the E bit set on a protocol error (3xxx) and on no other
-  answer.
+  one it reserves or voids, where the corpus holds its values (RFC 5777's
+  `Treatment-Action` is typed Enumerated by a table, its values unread); a
+  Result-Code some document defines; bits some document names; the E bit set
+  on a protocol error (3xxx) and on no other answer.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
 - Interpreted constraints ([constraints.md](constraints.md)), what a person
@@ -227,4 +232,7 @@ Protocol group.
 `tests/test_wireshark_validator.py` runs `core.lua` under each of `lua5.1` to
 `lua5.4` found on PATH, over messages it encodes, and the generated plugin
 under `tshark` over a capture of them, with the preference set and the marked
-line rewritten. It skips what is not installed.
+line rewritten. `tests/test_vectors.py` runs it over the
+[test messages](consumers.md#test-messages) of eight applications, each
+pinned to its document: every valid one draws no error or warning and every
+negative one exactly the finding it expects. Both skip what is not installed.
