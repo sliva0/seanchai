@@ -8,6 +8,7 @@
     { "include": "#reserved" },
     { "include": "#void" },
     { "include": "#vendor-specific" },
+    { "include": "#information-elements" },
     { "include": "#directive-text" },
     { "include": "#directive" },
     { "include": "#message-rule" },
@@ -252,46 +253,66 @@
         "7": { "name": "comment.line.double-semicolon.dad" }
       }
     },
+    "information-elements": {
+      "comment": "A block whose rows end in a category, M, C or O, and no flag.",
+      "begin": "^(?=; Type: Information Elements\\b)",
+      "end": "^(?=; Type: (?!Information Elements\\b))",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#directive-text" },
+        { "include": "#directive" },
+        { "include": "#element-row" }
+      ]
+    },
+    "element-row": {
+      "match": "^(?!;)(\\S.*?)\\s+([MCO]|-)(\\s*;;.*)?$",
+      "captures": {
+        "1": { "patterns": [{ "include": "#table-cells" }] },
+        "2": { "name": "constant.language.category.dad" },
+        "3": { "name": "comment.line.double-semicolon.dad" }
+      }
+    },
     "table-row": {
       "match": "^(?!;)(\\S.*)$",
       "captures": {
-        "1": {
-          "patterns": [
-            {
-              "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
-              "name": "string.quoted.double.mark.dad"
-            },
-            {
-              "match": "(?<=\\s|^)(OctetString|Integer32|Integer64|Unsigned32|Unsigned64|Float32|Float64|Grouped|Address|Time|UTF8String|DiameterIdentity|DiameterURI|Enumerated|IPFilterRule|QoSFilterRule)(?=\\s|$)",
-              "name": "storage.type.data-type.dad"
-            },
-            {
-              "match": "(?<=\\s|^)(MUST-NOT|MUST|Yes|No)(?=\\s|$)",
-              "name": "constant.language.dad"
-            },
-            {
-              "match": "(?<=\\s|^|,)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$|,)",
-              "name": "entity.name.tag.spec-ref.dad"
-            },
-            {
-              "match": "(?<=\\s|^)[MVP](?:,\\s?[MVP])*(?=\\s|$)",
-              "name": "constant.language.avp-flag.dad"
-            },
-            {
-              "match": "(?<=\\s|^)(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=\\s|$)",
-              "name": "constant.other.section.dad"
-            },
-            {
-              "match": "(?<=\\s|^)\\d+(?=\\s|$)",
-              "name": "constant.numeric.dad"
-            },
-            {
-              "match": "(?<=\\s|^)-(?=\\s|$)",
-              "name": "punctuation.definition.empty-cell.dad"
-            }
-          ]
-        }
+        "1": { "patterns": [{ "include": "#table-cells" }] }
       }
+    },
+    "table-cells": {
+      "patterns": [
+        {
+          "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
+          "name": "string.quoted.double.mark.dad"
+        },
+        {
+          "match": "(?<=\\s|^)(OctetString|Integer32|Integer64|Unsigned32|Unsigned64|Float32|Float64|Grouped|Address|Time|UTF8String|DiameterIdentity|DiameterURI|Enumerated|IPFilterRule|QoSFilterRule)(?=\\s|$)",
+          "name": "storage.type.data-type.dad"
+        },
+        {
+          "match": "(?<=\\s|^)(MUST-NOT|MUST|Yes|No)(?=\\s|$)",
+          "name": "constant.language.dad"
+        },
+        {
+          "match": "(?<=\\s|^|,)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$|,)",
+          "name": "entity.name.tag.spec-ref.dad"
+        },
+        {
+          "match": "(?<=\\s|^)[MVP](?:,\\s?[MVP])*(?=\\s|$)",
+          "name": "constant.language.avp-flag.dad"
+        },
+        {
+          "match": "(?<=\\s|^)(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=\\s|$)",
+          "name": "constant.other.section.dad"
+        },
+        {
+          "match": "(?<=\\s|^)\\d+(?=\\s|$)",
+          "name": "constant.numeric.dad"
+        },
+        {
+          "match": "(?<=\\s|^)-(?=\\s|$)",
+          "name": "punctuation.definition.empty-cell.dad"
+        }
+      ]
     }
   }
 }
