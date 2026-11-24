@@ -79,6 +79,16 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
   and the plugin `seanchai wireshark-plugin` writes under `tshark`.
   Interpreters not on PATH are skipped.
 
+- `tests/test_syntax.py` holds the editors' highlighting to
+  `tests/fixtures/syntax/sample.dad`, a file holding every shape of line the
+  [grammar](grammar.md) has. It tokenizes the sample with the TextMate
+  grammar and pins a scope for each shape, and, with `vim` on PATH, colours
+  the sample and each distinct line of the corpus with the Vim syntax and
+  requires every character's group to be the one the grammar's scope pairs
+  with (`_GROUPS`). GitHub's runner has `vim`; the Forgejo container does
+  not, so there the Vim half is skipped: run it locally after changing
+  either module, as below.
+
 Support for a new source-document shape is covered by the `sources` tests.
 Add a synthetic test only for a rejection path.
 
@@ -95,6 +105,23 @@ release adds entries only where its copies differ: Release 18 added six.
 `tests/test_corpus.py` holds `releases.toml` to the trees, and the oracle,
 the export and the model's tests read the newest release unless they name
 another.
+
+### Editor syntax
+
+A format change reaches four files: the TextMate grammar
+(`src/seanchai/dad/syntax/dad.tmLanguage.json`), its copy under
+`editors/vscode/syntaxes/`, the Vim syntax (`editors/vim/syntax/dad.vim`) and
+the sample. Add the new shape to `sample.dad` (it must parse), a scope for it
+to `_SCOPED`, the patterns to both modules, and copy the grammar over. Then:
+
+```sh
+uv run pytest tests/test_syntax.py      # the Vim half needs vim on PATH
+uv run pytest tests/test_export.py --update-export-pin
+```
+
+The export ships the grammar for the site, so a grammar change moves the
+export pin, and the explorer's committed copy of the grammar must be
+regenerated from the new export.
 
 ## Rebuilding the corpus
 

@@ -7,6 +7,18 @@ gets a faint background.
 Table cells are highlighted token by token (data types, `MUST`/`MUST-NOT`,
 spec-refs, flag cells, numbers, `-` for an empty cell). A regex highlighter
 cannot track which column a cell is in, but the vocabularies rarely collide.
+An `Information Elements` block is the exception: its rows, the element's
+name, the AVPs it maps to and its category (M, C or O), have the shape of a
+re-used AVP table's, so both modules read the block's rows as elements up to
+the next block of another type. An interpreted constraint's rules colour
+their keyword, operands, codecs and units, and the notes the corrections layer
+and the extractor write (`;; corrected: (TS29.272.py#imei-digits)`) their kind
+and the declaration they cite, inside the comment.
+
+The two modules colour every line alike: `tests/test_syntax.py` checks the
+TextMate grammar's scopes over `tests/fixtures/syntax/sample.dad`, and the
+Vim syntax against them over the sample and the corpus
+([docs/development.md](../docs/development.md#editor-syntax)).
 
 The TextMate grammar's source is `src/seanchai/dad/syntax/dad.tmLanguage.json`,
 which `seanchai export` copies out for the site.

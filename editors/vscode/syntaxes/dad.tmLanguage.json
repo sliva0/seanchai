@@ -15,14 +15,30 @@
     { "include": "#avp-header-rule" },
     { "include": "#avp-rule" },
     { "include": "#constraint-quote" },
+    { "include": "#constraint-element" },
     { "include": "#constraint-rule" },
     { "include": "#enum-value" },
     { "include": "#table-row" }
   ],
   "repository": {
     "comment": {
+      "comment": "A note the corrections layer or the extractor writes names its kind and the declaration: `;; corrected: (TS29.272.py#imei-digits)`, `;; excluded: clause 8 (Sh-ee), see TS29.329.toml`.",
       "name": "comment.line.double-semicolon.dad",
-      "match": ";;.*$"
+      "match": ";;.*$",
+      "captures": {
+        "0": {
+          "patterns": [
+            {
+              "match": "(?<=;; )(corrected|deleted|excluded|foreword|inserted|interpreted|patched|supplied)(?=:)",
+              "name": "keyword.other.note.dad"
+            },
+            {
+              "match": "(?<=\\()[A-Za-z0-9_.+-]+\\.py#[A-Za-z0-9_.-]+(?=\\))|(?<=see )[A-Za-z0-9_.+-]+\\.toml\\b",
+              "name": "markup.underline.link.declaration.dad"
+            }
+          ]
+        }
+      }
     },
     "registry-reserved": {
       "match": "^(; RESERVED) (\\d+)(\\.\\.)(\\d+)(?: ([^\\s\"]+))?(?: (\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"))?",
@@ -31,7 +47,12 @@
         "2": { "name": "constant.numeric.dad" },
         "3": { "name": "keyword.operator.range.dad" },
         "4": { "name": "constant.numeric.dad" },
-        "5": { "name": "entity.name.tag.spec-ref.dad" },
+        "5": {
+          "patterns": [
+            { "match": "(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)", "name": "entity.name.tag.spec-ref.dad" },
+            { "match": ",", "name": "punctuation.separator.comma.dad" }
+          ]
+        },
         "6": { "name": "string.quoted.double.mark.dad" }
       }
     },
@@ -64,7 +85,7 @@
         "6": { "name": "keyword.operator.range.dad" },
         "7": { "name": "constant.numeric.dad" },
         "8": { "name": "string.unquoted.enum-note.dad" },
-        "9": { "name": "comment.line.double-semicolon.dad" }
+        "9": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "directive-text": {
@@ -81,11 +102,13 @@
         "4": {
           "patterns": [
             {
-              "match": "\\b(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Interpreted Constraints|Application IDs|Command Codes|AVP Codes|Result Codes)\\b",
+              "comment": "A block's `; Type:`, a registry's kind: the whole value.",
+              "match": "(?<=: )(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Interpreted Constraints|Application IDs|Command Codes|AVP Codes|Result Codes)(?=\\s*$)",
               "name": "storage.type.section.dad"
             },
             {
-              "match": "\\b(result-codes|bits|features)$",
+              "comment": "A value table's `; Kind:`.",
+              "match": "(?<=: )(result-codes|bits|features)(?=\\s*$)",
               "name": "constant.language.value-kind.dad"
             },
             {
@@ -192,14 +215,26 @@
         "12": { "name": "punctuation.definition.bracket.optional.dad" },
         "13": { "name": "storage.modifier.bold.dad" },
         "14": { "name": "storage.modifier.strikethrough.dad" },
-        "15": { "name": "comment.line.double-semicolon.dad" }
+        "15": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "constraint-quote": {
       "match": "^(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\")\\s*(;;.*)?$",
       "captures": {
         "1": { "name": "string.quoted.double.quote.dad" },
-        "2": { "name": "comment.line.double-semicolon.dad" }
+        "2": { "patterns": [{ "include": "#comment" }] }
+      }
+    },
+    "constraint-element": {
+      "comment": "Another document's information element, with the clause and name the clause gives: `encoding element 3GPP2-A.S0022 A \"Mobile Identity (MEID)\"`, the clause an annex's letter alone.",
+      "match": "^(    )(encoding) (element)(?: ((?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)))?(?: ((?:\\d+[A-Za-z]*|[A-Za-z]+)(?:\\.\\d+[A-Za-z]*)*))?(?: (\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"))?(\\s*;;.*)?$",
+      "captures": {
+        "2": { "name": "keyword.control.constraint.dad" },
+        "3": { "name": "support.type.codec.dad" },
+        "4": { "name": "entity.name.tag.spec-ref.dad" },
+        "5": { "name": "constant.other.section.dad" },
+        "6": { "name": "string.quoted.double.mark.dad" },
+        "7": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "constraint-rule": {
@@ -213,11 +248,12 @@
               "name": "string.quoted.double.mark.dad"
             },
             {
-              "match": "(?<=\\s)(octets|digits|characters)$",
+              "comment": "A length's unit, after its bounds.",
+              "match": "(?<=\\d |\\* )(octets|digits|characters)$",
               "name": "constant.language.unit.dad"
             },
             {
-              "match": "(?<=\\s)(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-address|time-zone|element)(?=\\s|$)",
+              "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-address|time-zone|element)(?=\\s|$)",
               "name": "support.type.codec.dad"
             },
             {
@@ -225,7 +261,8 @@
               "name": "keyword.operator.condition.dad"
             },
             {
-              "match": "(?<=\\s)(=|\\.\\.|\\*)(?=\\s|$|\\d|-)|\\.\\.",
+              "comment": "A condition's `=`, a bounds' `..` and an open bound's `*`.",
+              "match": "(?<=\\s)=(?=\\s)|\\.\\.|(?<=\\s|\\.\\.)\\*(?=\\s|\\.\\.|$)",
               "name": "keyword.operator.dad"
             },
             {
@@ -241,12 +278,18 @@
               "name": "constant.numeric.dad"
             },
             {
+              "comment": "Between the values of `exclude` and `values`.",
+              "match": ",",
+              "name": "punctuation.separator.comma.dad"
+            },
+            {
+              "comment": "A member or a sibling, a value's or a bit's name.",
               "match": "[A-Za-z0-9][A-Za-z0-9_-]*",
               "name": "variable.other.avp.dad"
             }
           ]
         },
-        "4": { "name": "comment.line.double-semicolon.dad" }
+        "4": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "enum-value": {
@@ -267,7 +310,7 @@
             }
           ]
         },
-        "7": { "name": "comment.line.double-semicolon.dad" }
+        "7": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "information-elements": {
@@ -278,29 +321,50 @@
         { "include": "#comment" },
         { "include": "#directive-text" },
         { "include": "#directive" },
-        { "include": "#element-row" }
+        { "include": "#element-row" },
+        { "include": "#table-row" }
       ]
     },
     "element-row": {
-      "match": "^(?!;)(\\S.*?)\\s+([MCO]|-)(\\s*;;.*)?$",
+      "comment": "The element's name as printed, the AVPs it maps to (`A,B` carried together, `A/B` one of them, a quoted cell naming none) and its category.",
+      "match": "^(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|[^;\\s\"]\\S*)\\s+(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|\\S+)\\s+([MCO]|-)(\\s*;;.*)?$",
       "captures": {
-        "1": { "patterns": [{ "include": "#table-cells" }] },
-        "2": { "name": "constant.language.category.dad" },
-        "3": { "name": "comment.line.double-semicolon.dad" }
+        "1": { "patterns": [{ "include": "#quoted-cell" }] },
+        "2": {
+          "patterns": [
+            { "include": "#quoted-cell" },
+            {
+              "match": "^-$|(?<=\\s)-$",
+              "name": "punctuation.definition.empty-cell.dad"
+            },
+            {
+              "match": "[,/]",
+              "name": "punctuation.separator.avp.dad"
+            },
+            {
+              "match": "[A-Za-z0-9][A-Za-z0-9_-]*",
+              "name": "variable.other.avp.dad"
+            }
+          ]
+        },
+        "3": { "name": "constant.language.category.dad" },
+        "4": { "patterns": [{ "include": "#comment" }] }
       }
     },
+    "quoted-cell": {
+      "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
+      "name": "string.quoted.double.mark.dad"
+    },
     "table-row": {
-      "match": "^(?!;)(\\S.*)$",
+      "match": "^(?!;)(\\S.*?)(\\s*;;.*)?$",
       "captures": {
-        "1": { "patterns": [{ "include": "#table-cells" }] }
+        "1": { "patterns": [{ "include": "#table-cells" }] },
+        "2": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "table-cells": {
       "patterns": [
-        {
-          "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
-          "name": "string.quoted.double.mark.dad"
-        },
+        { "include": "#quoted-cell" },
         {
           "match": "(?<=\\s|^)(OctetString|Integer32|Integer64|Unsigned32|Unsigned64|Float32|Float64|Grouped|Address|Time|UTF8String|DiameterIdentity|DiameterURI|Enumerated|IPFilterRule|QoSFilterRule)(?=\\s|$)",
           "name": "storage.type.data-type.dad"

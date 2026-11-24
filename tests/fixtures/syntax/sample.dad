@@ -1,0 +1,165 @@
+; Specification: Private ACME-HSS
+; Version: 1.2.0
+; Vendor-ID: 99999
+; Bases: RFC6733, TS29.272
+; Obsoletes: RFC4005, RFC4006
+; Link: https://example.com/acme-hss.pdf
+; Transcribed: by hand from https://example.com/acme-hss.html
+
+;; A comment block before the first section.
+
+; Type: Application Scope
+; Name: ACME interface
+; Section: 5
+; Application-ID: 16777999
+; Applies-To: 5.*, 7.2.*, E.6.* ;; inserted: (Private-ACME-HSS.py#scope)
+
+; Type: Message
+; Name: ACME-Request, ACR
+; Section: 7.2.1
+; Page: 12
+<ACME-Request> ::= < Diameter Header: 8388999, REQ, PXY, 16777999 >
+         < Session-Id >
+         { Auth-Session-State } ; bold
+         { Origin-Host }
+         { Origin-Realm }
+       1*2 [ Destination-Host ] ; strikethrough ;; corrected: (Private-ACME-HSS.py#host)
+       * [ ACME-Flags ]
+       * [ ACME-Data ]
+       * [ AVP ]
+
+; Type: Answer Message
+; Section: 7.3
+<answer-message> ::= < Diameter Header: code, ERR [, PXY] >
+         0*1 < Session-Id >
+         { Origin-Host }
+         { Origin-Realm }
+         { Result-Code }
+
+; Type: Grouped AVP
+; Name: ACME-Data
+; Section: 7.3.2
+; Reprints: TS29.272
+ACME-Data ::= < AVP header: 9001 99999 >
+         { ACME-Id }
+         [ ACME-Kind ]
+         * [ AVP ]
+
+; Type: Enumerated AVP
+; Name: ACME-Kind
+; Section: 7.3.3
+; Values: as in table 7.3.3/1
+ACME-Kind ::= < Enumerated AVP header: 9002 99999 >
+         FIRST       = 0 ; the first
+         "Second one" = 1 ;; supplied: (Private-ACME-HSS.py#second)
+         ; RESERVED = 2-9
+         ; VOID     = 10
+         ; VENDOR-SPECIFIC = 100-199 ; left to vendors ;; patched: see Private-ACME-HSS.toml
+
+; Type: AVP Table
+; Section: 7.3.1
+; Table: 7.3.1/1
+; Page: 30
+; Columns: Name                 Code   Section  Type          Must   May   S.not  M.not  Encrypt  Acc-Type               Applicability
+ACME-Flags                       9000   7.3.4    Unsigned32    M,V    -     -      -      No       3GPP-EPS,Non-3GPP-EPS  Both,Rel8
+ACME-Data                        9001   7.3.2    Grouped       V      M     -      -      No       -                      ""
+ACME-Kind                        9002   7.3.3    Enumerated    M,V    -     -      -      No       "All (NOTE 5)"         Rel8
+ACME-Id                          9003   7.3.5    UTF8String    V      -     -      M      No       -                      "" ;; inserted: from clause 7.3.5.1 (Private-ACME-HSS.py#id-row)
+ACME-Number                      9004   7.3.6    OctetString   V      -     -      M      No       -                      ""
+ACME-Code                        9005   7.3.7    Unsigned32    V      -     -      M      No       -                      ""
+ACME-Name                        9006   7.3.8    "Integer"     V      -     -      M      No       -                      ""
+
+; Type: Reused AVPs
+; Section: 7.3.9
+; Columns: Name                 From      M-bit
+Session-Id                       RFC6733   MUST
+Origin-Host                      RFC6733   MUST
+Origin-Realm                     RFC6733   MUST
+Destination-Host                 RFC6733   -
+Result-Code                      RFC6733   MUST
+Auth-Session-State               RFC6733   MUST
+
+; Type: Value Table
+; AVP: ACME-Flags
+; Kind: bits ;; corrected: (Private-ACME-HSS.py#flags-kind)
+; Section: 7.3.4
+; Table: 7.3.4/1
+Skip-Data                        = 0
+"Withdraw Data"                  = 1
+
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 7.4
+DIAMETER_ACME_UNKNOWN            = 5999 ; 7.4.1 from TS29.272
+DIAMETER_ACME_OTHER              = 5998 ; 7.4.2
+
+; Type: Information Elements
+; Command: ACME-Request
+; Section: 5.2.1
+; Table: 5.2.1/1
+; Page: 18
+; Columns: Name                                AVP                                Cat
+IMSI                                           User-Name                          M
+"Supported Features (See TS 29.229 [9])"       Supported-Features                 O
+Hosts                                          Destination-Host,Destination-Realm C
+Result                                         Result-Code/Experimental-Result    M ;; corrected: (Private-ACME-HSS.py#result)
+"EAP payload"                                  "EAP payload"                      O
+Unmapped                                       -                                  -
+
+; Type: Interpreted Constraints ;; interpreted: (Private-ACME-HSS.py#id-length)
+; AVP: ACME-Id
+; Within: ACME-Data
+; Section: 7.3.5
+; Page: 31
+; Versions: *..1.2.0
+"The ACME-Id shall be 1 to 15 characters long, and its number shall be 15 digits."
+    length 1..15 characters
+    length *..15 octets
+"It shall be digits, and not 0."
+    encoding digits
+    exclude 0, 1, 2
+    range -5..*
+    unique
+
+; Type: Interpreted Constraints
+; AVP: ACME-Number
+; Command: ACME-Request
+; Application-ID: 16777999
+; Section: 7.3.6
+; Versions: 1.0.0..1.2.0
+"It is present if the Skip-Data bit is set, absent if ACME-Kind is 1, and requires the host."
+    present-if ACME-Flags bit 0 or ACME-Flags bit "Withdraw Data"
+    absent-if ACME-Kind = 1
+    requires Destination-Host
+    excludes ACME-Kind = FIRST or ACME-Code = 5
+    default 0
+"It is a PLMN, an element of TS 29.002, or TBCD."
+    encoding element TS29.002 17.7.8 "ISDN-AddressString"
+    encoding element 3GPP2-A.S0022 A "Mobile Identity (MEID)"
+    encoding e164-tbcd
+"Its use depends on the subscriber."
+    text-only
+
+; Type: Interpreted Constraints
+; AVP: ACME-Flags
+; Section: 7.3.4
+; Versions: 1.2.0
+"At most one of bits 0 and 1, at least one of 2 and 3, bit 4 set, 5 clear, none but 0 to 5."
+    bits at-most-one 0 1
+    bits at-least-one 2 3
+    bits set 4
+    bits clear 5
+    bits only 0 1 2 3 4 5
+    values 1, 2 if ACME-Kind = 1 or ACME-Kind bit 3
+    default FIRST
+
+; Type: Interpreted Constraints
+; AVP: ACME-Data
+; Section: 7.3.2
+; Versions: 1.2.0
+"It holds an ACME-Id or an ACME-Kind, and nothing else."
+    members at-least-one ACME-Id ACME-Kind
+    members only ACME-Id ACME-Kind
+
+;; deleted: AVP table row 'Load' (Private-ACME-HSS.py#load-row)
