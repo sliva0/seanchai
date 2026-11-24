@@ -663,6 +663,14 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
             return f"default {_value_ref(rule.value)}"
         case ast.BitsRule():
             return f"bits {rule.relation} {' '.join(map(str, rule.bits))}"
+        case ast.MembersRule():
+            return f"members {rule.relation} {' '.join(rule.members)}"
+        case ast.UniqueRule():
+            return "unique"
+        case ast.ValuesRule():
+            values = ", ".join(str(value) for value in rule.values)
+            conditions = " or ".join(_condition(each) for each in rule.conditions)
+            return f"values {values} if {conditions}"
         case ast.TextOnly():
             return "text-only"
 

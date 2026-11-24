@@ -132,10 +132,10 @@ document read states is not judged.
 |---|---|---|
 | `constraint-avp-unknown` | error | a name the block constrains, scopes or conditions on that the file does not hold |
 | `constraint-command-unknown` | error | a `; Command:` the file does not print, or prints for several applications with no `; Application-ID:` |
-| `constraint-not-member` | error | an AVP, or a condition's, that the printed body of its command or grouped AVP does not hold |
-| `constraint-type-mismatch` | error | a rule the AVP's type cannot meet: a range on an OctetString, a codec for another type, an octet length on an integer; a condition testing a value or a bit of an AVP holding none, or a bit past its width |
+| `constraint-not-member` | error | an AVP, or a condition's, that the printed body of its command or grouped AVP does not hold; a member a `members` rule names that the grouped AVP's body does not hold |
+| `constraint-type-mismatch` | error | a rule the AVP's type cannot meet: a range or `values` on an OctetString, a codec for another type, an octet length on an integer, `bits` on neither an unsigned integer nor an OctetString, `members` on no grouped AVP; a condition testing a value or a bit of an AVP holding none, or a bit past its width |
 | `constraint-value-unknown` | error | a condition naming a value or bit the AVP's values, result codes or bit table do not name |
-| `constraint-contradiction` | error | rules on one AVP in one place that cannot all hold: two codecs, lengths or ranges leaving nothing, a length beyond its codec's, an exclude covering its range |
+| `constraint-contradiction` | error | rules on one AVP in one place that cannot all hold: two codecs, lengths or ranges leaving nothing, a length beyond its codec's, an exclude covering its range, a bit both set and clear or set beside `only` others |
 
 Rules in one place are a block's with those of every block for the same AVP,
 scope and those holding wherever the document reads it.

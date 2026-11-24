@@ -449,6 +449,7 @@ def _avp(
         places,
         names,
         {},
+        avp,
     )
     if own:
         parts.append(f"cons={{{','.join(own)}}}")
@@ -502,18 +503,23 @@ def _constraint(
     places: Places,
     names: _Names,
     siblings: dict[str, str],
+    subject: dictionary.Avp | None = None,
 ) -> str | None:
     """A constraint as `{at=n, rules={...}}`, each rule `{k=kind, ...}`:
     `u`, `lo`, `hi` for a length, `lo` and `hi` for a range, `v` for exclude,
     `codec` for an encoding, `r` and `b` for a bits rule's relation and bits,
-    `c` for a predicate's conditions, each `{avp=,
-    t=, v=}` (a value) or `{avp=, t=, b=}` (a bit) or `{avp=, t=}` (present).
-    `siblings`
-    maps a member name to its reading's id, where the scope has members; a
-    condition's `t` is as the file spells it. A
-    predicate whose names do not resolve, an `element`, a `default` and
+    `r` and `m` for a members rule's relation and the identities of the
+    members it names, `i` for a unique rule's member identity, `c` for a
+    predicate's conditions, and `v` and `c` for a values rule, each condition
+    `{avp=, t=, v=}` (a value) or `{avp=, t=, b=}` (a bit) or `{avp=, t=}`
+    (present). `siblings` maps a member name to its reading's id, where the
+    scope has members; `subject` is the AVP's own reading where the caller
+    knows it, else its sibling's. A condition's `t` is as the file spells
+    it. A predicate whose names do not resolve, an `element`, a `default` and
     `text-only` are left out: what the plugin cannot check it does not
     report. None for a constraint left with no rule."""
+    if subject is None and constraint.avp in siblings:
+        subject = names.avps.get(siblings[constraint.avp])
     rules = []
     for reading in constraint.readings:
         for rule in reading.rules:
@@ -546,6 +552,29 @@ def _constraint(
             elif kind == "default":
                 # What an absent AVP is read as: nothing on the wire breaks it.
                 continue
+            elif kind == "members":
+                assert rule.relation is not None
+                if subject is None:
+                    continue
+                held = {
+                    member.name: member.avp.partition("@")[0]
+                    for member in subject.members
+                    if member.avp is not None
+                }
+                if any(name not in held for name in rule.members):
+                    continue
+                identities = ",".join(lua_string(held[name]) for name in rule.members)
+                rules.append(
+                    f"{{k='members',r={lua_string(rule.relation.value)},"
+                    f"m={{{identities}}}}}"
+                )
+            elif kind == "unique":
+                # Checked by the body holding the grouped AVPs the scope names.
+                sibling = siblings.get(constraint.avp)
+                if sibling is not None:
+                    rules.append(
+                        f"{{k='unique',i={lua_string(sibling.partition('@')[0])}}}"
+                    )
             elif kind != "text-only":
                 conditions = []
                 for condition in rule.conditions:
@@ -577,8 +606,13 @@ def _constraint(
                         f"t={lua_string(said)}{',' + test if test else ''}}}"
                     )
                 else:
+                    values = (
+                        ",v={" + ",".join(str(each) for each in rule.values) + "}"
+                        if kind == "values"
+                        else ""
+                    )
                     rules.append(
-                        f"{{k={lua_string(kind)},c={{{','.join(conditions)}}}}}"
+                        f"{{k={lua_string(kind)}{values},c={{{','.join(conditions)}}}}}"
                     )
     if not rules:
         return None
@@ -603,11 +637,12 @@ def _constraints(
     places: Places,
     names: _Names,
     siblings: dict[str, str],
+    subject: dictionary.Avp | None = None,
 ) -> list[str]:
     return [
         found
         for each in constraints
-        if (found := _constraint(each, places, names, siblings)) is not None
+        if (found := _constraint(each, places, names, siblings, subject)) is not None
     ]
 
 

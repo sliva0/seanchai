@@ -9,7 +9,8 @@ out of place, an M or V bit against its rule, a reserved or void Enumerated
 value, a bit no document names, UTF-8 that is not, an integer of the wrong
 length, an AVP the rule does not admit, an E-bit answer with a Result-Code
 that is no protocol error, and each interpreted constraint the Wireshark
-plugin checks (length, range, exclude, encoding and the predicates).
+plugin checks (length, range, exclude, encoding, bits, the predicates of a
+command's own members, and the members, unique and values rules).
 
 Values are valid for their type and every constraint read for the AVP: a
 codec's layout (`seanchai.constraints`), a length, a range, a predicate's
@@ -240,15 +241,24 @@ def _holds(
         )
     if rule.kind == "encoding" and rule.codec is not None:
         return constraints.codec_problem(rule.codec, payload) is None
-    if rule.kind == "bits":
-        value = constraints.integer_value(data_type, payload)
+    if rule.kind == "bits" and rule.relation is not None:
+        value = constraints.bits_value(data_type, payload)
         if value is None:
             return True
-        held = sum(1 for each in rule.bits if value >> each & 1)
-        if rule.relation is ast.BitsRelation.AT_MOST_ONE:
-            return held <= 1
-        return held >= 1
+        return constraints.bits_problem(rule.relation, rule.bits, value) is None
     return True
+
+
+def _set_bits(rules: Sequence[dictionary.Rule]) -> int:
+    """The number with the bits the `set` rules among `rules` name."""
+    return sum(
+        {
+            1 << bit
+            for rule in rules
+            if rule.kind == "bits" and rule.relation is ast.BitsRelation.SET
+            for bit in rule.bits
+        }
+    )
 
 
 def _value_rules(rules: Sequence[dictionary.Rule]) -> list[dictionary.Rule]:
@@ -339,6 +349,8 @@ def _payload(
                     and rule.relation is ast.BitsRelation.AT_LEAST_ONE
                 ):
                     numbers.insert(0, 1 << rule.bits[0])
+            if required := _set_bits(rules):
+                numbers.insert(0, required)
             numbers += [0, 1]
         if data_type in (ast.DataType.FLOAT32, ast.DataType.FLOAT64):
             return b"\0" * _FIXED[data_type]
@@ -371,10 +383,41 @@ def _payload(
                 size = rule.low if rule.low else (rule.high or len(base))
                 filler = b"\x01" if data_type is ast.DataType.OCTET_STRING else b"a"
                 candidates.insert(0, (base + filler * size)[:size])
+        if data_type is ast.DataType.OCTET_STRING and any(
+            rule.kind == "bits" for rule in rules
+        ):
+            # Octets holding no bit but those the rules set.
+            size = len(candidates[0])
+            required = _set_bits(rules)
+            if required < 1 << 8 * size:
+                candidates.insert(0, required.to_bytes(size, "big"))
     for payload in candidates:
         if all(_holds(rule, payload, data_type, codec) for rule in rules):
             return payload
     return None
+
+
+def _variants(avp: dictionary.Avp, payload: bytes) -> Iterator[bytes]:
+    """Other payloads of `avp` than `payload`, for a member a `unique` rule
+    names: another of its values or numbers, or the text with a digit
+    after it."""
+    data_type = avp.data_type
+    if data_type in _FIXED:
+        value = constraints.integer_value(data_type, payload)
+        bounds = constraints.integer_bounds(data_type)
+        if value is None or bounds is None:
+            return
+        named = [
+            v.value for v in avp.values if v.kind == "value" and v.value is not None
+        ]
+        numbers = named if data_type is ast.DataType.ENUMERATED else range(1, 10)
+        for number in numbers:
+            candidate = number if named else value + number
+            if candidate != value and bounds[0] <= candidate <= bounds[1]:
+                yield _integer(data_type, candidate)
+        return
+    for digit in "123456789":
+        yield payload + digit.encode()
 
 
 # --- messages as trees ------------------------------------------------------
@@ -496,7 +539,10 @@ class _Builder:
         if avp.kind == "grouped":
             if avp.id in path or len(path) > 24:
                 raise _Unbuildable(f"{avp.name} holds itself")
-            node.children = self.body(self.scope_of(avp), maximal, (*path, avp.id))
+            inner = self.scope_of(avp)
+            node.children = self.body(inner, maximal, (*path, avp.id))
+            rules = self.rules_for(avp, scope, member.name if member else avp.name)
+            self.hold_members(inner, node.children, rules, (*path, avp.id))
             return node
         payload = _payload(
             avp,
@@ -507,6 +553,95 @@ class _Builder:
             raise _Unbuildable(f"no value of {avp.name} meets its rules")
         node.payload = payload
         return node
+
+    def hold_members(
+        self,
+        inner: _Scope,
+        children: list[_Avp],
+        rules: Sequence[dictionary.Rule],
+        path: tuple[str, ...],
+    ) -> None:
+        """Mend what the `members` rules among `rules` say of a grouped AVP's
+        `children`: add a member one of which must be there, drop one that
+        may not."""
+        for rule in rules:
+            if rule.kind != "members":
+                continue
+            if rule.relation is ast.BitsRelation.ONLY:
+                for child in children:
+                    name = child.member.name if child.member else child.avp.name
+                    if (
+                        name not in rule.members
+                        and child.member
+                        and (child.member.min_occurs)
+                    ):
+                        raise _Unbuildable(f"{name} is required and a rule forbids it")
+                children[:] = [
+                    child
+                    for child in children
+                    if (child.member.name if child.member else "") in rule.members
+                ]
+            elif not any(
+                child.member is not None and child.member.name in rule.members
+                for child in children
+            ):
+                for name in rule.members:
+                    member = next((m for m in inner.members if m.name == name), None)
+                    if member is None or member.avp is None:
+                        continue
+                    try:
+                        children.append(
+                            self.avp(self.avps[member.avp], inner, member, False, path)
+                        )
+                    except _Unbuildable:
+                        continue
+                    self.satisfy(inner, children, False)
+                    break
+                else:
+                    raise _Unbuildable(f"none of {', '.join(rule.members)} is built")
+
+    def vary(self, nodes: list[_Avp]) -> None:
+        """Give each repeated grouped AVP of `nodes` its own value of a member
+        a `unique` rule names."""
+        seen: dict[tuple[str, str], set[bytes]] = {}
+        for node in list(nodes):
+            for name, held in self.within.get(node.avp.id, {}).items():
+                if not any(
+                    rule.kind == "unique"
+                    for each in held
+                    for reading in each.readings
+                    for rule in reading.rules
+                ):
+                    continue
+                child = next(
+                    (c for c in node.children if c.member and c.member.name == name),
+                    None,
+                )
+                if child is None or child.payload is None:
+                    continue
+                taken = seen.setdefault((node.avp.id, name), set())
+                if child.payload in taken:
+                    rules = _value_rules(
+                        self.rules_for(child.avp, self.scope_of(node.avp), name)
+                    )
+                    codec = _codec_of(rules)
+                    payload = next(
+                        (
+                            candidate
+                            for candidate in _variants(child.avp, child.payload)
+                            if candidate not in taken
+                            and all(
+                                _holds(r, candidate, child.avp.data_type, codec)
+                                for r in rules
+                            )
+                        ),
+                        None,
+                    )
+                    if payload is None:
+                        nodes.remove(node)
+                        break
+                    child.payload = payload
+                taken.add(child.payload)
 
     def filler(self, scope: _Scope) -> _Avp:
         """An AVP the body does not list, for a `* { AVP }` that requires one:
@@ -557,6 +692,7 @@ class _Builder:
                         raise
                     break
         self.satisfy(scope, nodes, maximal)
+        self.vary(nodes)
         return nodes
 
     # Predicates.
@@ -578,6 +714,7 @@ class _Builder:
                             "absent-if",
                             "requires",
                             "excludes",
+                            "values",
                         ):
                             continue
                         if all(
@@ -622,9 +759,22 @@ class _Builder:
                 or (rule.kind == "absent-if" and holds and subject)
                 or (rule.kind == "requires" and subject and not holds)
                 or (rule.kind == "excludes" and subject and holds)
+                or (
+                    rule.kind == "values"
+                    and subject
+                    and holds
+                    and not self.allowed(nodes, name, rule)
+                )
             ):
                 found.append((name, rule.kind, each))
         return found
+
+    def allowed(self, nodes: Sequence[_Avp], name: str, rule: dictionary.Rule) -> bool:
+        """Whether the AVP `name` of `nodes` holds one of a values rule's
+        values, or a value the plugin cannot read."""
+        held = next(n for n in nodes if n.avp.name == name)
+        value = constraints.integer_value(held.avp.data_type, held.payload or b"")
+        return value is None or value in rule.values
 
     def satisfy(self, scope: _Scope, nodes: list[_Avp], maximal: bool) -> None:
         """Mend what the predicates of `scope` say of `nodes`: drop an
@@ -634,8 +784,19 @@ class _Builder:
             broken = self.broken(scope, nodes)
             if not broken:
                 return
-            for name, kind, _each in broken:
-                if kind == "present-if":
+            for name, kind, each in broken:
+                if kind == "values":
+                    held = next(n for n in nodes if n.avp.name == name)
+                    rule = next(
+                        rule
+                        for reading in each.readings
+                        for rule in reading.rules
+                        if rule.kind == "values"
+                    )
+                    if held.avp.data_type not in _FIXED:
+                        raise _Unbuildable(f"{name} holds no integer to set")
+                    held.payload = _integer(held.avp.data_type, rule.values[0])
+                elif kind == "present-if":
                     member = next(m for m in scope.members if m.name == name)
                     if member.avp is None:
                         raise _Unbuildable(
@@ -1234,6 +1395,178 @@ class _Negatives:
                             "warn",
                         )
         self.predicate_vectors()
+        self.grouped_vectors()
+
+    def each_grouped(
+        self, message: _Message
+    ) -> Iterator[tuple[_Avp, _Scope, list[_Avp]]]:
+        """Every grouped AVP of `message` with its scope and the run holding
+        it, depth first."""
+
+        def walk(
+            nodes: list[_Avp], scope: _Scope
+        ) -> Iterator[tuple[_Avp, _Scope, list[_Avp]]]:
+            for node in nodes:
+                if node.avp.kind == "grouped":
+                    yield node, scope, nodes
+                    yield from walk(node.children, self.builder.scope_of(node.avp))
+
+        yield from walk(message.nodes, self.scope)
+
+    def grouped_vectors(self) -> None:
+        """One vector per members, unique and nested values rule the plugin
+        checks: a grouped AVP's members, two grouped AVPs beside each other, or
+        a member against its siblings, broken."""
+        done: set[tuple[str, str, str]] = set()
+        message = self.full()
+        for index, (node, scope, _run) in enumerate(self.each_grouped(message)):
+            name = node.member.name if node.member else node.avp.name
+            inner = self.builder.scope_of(node.avp)
+            held = [*self.builder.own.get(node.avp.id, ()), *scope.rules.get(name, ())]
+            for each in held:
+                for reading in each.readings:
+                    for rule in reading.rules:
+                        key = (each.section, name, rule.kind)
+                        if rule.kind != "members" or key in done:
+                            continue
+                        trial = message.copy()
+                        target, _, _ = list(self.each_grouped(trial))[index]
+                        if self.break_members(target, inner, rule):
+                            done.add(key)
+                            self.emit(
+                                trial,
+                                f"constraint-members/{name}/{each.section}",
+                                self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
+                                "constraint-members",
+                                "warn",
+                            )
+            for member, rules in inner.rules.items():
+                for each in rules:
+                    for reading in each.readings:
+                        for rule in reading.rules:
+                            key = (each.section, member, rule.kind)
+                            if rule.kind not in ("unique", "values") or key in done:
+                                continue
+                            trial = message.copy()
+                            target, _, run = list(self.each_grouped(trial))[index]
+                            if rule.kind == "unique":
+                                broke = self.break_unique(target, run, member)
+                            else:
+                                broke = self.break_values(
+                                    target.children, inner, member, rule
+                                )
+                            if broke:
+                                done.add(key)
+                                self.emit(
+                                    trial,
+                                    f"constraint-{rule.kind}/{member}/{each.section}",
+                                    self.at_constraint(
+                                        each, f"{member}: {_rule_text(rule)}"
+                                    ),
+                                    f"constraint-{rule.kind}",
+                                    "warn",
+                                )
+
+    def inner_holds(self, scope: _Scope, children: Sequence[_Avp]) -> bool:
+        """Whether `children` keep their body's counts and predicates."""
+        for member in scope.members:
+            if member.avp is None:
+                continue
+            count = sum(
+                1 for n in children if n.member and n.member.name == member.name
+            )
+            if count < member.min_occurs or (
+                member.max_occurs is not None and count > member.max_occurs
+            ):
+                return False
+        return not self.builder.broken(scope, children)
+
+    def break_members(self, node: _Avp, inner: _Scope, rule: dictionary.Rule) -> bool:
+        """Break a members rule in grouped `node`, and nothing else."""
+        children = node.children
+        if rule.relation is ast.BitsRelation.AT_LEAST_ONE:
+            children[:] = [
+                c for c in children if not (c.member and c.member.name in rule.members)
+            ]
+        else:
+            listed = {c.member.name for c in children if c.member}
+            for member in inner.members:
+                if (
+                    member.kind != "avp"
+                    or member.avp is None
+                    or member.name in rule.members
+                    or member.name in listed
+                ):
+                    continue
+                try:
+                    children.append(
+                        self.builder.avp(
+                            self.builder.avps[member.avp], inner, member, False, ()
+                        )
+                    )
+                except _Unbuildable:
+                    continue
+                break
+            else:
+                return False
+        return self.inner_holds(inner, children)
+
+    def break_unique(self, node: _Avp, run: list[_Avp], member: str) -> bool:
+        """Give the member `member` of `node` the value another grouped AVP of
+        its reading beside it holds."""
+        mine = next(
+            (c for c in node.children if c.member and c.member.name == member), None
+        )
+        for other in run:
+            if other is node or other.avp.id != node.avp.id:
+                continue
+            theirs = next(
+                (c for c in other.children if c.member and c.member.name == member),
+                None,
+            )
+            if mine is None or theirs is None or theirs.payload is None:
+                return False
+            if mine.payload == theirs.payload:
+                return False
+            mine.payload = theirs.payload
+            return True
+        return False
+
+    def break_values(
+        self, children: list[_Avp], inner: _Scope, member: str, rule: dictionary.Rule
+    ) -> bool:
+        """Make a values rule's condition hold among `children`, a run of
+        `inner`'s members, and its AVP `member` hold another value, and break
+        nothing else."""
+        if not all(
+            self.builder.values.number(self.builder.avps[m.avp], c.value) is not None
+            for c in rule.conditions
+            for m in inner.members
+            if m.name == c.avp and m.avp is not None and c.value is not None
+        ):
+            return False
+        if not self.make_hold(children, rule.conditions[0], inner):
+            return False
+        subject = self.sibling(children, member, inner)
+        if subject is None or subject.avp.data_type not in _FIXED:
+            return False
+        candidates = [
+            v.value
+            for v in subject.avp.values
+            if v.kind == "value" and v.value is not None
+        ] or [0, 1, 2]
+        for value in candidates:
+            if value in rule.values:
+                continue
+            payload = _integer(subject.avp.data_type, value)
+            if not self.keeps_rules(subject, inner, payload):
+                continue
+            subject.payload = payload
+            broken = self.builder.broken(inner, children)
+            return [(n, k) for n, k, _ in broken] == [(member, "values")] and (
+                self.inner_holds(_Scope(inner.members, {}, inner.name), children)
+            )
+        return False
 
     def find(self, message: _Message, node: _Avp) -> _Avp:
         """`node`'s copy in `message`, by its place."""
@@ -1280,13 +1613,32 @@ class _Negatives:
                         or (rule.low is not None and value < rule.low)
                     ):
                         candidates.append(_integer(data_type, value))
-        elif rule.kind == "bits" and data_type in _FIXED:
-            value = (
-                sum(1 << each for each in rule.bits)
-                if rule.relation is ast.BitsRelation.AT_MOST_ONE
-                else 0
-            )
-            candidates.append(_integer(data_type, value))
+        elif rule.kind == "bits" and (
+            data_type in _FIXED or data_type is ast.DataType.OCTET_STRING
+        ):
+            held = constraints.bits_value(data_type, good) or 0
+            named = sorted(self.builder.values.bits.get(_identity(node.avp), ()))
+            match rule.relation:
+                case ast.BitsRelation.AT_MOST_ONE:
+                    values = [sum(1 << each for each in rule.bits)]
+                case ast.BitsRelation.SET:
+                    values = [held & ~(1 << each) for each in rule.bits]
+                case ast.BitsRelation.CLEAR:
+                    values = [held | 1 << each for each in rule.bits]
+                case ast.BitsRelation.ONLY:
+                    values = [
+                        held | 1 << each
+                        for each in [*named, *range(64)]
+                        if each not in rule.bits
+                    ][:8]
+                case _:
+                    values = [0]
+            for value in values:
+                if data_type is ast.DataType.OCTET_STRING:
+                    if good and value < 1 << 8 * len(good):
+                        candidates.append(value.to_bytes(len(good), "big"))
+                elif value < 1 << 8 * _FIXED[data_type]:
+                    candidates.append(_integer(data_type, value))
         elif rule.kind == "exclude":
             candidates += [
                 _integer(data_type, value)
@@ -1336,6 +1688,16 @@ class _Negatives:
         for name, each, rule in self.builder.predicates(self.scope):
             message = self.full()
             nodes = message.nodes
+            if rule.kind == "values":
+                if self.break_values(nodes, self.scope, name, rule):
+                    self.emit(
+                        message,
+                        f"constraint-values/{name}/{each.section}",
+                        self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
+                        "constraint-values",
+                        "warn",
+                    )
+                continue
             member = next(m for m in self.scope.members if m.name == name)
             subject = [n for n in nodes if n.avp.name == name]
             if rule.kind in ("absent-if", "excludes", "present-if"):
@@ -1388,24 +1750,32 @@ class _Negatives:
                 return False
         return True
 
-    def sibling(self, nodes: list[_Avp], name: str) -> _Avp | None:
+    def sibling(
+        self, nodes: list[_Avp], name: str, scope: _Scope | None = None
+    ) -> _Avp | None:
+        scope = scope or self.scope
         held = next((n for n in nodes if n.avp.name == name), None)
         if held is not None:
             return held
-        member = next((m for m in self.scope.members if m.name == name), None)
+        member = next((m for m in scope.members if m.name == name), None)
         if member is None or member.avp is None:
             return None
         try:
             node = self.builder.avp(
-                self.builder.avps[member.avp], self.scope, member, False, ()
+                self.builder.avps[member.avp], scope, member, False, ()
             )
         except _Unbuildable:
             return None
         nodes.append(node)
         return node
 
-    def make_hold(self, nodes: list[_Avp], condition: dictionary.Condition) -> bool:
-        node = self.sibling(nodes, condition.avp)
+    def make_hold(
+        self,
+        nodes: list[_Avp],
+        condition: dictionary.Condition,
+        scope: _Scope | None = None,
+    ) -> bool:
+        node = self.sibling(nodes, condition.avp, scope)
         if node is None:
             return False
         if condition.value is None and condition.bit is None:
@@ -1494,12 +1864,18 @@ def _rule_text(rule: dictionary.Rule) -> str:
         return f"encoding {rule.codec}"
     if rule.kind == "bits":
         return f"bits {rule.relation} {' '.join(map(str, rule.bits))}"
+    if rule.kind == "members":
+        return f"members {rule.relation} {' '.join(rule.members)}"
+    if rule.kind == "unique":
+        return "unique"
     conditions = " or ".join(
         c.avp
         + (f" = {c.value}" if c.value is not None else "")
         + (f" bit {c.bit}" if c.bit is not None else "")
         for c in rule.conditions
     )
+    if rule.kind == "values":
+        return f"values {', '.join(map(str, rule.values))} if {conditions}"
     return f"{rule.kind} {conditions}"
 
 

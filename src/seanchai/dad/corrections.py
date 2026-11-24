@@ -1334,8 +1334,14 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpret) -> None:
     names.extend(
         condition.avp
         for rule in node.body
-        if isinstance(rule, ast.PredicateRule)
-        for condition in rule.conditions
+        if not isinstance(rule, ast.Quote)
+        for condition in ast.conditions_of(rule)
+    )
+    names.extend(
+        member
+        for rule in node.body
+        if isinstance(rule, ast.MembersRule)
+        for member in rule.members
     )
     for name in names:
         if name not in held:

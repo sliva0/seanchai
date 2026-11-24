@@ -411,9 +411,12 @@ end
 -- carries `cons`, its own; a grouped reading `member_cons[name]`, its
 -- members'; a command candidate `cons[name]`, its members'. Each is {at=n,
 -- rules={...}}, a rule {k=kind, ...}: a length's `u`, `lo` and `hi`, a range's
--- `lo` and `hi`, exclude's `v`, an encoding's `codec`, a predicate's `c`,
--- conditions on siblings {avp=identity, t=text, v=value or b=bit}. Every
--- finding is a warning saying the rule is interpreted, citing its clause.
+-- `lo` and `hi`, exclude's `v`, an encoding's `codec`, a bits rule's
+-- relation `r` and bits `b`, a members rule's `r` and member identities `m`,
+-- a unique rule's member identity `i`, a predicate's `c`, conditions on
+-- siblings {avp=identity, t=text, v=value or b=bit}, and a values rule's `v`
+-- and `c`. Every finding is a warning saying the rule is interpreted, citing
+-- its clause.
 
 -- A TBCD-string's decimal digits (TS 29.002 clause 17.7.8: the first digit in
 -- bits 1-4, "1111" filling the last octet's bits 5-8 after an odd count), or
@@ -582,12 +585,86 @@ local function bounds(low, high)
   return number(low) .. " to " .. number(high)
 end
 
+-- Whether bit `bit` of a bits rule's number is set: an integer payload's
+-- value, or an OctetString's octets read as one big-endian number, bit 0 the
+-- last octet's least significant. nil where the payload has no such number.
+local function bit_reader(kind, s)
+  if kind == "OctetString" then
+    return function(bit)
+      local octet = #s - math.floor(bit / 8)
+      return octet >= 1 and has(string.byte(s, octet), 2 ^ (bit % 8))
+    end, #s * 8
+  end
+  local value = integer_value(kind, s)
+  if value == nil then
+    return nil
+  end
+  return function(bit)
+    return has(value, 2 ^ bit)
+  end, #s * 8
+end
+
+local function bits_problem(rule, set, width)
+  local named, held, unset = {}, {}, {}
+  local listed = {}
+  for _, each in ipairs(rule.b) do
+    named[#named + 1] = tostring(each)
+    listed[each] = true
+    if set(each) then
+      held[#held + 1] = tostring(each)
+    else
+      unset[#unset + 1] = tostring(each)
+    end
+  end
+  if rule.r == "at-most-one" and #held > 1 then
+    return string.format("sets bits %s, of which at most one may be",
+      table.concat(held, " and "))
+  elseif rule.r == "at-least-one" and #held == 0 then
+    return string.format("sets none of bits %s, one of which must be",
+      table.concat(named, ", "))
+  elseif rule.r == "set" and #unset > 0 then
+    return string.format("has bits %s clear, which must be set",
+      table.concat(unset, ", "))
+  elseif rule.r == "clear" and #held > 0 then
+    return string.format("sets bits %s, which must be clear",
+      table.concat(held, ", "))
+  elseif rule.r == "only" then
+    local others = {}
+    for bit = 0, width - 1 do
+      if not listed[bit] and set(bit) then
+        others[#others + 1] = tostring(bit)
+      end
+    end
+    if #others > 0 then
+      return string.format("sets bits %s, and only %s may be",
+        table.concat(others, ", "), table.concat(named, ", "))
+    end
+  end
+  return nil
+end
+
 local function interpreted(ctx, cons, rule, message, offset, length, path, name)
   local where = M.reference(ctx.rules, cons.at)
   finding(ctx.findings, WARN, "constraint-" .. rule,
     string.format("%s (an interpreted rule, read in %s)", message,
       where and where.place or "the documents' prose"),
     offset, length, path, cons.at, name)
+end
+
+-- The names a grouped reading's body gives the member identities `ids`.
+local function members_text(reading, ids)
+  local named = {}
+  for _, identity in ipairs(ids) do
+    local name = identity
+    for _, member in ipairs(reading.members or {}) do
+      if member.id and member.id:match("^[^@]+") == identity then
+        name = member.name
+        break
+      end
+    end
+    named[#named + 1] = name
+  end
+  return table.concat(named, ", ")
 end
 
 -- Checks one AVP's data against its reading's constraints and `scoped`,
@@ -641,24 +718,31 @@ local function check_constraints(ctx, avp, reading, path, scoped)
             problem = "is no " .. rule.codec .. ": it " .. problem
           end
         elseif rule.k == "bits" then
-          local value = integer_value(reading.type, data)
-          if value then
-            local held = {}
-            for _, each in ipairs(rule.b) do
-              if has(value, 2 ^ each) then
-                held[#held + 1] = tostring(each)
+          local set, width = bit_reader(reading.type, data)
+          if set then
+            problem = bits_problem(rule, set, width)
+          end
+        elseif rule.k == "members" and reading.type == "Grouped" then
+          local held = {}
+          for _, each in ipairs(parse_avps(ctx.pdu, avp.data, avp.data + avp.size,
+            {}, path)) do
+            held[each.vendor .. ":" .. each.code] = true
+          end
+          local listed, any = {}, false
+          for _, identity in ipairs(rule.m) do
+            listed[identity] = true
+            any = any or held[identity] == true
+          end
+          if rule.r == "at-least-one" and not any then
+            problem = string.format("holds none of the members %s, one of which"
+              .. " must be present", members_text(reading, rule.m))
+          elseif rule.r == "only" then
+            for identity in pairs(held) do
+              if not listed[identity] then
+                problem = string.format("holds a member other than %s",
+                  members_text(reading, rule.m))
+                break
               end
-            end
-            if rule.r == "at-most-one" and #held > 1 then
-              problem = string.format("sets bits %s, of which at most one may be",
-                table.concat(held, " and "))
-            elseif rule.r == "at-least-one" and #held == 0 then
-              local named = {}
-              for _, each in ipairs(rule.b) do
-                named[#named + 1] = tostring(each)
-              end
-              problem = string.format("sets none of bits %s, one of which must be",
-                table.concat(named, ", "))
             end
           end
         end
@@ -738,11 +822,61 @@ local function check_predicates(ctx, scoped, identities, avps, path, where)
               where, said)
           elseif rule.k == "excludes" and subject and any then
             problem = string.format("%s is in %s with %s", name, where, said)
+          elseif rule.k == "values" and subject and any then
+            local reading = ctx.rules.avps[identity]
+            local value = reading
+              and integer_value(reading.type, data_text(ctx.pdu, subject))
+            if value then
+              local allowed, listed = false, {}
+              for _, each in ipairs(rule.v) do
+                allowed = allowed or value == each
+                listed[#listed + 1] = number(each)
+              end
+              if not allowed then
+                problem = string.format("%s is %s in %s, which holds %s; it may be"
+                  .. " only %s", name, number(value), where, said,
+                  table.concat(listed, ", "))
+              end
+            end
           end
           if problem then
             local at = subject or {}
             interpreted(ctx, cons, rule.k, problem, at.offset or ctx.anchor_offset,
               at.length or ctx.anchor_length, path, name)
+          end
+        end
+      end
+    end
+  end
+end
+
+-- Checks the unique rules the grouped readings of a run hold for their
+-- members: `grouped` lists each grouped AVP of the run with its reading. No
+-- two AVPs of one reading hold the member with the same octets.
+local function check_unique(ctx, grouped, path)
+  local seen = {}
+  for _, entry in ipairs(grouped) do
+    local reading = entry.reading
+    for name, list in pairs(reading.member_cons or {}) do
+      for _, cons in ipairs(list) do
+        for _, rule in ipairs(cons.rules) do
+          if rule.k == "unique" then
+            local key = tostring(reading) .. "\0" .. name
+            seen[key] = seen[key] or {}
+            for _, member in ipairs(parse_avps(ctx.pdu, entry.avp.data,
+              entry.avp.data + entry.avp.size, {}, path)) do
+              if member.vendor .. ":" .. member.code == rule.i then
+                local text = data_text(ctx.pdu, member)
+                if seen[key][text] then
+                  interpreted(ctx, cons, "unique", string.format(
+                    "%s holds %s with the value another %s beside it holds",
+                    reading.name, name, reading.name),
+                    member.offset, member.length, path, name)
+                end
+                seen[key][text] = true
+                break
+              end
+            end
           end
         end
       end
@@ -999,6 +1133,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   local counts = {}
   local positions = {}
   local unlisted = 0
+  local grouped = {}
   for position, avp in ipairs(avps) do
     local identity = avp.vendor .. ":" .. avp.code
     local slot = by_identity[identity]
@@ -1033,6 +1168,9 @@ validate_body = function(ctx, body, avps, path, depth, owner)
       check_flags(ctx, avp, reading, path)
       check_data(ctx, avp, reading, path, inner_path, depth)
       check_constraints(ctx, avp, reading, path, scoped and scoped[name])
+      if reading.member_cons then
+        grouped[#grouped + 1] = { avp = avp, reading = reading }
+      end
     elseif has(avp.flags, AVP_M) then
       about(finding(findings, WARN, "unknown-mandatory",
         string.format("%s is defined by no document in the corpus and has the M"
@@ -1048,6 +1186,7 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   -- Occurrences.
   local where = owner and owner.name or ctx.where
   check_predicates(ctx, scoped, identities, avps, path, where)
+  check_unique(ctx, grouped, path)
   local wildcard = body.wildcard
   if wildcard and unlisted < wildcard.min then
     finding(findings, ERROR, "avp-missing",
@@ -1475,6 +1614,13 @@ end
 M.parse_avps = parse_avps
 M.codec_problem = codec_problem
 M.digit_count = digit_count
+
+-- Why a bits rule {r=relation, b={bits}} does not hold of an AVP's data of
+-- `kind`, or nil where it holds or the data is no such number.
+function M.bits_problem(rule, kind, s)
+  local set, width = bit_reader(kind, s)
+  return set and bits_problem(rule, set, width)
+end
 M.valid_utf8 = valid_utf8
 M.identity_problem = identity_problem
 M.uri_problem = uri_problem

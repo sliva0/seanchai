@@ -15,6 +15,9 @@ from seanchai.dad.interpret import (
     bit,
     bits_at_least_one,
     bits_at_most_one,
+    bits_clear,
+    bits_only,
+    bits_set,
     characters,
     default,
     digits,
@@ -23,12 +26,16 @@ from seanchai.dad.interpret import (
     equals,
     exclude,
     excludes,
+    members_at_least_one,
+    members_only,
     octets,
     present_if,
     range_of,
     reading,
     requires,
     text_only,
+    unique,
+    values_if,
 )
 
 _HEADER = "; Specification: 3GPP TS 29.999\n; Version: 19.0.0\n; Vendor-ID: 10415\n"
@@ -81,16 +88,33 @@ _EVERY_RULE = _dad(
     "    default 0",
     "    bits at-most-one 3 6",
     "    bits at-least-one 0 1",
+    "    bits set 1",
+    "    bits clear 4 5 6 7",
+    "    bits only 9",
+    "    members at-least-one SCEF-Reference-ID SCEF-Reference-ID-Ext",
+    "    members only IMEI",
+    '    values 1, 2 if Monitoring-Type = UE_REACHABILITY or Flags bit "A b"',
     '"Third."',
     "    text-only",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Service-Selection",
+    "; Within: APN-Configuration",
+    "; Section: 7.3.35",
+    "; Versions: 19.0.0",
+    '"Unique."',
+    "    unique",
 )
 
 
 def test_every_rule_reads_and_writes_back():
     spec, comments = parser.parse_with_comments(_EVERY_RULE)
 
-    (block,) = spec.sections
+    block, unique_block = spec.sections
     assert isinstance(block, ast.InterpretedConstraints)
+    assert isinstance(unique_block, ast.InterpretedConstraints)
+    assert unique_block.body[1:] == (ast.UniqueRule(),)
     assert (block.command, block.application_id) == (
         "Delete-Subscriber-Data-Request",
         16777251,
@@ -108,11 +132,26 @@ def test_every_rule_reads_and_writes_back():
     assert second.rules[1] == ast.RangeRule(low=-1, high=None)
     assert second.rules[3] == ast.RangeRule(low=7, high=7)
     assert second.rules[5] == ast.LengthRule(unit=ast.LengthUnit.OCTETS, low=3, high=3)
-    assert second.rules[-4:] == (
+    assert second.rules[-10:] == (
         ast.DefaultRule(value="FALSE"),
         ast.DefaultRule(value=0),
         ast.BitsRule(relation=ast.BitsRelation.AT_MOST_ONE, bits=(3, 6)),
         ast.BitsRule(relation=ast.BitsRelation.AT_LEAST_ONE, bits=(0, 1)),
+        ast.BitsRule(relation=ast.BitsRelation.SET, bits=(1,)),
+        ast.BitsRule(relation=ast.BitsRelation.CLEAR, bits=(4, 5, 6, 7)),
+        ast.BitsRule(relation=ast.BitsRelation.ONLY, bits=(9,)),
+        ast.MembersRule(
+            relation=ast.BitsRelation.AT_LEAST_ONE,
+            members=("SCEF-Reference-ID", "SCEF-Reference-ID-Ext"),
+        ),
+        ast.MembersRule(relation=ast.BitsRelation.ONLY, members=("IMEI",)),
+        ast.ValuesRule(
+            values=(1, 2),
+            conditions=(
+                ast.Condition(avp="Monitoring-Type", value="UE_REACHABILITY"),
+                ast.Condition(avp="Flags", bit="A b"),
+            ),
+        ),
     )
     assert third.rules == (ast.TextOnly(),)
     assert formatter.format_spec(spec, comments) == _EVERY_RULE
@@ -162,6 +201,39 @@ def test_every_rule_reads_and_writes_back():
             11,
             "names a bit twice",
             id="bits-twice",
+        ),
+        pytest.param(
+            _block('"Q."', "    bits at-least-one 2"),
+            11,
+            "names two bits or more",
+            id="bits-one",
+        ),
+        pytest.param(
+            _block('"Q."', "    members set A B"),
+            11,
+            "unknown relation",
+            id="members-relation",
+        ),
+        pytest.param(
+            _block('"Q."', "    members only A A"),
+            11,
+            "names a member twice",
+            id="members-twice",
+        ),
+        pytest.param(
+            _block('"Q."', "    values 1 if"), 11, "malformed rule", id="values-bare"
+        ),
+        pytest.param(
+            _block('"Q."', "    values 1, 1 if Mode = 2"),
+            11,
+            "names a value twice",
+            id="values-twice",
+        ),
+        pytest.param(
+            _block('"Q."', "    unique"),
+            6,
+            "unique holds among the grouped AVPs Within names",
+            id="unique-unscoped",
         ),
         pytest.param(_block('"Q."', "length 3 octets"), 11, "indented", id="flush"),
         pytest.param(
@@ -231,6 +303,14 @@ def test_the_builders_spell_the_rules_the_file_prints():
         default("NOT_RELAY_NODE"),
         bits_at_most_one(3, 6),
         bits_at_least_one(0, 1),
+        bits_set(1),
+        bits_clear(0, 3),
+        bits_only(9),
+        members_at_least_one("SCEF-Realm"),
+        members_only("IMEI", "Software-Version"),
+        unique(),
+        values_if(1, equals("Monitoring-Type", "UE_REACHABILITY")),
+        values_if((1, 2), "Other", bit("Flags", 3)),
         text_only(),
     ]
 
@@ -250,6 +330,14 @@ def test_the_builders_spell_the_rules_the_file_prints():
         "default NOT_RELAY_NODE",
         "bits at-most-one 3 6",
         "bits at-least-one 0 1",
+        "bits set 1",
+        "bits clear 0 3",
+        "bits only 9",
+        "members at-least-one SCEF-Realm",
+        "members only IMEI Software-Version",
+        "unique",
+        "values 1 if Monitoring-Type = UE_REACHABILITY",
+        "values 1, 2 if Other or Flags bit 3",
         "text-only",
     ]
 
@@ -493,6 +581,7 @@ _BROKEN = _dad(
     "        [ Example-Number ]",
     "        [ Example-Flags ]",
     "        [ Example-Mode ]",
+    "        [ Example-Text ]",
     "",
     "",
     "; Type: AVP Table",
@@ -501,6 +590,7 @@ _BROKEN = _dad(
     "Example-Number 1 6.3.2 OctetString V",
     "Example-Flags 2 6.3.4 Unsigned32 V",
     "Example-Mode 3 6.3.5 Enumerated V",
+    "Example-Text 5 6.3.7 OctetString V",
     "",
     "",
     "; Type: Interpreted Constraints",
@@ -574,6 +664,33 @@ _BROKEN = _dad(
     '"Q."',
     "    bits at-least-one 0 7",
     "    default -1",
+    "    bits set 0",
+    "    bits clear 0",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Example-Text",
+    "; Command: Example-Request",
+    "; Section: 6.3.7",
+    "; Versions: 19.0.0",
+    '"Q."',
+    "    members only Example-Flags",
+    "    values 300 if Example-Mode = ON",
+    "",
+    "",
+    "; Type: Grouped AVP",
+    "; Name: Example-Group",
+    "; Section: 6.3.6",
+    "Example-Group ::= < AVP header: 4 10415 >",
+    "        [ Example-Mode ]",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Example-Group",
+    "; Section: 6.3.6",
+    "; Versions: 19.0.0",
+    '"Q."',
+    "    members at-least-one Example-Mode Example-Flags",
 )
 
 
@@ -592,13 +709,17 @@ def test_the_linter_reports_what_cannot_hold():
             "Example-Flags in Example-Request: the file holds no AVP Missing",
         ),
         (
-            "constraint-avp-unknown",
-            "Example-Mode in Example-Group: the file holds no AVP Example-Group",
-        ),
-        (
             "constraint-command-unknown",
             "Example-Mode in Other-Request: names command Other-Request, which"
             " the file does not print",
+        ),
+        (
+            "constraint-contradiction",
+            "Example-Flags in Example-Request: bit 0 is both set and clear",
+        ),
+        (
+            "constraint-contradiction",
+            "Example-Flags: bit 0 is both set and clear",
         ),
         (
             "constraint-contradiction",
@@ -611,6 +732,11 @@ def test_the_linter_reports_what_cannot_hold():
         (
             "constraint-contradiction",
             "Example-Number: the lengths in octets leave none",
+        ),
+        (
+            "constraint-not-member",
+            "Example-Group: a members rule names Example-Flags, which the body of"
+            " Example-Group does not hold",
         ),
         (
             "constraint-type-mismatch",
@@ -632,11 +758,22 @@ def test_the_linter_reports_what_cannot_hold():
         ),
         (
             "constraint-type-mismatch",
-            "Example-Mode: a bits rule needs an unsigned integer, not Enumerated",
+            "Example-Mode: a bits rule needs an unsigned integer or an octet"
+            " string, not Enumerated",
         ),
         (
             "constraint-type-mismatch",
             "Example-Number: a range needs an integer, not OctetString",
+        ),
+        (
+            "constraint-type-mismatch",
+            "Example-Text in Example-Request: a members rule needs a grouped"
+            " AVP, not OctetString",
+        ),
+        (
+            "constraint-type-mismatch",
+            "Example-Text in Example-Request: a values rule needs an integer,"
+            " not OctetString",
         ),
         (
             "constraint-value-unknown",

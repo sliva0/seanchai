@@ -697,7 +697,15 @@ def _constraint_readings(
                 fields["value"] = node.value
             case ast.BitsRule():
                 fields |= {"relation": node.relation, "bits": node.bits}
-            case ast.TextOnly():
+            case ast.MembersRule():
+                fields |= {"relation": node.relation, "members": node.members}
+            case ast.ValuesRule():
+                fields["values"] = node.values
+                fields["conditions"] = tuple(
+                    ConstraintCondition(avp=each.avp, value=each.value, bit=each.bit)
+                    for each in node.conditions
+                )
+            case ast.UniqueRule() | ast.TextOnly():
                 pass
         rules.append(ConstraintRule(**fields))
     readings.append(ConstraintReading(quotes=tuple(quotes), rules=tuple(rules)))

@@ -196,7 +196,10 @@ CORRECTIONS += [
 - The rules are built by `octets`, `digits` and `characters` (`length`),
   `range_of`, `exclude`, `encoding` and `element`, `present_if`,
   `absent_if`, `requires` and `excludes` over `present`, `equals` and `bit`
-  conditions (a bare name is `present`), and `text_only`.
+  conditions (a bare name is `present`), `default`, `bits_at_most_one`,
+  `bits_at_least_one`, `bits_set`, `bits_clear` and `bits_only`,
+  `members_at_least_one` and `members_only`, `unique`, `values_if` over
+  conditions as the predicates', and `text_only`.
 - `command` (with `application_id`) or `within` scopes the rules to the AVP
   as a member of that command or grouped AVP; `table` names the table
   printing the quotes, an information element's description.
@@ -223,8 +226,8 @@ CORRECTIONS += [
   nearest reviewed release's (the oldest above, else the newest below) to
   the copy's text. Each it finds is applied and its range widened to the
   copy; each it does not is reported as `not carried:` with the sentence the
-  clause lacks, and stays out. Going back to Release 18, 149 of TS 29.272's
-  154 carried; the five that did not read sentences Release 19 added. A
+  clause lacks, and stays out. Release 18's copy holds 152 of TS 29.272's
+  157; the five it does not read sentences Release 19 added. A
   declaration built in a comprehension, whose id is not a literal, is widened
   by hand.
 

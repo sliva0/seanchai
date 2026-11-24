@@ -2,15 +2,17 @@
 (`model.Constraint`), and what each codec implies of the payload.
 
 `check` tells whether one rule holds of a payload, as the Wireshark plugin
-checks it: length, range, exclude and every codec but `element`. A predicate
-needs the message around the AVP, an `element` the other document's layout,
-and `text-only` a reader, so `check` answers None for them: unknown, never a
-guess. docs/constraints.md#codecs gives each codec's clause.
+checks it: length, range, exclude, bits and every codec but `element`. A
+predicate, a `values`, `members` or `unique` rule needs the message around
+the AVP, an `element` the other document's layout, and `text-only` a reader,
+so `check` answers None for them: unknown, never a guess.
+docs/constraints.md#codecs gives each codec's clause.
 """
 
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from typing import NamedTuple
 
 from .dad import ast
@@ -18,6 +20,8 @@ from .dad import ast
 __all__ = [
     "CODEC_TYPES",
     "Check",
+    "bits_problem",
+    "bits_value",
     "check",
     "codec_digits",
     "codec_octets",
@@ -213,6 +217,44 @@ def integer_bounds(data_type: ast.DataType) -> tuple[int, int] | None:
     return (-(2 ** (bits - 1)), 2 ** (bits - 1) - 1) if found[1] else (0, 2**bits - 1)
 
 
+def bits_value(data_type: ast.DataType, payload: bytes) -> int | None:
+    """The number a `bits` rule reads its bits from: an integer-typed
+    payload's value, or an OctetString's octets read as one big-endian
+    number, bit 0 the last octet's least significant; None for another type
+    or a malformed integer."""
+    if data_type is ast.DataType.OCTET_STRING:
+        return int.from_bytes(payload, "big")
+    return integer_value(data_type, payload)
+
+
+def bits_problem(
+    relation: ast.BitsRelation, bits: Sequence[int], value: int
+) -> str | None:
+    """Why a `bits` rule of `relation` on `bits` does not hold of the bits of
+    `value`, or None if it does."""
+    held = [bit for bit in bits if value >> bit & 1]
+    named = ", ".join(map(str, bits))
+    match relation:
+        case ast.BitsRelation.AT_MOST_ONE if len(held) > 1:
+            return f"bits {', '.join(map(str, held))} are all set"
+        case ast.BitsRelation.AT_LEAST_ONE if not held:
+            return f"none of bits {named} is set"
+        case ast.BitsRelation.SET if len(held) < len(bits):
+            unset = [bit for bit in bits if bit not in held]
+            return f"bits {', '.join(map(str, unset))} are clear"
+        case ast.BitsRelation.CLEAR if held:
+            return f"bits {', '.join(map(str, held))} are set"
+        case ast.BitsRelation.ONLY:
+            others = [
+                bit
+                for bit in range(value.bit_length())
+                if value >> bit & 1 and bit not in bits
+            ]
+            if others:
+                return f"bits {', '.join(map(str, others))} are set, not only {named}"
+    return None
+
+
 class Check(NamedTuple):
     """Whether a rule holds of a payload: True, False with the reason, or
     None where the payload alone cannot tell."""
@@ -273,16 +315,11 @@ def check(
             problem = codec_problem(rule.codec, payload)
             return Check(problem is None, problem)
         case ast.BitsRule():
-            value = integer_value(data_type, payload)
+            value = bits_value(data_type, payload)
             if value is None:
                 return Check(None)
-            held = [bit for bit in rule.bits if value >> bit & 1]
-            if rule.relation is ast.BitsRelation.AT_MOST_ONE and len(held) > 1:
-                return Check(False, f"bits {', '.join(map(str, held))} are all set")
-            if rule.relation is ast.BitsRelation.AT_LEAST_ONE and not held:
-                named = ", ".join(map(str, rule.bits))
-                return Check(False, f"none of bits {named} is set")
-            return Check(True)
+            problem = bits_problem(rule.relation, rule.bits, value)
+            return Check(problem is None, problem)
         case _:
             return Check(None)
     if _within(count, rule.low, rule.high):

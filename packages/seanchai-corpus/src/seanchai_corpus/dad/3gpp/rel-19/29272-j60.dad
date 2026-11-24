@@ -1485,7 +1485,7 @@ IMSI                                                                User-Name   
 ; Page: 54
 ; Versions: 18.7.0..19.6.0
 "Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface."
-    text-only
+    members only IMEI Software-Version
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-mip6-agent-info)
@@ -2143,10 +2143,24 @@ Service-Gap-Time-Withdrawal                      = 31
 ; Table: 7.3.25/1
 ; Page: 122
 ; Versions: 18.7.0..19.6.0
+"Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set."
+    bits at-most-one 1 3
+"Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set."
+    bits at-most-one 5 6
 "Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set."
     bits at-most-one 3 6
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-flags-s7a-bits)
+; AVP: DSR-Flags
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777308
+; Section: 7.3.25
+; Table: 7.3.25/1
+; Page: 122
+; Versions: 18.7.0..19.6.0
 "Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared."
-    text-only
+    bits only 9
 
 
 ; Type: Value Table
@@ -2338,7 +2352,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 "The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero."
     exclude 0
 "Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription."
-    text-only
+    unique
 "NOTE: If interworking with MAP is needed, the Context-Identifier will be in the range of 1 and 50."
     text-only
 
@@ -2350,7 +2364,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Page: 128
 ; Versions: 18.7.0..19.6.0
 "For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs."
-    text-only
+    unique
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-served-party-ip-address)
@@ -3274,7 +3288,7 @@ User-State ::= < Enumerated AVP header: 1499 10415 >
 ; Page: 146
 ; Versions: 18.7.0..19.6.0
 "This value should not be used by MME or SGSN over S6a/S6d."
-    text-only
+    exclude 5
 
 
 ; Type: Grouped AVP
@@ -3786,11 +3800,19 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sms-register-request-skip-subscriber-data)
 ; AVP: SMS-Register-Request
+; Command: Update-Location-Request
+; Section: 7.3.162
+; Page: 156
+; Versions: 18.7.0..19.6.0
+"When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP."
+    excludes ULR-Flags bit "Skip Subscriber Data"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sms-register-request-absence)
+; AVP: SMS-Register-Request
 ; Section: 7.3.162
 ; Page: 156
 ; Versions: 19.6.0
-"When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP."
-    text-only
 "Absence of this AVP in the Update Location Request message shall be interpreted as if the MME or SGSN does not request to HSS any change in its registration status for SMS."
     text-only
 
@@ -4091,11 +4113,19 @@ AESE-Communication-Pattern ::= < AVP header: 3113 10415 >
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#aese-communication-pattern-reference-ids)
 ; AVP: AESE-Communication-Pattern
+; Within: Subscription-Data
+; Section: 7.3.193
+; Page: 162
+; Versions: 18.7.0..19.6.0
+"At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present."
+    members at-least-one SCEF-Reference-ID SCEF-Reference-ID-Ext SCEF-Reference-ID-for-Deletion SCEF-Reference-ID-for-Deletion-Ext
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#aese-communication-pattern-extended-ids)
+; AVP: AESE-Communication-Pattern
 ; Section: 7.3.193
 ; Page: 162
 ; Versions: 19.6.0
-"At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present."
-    text-only
 "When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively."
     text-only
 
@@ -4149,13 +4179,13 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-scef-realm)
-; AVP: SCEF-Realm
-; Within: Monitoring-Event-Configuration
+; AVP: Monitoring-Event-Configuration
+; Within: Subscription-Data
 ; Section: 7.3.195
 ; Page: 163
 ; Versions: 18.7.0..19.6.0
 "When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present"
-    text-only
+    members at-least-one SCEF-Realm
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-monitoring-type)
@@ -4206,7 +4236,7 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
 ; Page: 164
 ; Versions: 18.7.0..19.6.0
 "For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)"
-    text-only
+    values 1 if Monitoring-Type = 1
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-report-pdn-connectivity)
@@ -4246,7 +4276,8 @@ UE-Reachability-Configuration ::= < AVP header: 3129 10415 >
 ; Page: 165
 ; Versions: 18.7.0..19.6.0
 "For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set."
-    text-only
+    bits clear 0
+    bits set 1
 
 
 ; Type: Grouped AVP
@@ -4405,7 +4436,7 @@ eDRX-Cycle-Length ::= < AVP header: 1691 10415 >
 "The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\""
     encoding element TS24.008 10.5.5.32 "Extended DRX parameter"
 "the 4 most significant bits of the octet in this AVP shall be set to 0."
-    text-only
+    bits clear 4 5 6 7
 
 
 ; Type: Grouped AVP
@@ -4536,7 +4567,7 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
 "The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\""
     encoding element TS24.008 10.5.5.32 "Extended DRX parameter"
 "the 4 least significant bits of the octet in this AVP shall be set to 0."
-    text-only
+    bits clear 0 1 2 3
 
 
 ; Type: Grouped AVP

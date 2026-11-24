@@ -203,10 +203,24 @@ def _type_problems(rule: ast.ConstraintRule, data_type: ast.DataType) -> Iterabl
                 yield f"{rule.value} is beyond what {data_type} holds"
         case ast.BitsRule():
             width = _BITS.get(data_type)
-            if width is None:
-                yield f"a bits rule needs an unsigned integer, not {data_type}"
-            elif any(each >= width for each in rule.bits):
+            if width is None and data_type is not ast.DataType.OCTET_STRING:
+                yield (
+                    "a bits rule needs an unsigned integer or an octet string,"
+                    f" not {data_type}"
+                )
+            elif width is not None and any(each >= width for each in rule.bits):
                 yield f"{data_type} has no bit {max(rule.bits)}"
+        case ast.ValuesRule():
+            bounds = checks.integer_bounds(data_type)
+            if bounds is None:
+                yield f"a values rule needs an integer, not {data_type}"
+                return
+            for number in rule.values:
+                if not bounds[0] <= number <= bounds[1]:
+                    yield f"{number} is beyond what {data_type} holds"
+        case ast.MembersRule():
+            if data_type is not ast.DataType.GROUPED:
+                yield f"a members rule needs a grouped AVP, not {data_type}"
         case _:
             pass
 
@@ -256,6 +270,18 @@ def _contradictions(rules: Sequence[ast.ConstraintRule]) -> Iterable[str]:
             bounds += carrying
         if _empty(_intersection(bounds)):
             yield f"the lengths in {unit} leave none"
+    bits = [rule for rule in rules if isinstance(rule, ast.BitsRule)]
+    required = {
+        each
+        for rule in bits
+        if rule.relation is ast.BitsRelation.SET
+        for each in rule.bits
+    }
+    for rule in bits:
+        if rule.relation is ast.BitsRelation.CLEAR and required & set(rule.bits):
+            yield f"bit {min(required & set(rule.bits))} is both set and clear"
+        elif rule.relation is ast.BitsRelation.ONLY and required - set(rule.bits):
+            yield f"bit {min(required - set(rule.bits))} is set, and not among only"
     ranges = [
         (rule.low, rule.high) for rule in rules if isinstance(rule, ast.RangeRule)
     ]
@@ -289,7 +315,9 @@ def _constraints(
     type, or a condition testing a value or bit of an AVP that has none.
     `constraint-value-unknown` (error): a condition naming a value or bit
     the AVP's values, result codes or bit table do not name, and a default
-    or bits rule naming a value or bit the AVP's own do not.
+    or bits rule naming a value or bit the AVP's own do not. A members rule
+    naming a member the grouped AVP's body does not hold is
+    `constraint-not-member`.
     `constraint-contradiction` (error): rules on one AVP in one place that
     cannot all hold. A type, value or bit no document read states is not
     judged."""
@@ -323,12 +351,19 @@ def _constraints(
         conditions = [
             condition
             for rule in block.body
-            if isinstance(rule, ast.PredicateRule)
-            for condition in rule.conditions
+            if not isinstance(rule, ast.Quote)
+            for condition in ast.conditions_of(rule)
+        ]
+        listed = [
+            name
+            for rule in block.body
+            if isinstance(rule, ast.MembersRule)
+            for name in rule.members
         ]
         names = dict.fromkeys(
             [block.avp, *([block.within] if block.within else [])]
             + [condition.avp for condition in conditions]
+            + listed
         )
         for name in names:
             if name not in held:
@@ -352,6 +387,17 @@ def _constraints(
                         block,
                         f"a condition tests {condition.avp}, which the body of"
                         f" {block.command or block.within} does not hold",
+                    )
+        if listed and block.avp in held:
+            grouped = _grouped(_documents(spec, block.avp, cited), block.avp)
+            members = set() if grouped is None else {rule.name for rule in grouped.avps}
+            for name in dict.fromkeys(listed):
+                if grouped is not None and name in held and name not in members:
+                    found(
+                        "constraint-not-member",
+                        block,
+                        f"a members rule names {name}, which the body of"
+                        f" {block.avp} does not hold",
                     )
         own = fact(block.avp) if block.avp in held else _Facts()
         data_type = own.data_type

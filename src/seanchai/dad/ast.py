@@ -70,6 +70,7 @@ __all__ = [
     "Mark",
     "MarkColumn",
     "Marks",
+    "MembersRule",
     "Message",
     "Node",
     "PageNumber",
@@ -100,16 +101,19 @@ __all__ = [
     "TextOnly",
     "TreePath",
     "UndefinedAvp",
+    "UniqueRule",
     "Unsigned24",
     "Unsigned32",
     "ValueKind",
     "ValueRef",
     "ValueRow",
     "ValueTable",
+    "ValuesRule",
     "VendorSpecificValues",
     "Version",
     "VersionsText",
     "VoidValues",
+    "conditions_of",
     "defines",
     "in_document_order",
     "interface_clause",
@@ -1498,26 +1502,98 @@ class DefaultRule(Node):
 
 
 class BitsRelation(enum.StrEnum):
-    """What a `bits` rule says of the bits it names: at most one of them set
-    ("excluding alternatives", "shall not both be set"), or at least one."""
+    """What a `bits` rule says of the bits it names, and a `members` rule of
+    the members it names.
+
+    - `at-most-one`: at most one of them is set ("excluding alternatives",
+      "shall not both be set");
+    - `at-least-one`: at least one is set, or present ("At least one of the
+      bits 0 and 1 shall be set to 1");
+    - `set`: each is set ("it shall have bit 1 set");
+    - `clear`: each is clear ("shall have bit 0 cleared", "the 4 most
+      significant bits of the octet ... shall be set to 0");
+    - `only`: none but these is set, or present ("only the bit 9 ... is
+      meaningful, other bits shall be cleared").
+    """
 
     AT_MOST_ONE = "at-most-one"
     AT_LEAST_ONE = "at-least-one"
+    SET = "set"
+    CLEAR = "clear"
+    ONLY = "only"
+
+
+# The relations that compare the things named with each other, and so name
+# two or more.
+_AMONG = frozenset({BitsRelation.AT_MOST_ONE, BitsRelation.AT_LEAST_ONE})
 
 
 class BitsRule(Node):
-    """`bits at-most-one 3 6`: a rule on the AVP's own bits, by number as its
-    bit table numbers them ("Bits 3 and 6 are excluding alternatives and
-    shall not both be set", TS 29.272 table 7.3.25/1)."""
+    """`bits at-most-one 3 6`, `bits clear 4 5 6 7`: a rule on the AVP's own
+    bits, by number as its bit table numbers them, bit 0 the least
+    significant; an OctetString's are those of its octets read as one
+    big-endian number ("Bits 3 and 6 are excluding alternatives and shall not
+    both be set", TS 29.272 table 7.3.25/1). `at-most-one` and
+    `at-least-one` name two bits or more."""
 
     kind: Literal["bits"] = "bits"
     relation: BitsRelation
-    bits: Annotated[tuple[Annotated[int, Field(ge=0, le=63)], ...], Field(min_length=2)]
+    bits: Annotated[tuple[Annotated[int, Field(ge=0, le=63)], ...], Field(min_length=1)]
 
     @pydantic.model_validator(mode="after")
     def _distinct(self) -> BitsRule:
         if len(set(self.bits)) != len(self.bits):
             raise ValueError(f"bits {list(self.bits)} names a bit twice")
+        if self.relation in _AMONG and len(self.bits) < 2:
+            raise ValueError(f"bits {self.relation} names two bits or more")
+        return self
+
+
+class MembersRule(Node):
+    """`members at-least-one SCEF-Reference-ID SCEF-Reference-ID-Ext`,
+    `members only IMEI Software-Version`: a rule on which members a grouped
+    AVP holds, by name, as `bits` is on an AVP's own bits. `at-least-one`:
+    one of them at least is present, a single name being one that must be
+    ("At least one reference ID ... shall be present", TS 29.272 clause
+    7.3.193); `only`: no member but these is present ("only the IMEI and the
+    Software-Version AVPs shall be used", TS 29.272 table 5.2.5.1.1/1)."""
+
+    kind: Literal["members"] = "members"
+    relation: Literal[BitsRelation.AT_LEAST_ONE, BitsRelation.ONLY]
+    members: Annotated[tuple[AvpName, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _distinct(self) -> MembersRule:
+        if len(set(self.members)) != len(self.members):
+            raise ValueError(f"members {list(self.members)} names a member twice")
+        return self
+
+
+class UniqueRule(Node):
+    """`unique`: no two of the grouped AVPs the block's `; Within:` names,
+    beside each other in one body, hold the AVP with the same value ("the
+    Service-Selection AVP values shall be unique across APN-Configuration
+    AVPs", TS 29.272 clause 7.3.35)."""
+
+    kind: Literal["unique"] = "unique"
+
+
+class ValuesRule(Node):
+    """`values 1 if Monitoring-Type = UE_REACHABILITY`: when a condition
+    holds, the AVP's integer value is one of `values` ("when the
+    Monitoring-Type AVP takes the value UE_REACHABILITY (1), the
+    Reachability-Information AVP shall take the value REACHABLE_FOR_DATA
+    (1)", TS 29.272 clause 7.3.196). The conditions are a predicate's, on the
+    AVP's siblings, `or` joining alternatives."""
+
+    kind: Literal["values"] = "values"
+    values: Annotated[tuple[int, ...], Field(min_length=1)]
+    conditions: Annotated[tuple[Condition, ...], Field(min_length=1)]
+
+    @pydantic.model_validator(mode="after")
+    def _distinct(self) -> ValuesRule:
+        if len(set(self.values)) != len(self.values):
+            raise ValueError(f"values {list(self.values)} names a value twice")
         return self
 
 
@@ -1537,9 +1613,20 @@ ConstraintRule = Annotated[
     | PredicateRule
     | DefaultRule
     | BitsRule
+    | MembersRule
+    | UniqueRule
+    | ValuesRule
     | TextOnly,
     Field(discriminator="kind"),
 ]
+
+
+def conditions_of(rule: ConstraintRule) -> tuple[Condition, ...]:
+    """The conditions on siblings a rule tests: a predicate's or a `values`
+    rule's, none for another kind."""
+    if isinstance(rule, PredicateRule | ValuesRule):
+        return rule.conditions
+    return ()
 
 
 class Quote(Node):
@@ -1610,6 +1697,10 @@ class InterpretedConstraints(Node):
                 isinstance(rule, TextOnly) for rule in reading.rules
             ):
                 raise ValueError("text-only is a reading's only rule")
+        if self.within is None and any(
+            isinstance(rule, UniqueRule) for rule in self.body
+        ):
+            raise ValueError("unique holds among the grouped AVPs Within names")
         return self
 
     @property

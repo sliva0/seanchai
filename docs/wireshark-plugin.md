@@ -81,14 +81,16 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
 - Interpreted constraints ([constraints.md](constraints.md)), what a person
   read in the clauses' prose, each a warning saying the rule is interpreted:
   a length in octets, digits or characters, a range, an excluded value, an
-  encoding, a rule on the AVP's own bits (`constraint-length`, `-range`,
-  `-exclude`, `-encoding`, `-bits`), for the
-  AVP wherever its reading's document reads it and as a member of the command
-  or grouped AVP holding it; and the predicates tying a member's presence to
-  its siblings (`constraint-present-if`, `-absent-if`, `-requires`,
-  `-excludes`). An `element` is checked no further than a length beside it,
-  `text-only` not at all, and a predicate naming a value or bit no table
-  numbers is left out.
+  encoding, a rule on the AVP's own bits, the members a grouped AVP holds
+  (`constraint-length`, `-range`, `-exclude`, `-encoding`, `-bits`,
+  `-members`), for the AVP wherever its reading's document reads it and as
+  a member of the command or grouped AVP holding it; the predicates tying a
+  member's presence to its siblings (`constraint-present-if`, `-absent-if`,
+  `-requires`, `-excludes`), a value a sibling's condition restricts
+  (`constraint-values`), and a member two grouped AVPs beside each other
+  hold with one value (`constraint-unique`). An `element` is checked no
+  further than a length beside it, `text-only` not at all, and a rule naming
+  a value or bit no table numbers is left out.
 
 It cannot check what the documents say only in prose and no one has read as
 a constraint, what depends on negotiated features, or anything across

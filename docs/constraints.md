@@ -25,7 +25,7 @@ from the printed facts, so a consumer can weigh it:
 - `; Versions:` is the range of the document's versions the reading was
   checked against. A reading is carried to another release's copy only once
   its sentences are found there, and is otherwise left out of that copy: of
-  TS 29.272's 154, Release 18's copy holds 149
+  TS 29.272's 157, Release 18's copy holds 152
   ([corrections.md](corrections.md#interpreted-constraints)).
 - The model's `Constraint`, the dictionary's and the export's say
   `interpreted`; the Wireshark plugin reports a breach as a warning that names
@@ -83,17 +83,30 @@ TS 29.272's file prints it:
 | `requires` | `requires DSR-Flags bit "Trace Data Withdrawal"` | a condition holds when the AVP is present |
 | `excludes` | `excludes Other-AVP` | no condition holds when the AVP is present |
 | `default` | `default FALSE`, `default 0` | (what an absent AVP is read as) |
-| `bits` | `bits at-most-one 3 6`, `bits at-least-one 0 1` | of these bits of the AVP's own value, at most one is set, or at least one |
+| `bits` | `bits at-most-one 3 6`, `bits at-least-one 0 1`, `bits set 1`, `bits clear 4 5 6 7`, `bits only 9` | of these bits of the AVP's own value, at most one is set, at least one, each is set, each is clear, or none but these is set |
+| `members` | `members at-least-one SCEF-Reference-ID SCEF-Reference-ID-Ext`, `members only IMEI Software-Version` | of the grouped AVP's members, at least one of these is present (one name: it is), or none but these |
+| `unique` | `unique` | no two of the `; Within:` grouped AVPs beside each other hold the AVP with the same value |
+| `values` | `values 1 if Monitoring-Type = 1` | the integer value is one of these when a condition holds |
 | `text-only` | `text-only` | (a reader decides) |
 
-A predicate's conditions are alternatives (`or`), each on a sibling in the
-block's `; Command:` or `; Within:` grouped AVP: present, holding a value
-(a number, or a name its values or result codes give it), or with a bit set
-(a number, or its bit table's name). Several predicates in one block must all
-hold. `absent-if` and `excludes` say the same of a presence condition, read
-from the other side; the kinds follow the clause's wording. Without a scope
-the rules hold wherever the document reads the AVP, and a predicate there has
-no siblings to test.
+A predicate's conditions, and a `values` rule's, are alternatives (`or`), each
+on a sibling in the block's `; Command:` or `; Within:` grouped AVP: present,
+holding a value (a number, or a name its values or result codes give it), or
+with a bit set (a number, or its bit table's name). Several predicates in one
+block must all hold. `absent-if` and `excludes` say the same of a presence
+condition, read from the other side; the kinds follow the clause's wording.
+Without a scope the rules hold wherever the document reads the AVP, and a
+predicate there has no siblings to test.
+
+A `bits` rule numbers bits as the AVP's bit table does, bit 0 the least
+significant; an OctetString's bits are those of its octets read as one
+big-endian number, so `bits clear 4 5 6 7` is a one-octet AVP's four most
+significant bits. `members` says of a grouped AVP what `bits` says of a flags
+AVP, by member name. `unique` holds across the grouped AVPs one body holds, and
+needs `; Within:`: TS 29.272's Service-Selection within APN-Configuration
+differs from one APN-Configuration of an APN-Configuration-Profile to the next.
+There is no kind for "should": a rule read from "should" is a rule like any
+other, its quote saying how far to trust it.
 
 ## Codecs
 
@@ -122,9 +135,10 @@ document without stating a layout ("Octets are coded according to TS 29.002
 `seanchai.constraints` checks a payload in Python: `codec_problem(codec,
 payload)` says why a payload is no such layout, `digit_count` counts its
 digits, and `check(rule, payload, data_type, codec)` tells whether a length,
-range, exclude or encoding rule holds, None where the payload alone cannot
-tell (a predicate, an `element`, a `default`, `text-only`). A `bits` rule
-holds of an unsigned integer's payload.
+range, exclude, encoding or bits rule holds, None where the payload alone
+cannot tell (a predicate, a `values`, `members` or `unique` rule, an
+`element`, a `default`, `text-only`). A `bits` rule holds of an unsigned
+integer's payload or an OctetString's (`bits_value`, `bits_problem`).
 
 ## Reading them
 
@@ -148,8 +162,9 @@ holds of an unsigned integer's payload.
   and rules that cannot all hold
   ([linter.md](linter.md#interpreted-constraints)).
 - The Wireshark plugin checks lengths, ranges, exclusions, the codecs but
-  `element`, `bits` rules, and the predicates whose names resolve; a
-  `default` breaks nothing on the wire
+  `element`, `bits`, `members` and `unique` rules, and the predicates and
+  `values` rules whose names resolve; a `default` breaks nothing on the
+  wire
   ([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)).
 
 ## Adding them for another document
@@ -187,11 +202,11 @@ C row of its information-element tables.
 | | |
 |---|---|
 | AVP clauses (clause 7.3, not its General and Void clauses) | 247 |
-| with something to declare | 99, in 119 blocks |
+| with something to declare | 99, in 122 blocks |
 | with nothing to declare | 148 |
 | information-element C rows | 45, of which 35 state a condition, 10 of them typed |
-| blocks | 154: 87 on an AVP wherever read, 32 within a grouped AVP, 35 within a command |
-| readings | 174 |
+| blocks | 157: 87 on an AVP wherever read, 33 within a grouped AVP, 37 within a command |
+| readings | 176 |
 
 | Rules | |
 |---|---|
@@ -199,16 +214,24 @@ C row of its information-element tables.
 | `encoding element` | 43 |
 | `length` | 8: 6 in octets, 2 in digits |
 | `range` | 7 |
-| `exclude` | 3 |
-| `requires`, `present-if`, `absent-if` | 17, 2, 2 |
+| `exclude` | 4 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 17, 2, 2, 1 |
 | `default` | 9 |
-| `bits` | 2: `at-most-one` (DSR-Flags), `at-least-one` (Preferred-Data-Mode) |
-| `text-only` | 67 |
+| `bits` | 9: `at-most-one` 3 (DSR-Flags), `at-least-one` (Preferred-Data-Mode), `clear` 3 (Reachability-Type, eDRX-Cycle-Length-Value, Paging-Time-Window-Length), `set` (Reachability-Type), `only` (DSR-Flags on S7a) |
+| `members` | 3: `at-least-one` 2 (AESE-Communication-Pattern, Monitoring-Event-Configuration), `only` (Terminal-Information in NOR) |
+| `unique` | 2: Context-Identifier and Service-Selection in APN-Configuration |
+| `values` | 1: Reachability-Information in Monitoring-Event-Report |
+| `text-only` | 55 |
 
 The text-only rules are mostly conditions on the node, the interface, an
 earlier message or a feature (an information element's "shall be present if
 the MME supports SMS in MME"), what an absent AVP means where that is no
-value or differs between commands (MDT-User-Consent's in ULA and IDR), rules
-on bits that depend on another bit or the interface (Access-Restriction-Data's
-"Bits 11 and 12 are only used when bit 4 is not set"), and conditions on an
-OctetString's value (PDP-Type's, whose octets the clauses do not spell out).
+value or differs between commands (MDT-User-Consent's in ULA and IDR), and
+conditions on an OctetString's value (PDP-Type's, whose octets the clauses
+do not spell out). The rest a single message could show but no kind says
+without a member's member, a negation or a mapping between two bit tables:
+Visited-Network-Identifier present when MIP6-Agent-Info holds no FQDN,
+Maximum-Number-of-Reports bounded by MONTE-Location-Type inside
+Location-Information-Configuration, PLMN-RAT-Usage-Control's bits against
+Access-Restriction-Data's. Access-Restriction-Data's "Bits 11 and 12 are only
+used when bit 4 is not set" says what they mean, not that they are clear.

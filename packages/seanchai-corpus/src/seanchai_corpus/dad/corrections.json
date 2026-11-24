@@ -3415,6 +3415,10 @@
      "kind": "correction",
      "reason": "clause 7.3.206's heading and body, and the ABNF reference in clause 7.3.34, all spell it Additional-Context-Identifier; only the table row abbreviates it"
     },
+    "TS29.272.py#aese-communication-pattern-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
+    },
     "TS29.272.py#aia-ue-usage-type": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
@@ -3545,7 +3549,11 @@
     },
     "TS29.272.py#dsr-flags-exclusive-bits": {
      "kind": "interpret",
-     "reason": "interpreted from table 7.3.25/1: 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'; 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
+     "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
+    },
+    "TS29.272.py#dsr-flags-s7a-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
     },
     "TS29.272.py#dsr-scef-id": {
      "kind": "interpret",
@@ -3847,7 +3855,7 @@
      "targets": [
       [
        "sections",
-       291
+       294
       ]
      ]
     },
@@ -3871,7 +3879,7 @@
      "targets": [
       [
        "sections",
-       295
+       298
       ]
      ]
     },
@@ -4039,6 +4047,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
+    "TS29.272.py#sms-register-request-skip-subscriber-data": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'"
+    },
     "TS29.272.py#software-version-digits": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.5: 'This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3].'"
@@ -4111,7 +4123,7 @@
      "targets": [
       [
        "sections",
-       298
+       301
       ]
      ]
     },
@@ -4263,9 +4275,13 @@
      "kind": "correction",
      "reason": "clause 7.3.206's heading and body, and the ABNF reference in clause 7.3.34, all spell it Additional-Context-Identifier; only the table row abbreviates it"
     },
+    "TS29.272.py#aese-communication-pattern-extended-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.193: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
+    },
     "TS29.272.py#aese-communication-pattern-reference-ids": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'; 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
+     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
     },
     "TS29.272.py#aia-ue-usage-type": {
      "kind": "interpret",
@@ -4413,7 +4429,11 @@
     },
     "TS29.272.py#dsr-flags-exclusive-bits": {
      "kind": "interpret",
-     "reason": "interpreted from table 7.3.25/1: 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'; 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
+     "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
+    },
+    "TS29.272.py#dsr-flags-s7a-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
     },
     "TS29.272.py#dsr-scef-id": {
      "kind": "interpret",
@@ -4739,7 +4759,7 @@
      "targets": [
       [
        "sections",
-       293
+       296
       ]
      ]
     },
@@ -4763,7 +4783,7 @@
      "targets": [
       [
        "sections",
-       298
+       301
       ]
      ]
     },
@@ -4943,9 +4963,13 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
+    "TS29.272.py#sms-register-request-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.162: 'Absence of this AVP in the Update Location Request message shall be interpreted as if the MME or SGSN does not request to HSS any change in its registration status for SMS.'"
+    },
     "TS29.272.py#sms-register-request-skip-subscriber-data": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'; 'Absence of this AVP in the Update Location Request message shall be interpreted as if the MME or SGSN does not request to HSS any change in its registration status for SMS.'"
+     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'"
     },
     "TS29.272.py#software-version-digits": {
      "kind": "interpret",
@@ -5023,7 +5047,7 @@
      "targets": [
       [
        "sections",
-       302
+       305
       ]
      ]
     },

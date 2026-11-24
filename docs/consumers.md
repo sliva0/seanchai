@@ -290,8 +290,9 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   kind uses, the others null or empty: a length's `unit`, `low` and `high`,
   a range's `low` and `high`, exclude's `values`, an encoding's `codec` and
   an `element`'s `document`, `clause` and `element`, a predicate's
-  `conditions` (`avp`, and `value` or `bit`), a default's `value`, and a
-  bits rule's `relation` and `bits`.
+  `conditions` (`avp`, and `value` or `bit`), a default's `value`, a bits
+  rule's `relation` and `bits`, a members rule's `relation` and `members`,
+  and a values rule's `values` and `conditions`; `unique` has none.
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included: the copy of
   the document printing an error answer that its base resolved to.
@@ -397,14 +398,16 @@ suite, per command of the selection (`--application`, `--document`):
   not admit where it has no `* [ AVP ]`, an answer with the E bit and a
   Result-Code that is no protocol error, and each interpreted constraint the
   plugin checks: a length, a range, an excluded value, a codec's layout, a
-  predicate.
+  rule on bits, a predicate on a command's own member, a members, unique or
+  values rule.
 
-Values are valid for their type and for every constraint read of the AVP:
-a codec's layout (a PLMN identity is MCC 123, MNC 45), a length, a range, a
-predicate's siblings. A command a required member of which the corpus
-cannot complete is listed in `skipped` (TS 29.154's ECR under `--policy
-hole`); an optional one is left out. A command printing no application id
-is sent in application 0.
+Values are valid for their type and for every constraint read of the AVP: a
+codec's layout (a PLMN identity is MCC 123, MNC 45), a length, a range, bits, a
+predicate's siblings, the members a grouped AVP must or may not hold, a
+distinct value of a `unique` member in each repeated grouped AVP. A command a
+required member of which the corpus cannot complete is listed in `skipped` (TS
+29.154's ECR under `--policy hole`); an optional one is left out. A command
+printing no application id is sent in application 0.
 
 ```text
 format_version     1, changes when a reader would have to
@@ -1026,8 +1029,8 @@ for message in s6a.messages:
   `table` and `page`, `versions`, the range of versions the quotes were
   checked against, and `readings`, each an `ast.Reading` of `quotes` and
   `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`, `EncodingRule`,
-  `PredicateRule`, `DefaultRule`, `BitsRule`, `TextOnly`). `interpreted` is
-  always True.
+  `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`, `UniqueRule`,
+  `ValuesRule`, `TextOnly`). `interpreted` is always True.
 - `seanchai.constraints.check(rule, payload, data_type, codec)` tells
   whether a value rule holds of a payload, and `codec_problem` why a payload
   is no such layout ([constraints.md](constraints.md#codecs)).

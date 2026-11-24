@@ -1030,7 +1030,14 @@ _ENCODING_RE = re.compile(
 )
 _PREDICATE_RE = re.compile(r"^(?P<kind>[a-z-]+) (?P<conditions>.+)$")
 _DEFAULT_RE = re.compile(rf"^default (?P<value>{_NAME_OR_NUMBER})$")
-_BITS_RE = re.compile(r"^bits (?P<relation>[a-z-]+) (?P<bits>[0-9]+(?: [0-9]+)+)$")
+_BITS_RE = re.compile(r"^bits (?P<relation>[a-z-]+) (?P<bits>[0-9]+(?: [0-9]+)*)$")
+_MEMBERS_RE = re.compile(
+    r"^members (?P<relation>[a-z-]+)"
+    r" (?P<members>[A-Za-z0-9][A-Za-z0-9_-]*(?: [A-Za-z0-9][A-Za-z0-9_-]*)*)$"
+)
+_VALUES_RE = re.compile(
+    r"^values (?P<values>-?[0-9]+(?:, -?[0-9]+)*) if (?P<conditions>.+)$"
+)
 _CONDITION_RE = re.compile(
     r"(?P<avp>[A-Za-z0-9][A-Za-z0-9_-]*)"
     rf"(?: = (?P<value>{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
@@ -1089,6 +1096,8 @@ def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
     indentation."""
     if text == "text-only":
         return ast.TextOnly()
+    if text == "unique":
+        return ast.UniqueRule()
     with _validated(lineno):
         if match := _LENGTH_RE.match(text):
             if match["unit"] not in ast.LengthUnit:
@@ -1137,6 +1146,25 @@ def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
             return ast.BitsRule(
                 relation=ast.BitsRelation(match["relation"]),
                 bits=tuple(int(each) for each in match["bits"].split()),
+            )
+        if match := _MEMBERS_RE.match(text):
+            relations = (ast.BitsRelation.AT_LEAST_ONE, ast.BitsRelation.ONLY)
+            if match["relation"] not in relations:
+                known = ", ".join(each.value for each in relations)
+                raise DadParseError(
+                    lineno,
+                    f"unknown relation {match['relation']!r} (expected one of {known})",
+                )
+            return ast.MembersRule(
+                relation=ast.BitsRelation.ONLY
+                if match["relation"] == ast.BitsRelation.ONLY
+                else ast.BitsRelation.AT_LEAST_ONE,
+                members=tuple(match["members"].split()),
+            )
+        if match := _VALUES_RE.match(text):
+            return ast.ValuesRule(
+                values=tuple(int(value) for value in match["values"].split(", ")),
+                conditions=_conditions(match["conditions"], lineno),
             )
         if (match := _PREDICATE_RE.match(text)) and match["kind"] in ast.PredicateKind:
             return ast.PredicateRule(

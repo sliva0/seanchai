@@ -144,8 +144,13 @@ class Rule(_Model):
     `document`, `clause` and `element` name. `present-if`, `absent-if`,
     `requires` and `excludes`: `conditions`, alternatives. `default`: `value`,
     a number or a name its values give, what the AVP is read as when absent.
-    `bits`: `relation` (`at-most-one`, `at-least-one`) of the AVP's own
-    `bits`, by number. `text-only`: no field; a checker reports it unknown."""
+    `bits`: `relation` (`at-most-one`, `at-least-one`, `set`, `clear`,
+    `only`) of the AVP's own `bits`, by number. `members`: `relation`
+    (`at-least-one`, `only`) of the grouped AVP's `members`, by name.
+    `unique`: no field; no two of the `within` grouped AVPs in one body hold
+    the AVP with the same value. `values`: when one of `conditions` holds,
+    the value is one of `values`. `text-only`: no field; a checker reports
+    it unknown."""
 
     kind: Literal[
         "length",
@@ -158,6 +163,9 @@ class Rule(_Model):
         "excludes",
         "default",
         "bits",
+        "members",
+        "unique",
+        "values",
         "text-only",
     ]
     unit: ast.LengthUnit | None
@@ -172,6 +180,7 @@ class Rule(_Model):
     value: int | str | None
     relation: ast.BitsRelation | None
     bits: tuple[int, ...]
+    members: tuple[str, ...]
 
 
 class Reading(_Model):
@@ -807,6 +816,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
         "value": None,
         "relation": None,
         "bits": (),
+        "members": (),
     }
     match rule:
         case ast.LengthRule():
@@ -831,7 +841,15 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
             fields["value"] = rule.value
         case ast.BitsRule():
             fields |= {"relation": rule.relation, "bits": rule.bits}
-        case ast.TextOnly():
+        case ast.MembersRule():
+            fields |= {"relation": rule.relation, "members": rule.members}
+        case ast.ValuesRule():
+            fields["values"] = rule.values
+            fields["conditions"] = tuple(
+                Condition(avp=each.avp, value=each.value, bit=each.bit)
+                for each in rule.conditions
+            )
+        case ast.UniqueRule() | ast.TextOnly():
             pass
     return Rule.model_validate(fields)
 

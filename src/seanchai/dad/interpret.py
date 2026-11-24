@@ -47,6 +47,9 @@ __all__ = [
     "bit",
     "bits_at_least_one",
     "bits_at_most_one",
+    "bits_clear",
+    "bits_only",
+    "bits_set",
     "characters",
     "check_quotes",
     "default",
@@ -56,6 +59,8 @@ __all__ = [
     "equals",
     "exclude",
     "excludes",
+    "members_at_least_one",
+    "members_only",
     "octets",
     "paged",
     "present",
@@ -64,6 +69,8 @@ __all__ = [
     "reading",
     "requires",
     "text_only",
+    "unique",
+    "values_if",
     "with_origin",
 ]
 
@@ -189,6 +196,51 @@ def bits_at_most_one(*bits: int) -> ast.BitsRule:
 def bits_at_least_one(*bits: int) -> ast.BitsRule:
     """`bits at-least-one B B ...`: of these bits, at least one is set."""
     return ast.BitsRule(relation=ast.BitsRelation.AT_LEAST_ONE, bits=bits)
+
+
+def bits_set(*bits: int) -> ast.BitsRule:
+    """`bits set B ...`: each of these bits is set."""
+    return ast.BitsRule(relation=ast.BitsRelation.SET, bits=bits)
+
+
+def bits_clear(*bits: int) -> ast.BitsRule:
+    """`bits clear B ...`: each of these bits is clear."""
+    return ast.BitsRule(relation=ast.BitsRelation.CLEAR, bits=bits)
+
+
+def bits_only(*bits: int) -> ast.BitsRule:
+    """`bits only B ...`: no bit but these is set."""
+    return ast.BitsRule(relation=ast.BitsRelation.ONLY, bits=bits)
+
+
+def members_at_least_one(*members: str) -> ast.MembersRule:
+    """`members at-least-one M ...`: of these members of the grouped AVP, at
+    least one is present; one name alone is a member that must be."""
+    return ast.MembersRule(relation=ast.BitsRelation.AT_LEAST_ONE, members=members)
+
+
+def members_only(*members: str) -> ast.MembersRule:
+    """`members only M ...`: the grouped AVP holds no member but these."""
+    return ast.MembersRule(relation=ast.BitsRelation.ONLY, members=members)
+
+
+def unique() -> ast.UniqueRule:
+    """`unique`: no two of the `within` grouped AVPs beside each other hold
+    the AVP with the same value."""
+    return ast.UniqueRule()
+
+
+def values_if(
+    values: int | Sequence[int], *conditions: ast.Condition | str
+) -> ast.ValuesRule:
+    """`values V, ... if C [or C ...]`: when a condition holds, the AVP's
+    value is one of `values`; a bare name is `present(name)`."""
+    return ast.ValuesRule(
+        values=(values,) if isinstance(values, int) else tuple(values),
+        conditions=tuple(
+            present(each) if isinstance(each, str) else each for each in conditions
+        ),
+    )
 
 
 def text_only() -> ast.TextOnly:

@@ -17,6 +17,9 @@ from seanchai.dad.ast import Codec, DataType
 from seanchai.dad.interpret import (
     bits_at_least_one,
     bits_at_most_one,
+    bits_clear,
+    bits_only,
+    bits_set,
     characters,
     default,
     digits,
@@ -278,8 +281,107 @@ def _u32(value: int) -> bytes:
             False,
             id="no-bit",
         ),
+        pytest.param(bits_set(1), _u32(2), DataType.UNSIGNED32, None, True, id="set"),
+        pytest.param(
+            bits_set(0, 1), _u32(2), DataType.UNSIGNED32, None, False, id="unset"
+        ),
+        pytest.param(
+            bits_clear(0), _u32(2), DataType.UNSIGNED32, None, True, id="clear"
+        ),
+        pytest.param(
+            bits_clear(0), _u32(3), DataType.UNSIGNED32, None, False, id="not-clear"
+        ),
+        pytest.param(
+            bits_only(9), _u32(1 << 9), DataType.UNSIGNED32, None, True, id="only"
+        ),
+        pytest.param(
+            bits_only(9),
+            _u32(1 << 9 | 1),
+            DataType.UNSIGNED32,
+            None,
+            False,
+            id="not-only",
+        ),
+        # An OctetString's octets as one big-endian number: TS 29.272 clause
+        # 7.3.216's octet, its 4 most significant bits 0.
+        pytest.param(
+            bits_clear(4, 5, 6, 7),
+            b"\x05",
+            DataType.OCTET_STRING,
+            None,
+            True,
+            id="octet-clear",
+        ),
+        pytest.param(
+            bits_clear(4, 5, 6, 7),
+            b"\x15",
+            DataType.OCTET_STRING,
+            None,
+            False,
+            id="octet-not-clear",
+        ),
+        pytest.param(
+            bits_set(8), b"\x01\x00", DataType.OCTET_STRING, None, True, id="octets"
+        ),
+        pytest.param(
+            bits_clear(0), b"", DataType.UTF8_STRING, None, None, id="bits-of-text"
+        ),
         pytest.param(default(0), b"", DataType.UNSIGNED32, None, None, id="default"),
     ],
 )
 def test_each_value_rule_holds_or_breaks(rule, payload, data_type, codec, holds):
     assert constraints.check(rule, payload, data_type, codec).holds is holds
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_plugin_reads_bits_as_python_does(lua, tmp_path):
+    cases = [
+        (rule, payload, data_type)
+        for relation in ast.BitsRelation
+        for bits in ((0, 1), (4, 5, 6, 7), (9,), (8,))
+        if len(bits) > 1 or relation not in ("at-most-one", "at-least-one")
+        for rule in [ast.BitsRule(relation=relation, bits=bits)]
+        for payload, data_type in (
+            (_u32(0), DataType.UNSIGNED32),
+            (_u32(3), DataType.UNSIGNED32),
+            (_u32(1 << 9), DataType.UNSIGNED32),
+            (_u32(1 << 9 | 1 << 31), DataType.UNSIGNED32),
+            (b"\x05", DataType.OCTET_STRING),
+            (b"\xf0", DataType.OCTET_STRING),
+            (b"\x01\x00", DataType.OCTET_STRING),
+            (b"\x02\x00", DataType.OCTET_STRING),
+        )
+    ]
+    script = (
+        f"local core = dofile({json.dumps(str(CORE))})\n"
+        "local function unhex(text)\n"
+        "  return (text:gsub('..', function(pair)\n"
+        "    return string.char(tonumber(pair, 16)) end))\n"
+        "end\n"
+        "for index = 1, #arg, 4 do\n"
+        "  local bits = {}\n"
+        "  for each in arg[index + 1]:gmatch('%d+') do\n"
+        "    bits[#bits + 1] = tonumber(each)\n"
+        "  end\n"
+        "  local rule = { r = arg[index], b = bits }\n"
+        "  print(core.bits_problem(rule, arg[index + 2], unhex(arg[index + 3]))"
+        " and 'no' or 'ok')\n"
+        "end\n"
+    )
+    arguments = [
+        part
+        for rule, payload, data_type in cases
+        for part in (
+            rule.relation.value,
+            ",".join(map(str, rule.bits)),
+            data_type.value,
+            payload.hex(),
+        )
+    ]
+    done = _run(lua, tmp_path, script, arguments)
+
+    assert done.stdout.splitlines() == [
+        "ok" if constraints.check(rule, payload, data_type).holds else "no"
+        for rule, payload, data_type in cases
+    ]

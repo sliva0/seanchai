@@ -595,7 +595,7 @@ reading       = 1*(quote-line NL) 1*(rule-line NL)
 quote-line    = DQUOTE 1*(name-char / SP) DQUOTE   ; as inline-text, escaped
 rule-line     = 4SP rule
 rule          = length / range / exclude / encoding / predicate / default
-              / bits / "text-only"
+              / bits / members / "unique" / values / "text-only"
 length        = "length " bounds SP ("octets" / "digits" / "characters")
 range         = "range " bounds
 exclude       = "exclude " integer *(", " integer)
@@ -614,6 +614,10 @@ condition     = avp-name [" = " value-ref / " bit " value-ref]
 value-ref     = integer / enum-name
 default       = "default " value-ref
 bits          = "bits " ("at-most-one" / "at-least-one") 2*(SP 1*DIGIT)
+              / "bits " ("set" / "clear" / "only") 1*(SP 1*DIGIT)
+members       = "members " ("at-least-one" / "only") 1*(SP avp-name)
+values        = "values " integer *(", " integer) " if " condition
+                *(" or " condition)
 ```
 
 What a clause states in prose about one AVP's value or presence, as a person
@@ -671,7 +675,15 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   it, or a bit, by number or by its bit table's name.
 - `default` is what the AVP is read as when absent, a number or a name its
   values give. `bits` is a rule on the AVP's own bits, numbered as its bit
-  table numbers them: at most one of them set, or at least one.
+  table numbers them, bit 0 the least significant, an OctetString's octets
+  read as one big-endian number: at most one of them set, at least one,
+  each set, each clear, or none but them set.
+- `members` is a rule on the members a grouped AVP holds: at least one of
+  them present (one name: it is present), or none but them.
+- `unique` says no two of the grouped AVPs `; Within:` names, in one body,
+  hold the AVP with the same value; it needs `; Within:`.
+- `values` restricts the AVP's integer value to those listed when one of
+  the conditions holds, conditions as a predicate's.
 - `text-only` is a rule the quote states that no kind expresses: one
   depending on an earlier message, a feature, the node or the subscriber,
   or on more than the kinds can say. It is a reading's only rule.
@@ -706,7 +718,9 @@ Checked by the AST after parsing:
 - An Interpreted Constraints block's bounds are ordered and an `exclude`
   names a value once; `; Application-ID:` needs `; Command:`, which excludes
   `; Within:`; a condition tests a value or a bit, not both; only `element`
-  takes a document, and it needs one; a `bits` rule names a bit once.
+  takes a document, and it needs one; a `bits` rule names a bit once, and
+  two or more for `at-most-one` and `at-least-one`; a `members` rule names a
+  member once, a `values` rule a value once; `unique` needs `; Within:`.
 - Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
   value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
   and at least 1.

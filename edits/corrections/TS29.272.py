@@ -23,18 +23,26 @@ from seanchai.dad.interpret import (
     bit,
     bits_at_least_one,
     bits_at_most_one,
+    bits_clear,
+    bits_only,
+    bits_set,
     default,
     digits,
     element,
     encoding,
     equals,
     exclude,
+    excludes,
+    members_at_least_one,
+    members_only,
     octets,
     present_if,
     range_of,
     reading,
     requires,
     text_only,
+    unique,
+    values_if,
 )
 
 # The VCSG command headers print "< Diameter Header: 8388638, REQ, PXY, >" with
@@ -712,16 +720,40 @@ CORRECTIONS += [
         section="7.3.25",
         table="7.3.25/1",
         readings=(
+            # Bit 3 carries "(Note 1)" and bit 6 "(Note 2)": "this bit".
+            reading(
+                "Note 1: If the Complete APN Configuration Profile Withdrawal"
+                " bit is set, this bit should not be set.",
+                bits_at_most_one(1, 3),
+            ),
+            reading(
+                "Note 2: If the Complete PDP context list Withdrawal bit is set,"
+                " this bit should not be set.",
+                bits_at_most_one(5, 6),
+            ),
             reading(
                 "Note 4: Bits 3 and 6 are excluding alternatives and shall not"
                 " both be set.",
                 bits_at_most_one(3, 6),
             ),
+        ),
+        versions="18.7.0..19.6.0",
+    ),
+    # S7a/S7d is application 16777308 (clause 7.2.2), whose DSR carries the
+    # flags.
+    Interpret(
+        id="dsr-flags-s7a-bits",
+        avp="DSR-Flags",
+        command="Delete-Subscriber-Data-Request",
+        application_id=16777308,
+        section="7.3.25",
+        table="7.3.25/1",
+        readings=(
             reading(
                 "Note 5: When this AVP is transferred over the S7a/S7d"
                 " interface, only the bit 9 (CSG Deleted) is meaningful, other"
                 " bits shall be cleared.",
-                text_only(),
+                bits_only(9),
             ),
         ),
         versions="18.7.0..19.6.0",
@@ -813,7 +845,7 @@ CORRECTIONS += [
                 "Furthermore, the Context-Identifier in the APN-Configuration"
                 " AVP shall uniquely identify the EPS APN configuration per"
                 " subscription.",
-                text_only(),
+                unique(),
             ),
             reading(
                 "NOTE: If interworking with MAP is needed, the"
@@ -833,7 +865,7 @@ CORRECTIONS += [
                 "For a particular EPS user having multiple APN configurations,"
                 " the Service-Selection AVP values shall be unique across"
                 " APN-Configuration AVPs.",
-                text_only(),
+                unique(),
             ),
         ),
         versions="18.7.0..19.6.0",
@@ -1421,9 +1453,11 @@ CORRECTIONS += [
         avp="User-State",
         section="7.3.114",
         readings=(
+            # The sentence follows RESERVED (5). Only the MME or SGSN sends a
+            # User-State in this document (EPS-User-State in IDA).
             reading(
                 "This value should not be used by MME or SGSN over S6a/S6d.",
-                text_only(),
+                exclude(5),
             ),
         ),
         versions="18.7.0..19.6.0",
@@ -1595,9 +1629,12 @@ CORRECTIONS += [
         ),
         versions="18.7.0..19.6.0",
     ),
+    # Including the AVP in ULR is what requests a change: its absence requests
+    # none (the next sentence, Release 19).
     Interpret(
         id="sms-register-request-skip-subscriber-data",
         avp="SMS-Register-Request",
+        command="Update-Location-Request",
         section="7.3.162",
         readings=(
             reading(
@@ -1605,8 +1642,16 @@ CORRECTIONS += [
                 " in order to modify its registration status for SMS, the"
                 ' MME/SGSN shall not set the "Skip Subscriber Data" flag within'
                 " the ULR-Flags AVP.",
-                text_only(),
+                excludes(bit("ULR-Flags", "Skip Subscriber Data")),
             ),
+        ),
+        versions="18.7.0..19.6.0",
+    ),
+    Interpret(
+        id="sms-register-request-absence",
+        avp="SMS-Register-Request",
+        section="7.3.162",
+        readings=(
             reading(
                 "Absence of this AVP in the Update Location Request message"
                 " shall be interpreted as if the MME or SGSN does not request to"
@@ -1750,9 +1795,12 @@ CORRECTIONS += [
         ),
         versions="18.7.0..19.6.0",
     ),
+    # Subscription-Data is the one body holding the AVP in this document, and
+    # scopes the rule apart from the Release 19 block below.
     Interpret(
         id="aese-communication-pattern-reference-ids",
         avp="AESE-Communication-Pattern",
+        within="Subscription-Data",
         section="7.3.193",
         readings=(
             reading(
@@ -1760,8 +1808,21 @@ CORRECTIONS += [
                 " SCEF-Reference-ID-Ext) or a reference ID for deletion (either"
                 " in SCEF-Reference-ID-for-Deletion or in"
                 " SCEF-Reference-ID-for-Deletion-Ext) shall be present.",
-                text_only(),
+                members_at_least_one(
+                    "SCEF-Reference-ID",
+                    "SCEF-Reference-ID-Ext",
+                    "SCEF-Reference-ID-for-Deletion",
+                    "SCEF-Reference-ID-for-Deletion-Ext",
+                ),
             ),
+        ),
+        versions="18.7.0..19.6.0",
+    ),
+    Interpret(
+        id="aese-communication-pattern-extended-ids",
+        avp="AESE-Communication-Pattern",
+        section="7.3.193",
+        readings=(
             reading(
                 'When the "Extended Reference IDs" feature is supported and used'
                 " by the HSS and supported by the MME/SGSN, the"
@@ -1789,16 +1850,18 @@ CORRECTIONS += [
         ),
         versions="19.6.0",
     ),
+    # The document carries the AVP over S6a/S6d only, in Subscription-Data,
+    # which scopes the rule apart from the Release 19 block above.
     Interpret(
         id="monitoring-event-configuration-scef-realm",
-        avp="SCEF-Realm",
-        within="Monitoring-Event-Configuration",
+        avp="Monitoring-Event-Configuration",
+        within="Subscription-Data",
         section="7.3.195",
         readings=(
             reading(
                 "When the Monitoring-Event-Configuration AVP is used over the"
                 " S6a/S6d interfaces, the SCEF-Realm AVP shall be present",
-                text_only(),
+                members_at_least_one("SCEF-Realm"),
             ),
         ),
         versions="18.7.0..19.6.0",
@@ -1849,7 +1912,7 @@ CORRECTIONS += [
                 "For S6a/S6d interface, when the Monitoring-Type AVP takes the"
                 " value UE_REACHABILITY (1), the Reachability-Information AVP"
                 " shall take the value REACHABLE_FOR_DATA (1)",
-                text_only(),
+                values_if(1, equals("Monitoring-Type", 1)),
             ),
         ),
         versions="18.7.0..19.6.0",
@@ -1897,7 +1960,8 @@ CORRECTIONS += [
                 "For S6a/S6d interface, the Reachability-Type AVP shall have bit"
                 ' 0 ("Reachability for SMS") cleared, and it shall have bit 1'
                 ' ("Reachability for Data") set.',
-                text_only(),
+                bits_clear(0),
+                bits_set(1),
             ),
         ),
         versions="18.7.0..19.6.0",
@@ -1972,18 +2036,19 @@ CORRECTIONS += [
                 reading(
                     f"the 4 {zeroed} significant bits of the octet in this AVP"
                     " shall be set to 0.",
-                    text_only(),
+                    bits_clear(*cleared),
                 ),
             ),
             versions="18.7.0..19.6.0",
         )
-        for avp, section, field, zeroed in (
-            ("eDRX-Cycle-Length-Value", "7.3.216", "eDRX value", "most"),
+        for avp, section, field, zeroed, cleared in (
+            ("eDRX-Cycle-Length-Value", "7.3.216", "eDRX value", "most", (4, 5, 6, 7)),
             (
                 "Paging-Time-Window-Length",
                 "7.3.228",
                 "Paging Time Window length",
                 "least",
+                (0, 1, 2, 3),
             ),
         )
     ),
@@ -2448,7 +2513,7 @@ CORRECTIONS += [
             reading(
                 "Within this Information Element, only the IMEI and the"
                 " Software-Version AVPs shall be used on the S6a/S6d interface.",
-                text_only(),
+                members_only("IMEI", "Software-Version"),
             ),
         ),
         versions="18.7.0..19.6.0",
