@@ -313,7 +313,9 @@ class Element:
     (`document`, `clause` and `name`, None where the rule names none), with
     `title`, what it is, the `sources` its layout was read from, the
     `checks` made of a payload, how deep they go (`depth`) and what they
-    leave unchecked and why (`unchecked`). `example` is a payload laid out
+    leave unchecked and why (`unchecked`). `valid` is, for an entry with no
+    checks because every value is one the document defines, what says so in
+    their place. `example` is a payload laid out
     as the element, for test messages; an integer element has none, its
     payload being its AVP's type."""
 
@@ -326,6 +328,7 @@ class Element:
     depth: Depth
     unchecked: str | None = None
     example: bytes | None = None
+    valid: str | None = None
 
     @property
     def key(self) -> tuple[str, str | None, str | None]:
@@ -343,7 +346,7 @@ class Element:
     def said(self) -> str:
         """The checks in words, or what is said in their place."""
         if not self.checks:
-            return "nothing checked"
+            return self.valid or "nothing checked"
         return "; ".join(shape.said() for shape in self.checks)
 
     @property
@@ -1369,9 +1372,10 @@ REGISTRY: tuple[Element, ...] = (
         ),
         (),
         Depth.FULL,
-        "every 4-bit value is received, those undefined read as 0000, so"
-        " nothing is refused; the octet carrying the field is TS 29.272's"
-        " own length and bits rules",
+        "the octet carrying the field is held to TS 29.272's own length and bits"
+        " rules instead",
+        valid="every 4-bit value is valid, an undefined one read as 0000;"
+        " nothing to refuse",
     ),
     Element(
         "TS24.008",
@@ -1388,8 +1392,9 @@ REGISTRY: tuple[Element, ...] = (
         ),
         (),
         Depth.FULL,
-        "every 4-bit value is defined, so nothing is refused; the octet"
-        " carrying the field is TS 29.272's own length and bits rules",
+        "the octet carrying the field is held to TS 29.272's own length and bits"
+        " rules instead",
+        valid="every 4-bit value is defined; nothing to refuse",
     ),
     Element(
         "TS23.501",

@@ -177,7 +177,9 @@ read: where an element differs between the releases (a trace bitmap of TS
 32.422 with fewer octets), a Release 18 sender draws a note it does not
 deserve. Each says how deep its check goes, its `depth`:
 
-- `full`: everything the document lets a sender get wrong is checked;
+- `full`: everything the document lets a sender get wrong is checked; an
+  entry whose every value is defined checks nothing and says so (TS 24.008's
+  4-bit eDRX fields);
 - `partial`: some of it, the entry saying what is not and why;
 - `length`: the octet count alone;
 - `none`: nothing, the entry saying why.
@@ -245,8 +247,8 @@ something:
 | Event-Threshold-Event-1I | TS 32.422 5.10.14 Event Threshold for Event 1i | TS 32.422 V19.7.0 5.10.14 | an integer -120 to -25 | full |  |
 | SGs-MME-Identity | TS 23.003 19.4.2.4 MME node FQDN | TS 23.003 V19.8.0 19.4.2.4; TS 23.003 V19.8.0 19.2 | mmec<MMEC>.mmegi<MMEGI>.mme.epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org (MMEC 2 hexadecimal digits, MMEGI 4 hexadecimal digits, MNC 3 digits, MCC 3 digits), in any case | full |  |
 | Coupled-Node-Diameter-ID | TS 23.003 19.4.2 MME or SGSN node FQDN | TS 23.003 V19.8.0 19.4.2.4; TS 23.003 V19.8.0 19.4.2.6; TS 23.003 V19.8.0 19.2 | mmec<MMEC>.mmegi<MMEGI>.mme.epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org or nri-sgsn<NRI>.rac<RAC>.lac<LAC>.rac.epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org (MMEC 2 hexadecimal digits, MMEGI 4 hexadecimal digits, MNC 3 digits, MCC 3 digits, NRI 4 hexadecimal digits, RAC 4 hexadecimal digits, LAC 4 hexadecimal digits), in any case | full |  |
-| eDRX-Cycle-Length-Value | TS 24.008 10.5.5.32 eDRX value | TS 24.008 V19.5.0 10.5.5.32 | nothing | full | every 4-bit value is received, those undefined read as 0000, so nothing is refused; the octet carrying the field is TS 29.272's own length and bits rules |
-| Paging-Time-Window-Length | TS 24.008 10.5.5.32 Paging Time Window | TS 24.008 V19.5.0 10.5.5.32 | nothing | full | every 4-bit value is defined, so nothing is refused; the octet carrying the field is TS 29.272's own length and bits rules |
+| eDRX-Cycle-Length-Value | TS 24.008 10.5.5.32 eDRX value | TS 24.008 V19.5.0 10.5.5.32 | every 4-bit value is valid, an undefined one read as 0000; nothing to refuse | full | the octet carrying the field is held to TS 29.272's own length and bits rules instead |
+| Paging-Time-Window-Length | TS 24.008 10.5.5.32 Paging Time Window | TS 24.008 V19.5.0 10.5.5.32 | every 4-bit value is defined; nothing to refuse | full | the octet carrying the field is held to TS 29.272's own length and bits rules instead |
 | 5QI | TS 23.501 5QI | TS 23.501 V19.9.0 5.7.2.1 | nothing | none | the document gives no range: beside the standardized values a 5QI may be a pre-configured or dynamically assigned one |
 | Event-Threshold-SINR | TS 32.422 5.10.7 Event Threshold for Event A2 | TS 32.422 V19.7.0 5.10.7 | an integer 0 to 127 | partial | an LTE threshold's narrower range (RSRP 0-97, RSRQ 0-34) is not checked: the AVP does not say which RAT it is for |
 | Collection-Period-M7-NR | TS 32.422 5.10.35 Collection Period M7 in NR | TS 32.422 V19.7.0 5.10.35 | an integer 1 to 60 | full |  |

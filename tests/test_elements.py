@@ -58,9 +58,13 @@ def test_every_entry_cites_what_it_read_and_says_what_it_leaves():
     for entry in elements.REGISTRY:
         assert entry.sources, entry.cited()
         assert all(source.edition and source.where for source in entry.sources)
-        # An entry checking less than the whole layout says why.
-        if entry.depth is not elements.Depth.FULL or not entry.checks:
+        # An entry checking less than the whole layout says why; one checking
+        # nothing in full says every value is valid, and only such a one.
+        if entry.depth is not elements.Depth.FULL:
             assert entry.unchecked, entry.cited()
+        assert (entry.valid is not None) == (
+            entry.depth is elements.Depth.FULL and not entry.checks
+        ), entry.cited()
 
 
 def _type_of(entry: elements.Element) -> DataType:
