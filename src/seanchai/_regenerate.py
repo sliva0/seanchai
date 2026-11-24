@@ -288,6 +288,11 @@ def _run(
     for outcome in outcomes:
         if outcome.status in ("unchanged", "changed", "new"):
             rebuilt.setdefault(outcome.reference, []).extend(outcome.unclaimed)
+    # A document one of whose copies was not rebuilt (a `.doc` left
+    # unconverted) keeps its entries: its tables are not all read.
+    for outcome in outcomes:
+        if outcome.status == "not-converted":
+            rebuilt.pop(outcome.reference, None)
     if baseline is not None:
         for reference, found in rebuilt.items():
             if stale := baseline.compare(reference, found)[1]:

@@ -165,8 +165,10 @@ prints, as `unclaimed:`, each table no reading
 claims that resembles a definition and `edits/unclaimed.json` does not list,
 and fails the document. Look each over: a new shape the extractor should
 read, or prose in a grid. `--acknowledge-unclaimed` lists them, and drops
-what the documents rebuilt no longer print
-([extractor.md](extractor.md#unclaimed-tables)).
+what the documents rebuilt no longer print; write each new entry's `reason`
+in the file, which acknowledging again keeps
+([extractor.md](extractor.md#unclaimed-tables)). A document with a copy
+left unconverted keeps its entries, since not all its tables were read.
 
 A run writes all or nothing. It builds every document, removes replaced
 pairs, writes `corrections.json` and, with `--expand-ranges`, rewrites the
@@ -249,7 +251,7 @@ new version appears as `replaced` on the next `regenerate`. Commit
 6. Run `uv run seanchai corpus regenerate --expand-ranges` to widen the
    version ranges of every declaration that applied cleanly.
 7. Look over each `unclaimed:` table the new version prints, then run with
-   `--acknowledge-unclaimed`.
+   `--acknowledge-unclaimed` and write each new entry's `reason`.
 
 If the extractor changed since the old raw file was committed, re-extract the
 old version with the current code before diffing:

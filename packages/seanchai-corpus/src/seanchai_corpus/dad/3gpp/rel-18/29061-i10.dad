@@ -771,15 +771,6 @@ TWAN-Identifier                    29     16.4.7    OctetString   V      P     -
 3GPP-UE-Source-Port                33     16.4.7    OctetString   V      P     -       M       Yes       Sgi
 
 
-; Type: Reused AVPs
-; Section: 16a.7
-; Table: 9b
-; Page: 132
-; Columns: Name         From
-External-Identifier     TS29.336
-Delegated-IPv6-Prefix   RFC4818 ;; inserted: (TS29.061.py#reused-delegated-ipv6-prefix)
-
-
 ; Type: AVP Table
 ; Section: 17.7.0
 ; Table: 10
@@ -817,14 +808,6 @@ CN-IP-Multicast-Distribution        921    17.7.24   Enumerated    M,V    P     
 MBMS-HC-Indicator                   922    17.7.25   Enumerated    M,V    P     -       -       Yes
 
 
-; Type: Reused AVPs
-; Section: 17.7a
-; Table: 17.7a.1
-; Page: 154
-; Columns: Name    From
-MBMS-GW-UDP-Port   TS29.061
-
-
 ; Type: AVP Table
 ; Section: 20.5a
 ; Table: 20.5a.1
@@ -842,6 +825,35 @@ MBMS-Flags                   931    20.5a.9    Unsigned32    V      P     -     
 Restart-Counter              932    20.5a.10   Unsigned32    V      P     -       M       Yes       "MBMS Heartbeat"
 Diagnostic-Info              933    20.5a.11   Unsigned32    V      P     -       M       Yes       ""
 MBMS-Cell-List               934    20.5a.12   OctetString   V      P     -       M       Yes       "MBMS Cell List"
+
+
+; Type: Reused AVPs
+; Section: 16a.7
+; Table: 9b
+; Page: 132
+; Columns: Name         From
+External-Identifier     TS29.336
+Delegated-IPv6-Prefix   RFC4818 ;; inserted: (TS29.061.py#reused-delegated-ipv6-prefix)
+
+
+; Type: Reused AVPs
+; Section: 17.7.0
+; Table: 11
+; Page: 148
+; Columns: Name       From
+Called-Station-Id     RFC7155
+Calling-Station-Id    RFC7155
+Framed-Interface-Id   RFC7155
+Framed-IP-Address     RFC7155
+Framed-IPv6-Prefix    RFC7155
+
+
+; Type: Reused AVPs
+; Section: 17.7a
+; Table: 17.7a.1
+; Page: 154
+; Columns: Name    From
+MBMS-GW-UDP-Port   TS29.061
 
 
 ; Type: Reused AVPs

@@ -253,9 +253,13 @@ def _collect(
                 )
                 if vendor.rows:
                     collected.vendor_reused.append(vendor)
-            elif "Attribute Name" in header and "Reference" in header:
+            elif ("Attribute Name" in header and "Reference" in header) or header == [
+                "AVP Name",
+                "Reference",
+            ]:
                 # Keyed on Reference rather than on M-bit: TS 29.128, 29.173
-                # and 29.336 print a re-used table with no M-bit column at all.
+                # and 29.336 print a re-used table with no M-bit column at all,
+                # and TS 29.061 table 11, Gmb's, heads its names "AVP Name".
                 table.claimed = True
                 if table.caption is None:
                     raise ExtractionError("re-used AVPs table without a caption")

@@ -725,18 +725,25 @@ of a listed one the document no longer prints. `--acknowledge-unclaimed`
 rewrites the baseline's entries for the documents rebuilt instead, a table
 the document's copies in several releases print listed once. The test
 is a resemblance, not a reading: a candidate is often prose in a grid (TS
-29.212's QCI mapping, oneM2M TS-0004's resource attributes), and the
-baseline says only that someone looked.
+29.212's QCI mapping, oneM2M TS-0004's resource attributes).
 
-What the baseline lists that holds definitions the corpus does not read:
+Each entry carries a `reason`, one line saying why it stays unread, which a
+maintainer writes and acknowledging again keeps; an entry `--acknowledge-
+unclaimed` adds has none, and `tests/test_unclaimed.py` fails until one is
+written, so every table the baseline lists is there on purpose. The 151 it
+lists hold, by reason:
 
-| Tables | Documents |
-|---|---|
-| Command-Code values (name, abbreviation, code, clause) | most 3GPP documents and RFCs; the ABNF gives the same codes |
-| the abstract operations' elements, "Information Element \| Category \| Description", mapped to no AVP | TS 32.299 clause 5 |
-| Gmb's re-used AVPs, "AVP Name \| Reference" | TS 29.061 table 11 |
-| RADIUS attributes per message | TS 29.061, 29.561, RFC 4590 |
-| IANA's AVP, command and value registrations | RFC 4005, 4740, 5866, 8506 |
+| Tables | Documents | Why unread |
+|---|---|---|
+| Command-Code values (name, abbreviation, code, clause) | 24 3GPP documents and 11 RFCs | an index: the ABNF, which is read, gives the same codes |
+| messages and the commands they map to, with their sender (`Cx message`, `Command-Name \| Source \| Destination`) | TS 29.228, 29.328, 32.299 | the commands' own clauses define them |
+| application ids and the release first applying them | TS 29.229, 29.329 | the headers and the registry state the id |
+| RADIUS attributes per RADIUS message | TS 29.061, 29.561, RFC 4590 | no Diameter definition; the attributes read as AVPs are tabulated elsewhere |
+| IANA's registrations | RFC 4740, 5866, 8506 | they repeat the defining clauses' codes and values |
+| the abstract operations' elements, mapped to no AVP | TS 32.299 clause 5 | clause 6's message tables give the commands' AVPs |
+| mappings between values: QCIs to R99 QoS, access types to IANA's, result codes to NAS causes | TS 29.212, 29.272 | no AVP's own values |
+| Originating-Line-Info's two-digit codes | RFC 4005 | an OctetString's text, no numeric AVP's values |
+| resource attributes, parameter settings, a resource-to-AVP mapping | oneM2M TS-0004 (72) | no Diameter definition; annex A is read |
 
 ## Strictness
 

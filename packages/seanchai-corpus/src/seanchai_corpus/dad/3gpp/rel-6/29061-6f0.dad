@@ -222,6 +222,18 @@ MBMS-Counting-Information           914    17.7.17   Enumerated    M,V    P     
 3GPP-GPRS-Negotiated-QoS-Profile    5      16.4.7    -             -      -     -       -       - ;; inserted: from clause 16.4.7 (TS29.061.py#3gpp-gprs-negotiated-qos-profile-row)
 
 
+; Type: Reused AVPs
+; Section: 17.7
+; Table: 11
+; Page: 87
+; Columns: Name       From
+Called-Station-Id     RFC4005
+Calling-Station-Id    RFC4005
+Framed-Interface-Id   RFC4005
+Framed-IP-Address     RFC4005
+Framed-IPv6-Prefix    RFC4005
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-StartStop-Indication
 ; Section: 17.7.5

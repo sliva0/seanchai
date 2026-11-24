@@ -1,6 +1,8 @@
 """What the extractors report as unclaimed: the resemblance test and the
 baseline it is held to (`extractor.unclaimed`)."""
 
+from pathlib import Path
+
 import pytest
 
 from seanchai.extractor.unclaimed import Baseline, Candidate, classify
@@ -68,3 +70,27 @@ def test_a_table_two_copies_print_is_listed_once():
     assert Baseline({}).updated({"TS29.061": [old, other]}).documents == {
         "TS29.061": (other,)
     }
+
+
+def test_a_reason_is_kept_as_a_table_is_acknowledged_again():
+    old = Candidate("7.2.2", "commands", "Table 7.2.2/1", ("Code",), 98, "an index")
+    moved = Candidate("7.2.2", "commands", "Table 7.2.2/1", ("Code",), 99)
+    new = Candidate("7.2.3", "commands", "Table 7.2.3/1", ("Code",), 99)
+    baseline = Baseline({"TS29.272": (old,)})
+
+    updated = baseline.updated({"TS29.272": [moved, new]}).documents["TS29.272"]
+    assert [(each.page, each.reason) for each in updated] == [
+        (99, "an index"),
+        (99, None),
+    ]
+
+
+def test_every_table_the_baseline_lists_says_why_it_stays_unread():
+    baseline = Baseline.load(Path(__file__).parent.parent / "edits" / "unclaimed.json")
+    unsaid = [
+        (reference, each.describe())
+        for reference, listed in baseline.documents.items()
+        for each in listed
+        if not each.reason
+    ]
+    assert unsaid == []

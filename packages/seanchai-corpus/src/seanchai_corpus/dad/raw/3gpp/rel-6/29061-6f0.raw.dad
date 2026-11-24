@@ -220,6 +220,18 @@ MBMS-Required-QoS                   913    17.7.16   UTF8String    M,V    P     
 MBMS-Counting-Information           914    17.7.17   Enumerated    M,V    P     -       -       Yes
 
 
+; Type: Reused AVPs
+; Section: 17.7
+; Table: 11
+; Page: 87
+; Columns: Name       From
+Called-Station-Id     RFC4005
+Calling-Station-Id    RFC4005
+Framed-Interface-Id   RFC4005
+Framed-IP-Address     RFC4005
+Framed-IPv6-Prefix    RFC4005
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-StartStop-Indication
 ; Section: 17.7.5

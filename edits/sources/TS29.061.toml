@@ -9,6 +9,14 @@ reason = """
     """
 
 [[quirk]]
+name = "independent-avp-tables"
+reason = """
+    Clauses 16a.5, 17.7 and 20.5 print three AVP tables and four re-used
+    tables: 17.7.0's table 10, Gmb's own AVPs, with table 11, the AVPs Gmb
+    re-uses, and 17.7a's table 17.7a.1 with no AVP table of its own.
+    """
+
+[[quirk]]
 name = "rfc-command-rules"
 reason = """
     the other intros print the abbreviation alone, 'The AAR command, defined in

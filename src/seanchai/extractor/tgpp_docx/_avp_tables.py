@@ -485,6 +485,8 @@ _REFER_RE = re.compile(r"refer ?\[(?P<number>\d+)\]")
 
 _REUSED_TABLE_COLUMNS = {
     "Attribute Name": ast.ReusedColumn.NAME,
+    # TS 29.061 table 11.
+    "AVP Name": ast.ReusedColumn.NAME,
     "Reference": ast.ReusedColumn.FROM,
     "M-bit": ast.ReusedColumn.M_BIT,
     # TS 29.172 table 7.4.1-2.

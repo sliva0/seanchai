@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 __all__ = ["Baseline", "Candidate", "classify", "with_pages"]
@@ -41,6 +41,9 @@ class Candidate:
     header: tuple[str, ...]
     # Where the clause starts in the PDF or the RFC; not part of its identity.
     page: int | None = None
+    # Why the baseline leaves it unread, a maintainer's line; not part of its
+    # identity, and kept as the candidate is acknowledged again.
+    reason: str | None = field(default=None, compare=False)
 
     @property
     def key(self) -> tuple[str, str, str | None, tuple[str, ...]]:
@@ -161,6 +164,7 @@ class Baseline:
                         caption=entry.get("caption"),
                         header=tuple(entry["header"]),
                         page=entry.get("page"),
+                        reason=entry.get("reason"),
                     )
                     for entry in entries
                 )
@@ -189,14 +193,21 @@ class Baseline:
         """This baseline with `documents`' lists in place of its own, each
         table once however many copies of the document print it: at the
         page the baseline gives it where a copy still starts its clause
-        there, else at the first page found."""
+        there, else at the first page found, with the reason the baseline
+        gives it, none for a table it did not list."""
         merged = dict(self.documents)
         for reference, found in documents.items():
             listed = set(self.documents.get(reference, ()))
+            reasons = {
+                candidate.key: candidate.reason
+                for candidate in self.documents.get(reference, ())
+            }
             chosen: dict[tuple, Candidate] = {}
             for candidate in sorted(set(found)):
                 if candidate.key not in chosen or candidate in listed:
-                    chosen[candidate.key] = candidate
+                    chosen[candidate.key] = replace(
+                        candidate, reason=reasons.get(candidate.key)
+                    )
             candidates = tuple(sorted(chosen.values()))
             if candidates:
                 merged[reference] = candidates
@@ -215,6 +226,7 @@ class Baseline:
                     "caption": candidate.caption,
                     "header": list(candidate.header),
                     "page": candidate.page,
+                    "reason": candidate.reason,
                 }
                 for candidate in sorted(candidates, key=_clause_key)
             ]
@@ -234,7 +246,9 @@ class Baseline:
 _NOTE = (
     "Written by `seanchai corpus regenerate --acknowledge-unclaimed`: the"
     " tables each document prints that resemble a definition and that no"
-    " reading claims, as looked over. See docs/extractor.md."
+    " reading claims, as looked over, each with the reason it stays unread,"
+    " which a maintainer writes and acknowledging keeps. See"
+    " docs/extractor.md."
 )
 
 
