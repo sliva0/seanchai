@@ -28,7 +28,7 @@ import tempfile
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from . import _correction_record, _ranges, linter
 from ._versions import RangeWarning, VersionRange
@@ -41,6 +41,9 @@ from .errors import SeanchaiError
 from .extractor import rfc_text, transcription
 from .extractor.errors import ExtractionError
 from .extractor.unclaimed import Baseline, Candidate, with_pages
+
+if TYPE_CHECKING:
+    from .diff import Diff
 
 Status = Literal[
     "unchanged", "changed", "new", "failed", "not-in-manifest", "not-converted"
@@ -67,6 +70,9 @@ class Outcome:
     # (`extractor.unclaimed`), and of them those the baseline does not list.
     unclaimed: list[Candidate] = field(default_factory=list)
     new_unclaimed: list[Candidate] = field(default_factory=list)
+    # For a copy that replaced another: what changed for a stack
+    # (`seanchai.diff`), or why it could not be told.
+    diff: Diff | None = None
 
 
 @dataclass
@@ -237,6 +243,9 @@ def _run(
             absent,
         )
         stage.unstaged(outcome)
+        previous = committed.get(moves.get(key, key))
+        if outcome.replaced and previous is not None:
+            _diff(outcome, previous, corpus, output, stage)
         if baseline is not None and outcome.status not in ("failed",):
             outcome.new_unclaimed, _ = baseline.compare(
                 outcome.reference, outcome.unclaimed
@@ -452,6 +461,26 @@ def _one(
     for path, text in ((corrected, corrected_text), (raw, raw_text)):
         stage.write(path, text)
     return outcome
+
+
+def _diff(
+    outcome: Outcome, previous: _Committed, corpus: Path, output: Path, stage: _Stage
+) -> None:
+    """What the copy replacing `previous` changes for a stack, read in the
+    committed corpus; a warning where the corpus cannot be read so."""
+    from . import diff as semantic
+    from .model import HolePolicy, Model
+
+    try:
+        base = Corpus.load([corpus])
+        new = stage.corpus / outcome.written[0].relative_to(output)
+        outcome.diff = semantic.diff(
+            Model.build(base, holes=HolePolicy.ANY),
+            Model.build(semantic.overlay(base, [new]), holes=HolePolicy.ANY),
+            documents=[outcome.reference],
+        )
+    except SeanchaiError as error:
+        outcome.warnings.append(f"no diff against {previous.corrected.name}: {error}")
 
 
 class _Stage:

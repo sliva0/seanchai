@@ -378,6 +378,12 @@ def _echo_outcome(outcome) -> None:
         click.echo(f"    expanded: {widened}")
     for candidate in outcome.new_unclaimed:
         click.echo(f"    unclaimed: {candidate.describe()}")
+    if outcome.diff is not None:
+        counts = ", ".join(f"{n} {impact}" for impact, n in outcome.diff.counts.items())
+        click.echo(f"    diff: {counts} (seanchai diff OLD NEW lists them)")
+        for change in outcome.diff.changes:
+            if change.impact == "breaking":
+                click.echo(f"    breaking: {change.kind} {change.subject}")
 
 
 @corpus.command()

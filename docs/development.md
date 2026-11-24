@@ -112,7 +112,10 @@ Under each document it prints the extractor's warnings and a warning for each
 declaration whose version range does not cover the parsed version.
 Transcriptions are rebuilt from `edits/transcriptions/`.
 
-Under a document it also prints, as `unclaimed:`, each table no reading
+Under a `replaced` document it prints what the new copy changes for a stack,
+as `diff:` counts by impact and a `breaking:` line per breaking change
+([consumers.md](consumers.md#what-changed)). Under a document it also
+prints, as `unclaimed:`, each table no reading
 claims that resembles a definition and `edits/unclaimed.json` does not list,
 and fails the document. Look each over: a new shape the extractor should
 read, or prose in a grid. `--acknowledge-unclaimed` lists them, and drops
@@ -175,10 +178,10 @@ fails `tests/test_corpus.py`. The export writes the names as each document's
 ETSI PDF, so a new version appears as `replaced` on the next `regenerate`.
 
 1. Diff the old raw file against the new raw file. This shows the
-   specification's changes with the corrections held still. `seanchai diff`
-   over the old and new corrected files says what of it a stack sees, and
-   whether each change is the document's or ours
-   ([consumers.md](consumers.md#what-changed)).
+   specification's changes with the corrections held still. `regenerate`'s
+   `diff:` line, and `seanchai diff` over the old and new corrected files,
+   say what of it a stack sees, and whether each change is the document's or
+   ours ([consumers.md](consumers.md#what-changed)).
 2. A correction whose `expect` no longer matches fails the rebuild. That
    usually means upstream fixed the error: delete the declaration.
 3. Diff the corrected files.

@@ -85,6 +85,9 @@ def test_a_rebuild_follows_the_manifest_version_and_reports_what_it_did(
         "29999-110.raw.dad",
     ]
     assert "replaced" in _regenerate.describe(replaced)
+    # The same document text under another version: nothing a stack sees.
+    assert replaced.diff is not None, replaced.warnings
+    assert replaced.diff.counts == {"breaking": 0, "compatible": 0, "editorial": 0}
 
     # A committed document the manifest no longer lists is reported and left.
     manifest.write_text(json.dumps({"artifacts": []}))
