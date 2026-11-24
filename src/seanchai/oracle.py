@@ -42,6 +42,7 @@ _ENTITY_RE = re.compile(
 _PROLOG_RE = re.compile(r"<\?xml[^>]*\?>")
 _DOCTYPE_RE = re.compile(r"<!DOCTYPE.*?\]>", re.DOTALL)
 _PI_RE = re.compile(r"<\?[^>]*\?>")
+_PREDEFINED = frozenset({"amp", "lt", "gt", "quot", "apos"})
 
 
 class OracleError(SeanchaiError, ValueError):
@@ -138,6 +139,9 @@ class Oracle:
         text = _DOCTYPE_RE.sub("", text)
 
         def _inlined(match: re.Match) -> str:
+            if match["name"] in _PREDEFINED:
+                # XML's own, which the parser reads: `&quot;` in a name.
+                return match[0]
             if match["name"] in internal:
                 return internal[match["name"]]
             file_name = entities.get(match["name"])

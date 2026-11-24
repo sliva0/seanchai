@@ -19,6 +19,9 @@ seanchai corpus crosscheck                  # the installed corpus, or name file
 - The `[wireshark]` entry in `specs.toml` pins a Wireshark release tag. The
   downloader fetches its `resources/protocols/diameter/` directory.
 
+The reverse, a Wireshark dictionary written from the corpus, is
+[`integrations/wireshark/dictionary.py`](../integrations/wireshark/README.md#a-whole-dictionary).
+
 ## Tolerated type conventions
 
 Some of Wireshark's types are dissector conveniences. These count as

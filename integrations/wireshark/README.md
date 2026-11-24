@@ -125,6 +125,46 @@ Left out, and named in their document's description:
 - AVPs of a vendor the dictionary does not declare: oneM2M TS-0004's, vendor
   45687.
 
+## A whole dictionary
+
+`dictionary.py` writes a Wireshark dictionary of its own from the corpus, the
+reverse of the oracle, for testing a dissector or another reader of the
+format:
+
+```sh
+uv run integrations/wireshark/dictionary.py --application 16777251 -o out/
+uv run integrations/wireshark/dictionary.py --document TS29.229 -o out/ --report
+```
+
+It selects as `seanchai dictionary` does. `dictionary.xml` holds the base
+types, the IETF AVPs, the commands printing no application id and the
+vendors, and includes a file per document, `TS29.272.xml`, with its
+applications, their commands and the vendor AVPs it defines. Drop the files
+into a Wireshark tree's `resources/protocols/diameter/` in place of its own,
+whose `dictionary.dtd` they name.
+
+Crosschecked against the corpus it was written from
+(`tests/test_wireshark_dictionary.py`), the whole corpus's agrees but for
+what the format cannot hold, which `--report` lists per document:
+
+- One reading per `(vendor-id, code)`, the defining one: no per-application
+  flag rules, so RFC 4005's AppleTalk spellings and `Framed-IPX-Network` type
+  give way to RFC 7155's.
+- One name per AVP, its `name` naming a filter field: a name another
+  identity holds is the one [`aliases.toml`](aliases.toml) gives, or else
+  takes its vendor and code (TS 29.345's `Filter-Id-10415-3805`), the same
+  names the [additions](#additions) leave out.
+- One name per value, whichever document names it first: TS 29.329's
+  Experimental-Result-Code 5105.
+- No ABNF: a command is its name and code; occurrences, positions,
+  `* [ AVP ]` and members the corpus cannot complete are not written.
+  Failed-AVP's `* { AVP }` is written as Wireshark's own entry is, one
+  `<gavp>` for Session-Id under a comment.
+- A Grouped AVP no document prints a rule for is written OctetString
+  (TS 29.128's `APN-Rate-Control-Status`).
+- No holes, reserved, void or vendor-specific ranges, feature lists,
+  information elements or interpreted constraints.
+
 ## Applying
 
 In a Wireshark checkout, one branch per merge request:
