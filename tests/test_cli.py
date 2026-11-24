@@ -213,6 +213,7 @@ def test_the_commands_are_the_documented_ones():
         "show",
         "commands",
         "dictionary",
+        "diff",
         "export",
         "wireshark-plugin",
         "lint",

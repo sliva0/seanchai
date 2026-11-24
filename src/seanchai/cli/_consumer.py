@@ -1,5 +1,5 @@
-"""The consumer commands: `show`, `commands`, `dictionary`, `export` and
-`wireshark-plugin`, which read the installed corpus or another."""
+"""The consumer commands: `show`, `commands`, `dictionary`, `diff`, `export`
+and `wireshark-plugin`, which read the installed corpus or another."""
 
 from __future__ import annotations
 
@@ -671,3 +671,152 @@ def wireshark_plugin_command(
         f" {plugin.applications} applications, {plugin.avps} AVPs)",
         err=True,
     )
+
+
+@main.command("diff")
+@click.argument("old", type=click.Path(exists=True, path_type=Path))
+@click.argument("new", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--document",
+    "documents",
+    multiple=True,
+    metavar="REF",
+    help="Compare this document's applications and AVPs. Repeatable. Two files:"
+    " their documents by default; two corpora: every document.",
+)
+@click.option(
+    "--application",
+    "application_ids",
+    multiple=True,
+    type=int,
+    metavar="ID",
+    help="Compare only this application id's commands. Repeatable.",
+)
+@click.option(
+    "--corpus",
+    "corpus_paths",
+    multiple=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="With two files: the corpus they are read in, instead of the installed"
+    " one. Repeatable.",
+)
+@click.option("--json", "as_json", is_flag=True, help="Print the diff as JSON.")
+@click.option(
+    "--schema",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Write the JSON Schema of `--json`'s output here, and exit.",
+)
+def diff_command(
+    old: Path,
+    new: Path,
+    documents: tuple[str, ...],
+    application_ids: tuple[int, ...],
+    corpus_paths: tuple[Path, ...],
+    as_json: bool,
+    schema: Path | None,
+) -> None:
+    """Compare OLD with NEW as a Diameter stack sees them.
+
+    OLD and NEW are two `.dad` files of one document, each read in the
+    installed corpus (or --corpus) in place of its copy, or two corpus
+    directories. Commands match by application id, code and direction, AVPs
+    by vendor-id and code; each change is breaking, compatible or editorial,
+    with the command paths it affects. Where the raw mirror of both sides is
+    found (a `raw/` tree beside the file, as `corpus regenerate -o` writes
+    it), each change also says whether it comes from the document, our
+    corrections or our extraction.
+
+    \b
+    Two versions of TS 29.272, the older extracted into a scratch directory:
+        seanchai corpus regenerate --spec TS29.272 -o old \\
+            --manifest specifications/versions/TS29.272/18.6.0/manifest.json
+        seanchai diff old/3gpp/rel-18/29272-i60.dad NEW.dad
+    """
+    import json
+
+    from .. import diff as library
+
+    if schema is not None:
+        _write_text(
+            schema,
+            json.dumps(
+                library.json_schema(), ensure_ascii=False, sort_keys=True, indent=2
+            )
+            + "\n",
+        )
+        click.echo(f"wrote {click.style(str(schema), bold=True)}", err=True)
+        return
+    if old.is_dir() != new.is_dir():
+        raise click.UsageError("give two .dad files or two corpus directories")
+    if corpus_paths and old.is_dir():
+        raise click.UsageError("--corpus goes with two files")
+    with reported():
+        found = _diff(library, old, new, documents, application_ids, corpus_paths)
+    if as_json:
+        click.echo(library.dumps(found), nl=False)
+    else:
+        click.echo(library.render(found), nl=False)
+
+
+def _diff(library, old, new, documents, application_ids, corpus_paths):
+    """Build both sides' models, and their raw mirrors' where found, and
+    compare them."""
+    from ..corpus import Corpus
+    from ..dad import ast, parser
+    from ..model import HolePolicy, Model
+
+    def built(books):
+        return Model.build(books, holes=HolePolicy.ANY)
+
+    if old.is_dir():
+        sides = [Corpus.load([old]), Corpus.load([new])]
+        raws = (
+            [Corpus.load([old], raw=True), Corpus.load([new], raw=True)]
+            if (old / "raw").is_dir() and (new / "raw").is_dir()
+            else None
+        )
+    else:
+        base = Corpus.load(list(corpus_paths)) if corpus_paths else Corpus.installed()
+        sides = [library.overlay(base, [old]), library.overlay(base, [new])]
+        mirrors = [_raw_mirror(old), _raw_mirror(new)]
+        raws = None
+        if None not in mirrors:
+            raw_base = (
+                Corpus.load(list(corpus_paths), raw=True)
+                if corpus_paths
+                else Corpus.installed(raw=True)
+            )
+            raws = [library.overlay(raw_base, [path]) for path in mirrors]
+        if not documents:
+            documents = tuple(
+                sorted(
+                    {
+                        ast.spec_ref(
+                            parser.parse(path.read_text("utf-8")).specification
+                        )
+                        for path in (old, new)
+                    }
+                )
+            )
+    models = [built(books) for books in sides]
+    return library.diff(
+        models[0],
+        models[1],
+        documents=documents,
+        application_ids=application_ids,
+        raw=None if raws is None else (raws[0], raws[1]),
+        corpus_versions=(sides[0].version, sides[1].version),
+    )
+
+
+def _raw_mirror(path: Path) -> Path | None:
+    """The raw file beside a corrected one: `raw/` under an ancestor, at the
+    same place (`corpus regenerate -o` writes them so), or None."""
+    path = path.resolve()
+    for root in path.parents:
+        candidate = (
+            root / "raw" / path.relative_to(root).with_name(f"{path.stem}.raw.dad")
+        )
+        if candidate.is_file():
+            return candidate
+    return None

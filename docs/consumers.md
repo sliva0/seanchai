@@ -329,6 +329,56 @@ in the output.
 }
 ```
 
+### What changed
+
+`seanchai diff OLD NEW` compares two versions of a document as a stack sees
+them: two `.dad` files, each read in the installed corpus (or `--corpus`) in
+place of its copy, or two corpus directories. Extract an older version into
+a scratch directory first
+([development.md](development.md#version-upgrades)):
+
+```sh
+seanchai corpus download --spec TS29.272 --version 18.6.0
+seanchai corpus regenerate --spec TS29.272 -o old \
+    --manifest specifications/versions/TS29.272/18.6.0/manifest.json
+seanchai diff old/3gpp/rel-18/29272-i60.dad NEW.dad
+```
+
+```text
+TS29.272 18.6.0 -> TS29.272 18.7.0: 0 breaking, 0 compatible, 16 editorial
+
+editorial
+  element-renamed    TS29.272 16777251/ULR element Supported-Features:
+    Supported Features (See 3GPP TS 29.229 [9]) -> Supported Features (See
+    TS 29.229 [9])  [document, TS29.272 5.2.1.1.1]
+```
+
+Commands match by application id, command code and direction, AVPs by
+`(vendor-id, code)` and the document reading them, members by the AVP they
+name, values and table rows by number, information elements by the AVPs
+they map to. A changed name is a rename. Each change has an impact:
+
+| Impact | Changes |
+|---|---|
+| `breaking` | a command, required member, AVP, value or row removed; a required member added; presence, occurrence or the order of fixed members changed; the M or V bit's rule, the basic type, the command flags changed; a value voided; an information element's category to or from M; an interpreted rule replaced by another; a hole reached |
+| `compatible` | a command, optional member, AVP, value or row added; a derived type over the same basic type; another flag's rule; a category between C and O; an interpreted rule read or dropped; a hole closed |
+| `editorial` | a rename; the Encrypt cell; an element added or removed beside the ABNF; a text-only rule or a quote |
+
+Every change names the command paths it affects, down from the command
+(`S6a/ULR > Subscription-Data > AMBR`), and where each side states it. Where
+both files have their raw mirror beside them, a `raw/` tree as
+`corpus regenerate -o` writes, or both corpora theirs, each change says
+where it comes from: `document` where the raw files differ the same way and
+the version moved, `extraction` where they differ and it did not,
+`corrections` where they agree. A name one side leaves a hole is reported
+once, as the hole.
+
+`--json` prints a `diff.Diff`, keys sorted, and `--schema FILE` writes its
+JSON Schema. From Python, `seanchai.diff.diff(old_model, new_model,
+documents=..., raw=(old_raw_corpus, new_raw_corpus))` returns it,
+`diff.compare` compares two dictionaries, and `diff.overlay(corpus, files)`
+reads a file in place of a corpus's copy.
+
 ### Commands
 
 `seanchai commands --json` prints a `dictionary.Listing`: `format_version`,
@@ -378,12 +428,13 @@ Every error the library raises derives from `seanchai.SeanchaiError`.
 `seanchai` follows semantic versioning over:
 
 - the names in the `__all__` of `seanchai`, `seanchai.model`,
-  `seanchai.corpus`, `seanchai.dictionary`, `seanchai.constraints` and
-  `seanchai.errors`;
-- the dictionary's JSON, versioned by its `format_version`;
+  `seanchai.corpus`, `seanchai.dictionary`, `seanchai.constraints`,
+  `seanchai.diff` and `seanchai.errors`;
+- the dictionary's JSON, versioned by its `format_version`, and `diff`'s, by
+  its own;
 - the `.dad` grammar and the corpus format it reads, `corpus.FORMATS`;
 - the consumer commands' options, output and exit statuses: `show`,
-  `commands`, `dictionary`, `export`, `wireshark-plugin`, `lint` and
+  `commands`, `dictionary`, `diff`, `export`, `wireshark-plugin`, `lint` and
   `format`.
 
 The rest may change in any minor release: the Python of `seanchai.dad` (the

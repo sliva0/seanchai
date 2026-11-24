@@ -175,7 +175,10 @@ fails `tests/test_corpus.py`. The export writes the names as each document's
 ETSI PDF, so a new version appears as `replaced` on the next `regenerate`.
 
 1. Diff the old raw file against the new raw file. This shows the
-   specification's changes with the corrections held still.
+   specification's changes with the corrections held still. `seanchai diff`
+   over the old and new corrected files says what of it a stack sees, and
+   whether each change is the document's or ours
+   ([consumers.md](consumers.md#what-changed)).
 2. A correction whose `expect` no longer matches fails the rebuild. That
    usually means upstream fixed the error: delete the declaration.
 3. Diff the corrected files.
