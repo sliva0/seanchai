@@ -17,7 +17,10 @@ syn match dadSection "\%(^\|\s\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\)\%(\.\d\+[A-Za-z
 " Cell keywords must stand alone as a whole cell (delimited by whitespace, or
 " a comma for spec-refs in `; Bases:` lists) — a type name embedded in a
 " longer AVP name like MIP-Home-Agent-Address is not a type.
-syn match dadSpecRef "\%(^\|[ ,]\)\zs\%(TS\d\{2}\.\d\{3}\|RFC\d\+\|ETSI-\%(TS\|ES\)\d\{3}\.\d\{3}\%(-\d\+\)\=\|3GPP2-[A-Z]\.[A-Z]\d\{4}\%(-\d\{3}\)\=\|OMA\%(-[A-Za-z0-9_]\+\)\+\|oneM2M-TS-\d\{4}\|Private-[A-Za-z0-9][A-Za-z0-9_.-]*\)\ze\%([ ,]\|$\)"
+" A spec-ref looks behind for its delimiter rather than matching it: a
+" directive's value starts after the space, which a match inside it cannot
+" take, so the first entry of `; Bases: RFC6733, TS29.229` would be missed.
+syn match dadSpecRef "\%(^\|[ ,]\)\@1<=\%(TS\d\{2}\.\d\{3}\|RFC\d\+\|ETSI-\%(TS\|ES\)\d\{3}\.\d\{3}\%(-\d\+\)\=\|3GPP2-[A-Z]\.[A-Z]\d\{4}\%(-\d\{3}\)\=\|OMA\%(-[A-Za-z0-9_]\+\)\+\|oneM2M-TS-\d\{4}\|Private-[A-Za-z0-9][A-Za-z0-9_.-]*\)\%([ ,]\|$\)\@="
 syn match dadDataType "\%(^\|\s\)\zs\%(OctetString\|Integer32\|Integer64\|Unsigned32\|Unsigned64\|Float32\|Float64\|Grouped\|Address\|Time\|UTF8String\|DiameterIdentity\|DiameterURI\|Enumerated\|IPFilterRule\|QoSFilterRule\)\ze\%(\s\|$\)"
 syn match dadCellConst "\%(^\|\s\)\zs\%(MUST-NOT\|MUST\|Yes\|No\)\ze\%(\s\|$\)"
 syn match dadFlagCell "\%(^\|\s\)\zs[MVP]\%(,\s\?[MVP]\)*\ze\%(\s\|$\)"
@@ -93,7 +96,7 @@ syn match dadConstraintNumber "\%(\s\|\.\.\)\zs-\?\d\+\ze\%(\s\|$\|\.\.\|,\)" co
 " Directives
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue
 syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
-syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadNumber,dadLink,dadComment
+syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadSpecRef,dadSection,dadClauseWildcard,dadVersionRange,dadListComma,dadNumber,dadLink,dadComment
 syn match dadTypeValue "\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\|Interpreted Constraints\)$" contained
 " `; Registry:` kinds.
 syn match dadTypeValue "\%(Application IDs\|Command Codes\|AVP Codes\|Result Codes\)$" contained
@@ -102,6 +105,14 @@ syn match dadTypeValue "\%(result-codes\|bits\|features\)$" contained
 syn match dadLink "https\?://\S\+" contained
 " `; Applies-To:` entries: a clause and its subclauses, `5.*`, `E.6.*`.
 syn match dadClauseWildcard "\%(^\|[ ,]\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\.\*\%([ ,]\|$\)\@=" contained
+" `; Versions:` a range of versions, `18.7.0..19.6.0`, a bound `*` where it is
+" open.
+syn match dadVersionRange "\%(^\|[ ,]\)\@1<=\%(\d\+\%(\.\d\+\)\+\|\*\)\.\.\%(\d\+\%(\.\d\+\)\+\|\*\)\%([ ,]\|$\)\@=" contained contains=dadVersionBound,dadVersionOpen,dadVersionDots
+syn match dadVersionBound "\d\+\%(\.\d\+\)\+" contained
+syn match dadVersionOpen "\*" contained
+syn match dadVersionDots "\.\." contained
+" The comma between a list's entries, `; Applies-To: 5.1.*, 5.2.*`.
+syn match dadListComma "," contained
 
 " Free-text directives get one uniform value color — no point picking the
 " 29.109 out of "3GPP TS 29.109". Defined after the generic line, so it wins.
@@ -122,6 +133,10 @@ hi def link dadNumber         Number
 hi def link dadRange          Number
 hi def link dadSection        Constant
 hi def link dadClauseWildcard Constant
+hi def link dadVersionBound   Constant
+hi def link dadVersionOpen    Operator
+hi def link dadVersionDots    Operator
+hi def link dadListComma      Delimiter
 hi def link dadDataType       Type
 hi def link dadCellConst      Boolean
 hi def link dadFlagCell       Constant

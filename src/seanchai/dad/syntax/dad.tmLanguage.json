@@ -97,6 +97,17 @@
               "name": "markup.underline.link.dad"
             },
             {
+              "comment": "A `; Versions:` range, `18.7.0..19.6.0`, either bound `*` where it is open.",
+              "match": "(?<=^|[ ,])(?:(\\d+(?:\\.\\d+)+)|(\\*))(\\.\\.)(?:(\\d+(?:\\.\\d+)+)|(\\*))(?=[ ,]|$)",
+              "captures": {
+                "1": { "name": "constant.other.section.dad" },
+                "2": { "name": "keyword.operator.dad" },
+                "3": { "name": "keyword.operator.range.dad" },
+                "4": { "name": "constant.other.section.dad" },
+                "5": { "name": "keyword.operator.dad" }
+              }
+            },
+            {
               "match": "(?<=^|[ ,])(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=[ ,]|$)",
               "name": "constant.other.section.dad"
             },
@@ -109,7 +120,13 @@
               "name": "constant.numeric.dad"
             },
             {
-              "match": ".+",
+              "comment": "The comma between a list's entries, `; Bases: RFC6733, TS29.229`.",
+              "match": ",",
+              "name": "punctuation.separator.comma.dad"
+            },
+            {
+              "comment": "Any other word, one at a time: a run past a space or a comma would take the entries after it from the rules above.",
+              "match": "[^\\s,]+",
               "name": "string.unquoted.directive-value.dad"
             }
           ]
