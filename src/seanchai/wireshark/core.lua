@@ -9,7 +9,7 @@
 --   avps[id]        one reading: name, type, flags, members, values
 --   commands[key]   candidates for "app:code:R", "*:code:R" for id-less ones
 --   answers[id]     an `<answer-message>` body
---   result_codes[vendor][code], bits[identity][bit]
+--   result_codes[vendor][code], bits[identity][bit], values[identity][value]
 --   docs[n]         a document: reference, label, explorer id, URL, link kind
 --   cites[n]        a place in one: document number, clause, page or false,
 --                   the table's label or false, and true for a clause the
@@ -20,7 +20,8 @@
 -- A member is {id, name, presence, min, max}, max -1 for unbounded, and a
 -- body carries `wildcard`, the `* [ AVP ]` line's {min, max}, where it has one.
 -- A reading's `at`, a command's and an answer's `at`, and
--- `bits_at[identity]` are numbers into `cites`: where the rule is written. A
+-- `bits_at[identity]` and `values_at[identity]` are numbers into `cites`:
+-- where the rule is written. A
 -- reading's `flags_at` is one, where every flag rule a finding can report is
 -- written at one place, or else one per letter, as {M=n, V=n}.
 
@@ -1160,6 +1161,15 @@ local function check_data(ctx, avp, reading, path, depth)
           finding(findings, NOTE, "bits",
             string.format("%s set, which no document names", bits_text(unknown)),
             avp.data, 4, path, ctx.rules.bits_at[identity] or reading.at, reading.name)
+        end
+      elseif ctx.rules.values and ctx.rules.values[identity] then
+        -- A value of an integer AVP no table names: as a bit, a note, since
+        -- no table says it is all there is.
+        if not ctx.rules.values[identity][value] then
+          finding(findings, NOTE, "values",
+            string.format("%d is no value a document names", value),
+            avp.data, 4, path, ctx.rules.values_at[identity] or reading.at,
+            reading.name)
         end
       end
     end

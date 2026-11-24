@@ -455,7 +455,7 @@ value-table   = "; Type: Value Table" NL
                 ["; Table: " inline-text NL]
                 ["; Page: " 1*DIGIT NL]
                 1*(value-row NL)
-value-kind    = "result-codes" / "bits" / "features"
+value-kind    = "result-codes" / "bits" / "features" / "values"
 value-row     = enum-name *SP "= " 1*DIGIT [1*SP "; " value-tail]
 value-tail    = section-number [1*SP "from " spec-ref] / "from " spec-ref / mark
                 ; a result code's own clause and the document defining it,
@@ -492,6 +492,16 @@ Single-Registration-Indication = 0
 ; Table: 7.3.10/1
 ; Page: 44
 ODB-all-APN = 0 ; O
+
+
+; Type: Value Table
+; AVP: TWAN-S2a-Failure-Cause
+; Kind: values
+; Section: 5.2.3.31
+; Table: 5.2.3.30/1
+; Page: 80
+"Insufficient resources" = 26
+"Unknown APN"            = 27
 ```
 
 - `result-codes` are values of the named AVP, from subclause headings (TS
@@ -507,6 +517,11 @@ ODB-all-APN = 0 ; O
   `; Feature-List-ID:` appear only here, each where the caption gives it.
   The tail is the M/O cell, absent when blank or when the table has no such
   column.
+- `values` name the values of an integer AVP that is no `Enumerated`, as a
+  table in its clause prints them (TS 29.272 table 7.3.190-1's
+  Group-Service-Id, TS 29.273 table 5.2.3.30/1's TWAN-S2a-Failure-Cause),
+  with no tail. The table need not hold every value the AVP takes: TS
+  29.272 leaves Group-Service-Id above 1000 to the home operator.
 
 Names are written as enum value names and marks as table marks; `-` is no
 mark. Descriptions are dropped. A row printing no name and number pair (TS

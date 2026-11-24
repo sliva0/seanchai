@@ -94,6 +94,13 @@ Skip-Data                        = 0
 DIAMETER_ACME_UNKNOWN            = 5999 ; 7.4.1 from TS29.272
 DIAMETER_ACME_OTHER              = 5998 ; 7.4.2
 
+; Type: Value Table
+; AVP: ACME-Cause
+; Kind: values
+; Section: 7.3.6
+; Table: 7.3.6/1
+"Insufficient resources" = 26
+
 ; Type: Information Elements
 ; Command: ACME-Request
 ; Command-Section: 6.2.1

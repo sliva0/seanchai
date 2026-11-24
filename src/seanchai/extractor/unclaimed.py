@@ -186,10 +186,18 @@ class Baseline:
         )
 
     def updated(self, documents: Mapping[str, Iterable[Candidate]]) -> Baseline:
-        """This baseline with `documents`' lists in place of its own."""
+        """This baseline with `documents`' lists in place of its own, each
+        table once however many copies of the document print it: at the
+        page the baseline gives it where a copy still starts its clause
+        there, else at the first page found."""
         merged = dict(self.documents)
         for reference, found in documents.items():
-            candidates = tuple(sorted(set(found)))
+            listed = set(self.documents.get(reference, ()))
+            chosen: dict[tuple, Candidate] = {}
+            for candidate in sorted(set(found)):
+                if candidate.key not in chosen or candidate in listed:
+                    chosen[candidate.key] = candidate
+            candidates = tuple(sorted(chosen.values()))
             if candidates:
                 merged[reference] = candidates
             else:

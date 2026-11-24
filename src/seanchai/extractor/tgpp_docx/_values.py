@@ -1,6 +1,6 @@
 """Value tables: the numbers a document names for a numeric AVP that is
-no Enumerated, its result codes, bits and features, with the notes each
-prints among its rows."""
+no Enumerated, its result codes, bits, features and values, with the notes
+each prints among its rows."""
 
 from __future__ import annotations
 
@@ -44,6 +44,12 @@ _BIT_LABELS = frozenset({"bit"})
 # clause 7.4.69 "Requirement". TS 29.272's "Bit | Description" tables have the
 # name in the description (clause 7.3.31, "UTRAN Not Allowed").
 _BIT_NAME_LABELS = frozenset({"name", "event type", "requirement", "description"})
+# A table naming an integer AVP's values: TS 29.272 table 7.3.190-1's "Value |
+# Description" (Group-Service-Id), the name in the description, and TS 29.273's
+# "Cause value (decimal) | Cause Value | Meaning" (tables 5.2.3.30/1 and
+# 5.2.3.35/1), the meaning prose.
+_VALUE_LABELS = frozenset({"value", "cause value (decimal)"})
+_VALUE_NAME_LABELS = frozenset({"cause value", "description"})
 _FEATURE_LABELS = frozenset({"feature bit"})
 _FEATURE_NAME_LABELS = frozenset({"feature", "remote target feature"})
 # "Table 7.3.10/1: Features of Feature-List-ID 1 used in S6a/S6d", TS 29.329's
@@ -333,7 +339,11 @@ def _value_tables(
         for table in section.tables:
             bits = _value_columns(table, _BIT_LABELS, _BIT_NAME_LABELS)
             features = _value_columns(table, _FEATURE_LABELS, _FEATURE_NAME_LABELS)
-            columns = bits or features
+            # A table another pass read is no integer AVP's values.
+            values = None
+            if not table.claimed:
+                values = _value_columns(table, _VALUE_LABELS, _VALUE_NAME_LABELS)
+            columns = bits or features or values
             if columns is None:
                 continue
             table.claimed = True
@@ -352,7 +362,7 @@ def _value_tables(
                     continue
                 found = ast.ValueTable(
                     avp=title["name"],
-                    kind=ast.ValueKind.BITS,
+                    kind=ast.ValueKind.BITS if bits else ast.ValueKind.VALUES,
                     table=table.caption,
                     source=ast.SourceRef(section=section.number),
                     rows=tuple(rows),

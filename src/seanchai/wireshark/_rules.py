@@ -817,7 +817,7 @@ def rules_chunk(
         "  return members",
         "end",
         "local avps, commands, answers = {}, {}, {}",
-        "local result_codes, bits, bits_at = {}, {}, {}",
+        "local result_codes, bits, bits_at, values, values_at = {}, {}, {}, {}, {}",
         "local docs, cites, base, elements = {}, {}, {}, {}",
     ]
     readings: dict[str, list[str]] = defaultdict(list)
@@ -869,6 +869,8 @@ def rules_chunk(
     codes: dict[int, dict[int, str]] = defaultdict(dict)
     masks: dict[str, set[int]] = defaultdict(set)
     masks_at: dict[str, int] = {}
+    valued: dict[str, set[int]] = defaultdict(set)
+    valued_at: dict[str, int] = {}
     for table in built.value_tables:
         if table.kind.value == "result-codes":
             for row in table.rows:
@@ -881,6 +883,14 @@ def rules_chunk(
                 masks[identity].update(row.value for row in table.rows)
                 if (at := places.table(table)) is not None:
                     masks_at.setdefault(identity, at)
+        elif table.kind.value == "values":
+            # An integer AVP's values a table names, as a bit mask's bits.
+            for identity in dict.fromkeys(
+                each.partition("@")[0] for each in table.avp_ids
+            ):
+                valued[identity].update(row.value for row in table.rows)
+                if (at := places.table(table)) is not None:
+                    valued_at.setdefault(identity, at)
     for vendor, named in sorted(codes.items()):
         entries = ",".join(
             f"[{value}]={lua_string(name)}" for value, name in sorted(named.items())
@@ -891,6 +901,11 @@ def rules_chunk(
         lines.append(f"bits[{lua_string(identity)}]={{{entries}}}")
     for identity, at in sorted(masks_at.items()):
         lines.append(f"bits_at[{lua_string(identity)}]={at}")
+    for identity, numbers in sorted(valued.items()):
+        entries = ",".join(f"[{number}]=true" for number in sorted(numbers))
+        lines.append(f"values[{lua_string(identity)}]={{{entries}}}")
+    for identity, at in sorted(valued_at.items()):
+        lines.append(f"values_at[{lua_string(identity)}]={at}")
     for kind, (clause, page) in BASE_SECTIONS.items():
         if (at := places.base(clause, page)) is not None:
             lines.append(f"base.{kind}={at}")
@@ -898,7 +913,8 @@ def rules_chunk(
     lines.extend(places.lua())
     lines.append(
         "return {avps=avps, commands=commands, answers=answers,"
-        " result_codes=result_codes, bits=bits, bits_at=bits_at, docs=docs,"
+        " result_codes=result_codes, bits=bits, bits_at=bits_at, values=values,"
+        " values_at=values_at, docs=docs,"
         " elements=elements,"
         f" cites=cites, base=base, base_answer={lua_string(BASE_ANSWER)},"
         f" explorer={lua_string(explorer) if explorer else 'nil'},"

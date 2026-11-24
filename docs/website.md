@@ -173,7 +173,7 @@ and in its raw mirror alike, each describing its own file's lines. Every
   and `described`, the Message blocks the corrected file's table finds its
   command at, empty in the raw view and where none is found. Its `; Command:`
   line's name and its rows' AVP names link where the command reads them.
-- Value Table: `value_kind` (`result-codes`, `bits`, `features`), a
+- Value Table: `value_kind` (`result-codes`, `bits`, `features`, `values`), a
   feature list's `feature_list_id` and `application`, the `avp_target` its
   `; AVP:` line links to, and `value_rows`, each `name`, `value`, a result
   code's own `section`, a feature's `mark`, and a result code's `origin` with
@@ -227,7 +227,8 @@ Information Elements block. Its target is the block's clause, and its
 table describes.
 
 A value table's row is an entry of `kind` `value`. Its target is its clause,
-and its `identity` has `value_kind` (`result-codes`, `bits`, `features`), the
+and its `identity` has `value_kind` (`result-codes`, `bits`, `features`,
+`values`), the
 `avp`, the `value`, and a feature's `application` and `feature_list_id`. Its
 `defined_in` is a result code's `from` document where the row names one. In
 the text:

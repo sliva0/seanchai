@@ -53,3 +53,18 @@ def test_a_baseline_round_trips_and_matches_without_pages(tmp_path):
     renumbered = Candidate("7.2.3", "commands", found.caption, found.header)
     assert baseline.compare("TS29.272", [renumbered]) == ([renumbered], [found])
     assert Baseline.load(tmp_path / "absent.toml").documents == {}
+
+
+def test_a_table_two_copies_print_is_listed_once():
+    # TS 29.061's Release 18 and 19 copies start clause 16.4.1 on different
+    # pages: one entry, at the page the baseline gives where a copy has it.
+    old = Candidate("16.4.1", "avp-table", "Table 1", ("Attr #", "Attribute Name"), 52)
+    other = Candidate("16.4.1", "avp-table", "Table 1", old.header, 51)
+    baseline = Baseline({"TS29.061": (old,)})
+
+    assert baseline.updated({"TS29.061": [other, old]}).documents == {
+        "TS29.061": (old,)
+    }
+    assert Baseline({}).updated({"TS29.061": [old, other]}).documents == {
+        "TS29.061": (other,)
+    }

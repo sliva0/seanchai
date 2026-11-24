@@ -292,6 +292,7 @@ one of them finishes the clause. A version upgrade re-reads the exclusions
 | a "re-used Diameter AVPs" table | `ReusedAvps` |
 | a "Bit, Name, Description" table | `bits` `ValueTable` |
 | a "Feature bit, Feature, M/O, Description" table | `features` `ValueTable` |
+| a "Value, Description" or "Cause value (decimal), Cause Value, Meaning" table | `values` `ValueTable` |
 | a clause titled "Result-Code AVP values" or similar | `result-codes` `ValueTable` |
 | a sentence stating the application id | `ApplicationScope` |
 | an "Information element name, Mapping to Diameter AVP, Cat., Description" table | `InformationElements` |
@@ -323,13 +324,17 @@ An enumerated AVP takes its code from the AVP table and its vendor-id from the
 document's grouped-AVP headers, or 10415 if there are none. Conflicting
 vendors are an error.
 
-### Bit and feature tables
+### Bit, feature and value tables
 
 The table belongs to the AVP its clause heads. "Bit | Description", with the
 name as description, and "Event Type" or "Requirement" in place of "Name" read
 the same way. A features table takes its application and Feature-List-ID from
 its caption ("Features of Feature-List-ID 1 used in S6a/S6d") and belongs to
-`Feature-List` unless the clause heads another AVP.
+`Feature-List` unless the clause heads another AVP. A table naming an integer
+AVP's values, "Value | Description" with the name as description (TS 29.272
+table 7.3.190-1, Group-Service-Id) or "Cause value (decimal) | Cause Value |
+Meaning" (TS 29.273 tables 5.2.3.30/1 and 5.2.3.35/1), is a `values` table,
+where no other pass read it.
 
 Columns are read by label. A full-width row is a note. A row naming no number
 (`1-31 None`) is a `;;` comment. A table with no rows left warns and makes no
@@ -701,7 +706,8 @@ Each candidate has its clause, kind, caption, header cells and page.
 a maintainer looked over. `seanchai corpus regenerate` prints a candidate
 the baseline does not list as `unclaimed:` and fails its document, and warns
 of a listed one the document no longer prints. `--acknowledge-unclaimed`
-rewrites the baseline's entries for the documents rebuilt instead. The test
+rewrites the baseline's entries for the documents rebuilt instead, a table
+the document's copies in several releases print listed once. The test
 is a resemblance, not a reading: a candidate is often prose in a grid (TS
 29.212's QCI mapping, oneM2M TS-0004's resource attributes), and the
 baseline says only that someone looked.
@@ -712,7 +718,6 @@ What the baseline lists that holds definitions the corpus does not read:
 |---|---|
 | Command-Code values (name, abbreviation, code, clause) | most 3GPP documents and RFCs; the ABNF gives the same codes |
 | a command's valid result codes, "Result-Code AVP value \| Condition" | TS 29.228, 29.234, 29.273, 29.328 |
-| an AVP's values as a table: Group-Service-Id, TWAN-S2a-Failure-Cause, IMEI-Check-In-VPLMN-Result | TS 29.272, 29.273 |
 | the abstract operations' elements, "Information Element \| Category \| Description", mapped to no AVP | TS 32.299 clause 5 |
 | Gmb's re-used AVPs, "AVP Name \| Reference" | TS 29.061 table 11 |
 | RADIUS attributes per message | TS 29.061, 29.561, RFC 4590 |

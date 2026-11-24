@@ -3970,6 +3970,16 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Group-Service-Id
+; Kind: values
+; Section: 7.3.190
+; Table: 7.3.190-1
+; Page: 159
+"Group specific NAS level congestion control"                               = 1
+"Group specific Monitoring of Number of UEs present in a geographical area" = 2
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#group-service-id-operator-range)
 ; AVP: Group-Service-Id
 ; Section: 7.3.190

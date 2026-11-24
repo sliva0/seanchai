@@ -74,8 +74,11 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
 - Values: an Enumerated value the reading defines or leaves to vendors, and not
   one it reserves or voids, where the corpus holds its values (RFC 5777's
   `Treatment-Action` is typed Enumerated by a table, its values unread); a
-  Result-Code some document defines; bits some document names; the E bit set
-  on a protocol error (3xxx) and on no other answer.
+  Result-Code some document defines; bits some document names; an Unsigned32
+  value some document's `values` table names, a note, since no clause says
+  its table holds every value (TS 29.272 leaves Group-Service-Id above 1000
+  to the home operator); the E bit set on a protocol error (3xxx) and on no
+  other answer.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
 - Interpreted constraints ([constraints.md](constraints.md)), what a person
@@ -145,7 +148,7 @@ Note: … > Trace-Data > Trace-NE-Type-List: 4 octets, not 3 [TS 29.272 7.3.68, 
 |---|---|---|---|
 | Error | `seanchai.violation` | Malformed | a rule a document states (the ABNF, a Must or Must not flag rule, a data format, framing, a reserved or void value) broken |
 | Warning | `seanchai.warning` | Protocol | a bit set under Should not, reserved flags or nonzero padding, a value or Result-Code no document defines, an unknown AVP with the M bit, the E bit against the Result-Code |
-| Note | `seanchai.note` | Protocol | an unknown command or AVP without the M bit, a bit or Experimental-Result-Code no document names, a member the corpus cannot complete, an AVP only `* [ AVP ]` admits |
+| Note | `seanchai.note` | Protocol | an unknown command or AVP without the M bit, a bit, an Unsigned32 value of a `values` table or an Experimental-Result-Code no document names, a member the corpus cannot complete, an AVP only `* [ AVP ]` admits |
 | Note | `seanchai.interpreted` | Protocol | an interpreted constraint broken |
 
 Each message's counts are `seanchai.errors`, `seanchai.warnings` and

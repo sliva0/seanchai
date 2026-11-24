@@ -301,11 +301,13 @@ def _value_rules(rules: Sequence[dictionary.Rule]) -> list[dictionary.Rule]:
 
 class _Values:
     """The dictionary's numbers: each reading's enumerated values, the result
-    codes and bits its value tables name."""
+    codes, bits and integer values its value tables name."""
 
     def __init__(self, built: dictionary.Dictionary) -> None:
         self.avps = {avp.id: avp for avp in built.avps}
         self.bits: dict[str, set[int]] = {}
+        # An integer AVP's values a `values` table names, by identity.
+        self.named: dict[str, set[int]] = {}
         self.bit_names: dict[str, dict[str, int]] = {}
         self.codes: dict[str, int] = {}
         # Each vendor's result codes, in the order the tables give them.
@@ -319,6 +321,11 @@ class _Values:
                     )
                     self.bit_names.setdefault(identity, {}).update(
                         {row.name: row.value for row in table.rows}
+                    )
+            elif table.kind is ast.ValueKind.VALUES:
+                for identifier in table.avp_ids:
+                    self.named.setdefault(identifier.partition("@")[0], set()).update(
+                        row.value for row in table.rows
                     )
             elif table.kind is ast.ValueKind.RESULT_CODES:
                 for row in table.rows:
@@ -386,6 +393,8 @@ def _payload(
                     numbers.insert(0, 1 << rule.bits[0])
             if required := _set_bits(rules):
                 numbers.insert(0, required)
+            # A value a table names before any other.
+            numbers[:0] = sorted(values.named.get(_identity(avp), ()))
             numbers += [0, 1]
         for rule in rules:
             entry = _element_of(rule)
@@ -1285,6 +1294,29 @@ class _Negatives:
                 "note",
             )
             break
+        # A value no document names.
+        for message, node, scope in self.first(
+            lambda n: (
+                n.avp.data_type is ast.DataType.UNSIGNED32
+                and _identity(n.avp) in self.builder.values.named
+            )
+        ):
+            named = self.builder.values.named[_identity(node.avp)]
+            value = next(
+                number for number in range(len(named) + 1) if number not in named
+            )
+            payload = _integer(ast.DataType.UNSIGNED32, value)
+            if not self.keeps_rules(node, scope, payload):
+                continue
+            node.payload = payload
+            self.emit(
+                message,
+                f"values/{node.avp.name}/{value}",
+                self.at_avp(node.avp, f"{node.avp.name} names no value {value}"),
+                "values",
+                "note",
+            )
+            break
         # UTF-8 that is not.
         for message, node, scope in self.first(
             lambda n: n.avp.data_type is ast.DataType.UTF8_STRING
@@ -1345,6 +1377,7 @@ class _Negatives:
                 not in (ast.DataType.UNSIGNED32, ast.DataType.OCTET_STRING)
                 or avp.id in self.builder.own
                 or _identity(avp) in self.builder.values.bits
+                or _identity(avp) in self.builder.values.named
                 or avp.name in ("Result-Code", "Experimental-Result-Code")
             ):
                 continue
@@ -1707,6 +1740,12 @@ class _Negatives:
                     v.kind == "value" and v.value == value for v in node.avp.values
                 ):
                     continue
+            named = self.builder.values.named.get(_identity(node.avp))
+            if (
+                named is not None
+                and constraints.integer_value(data_type, payload) not in named
+            ):
+                continue
             if data_type is ast.DataType.UTF8_STRING:
                 try:
                     payload.decode("utf-8")

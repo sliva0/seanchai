@@ -2017,6 +2017,37 @@ Initial-Attach-Indicator = 0
 
 
 ; Type: Value Table
+; AVP: TWAN-S2a-Failure-Cause
+; Kind: values
+; Section: 5.2.3.31
+; Table: 5.2.3.30/1
+; Page: 80
+"Insufficient resources"                            = 26
+"Unknown APN"                                       = 27
+"User authentication failed"                        = 29
+"Request rejected by TWAN or PDN GW"                = 30
+"Request rejected, unspecified"                     = 31
+"Service option not supported"                      = 32
+"Requested service option not subscribed"           = 33
+"Service option temporarily out of order"           = 34
+"Network failure"                                   = 38
+"PDN type IPv4 only allowed"                        = 50
+"PDN type IPv6 only allowed"                        = 51
+"PDN connection does not exist"                     = 54
+"Multiple accesses to a PDN connection not allowed" = 113
+
+
+; Type: Value Table
+; AVP: IMEI-Check-In-VPLMN-Result
+; Kind: values
+; Section: 5.2.3.35
+; Table: 5.2.3.35/1
+; Page: 81
+Successful = 0
+Illegal_ME = 1
+
+
+; Type: Value Table
 ; AVP: High-Priority-Access-Info
 ; Kind: bits
 ; Section: 5.2.3.36

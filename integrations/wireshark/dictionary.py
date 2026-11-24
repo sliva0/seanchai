@@ -161,7 +161,8 @@ class _Writer:
 
     def _values(self) -> dict[tuple[int, int], dict[int, str]]:
         """Each identity's `<enum>`s: an Enumerated reading's values, the
-        result codes the value tables name, and each bit table's masks."""
+        result codes and integer values the value tables name, and each bit
+        table's masks."""
         found: dict[tuple[int, int], dict[int, str]] = {}
         for identity, avp in self.avps.items():
             for value in avp.values:
@@ -197,7 +198,7 @@ class _Writer:
             for row in table.rows:
                 code = (
                     row.value
-                    if table.kind is ast.ValueKind.RESULT_CODES
+                    if table.kind in (ast.ValueKind.RESULT_CODES, ast.ValueKind.VALUES)
                     else 1 << row.value
                 )
                 held = found.setdefault(identity, {})

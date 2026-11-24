@@ -380,7 +380,7 @@ def _value_findings(spec: ast.Specification, oracle: Oracle) -> list[Finding]:
         for row in table.rows:
             number = (
                 row.value
-                if table.kind is ast.ValueKind.RESULT_CODES
+                if table.kind in (ast.ValueKind.RESULT_CODES, ast.ValueKind.VALUES)
                 else 1 << row.value
             )
             found = known.get(number)

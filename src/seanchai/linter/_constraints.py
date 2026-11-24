@@ -99,7 +99,10 @@ def _facts(spec: ast.Specification, name: str, cited: _Cited | None) -> _Facts:
             elif isinstance(section, ast.ValueTable) and section.avp == name:
                 if section.kind is ast.ValueKind.BITS and facts.bits is None:
                     facts.bits = {row.name: row.value for row in section.rows}
-                elif section.kind is ast.ValueKind.RESULT_CODES:
+                elif section.kind in (
+                    ast.ValueKind.RESULT_CODES,
+                    ast.ValueKind.VALUES,
+                ):
                     facts.values = (facts.values or set()) | {
                         row.name for row in section.rows
                     }

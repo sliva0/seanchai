@@ -124,7 +124,7 @@ syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadValueK
 " after it.
 syn match dadTypeValue "\%(: \)\@2<=\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\|Interpreted Constraints\|Application IDs\|Command Codes\|AVP Codes\|Result Codes\)\ze\s*\%(;;.*\)\=$" contained
 " `; Kind:` of a value table, whose rows read as enum values do.
-syn match dadValueKind "\%(: \)\@2<=\%(result-codes\|bits\|features\)\ze\s*\%(;;.*\)\=$" contained
+syn match dadValueKind "\%(: \)\@2<=\%(result-codes\|bits\|features\|values\)\ze\s*\%(;;.*\)\=$" contained
 syn match dadLink "https\?://\S\+" contained
 " `; Applies-To:` entries: a clause and its subclauses, `5.*`, `E.6.*`.
 syn match dadClauseWildcard "\%(^\|[ ,]\)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\.\*\%([ ,]\|$\)\@=" contained

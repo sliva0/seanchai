@@ -267,20 +267,6 @@
      "Presence Requirement"
     ],
     "kind": "avp-table",
-    "page": 52,
-    "section": "16.4.1"
-   },
-   {
-    "caption": "Table 1: The attributes of the Access-Request message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Content",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
     "page": 78,
     "section": "16.4.1"
    },
@@ -294,36 +280,8 @@
      "Presence Requirement"
     ],
     "kind": "avp-table",
-    "page": 53,
-    "section": "16.4.2"
-   },
-   {
-    "caption": "Table 2: The attributes of the Access-Accept message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
     "page": 80,
     "section": "16.4.2"
-   },
-   {
-    "caption": "Table 3: The attributes of the Accounting-Request START message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Content",
-     "Presence Requirement",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
-    "page": 54,
-    "section": "16.4.3"
    },
    {
     "caption": "Table 3: The attributes of the Accounting-Request START message",
@@ -351,20 +309,6 @@
      "Presence Requirement"
     ],
     "kind": "avp-table",
-    "page": 55,
-    "section": "16.4.4"
-   },
-   {
-    "caption": "Table 4: The attributes of the Accounting-Request STOP message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Presence Requirement",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
     "page": 83,
     "section": "16.4.4"
    },
@@ -378,19 +322,6 @@
      "Presence Requirement"
     ],
     "kind": "avp-table",
-    "page": 57,
-    "section": "16.4.5"
-   },
-   {
-    "caption": "Table 5: The attributes of the Accounting-Request ON message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
     "page": 85,
     "section": "16.4.5"
    },
@@ -404,35 +335,8 @@
      "Presence Requirement"
     ],
     "kind": "avp-table",
-    "page": 57,
-    "section": "16.4.6"
-   },
-   {
-    "caption": "Table 6: The attributes of the Accounting-Request OFF message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
     "page": 85,
     "section": "16.4.6"
-   },
-   {
-    "caption": "Table 8: The attributes of the Accounting-Request Interim-Update message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Presence Requirement",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
-    "page": 71,
-    "section": "16.4.8"
    },
    {
     "caption": "Table 8: The attributes of the Accounting-Request Interim-Update message",
@@ -447,19 +351,6 @@
     "kind": "avp-table",
     "page": 109,
     "section": "16.4.8"
-   },
-   {
-    "caption": "Table 9: The attributes of the Disconnect-Request message",
-    "header": [
-     "Attr #",
-     "Attribute Name",
-     "Description",
-     "Content",
-     "Presence Requirement"
-    ],
-    "kind": "avp-table",
-    "page": 72,
-    "section": "16.4.9"
    },
    {
     "caption": "Table 9: The attributes of the Disconnect-Request message",
@@ -790,16 +681,6 @@
     "section": "7.2.2"
    },
    {
-    "caption": "Table 7.3.190-1: Group-Service-Id",
-    "header": [
-     "Value",
-     "Description"
-    ],
-    "kind": "values",
-    "page": 161,
-    "section": "7.3.190"
-   },
-   {
     "caption": "Table A.1: Mapping from S6a error code to NAS Cause Code values",
     "header": [
      "Reject indication received at MME over S6a",
@@ -821,28 +702,6 @@
    }
   ],
   "TS29.273": [
-   {
-    "caption": "Table 5.2.3.30/1: TWAN-S2a-Failure-Cause value description",
-    "header": [
-     "Cause value (decimal)",
-     "Cause Value",
-     "Meaning"
-    ],
-    "kind": "values",
-    "page": 80,
-    "section": "5.2.3.31"
-   },
-   {
-    "caption": "Table 5.2.3.35/1: IMEI-Check-In-VPLMN-Result value description",
-    "header": [
-     "Cause value (decimal)",
-     "Cause Value",
-     "Meaning"
-    ],
-    "kind": "values",
-    "page": 81,
-    "section": "5.2.3.35"
-   },
    {
     "caption": "Table 7.1.2.5.3/1: Re-authorization Answer valid result codes",
     "header": [

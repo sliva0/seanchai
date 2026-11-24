@@ -221,7 +221,7 @@ avps[]             id, defining, kind (plain, grouped, enumerated), name,
                    members[], dropped[], values[], values_source
 holes[]            id, name, reference, version, missing, what it does state,
                    recorded (the reason)
-value_tables[]     kind (result-codes, bits, features), avp, avp_ids,
+value_tables[]     kind (result-codes, bits, features, values), avp, avp_ids,
                    applications, reference, version, vendor_id, section, page,
                    table, application, feature_list_id, rows[]
 constraints[]      interpreted, avp, avp_ids, command, application_id, within,
@@ -398,10 +398,11 @@ suite, per command of the selection (`--application`, `--document`):
 - `negative`: one per rule broken, each from the minimal or maximal message
   with one thing changed: a required AVP missing, an AVP once too often, a
   fixed AVP out of place, the M bit clear where it must be set, the V bit
-  set on an IETF AVP, a reserved or void Enumerated value, a bit no document
-  names, UTF-8 that is not, an integer of three octets, an AVP the rule does
-  not admit where it has no `* [ AVP ]`, an answer with the E bit and a
-  Result-Code that is no protocol error, and each interpreted constraint the
+  set on an IETF AVP, a reserved or void Enumerated value, a bit or an
+  Unsigned32 value of a `values` table no document names, UTF-8 that is not,
+  an integer of three octets, an AVP the rule does not admit where it has
+  no `* [ AVP ]`, an answer with the E bit and a Result-Code that is no
+  protocol error, and each interpreted constraint the
   plugin checks: a length, a range, an excluded value, a codec's layout,
   another document's element as the element registry checks it, a rule on
   bits, a predicate on a command's own member, a members, unique or values

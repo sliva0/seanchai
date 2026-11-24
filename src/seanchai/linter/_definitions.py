@@ -138,7 +138,7 @@ def _values_out_of_range(index: _Index) -> list[Finding]:
     typed = {row.name: row.data_type for row in index.rows if row.data_type}
     findings = []
     for table in index.value_tables:
-        if table.kind is ast.ValueKind.RESULT_CODES:
+        if table.kind in (ast.ValueKind.RESULT_CODES, ast.ValueKind.VALUES):
             continue
         data_type = typed.get(table.avp)
         last = 31 if data_type not in (None, ast.DataType.UNSIGNED64) else 63

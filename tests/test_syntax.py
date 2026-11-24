@@ -189,6 +189,8 @@ _SCOPED = [
     ("; Kind: bits", "bits", "constant.language.value-kind"),
     ("; Kind: bits", "corrected", "keyword.other.note"),
     ("; Kind: result-codes", "result-codes", "constant.language.value-kind"),
+    ("; Kind: values", "values", "constant.language.value-kind"),
+    ('"Insufficient', '"Insufficient resources"', "variable.other.enum"),
     ("DIAMETER_ACME_UNKNOWN", "from", "keyword.other.from"),
     ("DIAMETER_ACME_UNKNOWN", "TS29.272", "entity.name.tag.spec-ref"),
     ("; Type: Information Elements", "Information Elements", "storage.type.section"),

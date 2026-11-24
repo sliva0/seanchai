@@ -108,7 +108,7 @@
             },
             {
               "comment": "A value table's `; Kind:`.",
-              "match": "(?<=: )(result-codes|bits|features)(?=\\s*$)",
+              "match": "(?<=: )(result-codes|bits|features|values)(?=\\s*$)",
               "name": "constant.language.value-kind.dad"
             },
             {

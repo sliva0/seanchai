@@ -1151,6 +1151,10 @@ class ValueKind(enum.StrEnum):
     # A feature bit of a Feature-List, one table per application and
     # Feature-List-ID: TS 29.272 table 7.3.10/1.
     FEATURES = "features"
+    # A value of an integer AVP that is no Enumerated, named by a table in its
+    # clause: TS 29.272 table 7.3.190-1's Group-Service-Id, TS 29.273 table
+    # 5.2.3.30/1's TWAN-S2a-Failure-Cause cause values.
+    VALUES = "values"
 
 
 class ValueRow(Node):
@@ -1174,7 +1178,7 @@ class ValueRow(Node):
 class ValueTable(Node):
     """`; Type: Value Table`: the numbers a numeric AVP's document names, for an
     AVP whose values are no `Enumerated`: result codes, the bits of a bit mask,
-    the features of a feature list.
+    the features of a feature list, the values of an integer AVP.
 
     `application` and `feature_list_id` say which feature list a `features`
     table is, as its caption does, "Features of Feature-List-ID 1 used in
