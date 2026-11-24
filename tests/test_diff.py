@@ -213,3 +213,45 @@ def test_two_releases_of_the_corpus_compare_as_one_stack_sees_them():
     assert (unchanged.old.release, unchanged.new.release) == (18, 19)
     assert unchanged.changes == ()
     assert gained.counts == {"breaking": 0, "compatible": 1, "editorial": 0}
+
+
+def _side(release, version, *documents):
+    from seanchai import dictionary
+
+    return diff.Side(
+        corpus_version=version,
+        release=release,
+        documents=tuple(
+            dictionary.Document(reference=reference, version=copy)
+            for reference, copy in documents
+        ),
+    )
+
+
+def test_two_releases_or_corpora_are_named_with_the_documents_that_moved():
+    def summary(old, new):
+        found = diff.Diff(
+            format_version=diff.FORMAT_VERSION,
+            seanchai_version="0",
+            old=old,
+            new=new,
+            counts={"breaking": 1},
+            changes=(),
+        )
+        return diff.render(found).splitlines()[0]
+
+    held = [("RFC6733", None), ("TS29.061", "19.1.0")]
+    assert summary(
+        _side(18, "2026.11.12", *held, ("TS29.061", "18.1.0"), ("TS29.272", "18.7.0")),
+        _side(19, "2026.11.12", *held, ("TS29.272", "19.6.0")),
+    ) == (
+        "Release 18 -> Release 19, TS29.061 18.1.0, 19.1.0 -> 19.1.0, TS29.272"
+        " 18.7.0 -> 19.6.0: 1 breaking, 0 compatible, 0 editorial"
+    )
+    assert summary(_side(19, "2026.11.11", *held), _side(19, "2026.11.12", *held)) == (
+        "corpus 2026.11.11 -> corpus 2026.11.12: 1 breaking, 0 compatible, 0 editorial"
+    )
+    many = [(f"TS29.{n}", "18.0.0") for n in range(6)]
+    assert summary(
+        _side(18, None, *many), _side(19, None, *[(r, "19.0.0") for r, _ in many])
+    ).startswith("Release 18 -> Release 19, 6 documents at another version: ")

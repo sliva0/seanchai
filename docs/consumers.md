@@ -492,7 +492,9 @@ seanchai diff --release 18 --release 19 --application 16777251
 
 `--release N` takes the same meaning in `show`, `commands`, `dictionary`,
 `vectors` and `wireshark-plugin`, and `seanchai diff --release 18 --release
-19` compares the two readings of the corpus. The dictionary, `show --json`,
+19` compares the two readings of the corpus; its summary line names the two
+releases and counts the documents read at another version, which `--json`
+lists. The dictionary, `show --json`,
 `commands --json` and each side of a diff name the release read as
 `release`. `Corpus.at(18)` is the corpus viewed at Release 18, sharing its
 copies; asking for a release the corpus holds only in part (Release 6, 7 or

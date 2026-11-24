@@ -54,6 +54,7 @@ __all__ = [
     "Path",
     "Reading",
     "Rule",
+    "TwoReadingsError",
     "UndefinedBlock",
     "Value",
     "ValueRow",
@@ -69,6 +70,22 @@ __all__ = [
 
 # Changes when a reader would have to.
 FORMAT_VERSION = 2
+
+
+class TwoReadingsError(model.ModelError):
+    """Two readings of one document would get one id: the document prints
+    two AVPs under one code, which no dictionary holds. Of a corrected
+    corpus, which corrects such a misprint, it is a bug in seanchai; a raw
+    mirror prints the misprint as it stands (TS 29.345's copied AVP
+    headers)."""
+
+    def __init__(self, identifier: str, first: model.Avp, second: model.Avp) -> None:
+        self.identifier = identifier
+        self.readings = (first, second)
+        super().__init__(
+            f"two readings would both be {identifier}: {first!r} and"
+            f" {second!r}; this is a bug in seanchai"
+        )
 
 
 class _Model(pydantic.BaseModel):
@@ -606,10 +623,7 @@ class _Builder:
             identifier = avp_id(self._built, avp)
             other = owners.setdefault(identifier, avp)
             if other != avp:
-                raise model.ModelError(
-                    f"two readings would both be {identifier}: {other!r} and"
-                    f" {avp!r}; this is a bug in seanchai"
-                )
+                raise TwoReadingsError(identifier, other, avp)
             self.ids[avp] = identifier
 
     def member(

@@ -867,7 +867,8 @@ def _release_diff(library, releases, documents, application_ids, corpus_paths):
     """Compare the corpus, and its raw mirror where it has one, at two of the
     releases it holds whole."""
     from ..corpus import Corpus
-    from ..model import HolePolicy, Model, ModelError
+    from ..dictionary import TwoReadingsError
+    from ..model import HolePolicy, Model
 
     def load(raw: bool = False):
         if corpus_paths:
@@ -894,12 +895,16 @@ def _release_diff(library, releases, documents, application_ids, corpus_paths):
         return compared(None)
     try:
         return compared((raws[0], raws[1]))
-    except ModelError as error:
-        # A raw file may print two AVPs one identity (TS 29.345's copied
+    except TwoReadingsError as error:
+        # A raw file may print two AVPs under one code (TS 29.345's copied
         # headers), which no dictionary holds; the corrected corpus is read
         # all the same, without origins.
+        avp, _ = error.readings
         click.echo(
-            f"origins left out: the raw mirror is no dictionary: {error}", err=True
+            f"origins left out: the raw copy of {avp.defined_in} prints code"
+            f" {avp.code} under more than one AVP header, a known misprint"
+            " its corrected copy fixes",
+            err=True,
         )
         return compared(None)
 

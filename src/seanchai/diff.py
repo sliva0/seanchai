@@ -1277,7 +1277,7 @@ def _rekeyed(rules: Rules, replaced: Mapping[tuple[str, str], str]) -> Rules:
 def render(found: Diff) -> str:
     """The human report: a summary line, then each impact's changes."""
     lines = [
-        f"{_side_text(found.old)} -> {_side_text(found.new)}: "
+        f"{_sides_text(found.old, found.new)}: "
         + ", ".join(f"{found.counts.get(i, 0)} {i}" for i in _IMPACTS)
     ]
     for impact in _IMPACTS:
@@ -1292,6 +1292,50 @@ def render(found: Diff) -> str:
             if len(change.paths) > 3:
                 lines.append(f"      and {len(change.paths) - 3} more paths")
     return "\n".join(lines) + "\n"
+
+
+# How many documents at another version the summary line names; more are
+# counted. `--json` lists every side's documents.
+_NAMED = 5
+
+
+def _sides_text(old: Side, new: Side) -> str:
+    """Both sides for the summary line: two releases, or two corpora, by name
+    with the documents read at another version, else each side's
+    documents."""
+    if (
+        old.release is not None
+        and new.release is not None
+        and old.release != new.release
+    ):
+        names = f"Release {old.release} -> Release {new.release}"
+    elif old.corpus_version is not None and new.corpus_version is not None:
+        names = f"corpus {old.corpus_version} -> corpus {new.corpus_version}"
+    else:
+        return f"{_side_text(old)} -> {_side_text(new)}"
+    versions: dict[str, tuple[list[str], list[str]]] = {}
+    for index, side in enumerate((old, new)):
+        for document in side.documents:
+            versions.setdefault(document.reference, ([], []))[index].append(
+                document.version or "-"
+            )
+    moved = {
+        reference: (", ".join(sorted(before)) or "-", ", ".join(sorted(after)) or "-")
+        for reference, (before, after) in versions.items()
+        if sorted(before) != sorted(after)
+    }
+    if not moved:
+        return names
+    if len(moved) > _NAMED:
+        return f"{names}, {len(moved)} documents at another version"
+    return (
+        names
+        + ", "
+        + ", ".join(
+            f"{reference} {before} -> {after}"
+            for reference, (before, after) in sorted(moved.items())
+        )
+    )
 
 
 def _side_text(side: Side) -> str:
