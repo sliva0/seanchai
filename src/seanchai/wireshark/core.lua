@@ -753,7 +753,10 @@ local function enum_problem(reading, value)
   if reading.values and reading.values[value] then
     return nil
   end
-  if reading.values_open then
+  -- No values: an Enumerated the clause leaves to another document
+  -- (`values_open`), or a type a table prints for an AVP the corpus holds
+  -- no values of (RFC 5777's Treatment-Action): nothing to hold it to.
+  if reading.values_open or reading.values == nil then
     return nil
   end
   return WARN, "is not a value the document defines"
@@ -930,6 +933,12 @@ local function check_data(ctx, avp, reading, path, inner, depth)
       return
     end
     local held = parse_avps(pdu, avp.data, avp.data + avp.size, findings, inner)
+    if reading.members == nil then
+      -- Typed Grouped by a table that prints no rule for it (TS 29.128's
+      -- APN-Rate-Control-Status, OMA's charging AVPs): what it holds is
+      -- framed, and no body says more of it.
+      return
+    end
     validate_body(ctx, reading.members, held, inner, depth + 1, reading)
   end
 end
@@ -1030,22 +1039,43 @@ validate_body = function(ctx, body, avps, path, depth, owner)
         where, wildcard.max, wildcard.max == 1 and "" or "s", unlisted),
       ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
   end
+  -- A body listing one AVP on several lines (TS 29.234's RAR, `{
+  -- Destination-Host }` and `[ Destination-Host ]`) admits as many as the
+  -- lines together do.
+  local allowed, order = {}, {}
   for _, member in ipairs(body) do
     if member.id then
       local identity = member.id:match("^[^@]+")
-      local count = counts[identity] or 0
-      if count < member.min then
-        finding(findings, ERROR, "avp-missing",
-          string.format("%s requires %s%s, which is missing", where,
-            member.min > 1 and (member.min .. " of ") or "", member_label(member)),
-          ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
-      elseif member.max >= 0 and count > member.max then
-        finding(findings, ERROR, "avp-occurrences",
-          string.format("%s allows %s at most %d time%s, it occurs %d", where,
-            member_label(member), member.max, member.max == 1 and "" or "s", count),
-          ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+      local bound = allowed[identity]
+      if not bound then
+        bound = { member = member, min = 0, max = 0 }
+        allowed[identity] = bound
+        order[#order + 1] = identity
       end
-    elseif member.hole or member.placeholder then
+      bound.min = bound.min + member.min
+      if bound.max >= 0 then
+        bound.max = member.max < 0 and -1 or bound.max + member.max
+      end
+    end
+  end
+  for _, identity in ipairs(order) do
+    local bound = allowed[identity]
+    local member = bound.member
+    local count = counts[identity] or 0
+    if count < bound.min then
+      finding(findings, ERROR, "avp-missing",
+        string.format("%s requires %s%s, which is missing", where,
+          bound.min > 1 and (bound.min .. " of ") or "", member_label(member)),
+        ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+    elseif bound.max >= 0 and count > bound.max then
+      finding(findings, ERROR, "avp-occurrences",
+        string.format("%s allows %s at most %d time%s, it occurs %d", where,
+          member_label(member), bound.max, bound.max == 1 and "" or "s", count),
+        ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+    end
+  end
+  for _, member in ipairs(body) do
+    if not member.id and (member.hole or member.placeholder) then
       finding(findings, NOTE, "unverifiable",
         string.format("%s names %s, which the corpus cannot complete (%s)", where,
           member.name, member.hole or "undefined"),
