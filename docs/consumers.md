@@ -418,7 +418,8 @@ vectors[]          id (application/abbreviation/kind[/what]), kind, application_
   tree[]           name, code, vendor_id (null without V), flags, data (hex),
                    children[]
   breaks           rule, reference, version, section, page, table
-  expected[]       rule and severity: the finding the Wireshark plugin reports
+  expected[]       rule and severity (error, warn, note): the finding the
+                   Wireshark plugin reports, a note for a constraint- rule
 skipped[]          command, what, reason
 ```
 
@@ -427,10 +428,10 @@ skipped[]          command, what, reason
 Schema. From Python, `seanchai.vectors.build(dictionary)` returns the same.
 
 The vectors are the plugin's end-to-end test (`tests/test_vectors.py`): each
-valid one draws no error or warning, each negative one exactly the finding it
-expects, under every Lua and tshark. Read through python-diameter's codec,
-which checks types and no rule, the library refuses exactly the vectors
-breaking a data format.
+valid one draws no error, warning or note of an interpreted rule, each
+negative one exactly the finding it expects, under every Lua and tshark.
+Read through python-diameter's codec, which checks types and no rule, the
+library refuses exactly the vectors breaking a data format.
 
 ### Commands
 

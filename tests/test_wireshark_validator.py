@@ -193,7 +193,7 @@ for index = 3, #arg do
   io.write("message ", command, " ", tostring(result.form), "\\n")
   io.write("ref ", reference(result.reference), "\\n")
   for _, each in ipairs(result.findings) do
-    io.write(each.severity, " ", each.rule, " ", each.message, "\\n")
+    io.write(each.severity, " ", each.rule, " ", each.line, "\\n")
     io.write("ref ", reference(each.reference), "\\n")
   end
 end
@@ -492,7 +492,7 @@ def test_a_diameter_uri_is_read_case_insensitively(lua):
     assert done.stdout.splitlines() == [
         "ok",
         "ok",
-        "does not start with aaa:// or aaas://",
+        "not aaa:// or aaas://",
     ]
 
 
@@ -591,7 +591,10 @@ def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path
         "shows": None,
         "text": "TS 29.061 clause 16a.5, table 9a, page 129",
     }
-    assert any("(TS 29.061 table 9a)" in text for _, _, text in ccr["findings"])
+    assert any(
+        text.endswith(": M bit set, must not be [TS 29.061 table 9a]")
+        for _, _, text in ccr["findings"]
+    )
     # A flag rule a re-used row's M-bit cell states: that row, not the
     # origin's AVP table, which says the opposite.
     assert aaa["document"] == "TS29.273"
@@ -600,7 +603,7 @@ def test_each_finding_cites_where_its_rule_is_written(lua, cited_rules, tmp_path
         for (_, rule, text), reference in zip(
             aaa["findings"], aaa["cited"], strict=True
         )
-        if rule == "flag-must-not" and text.startswith("Subscription-Id: the M bit")
+        if rule == "flag-must-not" and text.startswith("Subscription-Id: M bit")
     ]
     assert m_bit is not None
     assert m_bit["document"] == "TS29.273" != "RFC4006"
@@ -990,7 +993,7 @@ def _constraint_findings(result: dict) -> list[tuple[str, str]]:
     return [
         (rule, text)
         for kind, rule, text in result["findings"]
-        if rule.startswith("constraint-") and kind == "warn"
+        if rule.startswith("constraint-") and kind == "note"
     ]
 
 
@@ -1019,8 +1022,10 @@ def test_interpreted_constraints_are_checked_and_cited(lua, s6a_rules, tmp_path)
         assert _constraint_findings(result) == [], result
     ((rule, text),) = _constraint_findings(broken_plmn)
     assert rule == "constraint-encoding"
-    assert "Visited-PLMN-Id is no plmn-id" in text
-    assert "an interpreted rule, read in TS 29.272 clause 7.3.9" in text
+    assert text == (
+        "Visited-PLMN-Id: MNC digit 3 is neither a digit nor the '1111' filler"
+        " [TS 29.272 7.3.9, interpreted]"
+    )
     cited = _cited(broken_plmn, "constraint-encoding")
     assert [(each["clause"], each["page"]) for each in cited] == [("7.3.9", "103")]
     assert [rule for rule, _ in _constraint_findings(broken_sgsn)] == [
@@ -1035,3 +1040,45 @@ def test_interpreted_constraints_are_checked_and_cited(lua, s6a_rules, tmp_path)
     ]
     (table,) = {each["table"] for each in _cited(broken_dsr, "constraint-exclude")}
     assert table == "5.2.2.2.1/1"
+    # A predicate names the member it is of, the conditions after it.
+    assert sorted(text for _, text in _constraint_findings(broken_dsr))[1] == (
+        "Context-Identifier: not allowed without DSR-Flags bit"
+        ' "PDN subscription contexts Withdrawal" or "PDP contexts Withdrawal"'
+        " [TS 29.272 5.2.2.2.1, interpreted]"
+    )
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_a_finding_line_names_its_place_shortened_and_its_source(lua, s6a_rules):
+    # A path past one parent keeps its last two names; an interpreted rule
+    # says so after its source; a list of more than three members is cut
+    # short on the line and given whole for the expert info.
+    script = (
+        f"local core = dofile({json.dumps(str(CORE))})\n"
+        f"local rules = dofile({json.dumps(str(s6a_rules))})\n"
+        "local deep = { rule = 'constraint-encoding', severity = 'note',\n"
+        "  interpreted = true, message = 'not x', path = 'A > B > C > D' }\n"
+        "local near = { rule = 'avp-missing', severity = 'error',\n"
+        "  message = 'missing E', path = 'A > B' }\n"
+        "local top = { rule = 'avp-truncated', severity = 'error', message = 'm' }\n"
+        "local long = { rule = 'constraint-members', severity = 'note',\n"
+        "  interpreted = true, message = 'short', detail = 'whole', path = 'G' }\n"
+        "local found = { deep, near, top, long }\n"
+        "core.cited(rules, { findings = found, label = 'ULR' }, {})\n"
+        "for _, each in ipairs({ deep, near, top, long }) do\n"
+        "  print(each.line)\n"
+        "end\n"
+        "print(long.full)\n"
+    )
+    done = subprocess.run(
+        [lua, "-e", script], check=True, capture_output=True, text=True
+    )
+
+    assert done.stdout.splitlines() == [
+        "… > C > D: not x [interpreted]",
+        "A > B: missing E",
+        "ULR: m [RFC 6733 4.1]",
+        "G: short [interpreted]",
+        "G: whole [interpreted]",
+    ]

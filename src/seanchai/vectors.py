@@ -87,7 +87,8 @@ class Breaks(_Model):
 
 class Expected(_Model):
     """A finding the Wireshark plugin reports, by its rule name
-    (`seanchai.rule`) and severity."""
+    (`seanchai.rule`) and severity: `note` for a `constraint-` rule, which
+    is interpreted."""
 
     rule: str
     severity: Severity
@@ -96,8 +97,11 @@ class Expected(_Model):
 class Vector(_Model):
     """One message. `id` is `application/abbreviation/kind[/what]`; `kind`
     is `minimal`, `maximal` or `negative`. `octets` is the whole message in
-    hex. A valid vector has no `breaks` and expects nothing but notes; a
-    negative one breaks one rule and expects one finding."""
+    hex. A valid vector has no `breaks` and expects nothing: the plugin
+    reports no error or warning for it, and no note but what the corpus leaves
+    it unable to check, a note of an interpreted rule never. A negative one
+    breaks one rule and expects one finding, a note for an interpreted
+    rule."""
 
     id: str
     kind: Literal["minimal", "maximal", "negative"]
@@ -1392,7 +1396,7 @@ class _Negatives:
                             f"constraint-{rule.kind}/{name}/{each.section}",
                             self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
                             f"constraint-{rule.kind}",
-                            "warn",
+                            "note",
                         )
         self.predicate_vectors()
         self.grouped_vectors()
@@ -1438,7 +1442,7 @@ class _Negatives:
                                 f"constraint-members/{name}/{each.section}",
                                 self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
                                 "constraint-members",
-                                "warn",
+                                "note",
                             )
             for member, rules in inner.rules.items():
                 for each in rules:
@@ -1464,7 +1468,7 @@ class _Negatives:
                                         each, f"{member}: {_rule_text(rule)}"
                                     ),
                                     f"constraint-{rule.kind}",
-                                    "warn",
+                                    "note",
                                 )
 
     def inner_holds(self, scope: _Scope, children: Sequence[_Avp]) -> bool:
@@ -1695,7 +1699,7 @@ class _Negatives:
                         f"constraint-values/{name}/{each.section}",
                         self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
                         "constraint-values",
-                        "warn",
+                        "note",
                     )
                 continue
             member = next(m for m in self.scope.members if m.name == name)
@@ -1736,7 +1740,7 @@ class _Negatives:
                 f"constraint-{rule.kind}/{name}/{each.section}",
                 self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
                 f"constraint-{rule.kind}",
-                "warn",
+                "note",
             )
 
     def counts_hold(self, nodes: Sequence[_Avp]) -> bool:

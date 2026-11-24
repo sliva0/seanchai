@@ -38,7 +38,7 @@ To check a capture without installing the plugin:
 
 ```sh
 tshark -r capture.pcap -X lua_script:seanchai_diameter.lua -Y "seanchai.errors > 0"
-tshark -r capture.pcap -X lua_script:seanchai_diameter.lua -q -z expert,warn
+tshark -r capture.pcap -X lua_script:seanchai_diameter.lua -q -z expert,note
 ```
 
 ## What it checks
@@ -79,7 +79,8 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
 - Interpreted constraints ([constraints.md](constraints.md)), what a person
-  read in the clauses' prose, each a warning saying the rule is interpreted:
+  read in the clauses' prose, each a note whose line ends in `interpreted`,
+  since the reading is ours however firmly the quote words it:
   a length in octets, digits or characters, a range, an excluded value, an
   encoding, a rule on the AVP's own bits, the members a grouped AVP holds
   (`constraint-length`, `-range`, `-exclude`, `-encoding`, `-bits`,
@@ -96,6 +97,51 @@ It cannot check what the documents say only in prose and no one has read as
 a constraint, what depends on negotiated features, or anything across
 messages.
 
+## Findings
+
+Each finding is one line in the `seanchai` subtree, on the octets it is
+about, so selecting it marks the AVP in Wireshark's own Diameter tree and in
+the bytes. A Lua post-dissector cannot add to the items another dissector
+drew, so the line cannot sit under the AVP's own item; it names the AVP
+instead:
+
+```text
+Seanchaí Diameter validation: ULR, 0 errors, 0 warnings, 1 note
+    Note: … > MIP-Home-Agent-Host > Destination-Realm: not epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org [TS 29.272 7.3.43, interpreted]
+        [Path: Subscription-Data > APN-Configuration-Profile > APN-Configuration > MIP6-Agent-Info > MIP-Home-Agent-Host > Destination-Realm]
+```
+
+A line is `Severity: place: problem [source]`:
+
+- The place is the AVP, after its parent and `…` where it sits deeper; an AVP
+  of the message itself is named alone. A finding about what a body lacks
+  (a required AVP, a predicate's member, unlisted AVPs `* [ AVP ]` needs)
+  names the body: the grouped AVP, or the command's abbreviation, or
+  `answer-message`, on that AVP's octets or the command code's. A finding of
+  the message header names `Header`. `seanchai.path`, beneath, is the whole
+  path.
+- The problem says what is wrong once, as `missing Session-Id`, `M bit clear,
+  must be set`, `occurs 2 times, at most 1`, `16 digits, not 14 to 15`.
+- The source is the document and clause, `[TS 29.272 7.3.43]`, a flag rule's
+  table, `[TS 29.061 table 9a]`, and `interpreted` for an interpreted
+  constraint. An unknown command or AVP has none. The reference beneath has
+  the table and page, and the links.
+
+A members rule naming more than three members lists two and how many more on
+the line, and all of them in the expert info.
+
+| Severity | Expert info, to filter on | Group | For |
+|---|---|---|---|
+| Error | `seanchai.violation` | Malformed | a rule a document states (the ABNF, a Must or Must not flag rule, a data format, framing, a reserved or void value) broken |
+| Warning | `seanchai.warning` | Protocol | a bit set under Should not, reserved flags or nonzero padding, a value or Result-Code no document defines, an unknown AVP with the M bit, the E bit against the Result-Code |
+| Note | `seanchai.note` | Protocol | an unknown command or AVP without the M bit, a bit or Experimental-Result-Code no document names, a member the corpus cannot complete, an AVP only `* [ AVP ]` admits |
+| Note | `seanchai.interpreted` | Protocol | an interpreted constraint broken |
+
+Each message's counts are `seanchai.errors`, `seanchai.warnings` and
+`seanchai.notes`, the notes counting interpreted ones: `seanchai.errors > 0`,
+`seanchai.warnings > 0`, `seanchai.notes > 0` filter for messages, and
+`seanchai.interpreted` for those breaking an interpreted rule.
+
 ## Which definition a message is held to
 
 A message is looked up by application id, command code and R bit. If no
@@ -110,8 +156,9 @@ candidate. The message is reported against the one it breaks least, chosen by:
 
 1. fewest errors;
 2. fewest warnings;
-3. most of its AVPs listed by the rule rather than left to `* [ AVP ]`;
-4. the document TS 29.230's registry allocates the id to.
+3. fewest breaches of interpreted constraints;
+4. most of its AVPs listed by the rule rather than left to `* [ AVP ]`;
+5. the document TS 29.230's registry allocates the id to.
 
 The other candidates follow with their counts. A document another candidate's
 header obsoletes is none (`; Obsoletes:`): RFC 4005 and RFC 4006, which RFC
@@ -128,7 +175,8 @@ tshark (`-o seanchai.pin:TS32.299`):
 
 ## References
 
-Each finding says where the rule it reports is written, beneath its line: the
+Each finding's line ends in where the rule it reports is written, in short
+([Findings](#findings)), and says it in full beneath: the
 document, clause, table and page, as `TS 29.061 clause 16a.5, table 9a, page
 129`, with a link to the publisher's copy there and one to the explorer site
 at that clause. The command line has the same for the command's definition.
@@ -138,7 +186,7 @@ publisher's link does not depend on it.
 
 | Finding | Cites |
 |---|---|
-| a flag rule (`flag-must`, `flag-must-not`, `flag-should-not`) | a row whose cell states that rule for that bit, from the reading's document (its AVP table, then its re-used table's M-bit column), the document completing the flags, or the defining one: its table's clause; the line ends in the document and table. RFC 6733 section 4.1.1 for V under Must not on an IETF AVP no row places, and the reading's clause for any other rule no row states |
+| a flag rule (`flag-must`, `flag-must-not`, `flag-should-not`) | a row whose cell states that rule for that bit, from the reading's document (its AVP table, then its re-used table's M-bit column), the document completing the flags, or the defining one: its table's clause; the line ends in the document and table. RFC 6733 section 4.1.1 for V under Must not on an IETF AVP no row places, and the reading's clause for any other rule no row states; with none, the line ends in the reading's document |
 | an AVP missing, too often, out of place or not allowed; a note on `* [ AVP ]` or a name the corpus cannot complete | the command's ABNF, or the answer-message's; inside a Grouped AVP, its rule |
 | an Enumerated value undefined, reserved or void | the Enumerated AVP's clause |
 | a Result-Code or Experimental-Result-Code no document defines | that AVP's clause, RFC 6733 section 7.1 or 7.7 |
@@ -218,8 +266,9 @@ the two lines.
 | `seanchai.section`   | its clause                                            |
 | `seanchai.form`      | the command's body, or the answer-message it took     |
 | `seanchai.errors`    | how many findings are errors; `warnings`, `notes`     |
-| `seanchai.finding`   | one finding, on the octets it is about                |
+| `seanchai.finding`   | one finding's line, on the octets it is about         |
 | `seanchai.rule`      | the finding's kind, as `avp-missing` or `flag-must`   |
+| `seanchai.path`      | the AVP or body it is about, from the message's top   |
 | `seanchai.candidate` | another definition, with its counts                   |
 | `seanchai.corpus`    | the seanchai and corpus versions the rules came from  |
 | `seanchai.reference` | where a finding's rule, or the command, is written    |
@@ -227,8 +276,7 @@ the two lines.
 | `seanchai.url`       | the publisher's copy at that place                    |
 | `seanchai.explorer`  | the explorer site at that clause                      |
 
-Errors are expert info in the Malformed group; warnings and notes are in the
-Protocol group.
+The findings are expert info too ([Findings](#findings)).
 
 ## Testing
 
@@ -237,5 +285,7 @@ Protocol group.
 under `tshark` over a capture of them, with the preference set and the marked
 line rewritten. `tests/test_vectors.py` runs it over the
 [test messages](consumers.md#test-messages) of eight applications, each
-pinned to its document: every valid one draws no error or warning and every
-negative one exactly the finding it expects. Both skip what is not installed.
+pinned to its document: every valid one draws no error, warning or note of an
+interpreted rule and every negative one exactly the finding it expects, an
+interpreted rule's as `seanchai.interpreted` under tshark. Both skip what is
+not installed.

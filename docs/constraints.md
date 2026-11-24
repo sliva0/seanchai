@@ -28,8 +28,9 @@ from the printed facts, so a consumer can weigh it:
   TS 29.272's 157, Release 18's copy holds 152
   ([corrections.md](corrections.md#interpreted-constraints)).
 - The model's `Constraint`, the dictionary's and the export's say
-  `interpreted`; the Wireshark plugin reports a breach as a warning that names
-  the rule interpreted.
+  `interpreted`; the Wireshark plugin reports a breach as a note, whatever
+  the quote's wording, its line ending in `interpreted`
+  ([wireshark-plugin.md](wireshark-plugin.md#findings)).
 - What no kind below expresses is recorded as `text-only`: the quote, and no
   rule a checker could run. A checker reports it unknown, never a guess.
 

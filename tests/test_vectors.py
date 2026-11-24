@@ -1,6 +1,7 @@
 """`seanchai vectors`: the messages it writes, and the Wireshark plugin's
-core as their end-to-end test. Every valid vector draws no error or warning
-from `core.lua`, and every negative one exactly the finding it expects, under
+core as their end-to-end test. Every valid vector draws no error, warning
+or note of an interpreted rule from `core.lua`, and every negative one
+exactly the finding it expects, under
 each Lua on PATH; the generated plugin under tshark reads the capture alike.
 """
 
@@ -112,7 +113,7 @@ def test_a_negative_vector_cites_the_rule_it_breaks(s6a):
         100,
     )
     assert imei.expected == (
-        vectors.Expected(rule="constraint-length", severity="warn"),
+        vectors.Expected(rule="constraint-length", severity="note"),
     )
 
 
@@ -185,11 +186,17 @@ def test_the_plugin_reports_exactly_what_each_vector_expects(lua, checked):
             # V19.4.0's ACR).
             held += 1
             continue
+        # Every error, warning and note of an interpreted rule exactly; other
+        # notes (what the corpus cannot complete) only where expected.
         reported = sorted(
-            tuple(each.split(" ")) for each in found if not each.startswith("note ")
+            (severity, rule)
+            for severity, rule in (each.split(" ") for each in found)
+            if severity != "note" or rule.startswith("constraint-")
         )
         expected = sorted(
-            (e.severity, e.rule) for e in vector.expected if e.severity != "note"
+            (e.severity, e.rule)
+            for e in vector.expected
+            if e.severity != "note" or e.rule.startswith("constraint-")
         )
         notes = {each.split(" ")[1] for each in found if each.startswith("note ")}
         if reported != expected or not all(
@@ -249,3 +256,33 @@ def test_tshark_reads_the_capture_as_the_core_does(s6a, tmp_path):
     assert len(errors) == len(s6a.vectors)
     failing = [v for v in s6a.vectors if any(e.severity == "error" for e in v.expected)]
     assert sum(1 for count in errors if count) == len(failing)
+    # A breach of an interpreted rule is expert info of its own, a note.
+    noted = subprocess.run(
+        [
+            "tshark",
+            "-n",
+            "-r",
+            str(capture),
+            "-X",
+            f"lua_script:{plugin}",
+            "-T",
+            "fields",
+            "-e",
+            "_ws.expert.severity",
+            "-Y",
+            "seanchai.interpreted",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    interpreted = [
+        v
+        for v in s6a.vectors
+        if any(e.rule.startswith("constraint-") for e in v.expected)
+    ]
+    lines = [line for line in noted.stdout.splitlines() if line.strip()]
+    assert len(lines) == len(interpreted)
+    # PI_NOTE among the frame's expert infos, which Wireshark's own Diameter
+    # dissector adds to.
+    assert all(str(0x00400000) in line.split(",") for line in lines)

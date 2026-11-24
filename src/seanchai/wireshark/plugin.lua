@@ -7,9 +7,16 @@
 -- info on the octets concerned and fields a display filter can use:
 --
 --   seanchai.errors > 0          messages breaking a rule of their document
+--   seanchai.warnings > 0, seanchai.notes > 0
+--   seanchai.interpreted         breaches of rules read in prose, notes
 --   seanchai.rule == "avp-missing"
 --   seanchai.document == "TS29.272"
 --   seanchai.cited == "TS29.061"  findings citing a document
+--
+-- A post-dissector cannot add to the items Wireshark's Diameter dissector
+-- drew, so the findings are listed in the subtree, each on its AVP's octets
+-- and named by the AVP's place shortened ("… > Parent > AVP"); the whole
+-- path is beneath it.
 --
 -- Each finding, and the command it was held to, has the place its rule is
 -- written beneath it: a reference ("TS 29.061 clause 16a.5, table 9a, page
@@ -34,6 +41,7 @@ local fields = {
   notes = ProtoField.uint32("seanchai.notes", "Notes"),
   finding = ProtoField.string("seanchai.finding", "Finding"),
   rule = ProtoField.string("seanchai.rule", "Rule"),
+  path = ProtoField.string("seanchai.path", "Path"),
   candidate = ProtoField.string("seanchai.candidate", "Other definition"),
   corpus = ProtoField.string("seanchai.corpus", "Corpus"),
   reference = ProtoField.string("seanchai.reference", "Reference"),
@@ -43,7 +51,8 @@ local fields = {
 }
 proto.fields = {
   fields.command, fields.document, fields.section, fields.form, fields.errors,
-  fields.warnings, fields.notes, fields.finding, fields.rule, fields.candidate,
+  fields.warnings, fields.notes, fields.finding, fields.rule, fields.path,
+  fields.candidate,
   fields.corpus, fields.reference, fields.cited, fields.url, fields.explorer,
 }
 
@@ -54,8 +63,12 @@ local experts = {
     expert.group.PROTOCOL, expert.severity.WARN),
   note = ProtoExpert.new("seanchai.note", "Specification note",
     expert.group.PROTOCOL, expert.severity.NOTE),
+  -- A rule a person read in a clause's prose: a note, however the
+  -- specification words it, since the reading is ours.
+  interpreted = ProtoExpert.new("seanchai.interpreted", "Breaks an interpreted rule",
+    expert.group.PROTOCOL, expert.severity.NOTE),
 }
-proto.experts = { experts.error, experts.warn, experts.note }
+proto.experts = { experts.error, experts.warn, experts.note, experts.interpreted }
 
 proto.prefs.pin = Pref.string("Pinned documents", "",
   "Comma-separated references (TS29.229, RFC8506) to check a command against"
@@ -114,6 +127,16 @@ local function describe(candidate)
     candidate.abbreviation, candidate.document, candidate.section)
 end
 
+local function counted(count, word)
+  return string.format("%d %s%s", count, word, count == 1 and "" or "s")
+end
+
+-- "1 error, 0 warnings, 2 notes".
+local function tally(errors, warnings, notes)
+  return counted(errors, "error") .. ", " .. counted(warnings, "warning") .. ", "
+    .. counted(notes, "note")
+end
+
 function proto.dissector(tvb, pinfo, tree)
   local pdus = { diameter() }
   if #pdus == 0 then
@@ -135,18 +158,15 @@ function proto.dissector(tvb, pinfo, tree)
     end
     total_errors = total_errors + counts.error
     local candidate = result.command
+    local said = tally(counts.error, counts.warn, counts.note)
     if candidate then
-      subtree:append_text(string.format(": %s, %d error%s, %d warning%s",
-        candidate.abbreviation, counts.error, counts.error == 1 and "" or "s",
-        counts.warn, counts.warn == 1 and "" or "s"))
+      subtree:append_text(": " .. candidate.abbreviation .. ", " .. said)
       local command = subtree:add(fields.command, clamp(range, 5, 3), describe(candidate))
       cite(command, clamp(range, 5, 3), result.reference)
       subtree:add(fields.document, clamp(range, 5, 3), candidate.document)
       subtree:add(fields.section, clamp(range, 5, 3), candidate.section)
     else
-      subtree:append_text(string.format(": %d error%s, %d warning%s",
-        counts.error, counts.error == 1 and "" or "s", counts.warn,
-        counts.warn == 1 and "" or "s"))
+      subtree:append_text(": " .. said)
     end
     if result.where then
       subtree:add(fields.form, clamp(range, 0, 0), result.where)
@@ -155,21 +175,20 @@ function proto.dissector(tvb, pinfo, tree)
     subtree:add(fields.warnings, clamp(range, 0, 0), counts.warn)
     subtree:add(fields.notes, clamp(range, 0, 0), counts.note)
     for _, each in ipairs(result.findings) do
-      local text = each.message
-      if each.path then
-        text = each.path .. ": " .. text
-      end
-      local item = subtree:add(fields.finding, clamp(range, each.offset, each.length),
-        LABELS[each.severity] .. ": " .. text)
-      item:add(fields.rule, clamp(range, each.offset, each.length), each.rule)
-      cite(item, clamp(range, each.offset, each.length), each.reference)
-      item:add_proto_expert_info(experts[each.severity], text)
+      local at = clamp(range, each.offset, each.length)
+      -- The line alone, without the field's name before it.
+      local line = LABELS[each.severity] .. ": " .. each.line
+      local item = subtree:add(fields.finding, at, line, line)
+      item:add(fields.rule, at, each.rule)
+      item:add(fields.path, at, each.path):set_generated()
+      cite(item, at, each.reference)
+      item:add_proto_expert_info(
+        each.interpreted and experts.interpreted or experts[each.severity], each.full)
     end
     for _, other in ipairs(result.others) do
       subtree:add(fields.candidate, clamp(range, 0, 0),
-        string.format("%s: %d error%s, %d warning%s", describe(other.candidate),
-          other.errors, other.errors == 1 and "" or "s", other.warnings,
-          other.warnings == 1 and "" or "s"))
+        describe(other.candidate) .. ": "
+          .. tally(other.errors, other.warnings, other.notes))
     end
     subtree:add(fields.corpus, clamp(range, 0, 0), RULES.corpus)
   end

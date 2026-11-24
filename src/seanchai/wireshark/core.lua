@@ -60,6 +60,11 @@ local AVP_V, AVP_M, AVP_P = 128, 64, 32
 -- Section 3: R 0x80, P 0x40, E 0x20, T 0x10; the rest are reserved.
 local CMD_R, CMD_P, CMD_E, CMD_T = 128, 64, 32, 16
 
+-- `message` says what is wrong, without naming what it is wrong of: `path`
+-- does, the AVP the finding is about, or for one about what a body holds the
+-- body, as "Subscription-Data > APN-Configuration-Profile", from the
+-- message's top; "Header" for the message header, and nil for the
+-- message's own run of AVPs, named once the command is known (`M.cited`).
 -- `cite` is a number into `rules.cites`, the place the rule broken is
 -- written, and `name` what the explorer looks for there. Returns the finding,
 -- for `about`.
@@ -114,6 +119,16 @@ local HEADER_RULES = {
   ["e-bit-missing"] = true, ["e-bit-unexpected"] = true,
 }
 
+-- Where `name` sits inside `path`.
+local function join(path, name)
+  if path then
+    return path .. " > " .. name
+  end
+  return name
+end
+
+local HEADER = "Header"
+
 -- References: a citation as text and links.
 
 -- JavaScript's encodeURIComponent, which the explorer's routes decode.
@@ -133,7 +148,8 @@ end
 -- What `cite` (a number into `rules.cites`) says, or nil:
 --   document  the reference, as TS29.061
 --   text      "TS 29.061 clause 16a.5, table 9a, page 129"
---   short     "TS 29.061 table 9a", for a finding's own line
+--   short     "TS 29.061 table 9a", for a flag rule's line
+--   brief     "TS 29.061 16a.5", for any other finding's line
 --   clause, page, table
 --   url       the publisher's copy at the place: a PDF's `#page=N`, an RFC's
 --             `#section-X.Y`; the document alone where neither reaches it
@@ -177,7 +193,8 @@ function M.reference(rules, cite, name, explorer)
     end
   end
   return {
-    document = doc[1], text = text, short = short, clause = clause, page = page,
+    document = doc[1], text = text, short = short, brief = label .. " " .. clause,
+    clause = clause, page = page,
     table = table_label, url = link, explorer = site,
     place = label .. " " .. word .. " " .. clause, label = label, top = top,
   }
@@ -186,13 +203,15 @@ end
 -- Splitting a run of AVPs. Offsets are 0-based into the PDU, as Wireshark's
 -- ranges are; `first` and `last` bound the run, `last` exclusive.
 
-local function parse_avps(pdu, first, last, findings, path)
+-- `path` is what holds the run, nil for the message's own; `rules`, where
+-- given, names each AVP its framing findings are about.
+local function parse_avps(pdu, first, last, findings, path, rules)
   local avps = {}
   local at = first
   while at < last do
     if last - at < 8 then
       finding(findings, ERROR, "avp-truncated",
-        string.format("%d octets left over, too few for an AVP header", last - at),
+        string.format("%d octets left over, too few for an AVP", last - at),
         at, last - at, path)
       break
     end
@@ -208,18 +227,18 @@ local function parse_avps(pdu, first, last, findings, path)
       end
     end
     local identity = vendor .. ":" .. code
+    local known = rules and rules.avps[identity]
+    local place = join(path, known and known.name or ("AVP " .. code))
     if length < header then
       about(finding(findings, ERROR, "avp-length",
-        string.format("AVP %d declares length %d, below its %d-octet header",
-          code, length, header),
-        at, math.min(8, last - at), path), nil, identity)
+        string.format("length %d, under its %d-octet header", length, header),
+        at, math.min(8, last - at), place), nil, identity)
       break
     end
     if at + length > last then
       about(finding(findings, ERROR, "avp-length",
-        string.format("AVP %d declares length %d, past the end of what holds it",
-          code, length),
-        at, last - at, path), nil, identity)
+        string.format("length %d, past the end of what holds it", length),
+        at, last - at, place), nil, identity)
       break
     end
     local padded = length + (4 - length % 4) % 4
@@ -235,21 +254,21 @@ local function parse_avps(pdu, first, last, findings, path)
     avps[#avps + 1] = avp
     if flags % 32 ~= 0 then
       about(finding(findings, WARN, "avp-reserved-flags",
-        string.format("reserved AVP flag bits set (0x%02x)", flags % 32),
-        at + 4, 1, path), nil, identity)
+        string.format("reserved flags set (0x%02x)", flags % 32),
+        at + 4, 1, place), nil, identity)
     end
     if at + padded > last then
       if padded ~= length then
         about(finding(findings, ERROR, "avp-padding",
-          "the AVP's padding runs past the end of what holds it",
-          at, last - at, path), nil, identity)
+          "padding past the end of what holds it",
+          at, last - at, place), nil, identity)
       end
       break
     end
     for i = at + length, at + padded - 1 do
       if u8(pdu, i + 1) ~= 0 then
-        about(finding(findings, WARN, "avp-padding", "nonzero padding octets",
-          at + length, padded - length, path), nil, identity)
+        about(finding(findings, WARN, "avp-padding", "nonzero padding",
+          at + length, padded - length, place), nil, identity)
         break
       end
     end
@@ -312,24 +331,24 @@ end
 -- an IDN by its A-labels.
 local function identity_problem(text)
   if text == "" then
-    return "is empty"
+    return "empty"
   end
   if #text > 255 then
-    return "is longer than 255 octets"
+    return "over 255 octets"
   end
   if text:find("[^%w%.%-]") then
-    return "holds characters no host name does"
+    return "a character no host name holds"
   end
   local body = text:gsub("%.$", "")
   for label in (body .. "."):gmatch("([^%.]*)%.") do
     if label == "" then
-      return "has an empty label"
+      return "an empty label"
     end
     if #label > 63 then
-      return "has a label longer than 63 octets"
+      return "a label over 63 octets"
     end
     if label:sub(1, 1) == "-" or label:sub(-1) == "-" then
-      return "has a label starting or ending in a hyphen"
+      return "a label starting or ending in a hyphen"
     end
   end
   return nil
@@ -341,35 +360,35 @@ end
 local function uri_problem(text)
   local rest = text:lower():match("^aaas?://(.*)$")
   if rest == nil then
-    return "does not start with aaa:// or aaas://"
+    return "not aaa:// or aaas://"
   end
   local host, tail = rest:match("^([^:;]*)(.*)$")
   local problem = identity_problem(host)
   if problem then
-    return "names a host that " .. problem
+    return "host: " .. problem
   end
   local port, after = tail:match("^:(%d+)(.*)$")
   if port then
     if tonumber(port) > 65535 then
-      return "names a port above 65535"
+      return "port above 65535"
     end
     tail = after
   end
   for key, value in tail:gmatch(";([^=;]*)=([^;]*)") do
     if key == "transport" then
       if value ~= "tcp" and value ~= "sctp" and value ~= "udp" then
-        return "names transport " .. value .. ", not tcp, sctp or udp"
+        return "transport " .. value .. ", not tcp, sctp or udp"
       end
     elseif key == "protocol" then
       if value ~= "diameter" and value ~= "radius" and value ~= "tacacs+" then
-        return "names protocol " .. value .. ", not diameter, radius or tacacs+"
+        return "protocol " .. value .. ", not diameter, radius or tacacs+"
       end
     else
-      return "has a parameter " .. key .. " the syntax does not allow"
+      return "parameter " .. key .. ", which the syntax lacks"
     end
   end
   if tail:gsub(";[^=;]*=[^;]*", "") ~= "" then
-    return "has text the syntax does not allow after the host"
+    return "text after the host the syntax does not allow"
   end
   return nil
 end
@@ -378,19 +397,19 @@ end
 local function filter_problem(text)
   local action, dir, proto, rest = text:match("^(%S+) +(%S+) +(%S+) +(.*)$")
   if action == nil then
-    return "is not 'action dir proto from ... to ...'"
+    return "not 'action dir proto from ... to ...'"
   end
   if action ~= "permit" and action ~= "deny" then
-    return "has action " .. action .. ", not permit or deny"
+    return "action " .. action .. ", not permit or deny"
   end
   if dir ~= "in" and dir ~= "out" then
-    return "has direction " .. dir .. ", not in or out"
+    return "direction " .. dir .. ", not in or out"
   end
   if proto ~= "ip" and not proto:match("^%d+$") then
-    return "has protocol " .. proto .. ", not ip or a number"
+    return "protocol " .. proto .. ", not ip or a number"
   end
   if not rest:match("^from +.- +to +") then
-    return "has no 'from ... to ...'"
+    return "no 'from ... to ...'"
   end
   return nil
 end
@@ -415,8 +434,7 @@ end
 -- relation `r` and bits `b`, a members rule's `r` and member identities `m`,
 -- a unique rule's member identity `i`, a predicate's `c`, conditions on
 -- siblings {avp=identity, t=text, v=value or b=bit}, and a values rule's `v`
--- and `c`. Every finding is a warning saying the rule is interpreted, citing
--- its clause.
+-- and `c`. Every finding is a note marked `interpreted`, citing its clause.
 
 -- A TBCD-string's decimal digits (TS 29.002 clause 17.7.8: the first digit in
 -- bits 1-4, "1111" filling the last octet's bits 5-8 after an odd count), or
@@ -445,18 +463,18 @@ end
 -- and 1.
 local function plmn_problem(s)
   if #s < 3 then
-    return string.format("is %d octets, and a PLMN identity is 3", #s)
+    return string.format("%d octets, a PLMN identity is 3", #s)
   end
   local a, b, c = string.byte(s, 1, 3)
   for _, digit in ipairs({ a % 16, math.floor(a / 16), b % 16, c % 16,
     math.floor(c / 16) }) do
     if digit > 9 then
-      return "holds an MCC or MNC digit that is no decimal digit"
+      return "an MCC or MNC digit is no decimal digit"
     end
   end
   local mnc3 = math.floor(b / 16)
   if mnc3 > 9 and mnc3 ~= 15 then
-    return "holds an MNC digit 3 that is neither a digit nor the '1111' filler"
+    return "MNC digit 3 is neither a digit nor the '1111' filler"
   end
   return nil
 end
@@ -470,61 +488,60 @@ end
 local function codec_problem(codec, s)
   if codec == "e164-tbcd" then
     if #s < 1 or #s > 8 then
-      return string.format("is %d octets, and a TBCD E.164 number 1 to 8", #s)
+      return string.format("%d octets, a TBCD E.164 number is 1 to 8", #s)
     end
     local digits = tbcd_digits(s)
     if not digits then
-      return "is not a TBCD-string of decimal digits, '1111' filling only the"
-        .. " last octet's bits 5-8"
+      return "not TBCD digits, '1111' filling only the end"
     end
     if #digits > 15 then
-      return string.format("holds %d digits, and an E.164 number at most 15", #digits)
+      return string.format("%d digits, an E.164 number is at most 15", #digits)
     end
     return nil
   elseif codec == "plmn-id" then
     if #s ~= 3 then
-      return string.format("is %d octets, and a PLMN identity is 3", #s)
+      return string.format("%d octets, a PLMN identity is 3", #s)
     end
     return plmn_problem(s)
   elseif codec == "plmn-id-prefix" then
     return plmn_problem(s)
   elseif codec == "ip-address" then
     if #s < 2 then
-      return "has no 2-octet address family"
+      return "no 2-octet address family"
     end
     local family, size = string.byte(s, 1) * 256 + string.byte(s, 2), #s - 2
     if not ((family == 1 and size == 4) or (family == 2 and size == 16)) then
-      return string.format("is no IPv4 or IPv6 address (family %d, %d octets)",
+      return string.format("no IPv4 or IPv6 address (family %d, %d octets)",
         family, size)
     end
     return nil
   end
   if not valid_utf8(s, 1, #s) then
-    return "is not UTF-8 text"
+    return "not UTF-8"
   end
   if codec == "digits" then
     if s == "" or s:find("[^0-9]") then
-      return "is not decimal digits"
+      return "not decimal digits"
     end
   elseif codec == "labels" then
     if not labels_ok(s) then
-      return "is not labels separated by dots"
+      return "not dot-separated labels"
     end
   elseif codec == "apn" then
     if s ~= "*" and not labels_ok(s) then
-      return "is neither labels separated by dots nor the wild card *"
+      return "neither dot-separated labels nor *"
     end
   elseif codec == "plmn-domain" then
     if not s:lower():match("^mnc%d%d%d?%.mcc%d%d%d%.3gppnetwork%.org$") then
-      return "is not mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+      return "not mnc<MNC>.mcc<MCC>.3gppnetwork.org"
     end
   elseif codec == "epc-plmn-domain" then
     if not s:lower():match("^epc%.mnc%d%d%d?%.mcc%d%d%d%.3gppnetwork%.org$") then
-      return "is not epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+      return "not epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org"
     end
   elseif codec == "time-zone" then
     if not s:match("^[+-]%d+$") then
-      return "is not a sign and a number of 15 minutes"
+      return "not a sign and a number of 15 minutes"
     end
   end
   return nil
@@ -604,6 +621,11 @@ local function bit_reader(kind, s)
   end, #s * 8
 end
 
+-- "bit 3" or "bits 3, 5".
+local function bits_text(list, joiner)
+  return (#list == 1 and "bit " or "bits ") .. table.concat(list, joiner or ", ")
+end
+
 local function bits_problem(rule, set, width)
   local named, held, unset = {}, {}, {}
   local listed = {}
@@ -617,17 +639,14 @@ local function bits_problem(rule, set, width)
     end
   end
   if rule.r == "at-most-one" and #held > 1 then
-    return string.format("sets bits %s, of which at most one may be",
-      table.concat(held, " and "))
+    return string.format("%s set, at most one may be", bits_text(held, " and "))
   elseif rule.r == "at-least-one" and #held == 0 then
-    return string.format("sets none of bits %s, one of which must be",
+    return string.format("none of bits %s set, one must be",
       table.concat(named, ", "))
   elseif rule.r == "set" and #unset > 0 then
-    return string.format("has bits %s clear, which must be set",
-      table.concat(unset, ", "))
+    return string.format("%s clear, must be set", bits_text(unset))
   elseif rule.r == "clear" and #held > 0 then
-    return string.format("sets bits %s, which must be clear",
-      table.concat(held, ", "))
+    return string.format("%s set, must be clear", bits_text(held))
   elseif rule.r == "only" then
     local others = {}
     for bit = 0, width - 1 do
@@ -636,22 +655,22 @@ local function bits_problem(rule, set, width)
       end
     end
     if #others > 0 then
-      return string.format("sets bits %s, and only %s may be",
-        table.concat(others, ", "), table.concat(named, ", "))
+      return string.format("%s set, only %s may be", bits_text(others),
+        table.concat(named, ", "))
     end
   end
   return nil
 end
 
 local function interpreted(ctx, cons, rule, message, offset, length, path, name)
-  local where = M.reference(ctx.rules, cons.at)
-  finding(ctx.findings, WARN, "constraint-" .. rule,
-    string.format("%s (an interpreted rule, read in %s)", message,
-      where and where.place or "the documents' prose"),
-    offset, length, path, cons.at, name)
+  local found = finding(ctx.findings, NOTE, "constraint-" .. rule, message, offset,
+    length, path, cons.at, name)
+  found.interpreted = true
+  return found
 end
 
--- The names a grouped reading's body gives the member identities `ids`.
+-- The names a grouped reading's body gives the member identities `ids`: up
+-- to three, then the first two and how many more, and all of them.
 local function members_text(reading, ids)
   local named = {}
   for _, identity in ipairs(ids) do
@@ -664,11 +683,15 @@ local function members_text(reading, ids)
     end
     named[#named + 1] = name
   end
-  return table.concat(named, ", ")
+  local all = table.concat(named, ", ")
+  if #named <= 3 then
+    return all, all
+  end
+  return string.format("%s, %s and %d more", named[1], named[2], #named - 2), all
 end
 
 -- Checks one AVP's data against its reading's constraints and `scoped`,
--- those its command or grouped AVP holds for it.
+-- those its command or grouped AVP holds for it. `path` names the AVP.
 local function check_constraints(ctx, avp, reading, path, scoped)
   local lists = { reading.cons or {}, scoped or {} }
   local data = data_text(ctx.pdu, avp)
@@ -685,7 +708,7 @@ local function check_constraints(ctx, avp, reading, path, scoped)
   for _, list in ipairs(lists) do
     for _, cons in ipairs(list) do
       for _, rule in ipairs(cons.rules) do
-        local problem
+        local problem, detail
         if rule.k == "length" then
           local count
           if rule.u == "octets" then
@@ -696,27 +719,23 @@ local function check_constraints(ctx, avp, reading, path, scoped)
             count = digit_count(codec, data)
           end
           if count and not within(count, rule.lo, rule.hi) then
-            problem = string.format("holds %d %s, not %s", count, rule.u,
+            problem = string.format("%d %s, not %s", count, rule.u,
               bounds(rule.lo, rule.hi))
           end
         elseif rule.k == "range" or rule.k == "exclude" then
           local value = integer_value(reading.type, data)
           if value and rule.k == "range" and not within(value, rule.lo, rule.hi) then
-            problem = string.format("is %s, not %s", number(value),
+            problem = string.format("%s, not %s", number(value),
               bounds(rule.lo, rule.hi))
           elseif value and rule.k == "exclude" then
             for _, excluded in ipairs(rule.v) do
               if value == excluded then
-                problem = string.format("is %s, which the clause excludes",
-                  number(value))
+                problem = string.format("%s is excluded", number(value))
               end
             end
           end
         elseif rule.k == "encoding" then
           problem = codec_problem(rule.codec, data)
-          if problem then
-            problem = "is no " .. rule.codec .. ": it " .. problem
-          end
         elseif rule.k == "bits" then
           local set, width = bit_reader(reading.type, data)
           if set then
@@ -733,22 +752,25 @@ local function check_constraints(ctx, avp, reading, path, scoped)
             listed[identity] = true
             any = any or held[identity] == true
           end
-          if rule.r == "at-least-one" and not any then
-            problem = string.format("holds none of the members %s, one of which"
-              .. " must be present", members_text(reading, rule.m))
+          local short, all = members_text(reading, rule.m)
+          if rule.r == "at-least-one" and not any and #rule.m == 1 then
+            problem = "missing " .. all
+          elseif rule.r == "at-least-one" and not any then
+            problem = string.format("none of %s, one must be held", short)
+            detail = string.format("none of %s, one must be held", all)
           elseif rule.r == "only" then
             for identity in pairs(held) do
               if not listed[identity] then
-                problem = string.format("holds a member other than %s",
-                  members_text(reading, rule.m))
+                problem = string.format("holds a member besides %s", short)
+                detail = string.format("holds a member besides %s", all)
                 break
               end
             end
           end
         end
         if problem then
-          interpreted(ctx, cons, rule.k, reading.name .. " " .. problem, avp.data,
-            avp.size, path, reading.name)
+          interpreted(ctx, cons, rule.k, problem, avp.data, avp.size, path,
+            reading.name).detail = detail
         end
       end
     end
@@ -776,17 +798,27 @@ local function condition_holds(ctx, held, condition)
   return has(value, 2 ^ condition.b)
 end
 
+-- The conditions joined by "or", a bit of the AVP the one before names
+-- by its name alone: `DSR-Flags bit "A" or "B"`.
 local function conditions_text(conditions)
-  local parts = {}
+  local parts, prefix = {}, nil
   for _, condition in ipairs(conditions) do
-    parts[#parts + 1] = condition.t
+    local text = condition.t
+    local own = text:match('^(.- bit )"')
+    if own and own == prefix then
+      text = text:sub(#own + 1)
+    end
+    prefix = own
+    parts[#parts + 1] = text
   end
   return table.concat(parts, " or ")
 end
 
 -- Checks the predicates `scoped` (constraints by member name) states of a
--- run of AVPs: `identities` gives each name's identity in the body.
-local function check_predicates(ctx, scoped, identities, avps, path, where)
+-- run of AVPs: `identities` gives each name's identity in the body. `path`
+-- names what holds the run, nil for the message, `here` names it either way,
+-- and `anchor` is its octets, for a member missing from it.
+local function check_predicates(ctx, scoped, identities, avps, path, here, anchor)
   if not scoped then
     return
   end
@@ -813,15 +845,13 @@ local function check_predicates(ctx, scoped, identities, avps, path, where)
           local problem
           local said = conditions_text(rule.c)
           if rule.k == "present-if" and any and not subject then
-            problem = string.format("%s is missing from %s, which holds %s", name,
-              where, said)
+            problem = string.format("missing %s, required with %s", name, said)
           elseif rule.k == "absent-if" and any and subject then
-            problem = string.format("%s is in %s, which holds %s", name, where, said)
+            problem = "not allowed with " .. said
           elseif rule.k == "requires" and subject and not any and not unknown then
-            problem = string.format("%s is in %s, which does not hold %s", name,
-              where, said)
+            problem = "not allowed without " .. said
           elseif rule.k == "excludes" and subject and any then
-            problem = string.format("%s is in %s with %s", name, where, said)
+            problem = "not allowed with " .. said
           elseif rule.k == "values" and subject and any then
             local reading = ctx.rules.avps[identity]
             local value = reading
@@ -833,16 +863,16 @@ local function check_predicates(ctx, scoped, identities, avps, path, where)
                 listed[#listed + 1] = number(each)
               end
               if not allowed then
-                problem = string.format("%s is %s in %s, which holds %s; it may be"
-                  .. " only %s", name, number(value), where, said,
-                  table.concat(listed, ", "))
+                problem = string.format("%s, but only %s with %s", number(value),
+                  table.concat(listed, ", "), said)
               end
             end
           end
-          if problem then
-            local at = subject or {}
-            interpreted(ctx, cons, rule.k, problem, at.offset or ctx.anchor_offset,
-              at.length or ctx.anchor_length, path, name)
+          if problem and subject then
+            interpreted(ctx, cons, rule.k, problem, subject.offset, subject.length,
+              join(path, name), name)
+          elseif problem then
+            interpreted(ctx, cons, rule.k, problem, anchor[1], anchor[2], here, name)
           end
         end
       end
@@ -851,9 +881,9 @@ local function check_predicates(ctx, scoped, identities, avps, path, where)
 end
 
 -- Checks the unique rules the grouped readings of a run hold for their
--- members: `grouped` lists each grouped AVP of the run with its reading. No
--- two AVPs of one reading hold the member with the same octets.
-local function check_unique(ctx, grouped, path)
+-- members: `grouped` lists each grouped AVP of the run with its reading and
+-- its path. No two AVPs of one reading hold the member with the same octets.
+local function check_unique(ctx, grouped)
   local seen = {}
   for _, entry in ipairs(grouped) do
     local reading = entry.reading
@@ -864,14 +894,13 @@ local function check_unique(ctx, grouped, path)
             local key = tostring(reading) .. "\0" .. name
             seen[key] = seen[key] or {}
             for _, member in ipairs(parse_avps(ctx.pdu, entry.avp.data,
-              entry.avp.data + entry.avp.size, {}, path)) do
+              entry.avp.data + entry.avp.size, {})) do
               if member.vendor .. ":" .. member.code == rule.i then
                 local text = data_text(ctx.pdu, member)
                 if seen[key][text] then
                   interpreted(ctx, cons, "unique", string.format(
-                    "%s holds %s with the value another %s beside it holds",
-                    reading.name, name, reading.name),
-                    member.offset, member.length, path, name)
+                    "same as in another %s beside it", reading.name),
+                    member.offset, member.length, join(entry.path, name), name)
                 end
                 seen[key][text] = true
                 break
@@ -899,7 +928,7 @@ local function enum_problem(reading, value)
       if entry[1] == "reserved" then
         return ERROR, "is reserved"
       elseif entry[1] == "void" then
-        return ERROR, "was withdrawn (void)"
+        return ERROR, "is void, withdrawn"
       else
         return nil
       end
@@ -914,13 +943,14 @@ local function enum_problem(reading, value)
   if reading.values_open or reading.values == nil then
     return nil
   end
-  return WARN, "is not a value the document defines"
+  return WARN, "is no value the document defines"
 end
 
 -- Validation of a run of AVPs against a body.
 
 local validate_body
 
+-- `path` names the AVP.
 local function check_flags(ctx, avp, reading, path)
   local flags = reading.flags
   if not flags then
@@ -944,35 +974,35 @@ local function check_flags(ctx, avp, reading, path)
     if type(cite) == "table" then
       cite = cite[letter]
     end
-    local where = M.reference(ctx.rules, cite)
-    where = where and where.short or reading.read_through
+    -- With no place to cite, the line names the document read.
+    local source = not M.reference(ctx.rules, cite) and reading.read_through or nil
+    local found
     if rule == "must" and not set then
-      finding(ctx.findings, ERROR, "flag-must",
-        string.format("%s: the %s bit must be set (%s)", reading.name, letter, where),
+      found = finding(ctx.findings, ERROR, "flag-must",
+        string.format("%s bit clear, must be set", letter),
         avp.offset + 4, 1, path, cite, reading.name)
     elseif rule == "must_not" and set then
-      finding(ctx.findings, ERROR, "flag-must-not",
-        string.format("%s: the %s bit must not be set (%s)", reading.name, letter,
-          where),
+      found = finding(ctx.findings, ERROR, "flag-must-not",
+        string.format("%s bit set, must not be", letter),
         avp.offset + 4, 1, path, cite, reading.name)
     elseif rule == "should_not" and set then
-      finding(ctx.findings, WARN, "flag-should-not",
-        string.format("%s: the %s bit should not be set (%s)", reading.name, letter,
-          where),
+      found = finding(ctx.findings, WARN, "flag-should-not",
+        string.format("%s bit set, should not be", letter),
         avp.offset + 4, 1, path, cite, reading.name)
     elseif rule == nil and letter == "P" and set then
       -- RFC 6733 section 4.1: no end-to-end security is specified, "therefore,
       -- the P bit SHOULD be set to 0".
-      about(finding(ctx.findings, WARN, "flag-p",
-        string.format("%s: the P bit is set, which RFC 6733 section 4.1 says"
-          .. " should be 0", reading.name),
+      about(finding(ctx.findings, WARN, "flag-p", "P bit set, should be 0",
         avp.offset + 4, 1, path), reading)
+    end
+    if found then
+      found.source = source
     end
   end
 end
 
--- `path` is where the AVP sits, `inner` the AVP itself, for what it holds.
-local function check_data(ctx, avp, reading, path, inner, depth)
+-- `path` names the AVP.
+local function check_data(ctx, avp, reading, path, depth)
   local kind = reading.type
   local findings = ctx.findings
   local pdu = ctx.pdu
@@ -980,8 +1010,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
   if size then
     if avp.size ~= size then
       about(finding(findings, ERROR, "data-length",
-        string.format("%s is %s, %d octets, but holds %d", reading.name, kind, size,
-          avp.size),
+        string.format("%d octets, %s is %d", avp.size, kind, size),
         avp.offset, avp.length, path,
         -- Time and Enumerated are section 4.3.1's, the rest section 4.2's.
         ctx.rules.base and ctx.rules.base[(kind == "Time" or kind == "Enumerated")
@@ -993,7 +1022,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
       local severity, problem = enum_problem(reading, value)
       if severity then
         finding(findings, severity, "enum-value",
-          string.format("%s: %d %s", reading.name, value, problem),
+          string.format("%d %s", value, problem),
           avp.data, 4, path, reading.at, reading.name)
       end
     elseif kind == "Unsigned32" then
@@ -1004,7 +1033,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
         local names = ctx.rules.result_codes[BASE_VENDOR] or {}
         if not names[value] then
           finding(findings, WARN, "result-code",
-            string.format("Result-Code %d is not one any document defines", value),
+            string.format("%d is no code a document defines", value),
             avp.data, 4, path, reading.at, reading.name)
         end
       elseif reading.name == "Experimental-Result-Code" then
@@ -1023,8 +1052,7 @@ local function check_data(ctx, avp, reading, path, inner, depth)
         end
         if #unknown > 0 then
           finding(findings, NOTE, "bits",
-            string.format("%s sets bit %s, which no document names", reading.name,
-              table.concat(unknown, ", ")),
+            string.format("%s set, which no document names", bits_text(unknown)),
             avp.data, 4, path, ctx.rules.bits_at[identity] or reading.at, reading.name)
         end
       end
@@ -1035,31 +1063,31 @@ local function check_data(ctx, avp, reading, path, inner, depth)
     local ok, at = valid_utf8(pdu, avp.data + 1, avp.data + avp.size)
     if not ok then
       about(finding(findings, ERROR, "utf8",
-        string.format("%s is not valid UTF-8 at octet %d", reading.name, at),
+        string.format("invalid UTF-8 at octet %d", at),
         avp.data + at, 1, path), reading)
     end
   elseif kind == "DiameterIdentity" then
     local problem = identity_problem(data_text(pdu, avp))
     if problem then
       about(finding(findings, ERROR, "diameter-identity",
-        reading.name .. " " .. problem, avp.data, avp.size, path), reading)
+        problem, avp.data, avp.size, path), reading)
     end
   elseif kind == "DiameterURI" then
     local problem = uri_problem(data_text(pdu, avp))
     if problem then
-      about(finding(findings, ERROR, "diameter-uri", reading.name .. " " .. problem,
+      about(finding(findings, ERROR, "diameter-uri", problem,
         avp.data, avp.size, path), reading)
     end
   elseif kind == "IPFilterRule" then
     local problem = filter_problem(data_text(pdu, avp))
     if problem then
-      about(finding(findings, ERROR, "ip-filter-rule", reading.name .. " " .. problem,
+      about(finding(findings, ERROR, "ip-filter-rule", problem,
         avp.data, avp.size, path), reading)
     end
   elseif kind == "Address" then
     if avp.size < 2 then
       about(finding(findings, ERROR, "address",
-        reading.name .. " is shorter than its 2-octet address family",
+        "shorter than its 2-octet address family",
         avp.offset, avp.length, path), reading)
       return
     end
@@ -1067,8 +1095,8 @@ local function check_data(ctx, avp, reading, path, inner, depth)
     local expected = ({ [1] = 4, [2] = 16 })[family]
     if expected and avp.size - 2 ~= expected then
       about(finding(findings, ERROR, "address",
-        string.format("%s is an IPv%d address of %d octets, not %d", reading.name,
-          family == 1 and 4 or 6, avp.size - 2, expected),
+        string.format("IPv%d address of %d octets, not %d", family == 1 and 4 or 6,
+          avp.size - 2, expected),
         avp.data, avp.size, path), reading)
     end
   elseif kind == "Grouped" then
@@ -1082,31 +1110,39 @@ local function check_data(ctx, avp, reading, path, inner, depth)
       -- answer's (a copied Result-Code). Only `1* { AVP }` applies.
       if avp.size < 8 then
         finding(findings, ERROR, "avp-missing",
-          "Failed-AVP holds no AVP, and its rule requires at least one",
+          "holds no AVP, 1* { AVP } requires one",
           avp.offset, avp.length, path, reading.at, reading.name)
       end
       return
     end
-    local held = parse_avps(pdu, avp.data, avp.data + avp.size, findings, inner)
+    local held = parse_avps(pdu, avp.data, avp.data + avp.size, findings, path,
+      ctx.rules)
     if reading.members == nil then
       -- Typed Grouped by a table that prints no rule for it (TS 29.128's
       -- APN-Rate-Control-Status, OMA's charging AVPs): what it holds is
       -- framed, and no body says more of it.
       return
     end
-    validate_body(ctx, reading.members, held, inner, depth + 1, reading)
+    validate_body(ctx, reading.members, held, path, depth + 1, reading,
+      { avp.offset, avp.length })
   end
 end
 
-local function member_label(member)
-  return member.name
+local function times(count)
+  return count == 1 and "1 time" or (count .. " times")
 end
 
 -- Checks a run of AVPs against `body`: occurrences, positions, what the
 -- wildcard admits, each AVP's flags and data, and grouped AVPs inside.
-validate_body = function(ctx, body, avps, path, depth, owner)
+-- `path` names the grouped AVP holding the run, nil for the message's own,
+-- and `anchor` is its octets, {offset, length}, where a finding about what
+-- the run lacks goes.
+validate_body = function(ctx, body, avps, path, depth, owner, anchor)
   local rules = ctx.rules
   local findings = ctx.findings
+  anchor = anchor or { ctx.anchor_offset, ctx.anchor_length }
+  -- What holds the run, as a finding about the run names it.
+  local here = path or ctx.label
   -- The rule the body is: the Grouped AVP's, else the command's ABNF.
   local cite, cite_name = ctx.cite, ctx.cite_name
   if owner then
@@ -1132,6 +1168,8 @@ validate_body = function(ctx, body, avps, path, depth, owner)
   end
   local counts = {}
   local positions = {}
+  -- Each identity's AVPs in order, for the first beyond what is allowed.
+  local held = {}
   local unlisted = 0
   local grouped = {}
   for position, avp in ipairs(avps) do
@@ -1145,6 +1183,8 @@ validate_body = function(ctx, body, avps, path, depth, owner)
       end
       counts[identity] = (counts[identity] or 0) + 1
       positions[identity] = positions[identity] or position
+      held[identity] = held[identity] or {}
+      held[identity][#held[identity] + 1] = avp
       reading = rules.avps[slot.member.id]
       name = slot.member.name
     else
@@ -1152,52 +1192,44 @@ validate_body = function(ctx, body, avps, path, depth, owner)
       name = avp_label(rules, avp)
       unlisted = unlisted + 1
       if not body.wildcard then
-        local where = owner and owner.name or ctx.where
         finding(findings, ERROR, "avp-not-allowed",
-          string.format("%s is not allowed in %s, whose ABNF has no * [ AVP ]",
-            name, where),
-          avp.offset, avp.length, path, cite, cite_name)
+          "not allowed, unlisted and no * [ AVP ]",
+          avp.offset, avp.length, join(path, name), cite, cite_name)
       elseif ctx.prefs.wildcard_notes then
-        finding(findings, NOTE, "avp-by-wildcard",
-          string.format("%s is not in the ABNF; * [ AVP ] admits it", name),
-          avp.offset, avp.length, path, cite, cite_name)
+        finding(findings, NOTE, "avp-by-wildcard", "unlisted, * [ AVP ] admits it",
+          avp.offset, avp.length, join(path, name), cite, cite_name)
       end
     end
-    local inner_path = path and (path .. " > " .. name) or name
+    local place = join(path, name)
     if reading then
-      check_flags(ctx, avp, reading, path)
-      check_data(ctx, avp, reading, path, inner_path, depth)
-      check_constraints(ctx, avp, reading, path, scoped and scoped[name])
+      check_flags(ctx, avp, reading, place)
+      check_data(ctx, avp, reading, place, depth)
+      check_constraints(ctx, avp, reading, place, scoped and scoped[name])
       if reading.member_cons then
-        grouped[#grouped + 1] = { avp = avp, reading = reading }
+        grouped[#grouped + 1] = { avp = avp, reading = reading, path = place }
       end
     elseif has(avp.flags, AVP_M) then
       about(finding(findings, WARN, "unknown-mandatory",
-        string.format("%s is defined by no document in the corpus and has the M"
-          .. " bit set: a receiver that does not know it answers"
-          .. " DIAMETER_AVP_UNSUPPORTED", name),
-        avp.offset, avp.length, path), nil, identity)
+        "no document defines it, M bit set (DIAMETER_AVP_UNSUPPORTED)",
+        avp.offset, avp.length, place), nil, identity)
     else
-      finding(findings, NOTE, "unknown-avp",
-        string.format("%s is defined by no document in the corpus", name),
-        avp.offset, avp.length, path)
+      finding(findings, NOTE, "unknown-avp", "no document defines it",
+        avp.offset, avp.length, place)
     end
   end
   -- Occurrences.
-  local where = owner and owner.name or ctx.where
-  check_predicates(ctx, scoped, identities, avps, path, where)
-  check_unique(ctx, grouped, path)
+  check_predicates(ctx, scoped, identities, avps, path, here, anchor)
+  check_unique(ctx, grouped)
   local wildcard = body.wildcard
   if wildcard and unlisted < wildcard.min then
     finding(findings, ERROR, "avp-missing",
-      string.format("%s requires %d AVP%s beyond those it lists, it holds %d",
-        where, wildcard.min, wildcard.min == 1 and "" or "s", unlisted),
-      ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+      string.format("%d unlisted AVP%s, * [ AVP ] needs %d", unlisted,
+        unlisted == 1 and "" or "s", wildcard.min),
+      anchor[1], anchor[2], here, cite, cite_name)
   elseif wildcard and wildcard.max >= 0 and unlisted > wildcard.max then
     finding(findings, ERROR, "avp-occurrences",
-      string.format("%s allows %d AVP%s beyond those it lists, it holds %d",
-        where, wildcard.max, wildcard.max == 1 and "" or "s", unlisted),
-      ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+      string.format("%d unlisted AVPs, * [ AVP ] allows %d", unlisted, wildcard.max),
+      anchor[1], anchor[2], here, cite, cite_name)
   end
   -- A body listing one AVP on several lines (TS 29.234's RAR, `{
   -- Destination-Host }` and `[ Destination-Host ]`) admits as many as the
@@ -1222,24 +1254,30 @@ validate_body = function(ctx, body, avps, path, depth, owner)
     local bound = allowed[identity]
     local member = bound.member
     local count = counts[identity] or 0
-    if count < bound.min then
+    if count == 0 and bound.min > 0 then
       finding(findings, ERROR, "avp-missing",
-        string.format("%s requires %s%s, which is missing", where,
-          bound.min > 1 and (bound.min .. " of ") or "", member_label(member)),
-        ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+        string.format("missing %s%s", member.name,
+          bound.min > 1 and (", required " .. times(bound.min)) or ""),
+        anchor[1], anchor[2], here, cite, cite_name)
+    elseif count < bound.min then
+      finding(findings, ERROR, "avp-missing",
+        string.format("%s occurs %s, at least %d", member.name, times(count),
+          bound.min),
+        anchor[1], anchor[2], here, cite, cite_name)
     elseif bound.max >= 0 and count > bound.max then
+      -- On the first beyond the bound.
+      local extra = held[identity][bound.max + 1]
       finding(findings, ERROR, "avp-occurrences",
-        string.format("%s allows %s at most %d time%s, it occurs %d", where,
-          member_label(member), bound.max, bound.max == 1 and "" or "s", count),
-        ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+        string.format("occurs %s, at most %d", times(count), bound.max),
+        extra.offset, extra.length, join(path, member.name), cite, cite_name)
     end
   end
   for _, member in ipairs(body) do
     if not member.id and (member.hole or member.placeholder) then
       finding(findings, NOTE, "unverifiable",
-        string.format("%s names %s, which the corpus cannot complete (%s)", where,
-          member.name, member.hole or "undefined"),
-        ctx.anchor_offset, ctx.anchor_length, path, cite, cite_name)
+        string.format("%s unchecked, the corpus cannot complete it (%s)", member.name,
+          member.hole or "undefined"),
+        anchor[1], anchor[2], here, cite, cite_name)
     end
   end
   -- Fixed positions: the fixed members the body lists before any other must
@@ -1259,9 +1297,8 @@ validate_body = function(ctx, body, avps, path, depth, owner)
       if at ~= expected then
         local avp = avps[at]
         finding(findings, ERROR, "avp-position",
-          string.format("%s must be AVP %d of %s, it is AVP %d", member.name,
-            expected, where, at),
-          avp.offset, avp.length, path, cite, cite_name)
+          string.format("AVP %d, must be AVP %d", at, expected),
+          avp.offset, avp.length, join(path, member.name), cite, cite_name)
       end
       expected = expected + 1
     end
@@ -1281,8 +1318,8 @@ validate_body = function(ctx, body, avps, path, depth, owner)
     if at and at ~= expected then
       local avp = avps[at]
       finding(findings, ERROR, "avp-position",
-        string.format("%s must be among the last AVPs of %s", member.name, where),
-        avp.offset, avp.length, path, cite, cite_name)
+        string.format("AVP %d of %d, must be among the last", at, #avps),
+        avp.offset, avp.length, join(path, member.name), cite, cite_name)
     end
     expected = expected + 1
   end
@@ -1295,7 +1332,7 @@ local function run(rules, prefs, pdu, avps, header_findings, form, anchor)
     prefs = prefs,
     pdu = pdu,
     findings = {},
-    where = form.where,
+    label = form.label,
     cite = form.cite,
     cite_name = form.cite_name,
     anchor_offset = anchor[1],
@@ -1311,16 +1348,23 @@ local function run(rules, prefs, pdu, avps, header_findings, form, anchor)
   return ctx
 end
 
+-- How many findings are errors, warnings and notes, and how many of the
+-- notes are of interpreted rules.
 local function score(findings)
-  local errors, warnings = 0, 0
+  local errors, warnings, notes, interpreted = 0, 0, 0, 0
   for _, each in ipairs(findings) do
     if each.severity == ERROR then
       errors = errors + 1
     elseif each.severity == WARN then
       warnings = warnings + 1
+    else
+      notes = notes + 1
+      if each.interpreted then
+        interpreted = interpreted + 1
+      end
     end
   end
-  return errors, warnings
+  return errors, warnings, notes, interpreted
 end
 
 -- The application a relayed message (id 0xffffffff) belongs to, from the
@@ -1379,9 +1423,15 @@ end
 --   command     the chosen candidate {name, abbreviation, document, section}
 --   reference   where the command is defined (`M.reference`), or nil
 --   form        "command", "answer-message" or nil when nothing matched
---   findings    {severity, rule, message, offset, length, path, reference},
---               `reference` where the rule broken is written, or nil
---   others      the other candidates, each {candidate, errors, warnings}
+--   findings    {severity, rule, message, offset, length, path, reference,
+--               interpreted, where, line, full}: `path` the AVP or body the
+--               finding is about, from the message's top; `reference` where
+--               the rule broken is written, or nil; `interpreted` true for a
+--               rule read in prose, a note; `where`, `line` and `full` from
+--               `M.cited`
+--   label       what the message's own AVPs are named by: the command's
+--               abbreviation, "answer-message" or nil
+--   others      the other candidates, each {candidate, errors, warnings, notes}
 --   header      code, flags, application, length
 function M.validate(rules, pdu, prefs)
   prefs = prefs or {}
@@ -1389,7 +1439,7 @@ function M.validate(rules, pdu, prefs)
   local result = { findings = header_findings, others = {} }
   if #pdu < 20 then
     finding(header_findings, ERROR, "header-truncated",
-      string.format("%d octets, too few for a Diameter header", #pdu), 0, #pdu)
+      string.format("%d octets, too few for a header", #pdu), 0, #pdu, HEADER)
     return M.cited(rules, result, prefs)
   end
   local version = u8(pdu, 1)
@@ -1405,32 +1455,30 @@ function M.validate(rules, pdu, prefs)
   }
   if version ~= 1 then
     finding(header_findings, ERROR, "header-version",
-      string.format("version %d, not 1", version), 0, 1)
+      string.format("version %d, not 1", version), 0, 1, HEADER)
   end
   if length ~= #pdu then
     finding(header_findings, ERROR, "header-length",
-      string.format("the header declares %d octets, the message holds %d", length,
-        #pdu), 1, 3)
+      string.format("length %d, the message holds %d", length, #pdu), 1, 3, HEADER)
   end
   if length % 4 ~= 0 then
     finding(header_findings, ERROR, "header-length",
-      string.format("message length %d is not a multiple of 4", length), 1, 3)
+      string.format("length %d, not a multiple of 4", length), 1, 3, HEADER)
   end
   if flags % 16 ~= 0 then
     finding(header_findings, WARN, "header-reserved-flags",
-      string.format("reserved command flag bits set (0x%02x)", flags % 16), 4, 1)
+      string.format("reserved flags set (0x%02x)", flags % 16), 4, 1, HEADER)
   end
   if request and error_bit then
-    finding(header_findings, ERROR, "header-e-bit",
-      "the E bit is set on a request; RFC 6733 section 3 sets it on answers only", 4, 1)
+    finding(header_findings, ERROR, "header-e-bit", "E bit set on a request", 4, 1,
+      HEADER)
   end
   if not request and has(flags, CMD_T) then
-    finding(header_findings, ERROR, "header-t-bit",
-      "the T bit is set on an answer; RFC 6733 section 3 sets it on requests only",
-      4, 1)
+    finding(header_findings, ERROR, "header-t-bit", "T bit set on an answer", 4, 1,
+      HEADER)
   end
   local last = math.min(length, #pdu)
-  local avps = parse_avps(pdu, 20, last, header_findings, nil)
+  local avps = parse_avps(pdu, 20, last, header_findings, nil, rules)
 
   local looked_up = application
   if application == RELAY then
@@ -1451,6 +1499,7 @@ function M.validate(rules, pdu, prefs)
             form = "answer-message",
             where = "the answer-message of " .. answer.defined_in .. " section "
               .. answer.section,
+            label = "answer-message",
             cite = answer.at,
           }
         end
@@ -1460,6 +1509,7 @@ function M.validate(rules, pdu, prefs)
           body = candidate.members,
           form = "command",
           where = candidate.abbreviation,
+          label = candidate.abbreviation,
           cite = candidate.at,
           cite_name = candidate.name,
           cons = candidate.cons,
@@ -1473,30 +1523,42 @@ function M.validate(rules, pdu, prefs)
       form = "answer-message",
       where = "the answer-message of " .. answer.defined_in .. " section "
         .. answer.section,
+      label = "answer-message",
       cite = answer.at,
     }
   end
   if #forms == 0 then
     finding(header_findings, NOTE, "unknown-command",
-      string.format("no document in the corpus defines command %d %s in"
-        .. " application %d", code, request and "request" or "answer", looked_up),
-      5, 3)
+      string.format("no document defines command %d %s, application %d", code,
+        request and "request" or "answer", looked_up),
+      5, 3, HEADER)
     return M.cited(rules, result, prefs)
   end
 
-  local best, best_ctx, best_errors, best_warnings
+  local best, best_ctx, best_score
   local runs = {}
   for _, form in ipairs(forms) do
     local ctx = run(rules, prefs, pdu, avps, header_findings, form, { 5, 3 })
-    local errors, warnings = score(ctx.findings)
-    runs[#runs + 1] = { form = form, ctx = ctx, errors = errors, warnings = warnings }
-    -- Fewest errors, then fewest warnings, then the body listing the most of
-    -- the message's AVPs rather than leaving them to * [ AVP ]; on a tie the
-    -- first, which the generator orders by what the registry allocates.
-    if best == nil or errors < best_errors
-      or (errors == best_errors and (warnings < best_warnings
-        or (warnings == best_warnings and ctx.listed > best_ctx.listed))) then
-      best, best_ctx, best_errors, best_warnings = form, ctx, errors, warnings
+    local errors, warnings, notes, interpreted = score(ctx.findings)
+    runs[#runs + 1] = {
+      form = form, ctx = ctx, errors = errors, warnings = warnings, notes = notes,
+    }
+    -- Fewest errors, then fewest warnings, then fewest breaches of interpreted
+    -- rules, then the body listing the most of the message's AVPs rather than
+    -- leaving them to * [ AVP ]; on a tie the first, which the generator
+    -- orders by what the registry allocates.
+    local this = { errors, warnings, interpreted, -ctx.listed }
+    local better = best == nil
+    if not better then
+      for index = 1, #this do
+        if this[index] ~= best_score[index] then
+          better = this[index] < best_score[index]
+          break
+        end
+      end
+    end
+    if better then
+      best, best_ctx, best_score = form, ctx, this
     end
   end
 
@@ -1510,8 +1572,7 @@ function M.validate(rules, pdu, prefs)
     end
     if not vendor_codes then
       finding(best_ctx.findings, NOTE, "experimental-result-code",
-        string.format("Experimental-Result-Code %d is not one any document defines",
-          each.value),
+        string.format("%d is no code a document defines", each.value),
         each.offset, 4, each.path, each.cite, "Experimental-Result-Code")
     end
   end
@@ -1520,21 +1581,21 @@ function M.validate(rules, pdu, prefs)
     local protocol = result_code >= 3000 and result_code < 4000
     if protocol and not error_bit then
       finding(best_ctx.findings, WARN, "e-bit-missing",
-        string.format("Result-Code %d is a protocol error, which RFC 6733 section"
-          .. " 7.1.3 answers with the E bit set", result_code), 4, 1)
+        string.format("E bit clear, Result-Code %d is a protocol error",
+          result_code), 4, 1, HEADER)
     elseif error_bit and not protocol then
       finding(best_ctx.findings, WARN, "e-bit-unexpected",
-        string.format("the E bit is set but Result-Code %d is no protocol error"
-          .. " (3xxx)", result_code), 4, 1)
+        string.format("E bit set, Result-Code %d is no protocol error (3xxx)",
+          result_code), 4, 1, HEADER)
     end
   end
   if best.candidate then
     if best.candidate.proxiable ~= nil
       and best.candidate.proxiable ~= has(flags, CMD_P) then
       finding(best_ctx.findings, ERROR, "header-p-bit",
-        string.format("the P bit is %s, but %s's header %s PXY",
+        string.format("P bit %s, %s's header %s PXY",
           has(flags, CMD_P) and "set" or "clear", best.candidate.abbreviation,
-          best.candidate.proxiable and "prints" or "does not print"), 4, 1, nil,
+          best.candidate.proxiable and "prints" or "lacks"), 4, 1, HEADER,
         best.candidate.at, best.candidate.name)
     end
   end
@@ -1542,11 +1603,13 @@ function M.validate(rules, pdu, prefs)
   result.command = best.candidate
   result.form = best.form
   result.where = best.where
+  result.label = best.label
   result.findings = best_ctx.findings
   for _, each in ipairs(runs) do
     if each.form ~= best and each.form.candidate then
       result.others[#result.others + 1] = {
         candidate = each.form.candidate, errors = each.errors, warnings = each.warnings,
+        notes = each.notes,
       }
     end
   end
@@ -1577,12 +1640,50 @@ local function explore_instead(rules, each, result, reference, explorer)
   end
 end
 
+local FLAG_RULES = {
+  ["flag-must"] = true, ["flag-must-not"] = true, ["flag-should-not"] = true,
+}
+
+-- A path cut to its last two names, "… > MIP-Home-Agent-Host >
+-- Destination-Realm", which is enough to find the AVP in the message's tree.
+local function shortened(path)
+  local names = {}
+  for name in (path .. " > "):gmatch("(.-) > ") do
+    names[#names + 1] = name
+  end
+  if #names <= 2 then
+    return path
+  end
+  return "\226\128\166 > " .. names[#names - 1] .. " > " .. names[#names]
+end
+
+-- What a finding's line ends in: where its rule is written, as
+-- "[TS 29.272 7.3.43, interpreted]" or "[TS 29.061 table 9a]" for a flag
+-- rule, which a row of the table states; "" with nothing to say.
+local function source_text(each)
+  local said = each.source
+  local reference = each.reference
+  if reference then
+    said = FLAG_RULES[each.rule] and reference.table and reference.short
+      or reference.brief
+  end
+  if each.interpreted then
+    said = said and (said .. ", interpreted") or "interpreted"
+  end
+  return said and (" [" .. said .. "]") or ""
+end
+
 -- Gives each finding its `reference` (`M.reference`), a base check RFC 6733's
 -- section, and the result the `reference` of its command's definition. The
 -- explorer links start at `prefs.explorer`, else `rules.explorer`; an empty
 -- address leaves them out. A finding with a reference has an explorer link
 -- whenever there is an address: where its cited clause holds nothing the
--- explorer can show, `explore_instead`'s.
+-- explorer can show, `explore_instead`'s. Gives each its `path` where it had
+-- none, the message's AVPs being named by the command, its `where`, the path
+-- shortened, and its `line`, as "… > MIP-Home-Agent-Host > Destination-Realm:
+-- not epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org [TS 29.272 7.3.43, interpreted]",
+-- and its `full`, the line with what it cuts short (`detail`), a list of
+-- more than three members, in full.
 function M.cited(rules, result, prefs)
   local base = rules.base or {}
   local explorer = prefs and prefs.explorer
@@ -1600,6 +1701,12 @@ function M.cited(rules, result, prefs)
     if explorer and each.reference and not each.reference.explorer then
       explore_instead(rules, each, result, each.reference, explorer)
     end
+    each.path = each.path or result.label or "Message"
+    each.where = shortened(each.path)
+    local source = source_text(each)
+    each.line = each.where .. ": " .. (each.message or each.rule) .. source
+    each.full = each.detail and (each.where .. ": " .. each.detail .. source)
+      or each.line
   end
   if result.command then
     result.reference = M.reference(rules, result.command.at, result.command.name,
