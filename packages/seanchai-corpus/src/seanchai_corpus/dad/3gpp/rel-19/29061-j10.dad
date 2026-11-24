@@ -775,8 +775,9 @@ TWAN-Identifier                    29     16.4.7    OctetString   V      P     -
 ; Section: 16a.7
 ; Table: 9b
 ; Page: 132
-; Columns: Name       From
-External-Identifier   TS29.336
+; Columns: Name         From
+External-Identifier     TS29.336
+Delegated-IPv6-Prefix   RFC4818 ;; inserted: (TS29.061.py#reused-delegated-ipv6-prefix)
 
 
 ; Type: AVP Table
@@ -1016,10 +1017,3 @@ UPFAIL = 0
 ; Page: 178
 "MBMS Heartbeat" = 0 ; O
 "MBMS Cell List" = 1 ; O
-
-
-; Type: Undefined AVP ;; inserted: (TS29.061.py#undefined-delegated-ipv6-prefix)
-; Name: Delegated-IPv6-Prefix
-; Section: 16a.4.1
-; Page: 123
-; Note: "clause 2: [97] IETF RFC 4818 (2007): RADIUS Delegated-IPv6-Prefix Attribute"

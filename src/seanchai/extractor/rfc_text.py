@@ -159,6 +159,12 @@ _LEFT_HEADERS: dict[tuple[str, ...], tuple[ast.AvpColumn, ...]] = {
         ast.AvpColumn.SECTION,
         ast.AvpColumn.TYPE,
     ),
+    # RFC 4818 clause 5, a RADIUS attribute's Diameter code and type.
+    ("AVP", "Attribute Name Code Value Type"): (
+        ast.AvpColumn.NAME,
+        ast.AvpColumn.CODE,
+        ast.AvpColumn.TYPE,
+    ),
 }
 # A table boxing every column (RFC 4740 tables 2 and 3, RFC 6736 tables 2 and
 # 3) leaves only the name left of the first pipe, and prints its other data
@@ -1341,8 +1347,11 @@ def _noted_origins(
     )
 
 
+# A clause defining one attribute: "Digest-Realm attribute" (RFC 4590), or
+# the bare name (RFC 4675 clauses 2.1-2.4). Only one whose Type field gives a
+# number is read.
 _RADIUS_ATTRIBUTE_TITLE_RE = re.compile(
-    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*) [Aa]ttribute$"
+    r"^(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*)(?: [Aa]ttribute)?$"
 )
 
 
@@ -1378,6 +1387,9 @@ def _radius_attribute_table(sections: list[_DocSection]) -> ast.AvpTable | None:
             ):
                 # RFC 5580 clauses 4.1-4.7 explicitly label each Type number.
                 code = int(match["code"])
+            elif re.fullmatch(r"\d+", following):
+                # RFC 4675 clauses 2.1-2.4 print the number alone.
+                code = int(following)
             break
         if code is None:
             continue

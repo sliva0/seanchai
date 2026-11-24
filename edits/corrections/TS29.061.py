@@ -9,6 +9,7 @@ from seanchai.dad.corrections import (
     avp_table,
     definition,
     header,
+    reused_avps,
     table_row,
 )
 
@@ -196,20 +197,14 @@ CORRECTIONS += [
         versions="18.1.0..19.1.0",
     ),
     Insert(
-        id="undefined-delegated-ipv6-prefix",
-        into=header(),
-        node=ast.UndefinedAvp(
-            name="Delegated-IPv6-Prefix",
-            source=ast.SourceRef(section="16a.4.1", page=123),
-            note='"clause 2: [97] IETF RFC 4818 (2007): RADIUS'
-            ' Delegated-IPv6-Prefix Attribute"',
-        ),
-        after=None,
+        id="reused-delegated-ipv6-prefix",
+        into=reused_avps("9b"),
+        node=ast.ReusedAvpRow(name="Delegated-IPv6-Prefix", origin="RFC4818"),
+        after="External-Identifier",
         reason="a member of the AAR, AAA and ACR bodies (clauses 16a.4.1 to"
         " 16a.4.3) in no table of this document; clause 2 cites RFC 4818 [97],"
-        " which defines the RADIUS attribute with no Diameter type or flags and"
-        " which the corpus does not hold. Wireshark's dictionary has code 123,"
-        " OctetString, with may-M",
+        " 'RADIUS Delegated-IPv6-Prefix Attribute', whose clause 5 gives the"
+        " attribute as an AVP its code, 123, its type and flag rules",
         versions="18.1.0..19.1.0",
     ),
 ]

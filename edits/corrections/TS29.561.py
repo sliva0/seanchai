@@ -1,7 +1,7 @@
 """Corrections for 3GPP TS 29.561 — see docs/corrections.md."""
 
 from seanchai.dad import ast
-from seanchai.dad.corrections import Correction, Insert, header
+from seanchai.dad.corrections import Correction, Insert, header, reused_avps
 
 CORRECTIONS = [
     Correction(
@@ -47,19 +47,14 @@ CORRECTIONS = [
         versions="19.6.0",
     ),
     Insert(
-        id="undefined-delegated-ipv6-prefix",
-        into=header(),
-        node=ast.UndefinedAvp(
-            name="Delegated-IPv6-Prefix",
-            source=ast.SourceRef(section="12.6.2", page=77),
-            note='"clause 2: [10] IETF RFC 4818: RADIUS Delegated-IPv6-Prefix'
-            ' Attribute"',
-        ),
+        id="reused-delegated-ipv6-prefix",
+        into=reused_avps("12.4-1"),
+        node=ast.ReusedAvpRow(name="Delegated-IPv6-Prefix", origin="RFC4818"),
         after=None,
         reason="a member of the DER and DEA bodies (clauses 12.6.2, 12.6.3) in no"
-        " table of this document; clause 2 cites RFC 4818 [10], which defines the"
-        " RADIUS attribute with no Diameter type or flags and which the corpus does"
-        " not hold. Wireshark's dictionary has code 123, OctetString, with may-M",
+        " table of this document; clause 2 cites RFC 4818 [10], 'RADIUS"
+        " Delegated-IPv6-Prefix Attribute', whose clause 5 gives the attribute as"
+        " an AVP its code, 123, its type and flag rules",
         versions="19.6.0",
     ),
 ]

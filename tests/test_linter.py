@@ -189,9 +189,7 @@ def test_the_raw_corpus_reports_exactly_what_the_documents_say(path):
 # tables print differently (29.061's tables 9a and 10, see
 # `_STANDING_CORPUS_NOTES`; 29.273's two).
 _NOTE_COUNTS = {
-    # The Undefined AVP block of Delegated-IPv6-Prefix is a correction's.
-    "29061-j10.raw": 7,
-    "29061-j10": 8,
+    "29061-j10": 7,
     "29128-j20": 3,
     # OC-OLR, which clause 6.3.61 prints as well as re-uses, and, corrected,
     # the row clause 6.3.43's Wildcarded-IMPU is corrected into.
@@ -226,9 +224,6 @@ _NOTE_COUNTS = {
     # raw, table A.4-1 cites clause 5.4.2 for Accounting-Record-Type.
     "ts-0004-v2_35_0.raw": 2,
     "ts-0004-v2_35_0": 1,
-    # The Undefined AVP block of Delegated-IPv6-Prefix is a correction's.
-    "29561-j60.raw": 0,
-    "29561-j60": 1,
     # TS 29.230's registry: 318 allocated twice, four reservations
     # covering allocated codes, and 4703-4799 inside 4605-4799.
     "29230-j30": 6,
@@ -326,7 +321,6 @@ _STANDING_CORPUS_NOTES = {
             "3GPP-User-Location-Info",
             "3GPP-MS-TimeZone",
         ],
-        "undefined-avp": ["Delegated-IPv6-Prefix"],
     },
     "29128-j20.dad": {
         "registry-result-code-document": [
@@ -434,7 +428,6 @@ _STANDING_CORPUS_NOTES = {
         # Table 12.4-1 cites TS 29.061 for code 28, sub-attribute 28 of its
         # RADIUS VSA; TS 29.061's table 9b re-uses the AVP from TS 29.336, 3111.
         "reused-origin-indirect": ["External-Identifier"],
-        "undefined-avp": ["Delegated-IPv6-Prefix"],
     },
     "32299-j00.dad": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
@@ -610,7 +603,6 @@ _STANDING_CORPUS_NOTES = {
     },
     "rfc5779.dad": {"reused-extension": ["MIP6-Agent-Info"]},
     "rfc5866.dad": {"undefined-avp": ["Authorization-Session-Volume"]},
-    "rfc6736.dad": {"origin-not-in-corpus": ["RFC4675"]},
     "rfc6738.dad": {"reused-row-mismatch": ["Key-Lifetime"]},
     "29109-j00.dad": {
         "registry-result-code-name": [

@@ -1,0 +1,11 @@
+; Specification: RFC 4818
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc4818.txt
+
+
+; Type: AVP Table
+; Section: 5
+; Page: 4
+; Columns: Name         Code   Type          Must   May   S.not   M.not   Encrypt
+Delegated-IPv6-Prefix   123    OctetString   M      P     -       V       Yes

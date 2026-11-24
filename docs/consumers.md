@@ -613,7 +613,7 @@ A hole has no members or values. For those, read the AST through
 
 ### Known holes
 
-Seventeen names are holes, each a fact its source does not state. The
+Fourteen names are holes, each a fact its source does not state. The
 corpus's `holes.toml` records each by document, name, missing fields and a
 reason citing the version, the clause and what was searched
 ([corrections.md](corrections.md#the-record-of-known-holes)).
@@ -633,7 +633,7 @@ A recorded hole is still a hole: `holes()` lists it and `resolve` returns
 None. Use `ANY` for a partial or foreign corpus. `unrecorded_holes()` and
 `stale_record_entries()` return what the default would refuse.
 
-The seventeen, by cause:
+The fourteen, by cause:
 
 - A field no source states, under every policy:
   - TS 29.061's `3GPP-Session-Stop-Indicator` row states only a code.
@@ -642,23 +642,19 @@ The seventeen, by cause:
   - TS 29.229's `Wildcarded-IMPU` states no code or flag rule. TS 29.329's
     reading is complete, and Sh's commands hold that one.
   - ETSI TS 183 020's `Privacy-Indicator` states no flag rule.
-- An origin the corpus does not hold: RFC 6736 table 3 re-uses
-  `Egress-VLANID` from RFC 4675, a RADIUS document.
-- The twelve [undefined names](#undefined-names), holes under the default
+- The ten [undefined names](#undefined-names), holes under the default
   policy.
 
 ### Undefined names
 
-Twelve names the documents use as members are defined nowhere:
+Ten names the documents use as members are defined nowhere:
 
 - RFC 4004's three SPIs;
 - RFC 5866's `Authorization-Session-Volume`;
 - TS 29.345's `ProSe-Query-Code` and `ProSe-Response-Code`;
 - TS 29.154's `External-Group-Identifier`;
 - TS 32.299's `Submission-Timestamp` and `Network-Element`;
-- TS 29.234's `Error-Cause`;
-- TS 29.061's and TS 29.561's `Delegated-IPv6-Prefix`, a RADIUS attribute of
-  RFC 4818, which the corpus does not hold.
+- TS 29.234's `Error-Cause`.
 
 Each has an `Undefined AVP` block in its document's file, added by a
 correction. `undefined(reference)` returns them as `model.Undefined`: the

@@ -344,6 +344,7 @@ TWAN-Identifier                    TS29.061   -
 3GPP-UE-Local-IP-Address           TS29.061   -
 3GPP-UE-Source-Port                TS29.061   -
 Supported-Features                 TS29.229   -
+Delegated-IPv6-Prefix              RFC4818    - ;; inserted: (TS29.561.py#reused-delegated-ipv6-prefix)
 
 
 ; Type: AVP Table
@@ -371,10 +372,3 @@ eSessionAMBR = 0 ; M
 ; Section: 12.5
 ; Page: 76
 DIAMETER_QOS_FLOW_DELETION_INDICATION = 2421
-
-
-; Type: Undefined AVP ;; inserted: (TS29.561.py#undefined-delegated-ipv6-prefix)
-; Name: Delegated-IPv6-Prefix
-; Section: 12.6.2
-; Page: 77
-; Note: "clause 2: [10] IETF RFC 4818: RADIUS Delegated-IPv6-Prefix Attribute"

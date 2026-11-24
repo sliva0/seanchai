@@ -1,0 +1,8 @@
+# Source declarations for RFC 4818 (RADIUS Delegated-IPv6-Prefix Attribute).
+
+[[quirk]]
+name = "mixed-table-borders"
+reason = """
+    clause 5 boxes the data row but only the flag columns in its header, whose
+    leading pipe is the first flag boundary
+    """

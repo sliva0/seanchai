@@ -1,0 +1,17 @@
+# Source declarations for RFC 4675 (RADIUS Attributes for Virtual LAN and
+# Priority Support).
+
+[[quirk]]
+name = "radius-avp-codes"
+reason = """
+    clause 4 types and flags the attributes for Diameter and prints no code:
+    each attribute clause's Type field gives the code, from the RADIUS
+    compatibility space
+    """
+
+[[quirk]]
+name = "mixed-table-borders"
+reason = """
+    clause 4 boxes each data row but only the flag columns in its header, whose
+    leading pipe is the first flag boundary
+    """

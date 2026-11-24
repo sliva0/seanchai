@@ -1,6 +1,6 @@
 """What a build makes of holes and undefined names, and what it refuses.
 
-The committed corpus shows each policy on its own seventeen holes and twelve
+The committed corpus shows each policy on its own fourteen holes and ten
 undefined names. A refusal needs a corpus that is wrong, so those cases build
 the smallest fixture corpus that is.
 """
@@ -26,7 +26,7 @@ from seanchai.model import (
 _M = frozenset({AvpFlag.MANDATORY})
 _V = frozenset({AvpFlag.VENDOR})
 
-# The five holes no undefined policy answers for, and what each leaves out.
+# The four holes no undefined policy answers for, and what each leaves out.
 _FIELD_HOLES = {
     # Its row states only a code.
     ("TS29.061", "3GPP-Session-Stop-Indicator"): ("data_type", "flag_rules"),
@@ -36,19 +36,12 @@ _FIELD_HOLES = {
     ("TS29.229", "Wildcarded-IMPU"): ("code", "flag_rules"),
     # No flag rule.
     ("ETSI-TS183.020", "Privacy-Indicator"): ("flag_rules",),
-    # Re-used from RFC 4675, a RADIUS document the corpus does not hold.
-    ("RFC6736", "Egress-VLANID"): ("definition",),
 }
 _UNDEFINED = {
     ("RFC4004", "MIP-HA-to-MN-SPI"): ("9.4", ("9.4",)),
     ("RFC4004", "MIP-MN-to-FA-SPI"): ("9.5", ("9.5",)),
     ("RFC4004", "MIP-MN-to-HA-SPI"): ("9.6", ("9.6",)),
     ("RFC5866", "Authorization-Session-Volume"): ("5.3", ("5.3", "5.5")),
-    ("TS29.061", "Delegated-IPv6-Prefix"): (
-        "16a.4.1",
-        ("16a.4.1", "16a.4.2", "16a.4.3"),
-    ),
-    ("TS29.561", "Delegated-IPv6-Prefix"): ("12.6.2", ("12.6.2", "12.6.3")),
     ("TS29.154", "External-Group-Identifier"): ("A.6.6.2", ("A.6.6.2",)),
     ("TS29.234", "Error-Cause"): ("4.4.2.1", ("4.4.2.1", "5.5.1")),
     ("TS29.345", "ProSe-Query-Code"): ("6.3.53", ("6.3.53", "6.3.54")),
@@ -70,7 +63,7 @@ def _keys(holes) -> set[tuple[str, str]]:
 # --- the committed corpus ----------------------------------------------------
 
 
-def test_the_seventeen_known_holes_are_the_record_and_say_why():
+def test_the_fourteen_known_holes_are_the_record_and_say_why():
     built = _installed()
     record = corpus.Corpus.installed().record
     assert record is not None
@@ -85,7 +78,11 @@ def test_the_seventeen_known_holes_are_the_record_and_say_why():
     reasons = {(each.document, each.name): each.reason for each in record.holes}
     assert {key: hole.recorded for key, hole in holes.items()} == reasons
     assert built.unrecorded_holes() == built.stale_record_entries() == ()
-    assert holes["RFC6736", "Egress-VLANID"].origin == "RFC4675"
+    # RFC 4675 and RFC 4818, RADIUS documents, complete what they define.
+    egress = built.resolve("RFC6736", "Egress-VLANID")
+    prefix = built.resolve("TS29.061", "Delegated-IPv6-Prefix")
+    assert egress is not None and egress.read_through == "RFC4675"
+    assert prefix is not None and prefix.code == 123
     # A recorded hole is still a hole, wherever a body names it.
     stated = holes["TS29.234", "Charging-Characteristics"]
     assert '"Integer"' in (stated.recorded or "")
@@ -99,7 +96,7 @@ def test_the_seventeen_known_holes_are_the_record_and_say_why():
     }
 
 
-def test_the_twelve_undefined_names_are_declared_where_their_bodies_name_them():
+def test_the_ten_undefined_names_are_declared_where_their_bodies_name_them():
     """By default each is a hole naming its block, and the members naming it
     hold the hole."""
     built = _installed()
@@ -129,7 +126,7 @@ def test_the_twelve_undefined_names_are_declared_where_their_bodies_name_them():
     ids=str,
 )
 def test_allowing_no_hole_refuses_what_the_undefined_policy_leaves(undefined, refused):
-    """The record lists twelve names `DROP` and `PLACEHOLDER` answer for; by
+    """The record lists ten names `DROP` and `PLACEHOLDER` answer for; by
     default those entries going unused is no staleness."""
     with pytest.raises(model.IncompleteCorpusError) as raised:
         model.Model.installed(holes=HolePolicy.NONE, undefined=undefined)
@@ -157,7 +154,7 @@ def test_drop_takes_the_members_out_and_keeps_them_beside():
     assert "External-Group-Identifier" not in {member.name for member in ecr.avps}
     assert built.hole("RFC4004", "MIP-HA-to-MN-SPI") is None
     assert built.resolve("RFC4004", "MIP-HA-to-MN-SPI") is None
-    assert len(built.undefined()) == 12
+    assert len(built.undefined()) == 10
     assert built.placeholders() == ()
 
 
@@ -172,7 +169,7 @@ def test_placeholder_keeps_the_members_in_place_untyped():
     assert member.placeholder is not None
     assert member.placeholder.undefined.section == "9.4"
     assert "\n" not in repr(member)
-    assert len(built.placeholders()) == 12
+    assert len(built.placeholders()) == 10
     assert [p.name for p in built.placeholders("RFC4004")] == [
         "MIP-HA-to-MN-SPI",
         "MIP-MN-to-FA-SPI",
@@ -199,10 +196,11 @@ def test_supply_reads_the_consumers_answers_in_the_declaring_document():
             "External-Group-Identifier": alias,
             ("TS29.345", "ProSe-Query-Code"): _supplied(59990),
             "ProSe-Response-Code": _supplied(59991, DataType.ENUMERATED, values=(on,)),
-            "Delegated-IPv6-Prefix": _supplied(
+            "Authorization-Session-Volume": _supplied(
                 59992, vendor_id=0, flag_rules=FlagRules(must=_M)
             ),
-            ("TS29.561", "Delegated-IPv6-Prefix"): _supplied(59993),
+            "Error-Cause": _supplied(59995),
+            ("TS29.234", "Error-Cause"): _supplied(59993),
             "Submission-Timestamp": _supplied(
                 59994,
                 DataType.GROUPED,
@@ -233,9 +231,9 @@ def test_supply_reads_the_consumers_answers_in_the_declaring_document():
     response = built.resolve("TS29.345", "ProSe-Response-Code")
     assert isinstance(response, model.Enumerated) and response.values == (on,)
     # An IETF AVP takes RFC 6733's V rule.
-    ietf = built.resolve("TS29.061", "Delegated-IPv6-Prefix")
+    ietf = built.resolve("RFC5866", "Authorization-Session-Volume")
     assert ietf is not None and ietf.flag_rules == FlagRules(must=_M, must_not=_V)
-    other = built.resolve("TS29.561", "Delegated-IPv6-Prefix")
+    other = built.resolve("TS29.234", "Error-Cause")
     assert other is not None and other.code == 59993
     # Members resolve in the block's document; one supplied nothing stays a hole.
     stamp = built.resolve("TS32.299", "Submission-Timestamp")
@@ -248,8 +246,6 @@ def test_supply_reads_the_consumers_answers_in_the_declaring_document():
         ("RFC4004", "MIP-HA-to-MN-SPI"),
         ("RFC4004", "MIP-MN-to-FA-SPI"),
         ("RFC4004", "MIP-MN-to-HA-SPI"),
-        ("RFC5866", "Authorization-Session-Volume"),
-        ("TS29.234", "Error-Cause"),
         ("TS32.299", "Network-Element"),
     }
 

@@ -1,0 +1,14 @@
+; Specification: RFC 4675
+; Vendor-ID: 0
+; Bases: RFC6733
+; Link: https://www.rfc-editor.org/rfc/rfc4675.txt
+
+
+; Type: AVP Table
+; Section: 4
+; Page: 10
+; Columns: Name       Type          Must   May   S.not   M.not   Encrypt   Code   Section
+Egress-VLANID         OctetString   M      P     -       V       Yes       56     2.1
+Ingress-Filters       Enumerated    M      P     -       V       Yes       57     2.2
+Egress-VLAN-Name      UTF8String    M      P     -       V       Yes       58     2.3
+User-Priority-Table   OctetString   M      P     -       V       Yes       59     2.4

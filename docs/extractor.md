@@ -569,6 +569,12 @@ It reads the same definitions as the docx extractor. Every file states
   mask is read as the bit it sets, numbered from 0 as a 3GPP bit table is, and
   one setting no single bit fails.
 - RFC 6733 section 7.2's `<answer-message>` becomes an `AnswerMessage`.
+- A RADIUS attribute's code is its clause's Type field, under
+  `radius-attribute-table` and `radius-avp-codes`: a clause titled with the
+  attribute's name or "Name attribute" whose Type reads "57", "123 for Name"
+  or "4 - Name" (RFC 4675, 4590, 5580). RFC 4675 and RFC 4818 print the
+  attributes' Diameter types and flags in their Diameter considerations, so
+  they need no correction; RFC 4590 does not.
 - The header block's "Obsoletes: 3588, 5719" becomes
   `; Obsoletes: RFC3588, RFC5719`.
 - Application scopes come from corrections, since no two RFCs word theirs

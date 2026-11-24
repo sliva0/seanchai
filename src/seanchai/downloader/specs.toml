@@ -224,9 +224,20 @@ title = "Diameter EAP Application"
 number = 4590
 title = "RADIUS Extension for Digest Authentication"
 
+# RADIUS documents whose attributes Diameter documents use as AVPs: RFC 6736
+# table 3 re-uses RFC 4675's Egress-VLANID, and TS 29.061 and TS 29.561 name
+# RFC 4818's Delegated-IPv6-Prefix in their commands.
+[[rfc]]
+number = 4675
+title = "RADIUS Attributes for Virtual LAN and Priority Support"
+
 [[rfc]]
 number = 4740
 title = "Diameter SIP Application"
+
+[[rfc]]
+number = 4818
+title = "RADIUS Delegated-IPv6-Prefix Attribute"
 
 [[rfc]]
 number = 4849
