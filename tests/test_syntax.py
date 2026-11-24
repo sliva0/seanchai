@@ -181,6 +181,7 @@ _SCOPED = [
         "markup.underline.link.declaration",
     ),
     ("; Columns: Name ", "Applicability", "string.unquoted.directive-value"),
+    ("; Command-Section:", "6.2.1", "constant.other.section"),
     ("ACME-Flags  ", "3GPP-EPS,Non-3GPP-EPS", ""),
     ("ACME-Data   ", '""', "string.quoted.double.mark"),
     ("ACME-Id  ", "7.3.5.1", "comment.line.double-semicolon"),

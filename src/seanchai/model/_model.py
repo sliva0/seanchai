@@ -396,7 +396,8 @@ class Model(_Resolver):
         """Every information-element table `reference` (or the corpus)
         prints, in file order, each with the commands it describes: none
         where it names no command, or one printed under several applications
-        it does not choose between. `version` selects an older held copy."""
+        it does not choose between, or printed several times and the table
+        names no clause. `version` selects an older held copy."""
         return tuple(
             ElementTable(
                 reference=view.entry.reference,
@@ -439,9 +440,11 @@ class Model(_Resolver):
         else in the document the table says specifies it, or else in the
         first of `view`'s bases printing it, depth first. Names compare
         without regard to case: TS 29.338 prints its SRA rule
-        `Send-Routing-info-for-SM-Answer`. None where the command prints under
-        several applications the table does not choose between; the linter
-        reports that."""
+        `Send-Routing-info-for-SM-Answer`. Of a document printing the command
+        more than once under the one application, the block at the table's
+        `command_section`. None where the command prints under several
+        applications, or several times, the table does not choose between, or
+        at no such clause; the linter reports each."""
         if block.command is None:
             return []
         named = [
@@ -452,8 +455,13 @@ class Model(_Resolver):
             in (None, _effective_id(message, _scope(view, message)))
         ]
         if named:
-            ids = {_effective_id(message, _scope(view, message)) for message in named}
-            return [(view, message) for message in named] if len(ids) == 1 else []
+            if block.command_section is not None:
+                named = [
+                    message
+                    for message in named
+                    if message.source.section == block.command_section
+                ]
+            return [(view, message) for message in named] if len(named) == 1 else []
         cited = [] if block.origin is None else [block.origin]
         for base in (*cited, *view.entry.spec.bases):
             cited, _ = self._cited(view, base)

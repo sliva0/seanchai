@@ -519,6 +519,7 @@ comment where it stood.
 information-elements = "; Type: Information Elements" NL
                        ["; Command: " avp-name NL]
                        ["; Application-ID: " application-id NL]
+                       ["; Command-Section: " section-number NL]
                        ["; From: " spec-ref NL]
                        ["; AVP: " avp-name NL]
                        "; Section: " section-number NL
@@ -570,6 +571,11 @@ IMSI                                       User-Name            M
 - `; Application-ID:` chooses among the applications the file prints the
   command for: TS 29.272 prints Insert-Subscriber-Data-Request for S6a and
   for S7a.
+- `; Command-Section:` chooses among the blocks of a document printing the
+  command more than once under the one application, by the clause of the
+  block: TS 29.273 prints Diameter-EAP-Request for SWa (clause 4.2.2.1.1),
+  STa (5.2.2.1.1) and SWd (6.2.2.1.1.1), each with a body of its own, all in
+  STa's application.
 - `; AVP:` names a grouped AVP of the command whose members the rows
   describe instead (TS 29.228 table 6.3.2, SIP-Auth-Data-Item in
   Multimedia-Auth-Request).

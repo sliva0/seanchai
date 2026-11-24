@@ -1264,13 +1264,18 @@ class InformationElements(Node):
     the clause says specifies the command, "specified in clause 7 of TS 29.272
     [29]" (TS 29.273 clause 11.1.2.1.1), None for the document's own clause.
     The command is the document's own where it prints one of that name, else
-    `origin`'s, else the first of its `; Bases:` printing it. `avp` is a
+    `origin`'s, else the first of its `; Bases:` printing it.
+    `command_section` is the clause of the command's block, where that
+    document prints the command more than once under the one application:
+    TS 29.273 prints Diameter-EAP-Request for SWa, STa and SWd, all in STa's
+    application, each with its own body. `avp` is a
     grouped AVP of the command whose members the rows describe instead, as TS
     29.228 table 6.3.2 does SIP-Auth-Data-Item's."""
 
     type: Literal["Information Elements"] = "Information Elements"
     command: AvpName | None = None
     application_id: Unsigned32 | None = None
+    command_section: SectionNumber | None = None
     origin: SpecRef | None = None
     avp: AvpName | None = None
     # None where the table prints no caption, as TS 29.234 V11.2.0 clause

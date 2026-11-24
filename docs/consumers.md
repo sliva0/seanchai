@@ -997,8 +997,9 @@ A table describes a command of its own document, or of the document it says
 specifies it (TS 29.228's describe TS 29.229's commands), or a base's
 ([grammar.md](grammar.md#information-elements)). `element_tables(reference)`
 returns each table as a `model.ElementTable` with the `commands` it
-describes, none where it names no command or one printed for several
-applications it does not choose between; the linter reports those and where
+describes, none where it names no command, one printed for several
+applications it does not choose between, or one printed more than once under
+its application at no clause it names; the linter reports those and where
 a category and the ABNF disagree
 ([linter.md](linter.md#information-elements)).
 

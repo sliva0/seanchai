@@ -168,6 +168,7 @@ def _directives(
         for key, field, value in (
             ("Command", "command", section.command),
             ("Application-ID", "application_id", section.application_id),
+            ("Command-Section", "command_section", section.command_section),
             ("From", "origin", section.origin),
             ("AVP", "avp", section.avp),
         ):

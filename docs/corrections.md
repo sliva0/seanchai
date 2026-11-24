@@ -218,7 +218,8 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 - A correction to a field of the file header, a table or an application
   scope is cited on the directive line that prints the field (`; Bases:`,
   `; Table:`, `; Columns:`, `; Application-ID:`, `; Note:`, an information
-  element table's `; Command:`, `; From:` and `; AVP:`), or on the
+  element table's `; Command:`, `; Command-Section:`, `; From:` and
+  `; AVP:`), or on the
   block's first line when it removes that line.
 - A deletion's note replaces the deleted line:
   `;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`.

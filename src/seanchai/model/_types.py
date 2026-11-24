@@ -477,8 +477,9 @@ class ElementTable(_Plain):
     commands it describes (`Model.element_tables`): `command`, of
     `application_id` where it names one, the document's own or `origin`'s or
     a base's, and `within` the grouped AVP whose members it tabulates.
-    `commands` is empty where it names no command or one printed under
-    several applications it does not choose between."""
+    `commands` is empty where it names no command, one printed under
+    several applications it does not choose between, or one printed more than
+    once under its application at no clause it names."""
 
     reference: str
     version: str | None

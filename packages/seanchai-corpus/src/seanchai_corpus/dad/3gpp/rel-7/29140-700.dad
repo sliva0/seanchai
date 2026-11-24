@@ -86,6 +86,7 @@ Routeing-Address-Resolution   1119   6.3.22    Enumerated    M,V    -     -     
 
 
 ; Type: Information Elements
+; Command: Message-Process-Request ;; corrected: (TS29.140.py#elements-command-4-1-1-1)
 ; Section: 4.1.1
 ; Table: 4.1.1.1
 ; Page: 9
@@ -104,6 +105,7 @@ Routeing-Address-Resolution   1119   6.3.22    Enumerated    M,V    -     -     
 
 
 ; Type: Information Elements
+; Command: Message-Process-Answer ;; corrected: (TS29.140.py#elements-command-4-1-1-2)
 ; Section: 4.1.1
 ; Table: 4.1.1.2
 ; Page: 9

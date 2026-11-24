@@ -443,6 +443,29 @@ def test_a_commands_members_carry_the_information_elements_mapping_them(built):
     assert {table.commands[0].defined_in for table in tables} == {"TS29.229"}
 
 
+def test_a_table_describes_the_print_its_clause_names(built):
+    """TS 29.273 prints AA-Request twice for S6b, at clause 9.2.2.2.1 for
+    PMIPv6, GTPv2 and DSMIPv6 and at 9.2.2.5.1 for MIPv4 FACoA, and
+    Diameter-EAP-Request for SWa, STa and SWd under STa's one application:
+    each table describes the print its `; Command-Section:` names, and each
+    print carries only its own tables."""
+    tables = {table.table: table.commands for table in built.element_tables("TS29.273")}
+
+    assert [each.section for each in tables["9.1.2.6.1/1"]] == ["9.2.2.5.1"]
+    assert [each.section for each in tables["9.1.2.5.1/3"]] == ["9.2.2.2.1"]
+    assert [each.section for each in tables["5.1.2.1/1"]] == ["5.2.2.1.1"]
+    ders = {
+        message.section: {element.table for element in message.elements}
+        for message in built.messages("TS29.273")
+        if message.name == "Diameter-EAP-Request" and message.application_id == 16777250
+    }
+    assert ders == {
+        "4.2.2.1.1": {"4.1.2.1/1", "4.1.2.4.1/3"},
+        "5.2.2.1.1": {"5.1.2.1/1", "5.1.2.3.1/5", "5.1.2.5.1/1"},
+        "6.2.2.1.1.1": {"6.1.2.1.1-1"},
+    }
+
+
 def test_a_reused_name_follows_its_origin_to_the_real_definition(built):
     """TS 29.229 tabulates the Digest AVPs it re-uses from RFC 4590, yet RFC
     4590 defines them; TS 29.172 cites Service-Selection from TS 29.272,

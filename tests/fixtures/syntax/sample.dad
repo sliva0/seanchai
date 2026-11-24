@@ -96,6 +96,7 @@ DIAMETER_ACME_OTHER              = 5998 ; 7.4.2
 
 ; Type: Information Elements
 ; Command: ACME-Request
+; Command-Section: 6.2.1
 ; Section: 5.2.1
 ; Table: 5.2.1/1
 ; Page: 18

@@ -71,7 +71,10 @@ def _elements(
     `elements-command-unknown` (error): neither the file nor, with a corpus,
     the documents it cites for the command print it.
     `elements-command-ambiguous` (error): the file prints it under several
-    applications and the table names none.
+    applications and the table names none, or more than once under the one
+    application and the table names no clause (`; Command-Section:`). A
+    clause at which the printing document has no such command is
+    `elements-command-unknown`.
     `element-unmapped` (note): a row's mapping cell names no AVP.
     `element-not-in-command` (note): a row maps an AVP the command's body,
     or the grouped AVP's the table describes, does not hold.
@@ -139,6 +142,27 @@ def _elements(
                     )
                 )
             continue
+        where = "the file" if printing is spec else printing.specification
+        if block.command_section is not None:
+            clauses = ", ".join(message.source.section for message in found)
+            found = [
+                message
+                for message in found
+                if message.source.section == block.command_section
+            ]
+            if not found:
+                findings.append(
+                    Finding(
+                        Severity.ERROR,
+                        "elements-command-unknown",
+                        f"table {label} describes {block.command} at clause"
+                        f" {block.command_section}, which {where} prints at"
+                        f" {_clauses(clauses)} only",
+                        block.source.section,
+                        paths=(path,),
+                    )
+                )
+                continue
         ids = sorted({_application_id(printing, message) or 0 for message in found})
         if len(ids) > 1:
             findings.append(
@@ -146,9 +170,23 @@ def _elements(
                     Severity.ERROR,
                     "elements-command-ambiguous",
                     f"table {label} describes {block.command}, which"
-                    f" {'the file' if printing is spec else printing.specification}"
-                    f" prints under applications {', '.join(map(str, ids))}; a"
-                    " correction names the application",
+                    f" {where} prints under applications"
+                    f" {', '.join(map(str, ids))}; a correction names the"
+                    " application",
+                    block.source.section,
+                    paths=(path,),
+                )
+            )
+            continue
+        if len(found) > 1:
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "elements-command-ambiguous",
+                    f"table {label} describes {block.command}, which {where}"
+                    f" prints at clauses"
+                    f" {', '.join(message.source.section for message in found)}"
+                    f" under application {ids[0]}; a correction names the clause",
                     block.source.section,
                     paths=(path,),
                 )
@@ -209,6 +247,10 @@ def _elements(
                         )
                     )
     return findings
+
+
+def _clauses(clauses: str) -> str:
+    return f"clause{'s' if ',' in clauses else ''} {clauses}"
 
 
 def _command(

@@ -556,6 +556,21 @@
    ],
    "version": "19.2.0"
   },
+  "29140-700": {
+   "edits": {
+    "TS29.140.py#elements-command-4-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1 says 'This procedure is mapped to the commands Message-Process-Request/Answer in the Diameter application specified in section 6.1. Tables 4.1.1.1 and 4.1.1.2 detail the involved information elements'; table 4.1.1.1 is captioned 'MM10 Interrogation Request'"
+    },
+    "TS29.140.py#elements-command-4-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1 says 'This procedure is mapped to the commands Message-Process-Request/Answer in the Diameter application specified in section 6.1. Tables 4.1.1.1 and 4.1.1.2 detail the involved information elements'; table 4.1.1.2 is captioned 'MM10 Interrogation Response'"
+    }
+   },
+   "reference": "TS29.140",
+   "renames": [],
+   "version": "7.0.0"
+  },
   "29153-i00": {
    "edits": {
     "TS29.153.py#vendor-id-network-congestion-area-report": {
@@ -3143,6 +3158,546 @@
      "kind": "correction",
      "reason": "clause 4.2 builds Wa's Diameter on 'IETF RFC 4072 [8]', 'IETF RFC 4005 [12]' and 'IETF RFC 5580 [16]'; 5.2, 8.2 and 9.2 name the same for Wd, Wm and Wg (RFC 3588 standing where the corpus holds RFC 6733), and the commands print their AVPs with no re-used table to cite them"
     },
+    "TS29.234.py#elements-unattached-11-3-1-1": {
+     "expect": "table 11.3.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       93
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-11-3-1-2": {
+     "expect": "table 11.3.1.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       94
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-11-3-2-1": {
+     "expect": "table 11.3.2.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       95
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-11-3-2-2": {
+     "expect": "table 11.3.2.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       96
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-11-3-3-1": {
+     "expect": "table 11.3.3.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       97
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-11-3-3-2": {
+     "expect": "table 11.3.3.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       98
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-1-1": {
+     "expect": "table 4.3.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       42
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-1-2": {
+     "expect": "table 4.3.1.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       43
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-2-1": {
+     "expect": "table 4.3.2.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       44
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-2-2": {
+     "expect": "table 4.3.2.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       45
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-3-1": {
+     "expect": "table 4.3.3.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       46
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-3-2": {
+     "expect": "table 4.3.3.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       47
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-4-1": {
+     "expect": "table 4.3.4.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       48
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-3-4-2": {
+     "expect": "table 4.3.4.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       49
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-5-2-1": {
+     "expect": "table 4.5.2.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       50
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-4-5-2-2": {
+     "expect": "table 4.5.2.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       51
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-5-4-1-1": {
+     "expect": "table 5.4.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       52
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-5-4-1-2": {
+     "expect": "table 5.4.1.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       53
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-1-1": {
+     "expect": "table 6.3.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       54
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-1-2": {
+     "expect": "table 6.3.1.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       55
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-1-3": {
+     "expect": "table 6.3.1.3 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       56
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-1-4": {
+     "expect": "table 6.3.1.4 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       57
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-1-5": {
+     "expect": "table 6.3.1.5 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       58
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-2-1": {
+     "expect": "table 6.3.2.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       59
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-2-2": {
+     "expect": "table 6.3.2.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       60
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-2-3": {
+     "expect": "table 6.3.2.3 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       61
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-2-4": {
+     "expect": "table 6.3.2.4 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       62
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-3-1": {
+     "expect": "table 6.3.3.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       63
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-6-3-3-2": {
+     "expect": "table 6.3.3.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       64
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-1-1": {
+     "expect": "table 8.3.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       65
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-1-2": {
+     "expect": "table 8.3.1.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       66
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-2-2": {
+     "expect": "table 8.3.2.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       68
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-3-1": {
+     "expect": "table 8.3.3.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       69
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-3-2": {
+     "expect": "table 8.3.3.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       70
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-4-1": {
+     "expect": "table 8.3.4.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       71
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-4-2": {
+     "expect": "table 8.3.4.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       72
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-5-1": {
+     "expect": "table 8.3.5.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       73
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-8-3-5-2": {
+     "expect": "table 8.3.5.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       74
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-9-3-1-1": {
+     "expect": "table 9.3.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       75
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-9-3-1-2": {
+     "expect": "table 9.3.1.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       76
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-9-3-2-1": {
+     "expect": "table 9.3.2.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       77
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-9-3-2-2": {
+     "expect": "table 9.3.2.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       78
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-9-3-3-1": {
+     "expect": "table 9.3.3.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       79
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-9-3-3-2": {
+     "expect": "table 9.3.3.2 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       80
+      ]
+     ]
+    },
+    "TS29.234.py#elements-unattached-clause-8-3-2": {
+     "expect": "table (clause 8.3.2) names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       67
+      ]
+     ]
+    },
     "TS29.234.py#framed-ip-prefix": {
      "kind": "delete",
      "reason": "table 8.3.2.2's Framed-IP-Prefix 'contains the remote IPv6 prefix of the WLAN UE', which clause 10.1.33 says of RFC 4005's Framed-IPv6-Prefix; nothing defines the printed name, and the same AAA prints '* [ Framed-IPv6-Prefix ]' further down"
@@ -5215,6 +5770,554 @@
      "kind": "correction",
      "reason": "clause 7.1.2.2.1 is an SWm procedure, and clause 7.2.1 says 'The Diameter application for the SWm reference point shall use the Diameter Application Id with value 16777264'; the document prints AA-Request/Answer for STa, SWm and S6b"
     },
+    "TS29.273.py#elements-auth-req-type-6-1-2-1-3-1": {
+     "kind": "correction",
+     "reason": "RFC 6733 clause 8.7 defines Auth-Request-Type, which table 5.1.2.3.1/3 maps the same 'Request-Type' element to"
+    },
+    "TS29.273.py#elements-avp-8-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/2 is captioned 'Authentication Data content - request', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-avp-8-1-2-1-1-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/3 is captioned 'Authentication Data content - request, synchronization failure', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-avp-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/5 is captioned 'Authentication Data content - response', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-calling-station-id-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4005 clause 4.6 spells its AVP Calling-Station-Id, as the Diameter-EAP-Requests' ABNF prints it"
+    },
+    "TS29.273.py#elements-calling-station-id-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4005 clause 4.6 spells its AVP Calling-Station-Id, as the Diameter-EAP-Requests' ABNF prints it"
+    },
+    "TS29.273.py#elements-calling-station-id-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4005 clause 4.6 spells its AVP Calling-Station-Id, as the Diameter-EAP-Requests' ABNF prints it"
+    },
+    "TS29.273.py#elements-command-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.1/1 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-4-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.1/2 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Request at clause 4.2.2.4.1; table 4.1.2.4.1/1 is captioned 'SWa Re-auth request'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Answer at clause 4.2.2.4.2; table 4.1.2.4.1/2 is captioned 'SWa Re-auth response'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.4.1/3 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.4.1/4 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.1/1 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.1/2 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Request at clause 5.2.2.2.1; table 5.1.2.2.1/1 is captioned 'Information Elements passed in ASR message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Answer at clause 5.2.2.2.2; table 5.1.2.2.1/2 is captioned 'Information Elements passed in ASA message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Request at clause 5.2.2.2.3; table 5.1.2.2.1/3 is captioned 'Information Elements passed in STR message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Answer at clause 5.2.2.2.4; table 5.1.2.2.1/4 is captioned 'Information Elements passed in STA message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Request at clause 5.2.2.3.1; table 5.1.2.3.1/1 is captioned 'STa Re-Auth request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Answer at clause 5.2.2.3.2; table 5.1.2.3.1/2 is captioned 'STa Re-Auth response'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Request at clause 5.2.2.3.3; table 5.1.2.3.1/3 is captioned 'STa Authorization Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Answer at clause 5.2.2.3.4; table 5.1.2.3.1/4 is captioned 'STa Authorization response'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-5": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.3.1/5 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-6": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.3.1/6 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Request at clause 5.2.2.4.1; table 5.1.2.4.1/1 is captioned 'STa Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Answer at clause 5.2.2.4.2; table 5.1.2.4.1/2 is captioned 'STa Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.5.1/1 is captioned 'STa ERP Re-authentication Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.5.1/2 is captioned 'STa ERP Re-authentication Answer'"
+    },
+    "TS29.273.py#elements-command-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.1 says 'the SWd interface shall support the trusted non-3GPP access authentication and authorization procedure defined in clause 5.1.2.1', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes', the 3GPP AAA Proxy forwarding 'the Diameter commands', and 'Table 6.1.2.1.1/1 describes the trusted non-3GPP access authentication and authorization request forwarded on the SWd interface'; clause 6.2.2.1.1, 'Commands for STa PMIPv6 or GTPv2 authentication and authorization procedures', prints Diameter-EAP-Request at clause 6.2.2.1.1.1; table 6.1.2.1.1-1 is captioned 'Trusted non-3GPP Access Authentication and Authorization Request on SWd'"
+    },
+    "TS29.273.py#elements-command-6-1-2-1-3-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.3 says 'the SWd interface shall support the trusted non-3GPP access and service authorization information update procedure defined in clause 5.1.2.3', whose authorization request clause 5.1.2.3.1 maps to 'AA-Request and AA-Answer', and 'Table 6.1.2.1.3/1 describes the trusted non-3GPP access authorization request forwarded on the SWd interface'; clause 6.2.2.1.3 says 'The ABNFs defined for the STa interface in clause 5.2.2.3 and in its clauses apply', and clause 5.2.2.3 prints AA-Request at clause 5.2.2.3.3; table 6.1.2.1.3/1 is captioned 'Trusted Non-3GPP Access Authorization Request on SWd interface'"
+    },
+    "TS29.273.py#elements-command-7-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Request at clause 7.2.2.1.1; table 7.1.2.1.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Answer at clause 7.2.2.1.2; table 7.1.2.1.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.2.1; table 7.1.2.3.1/1 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.2.2; table 7.1.2.3.1/2 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 7.2.2.3.1; table 7.1.2.4.1/1 is captioned 'SWm Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 7.2.2.3.2; table 7.1.2.4.1/2 is captioned 'SWm Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.3.3; table 7.1.2.4.1/3 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.3.4; table 7.1.2.4.1/4 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Request at clause 7.2.2.4.1; table 7.1.2.5.1/1 is captioned 'SWm Authorization Information Update Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Answer at clause 7.2.2.4.2; table 7.1.2.5.1/2 is captioned 'SWm Authorization Information Update Answer'"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/1 is captioned 'Authentication request'"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/2 is captioned 'Authentication Data content - request', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/3 is captioned 'Authentication Data content - request, synchronization failure', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/4 is captioned 'Authentication answer'"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/5 is captioned 'Authentication Data content - response', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-8-1-2-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Request at clause 8.2.2.3; table 8.1.2.2.2.1/1 is captioned 'Non-3GPP IP Access Registration request'"
+    },
+    "TS29.273.py#elements-command-8-1-2-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Answer at clause 8.2.2.3; table 8.1.2.2.2.1/2 is captioned 'Non-3GPP IP Access Registration response'"
+    },
+    "TS29.273.py#elements-command-8-3-2-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Request at clause 8.2.2.4; table 8.3.2.3 is captioned 'Network Initiated Deregistration by HSS request'"
+    },
+    "TS29.273.py#elements-command-8-3-2-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Answer at clause 8.2.2.4; table 8.3.2.4 is captioned 'Network Initiated Deregistration by HSS response'"
+    },
+    "TS29.273.py#elements-command-9-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Request at clause 9.2.2.1.1; table 9.1.2.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Answer at clause 9.2.2.1.2; table 9.1.2.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.2.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.2.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.3.1; table 9.1.2.3.1/1 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.3.2; table 9.1.2.3.1/2 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 9.2.2.4.1; table 9.1.2.4.1/1 is captioned 'S6b Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 9.2.2.4.2; table 9.1.2.4.1/2 is captioned 'S6b Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.4.3; table 9.1.2.4.1/3 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.4.4; table 9.1.2.4.1/4 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Request at clause 9.2.2.6.1; table 9.1.2.5.1/1 is captioned 'S6b Re-authorization request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Answer at clause 9.2.2.6.2; table 9.1.2.5.1/2 is captioned 'S6b Re-authorization response'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.5.1/3 is captioned 'Authorization Request when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.5.1/4 is captioned 'Authorization Answer when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-9-1-2-6-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Request at clause 9.2.2.5.1; table 9.1.2.6.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-6-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Answer at clause 9.2.2.5.2; table 9.1.2.6.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.1/1 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.1/2 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Request at clause 4.2.2.4.1; table 4.1.2.4.1/1 is captioned 'SWa Re-auth request'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Answer at clause 4.2.2.4.2; table 4.1.2.4.1/2 is captioned 'SWa Re-auth response'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.4.1/3 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.4.1/4 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.1/1 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.1/2 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Request at clause 5.2.2.2.1; table 5.1.2.2.1/1 is captioned 'Information Elements passed in ASR message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Answer at clause 5.2.2.2.2; table 5.1.2.2.1/2 is captioned 'Information Elements passed in ASA message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Request at clause 5.2.2.2.3; table 5.1.2.2.1/3 is captioned 'Information Elements passed in STR message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Answer at clause 5.2.2.2.4; table 5.1.2.2.1/4 is captioned 'Information Elements passed in STA message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Request at clause 5.2.2.3.1; table 5.1.2.3.1/1 is captioned 'STa Re-Auth request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Answer at clause 5.2.2.3.2; table 5.1.2.3.1/2 is captioned 'STa Re-Auth response'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Request at clause 5.2.2.3.3; table 5.1.2.3.1/3 is captioned 'STa Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Answer at clause 5.2.2.3.4; table 5.1.2.3.1/4 is captioned 'STa Authorization response'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-5": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.3.1/5 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-6": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.3.1/6 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Request at clause 5.2.2.4.1; table 5.1.2.4.1/1 is captioned 'STa Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Answer at clause 5.2.2.4.2; table 5.1.2.4.1/2 is captioned 'STa Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.5.1/1 is captioned 'STa ERP Re-authentication Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.5.1/2 is captioned 'STa ERP Re-authentication Answer'"
+    },
+    "TS29.273.py#elements-command-section-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.1 says 'the SWd interface shall support the trusted non-3GPP access authentication and authorization procedure defined in clause 5.1.2.1', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes', the 3GPP AAA Proxy forwarding 'the Diameter commands', and 'Table 6.1.2.1.1/1 describes the trusted non-3GPP access authentication and authorization request forwarded on the SWd interface'; clause 6.2.2.1.1, 'Commands for STa PMIPv6 or GTPv2 authentication and authorization procedures', prints Diameter-EAP-Request at clause 6.2.2.1.1.1; table 6.1.2.1.1-1 is captioned 'Trusted non-3GPP Access Authentication and Authorization Request on SWd'"
+    },
+    "TS29.273.py#elements-command-section-6-1-2-1-3-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.3 says 'the SWd interface shall support the trusted non-3GPP access and service authorization information update procedure defined in clause 5.1.2.3', whose authorization request clause 5.1.2.3.1 maps to 'AA-Request and AA-Answer', and 'Table 6.1.2.1.3/1 describes the trusted non-3GPP access authorization request forwarded on the SWd interface'; clause 6.2.2.1.3 says 'The ABNFs defined for the STa interface in clause 5.2.2.3 and in its clauses apply', and clause 5.2.2.3 prints AA-Request at clause 5.2.2.3.3; table 6.1.2.1.3/1 is captioned 'Trusted Non-3GPP Access Authorization Request on SWd interface'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Request at clause 7.2.2.1.1; table 7.1.2.1.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Answer at clause 7.2.2.1.2; table 7.1.2.1.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.2.1; table 7.1.2.3.1/1 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.2.2; table 7.1.2.3.1/2 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 7.2.2.3.1; table 7.1.2.4.1/1 is captioned 'SWm Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 7.2.2.3.2; table 7.1.2.4.1/2 is captioned 'SWm Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.3.3; table 7.1.2.4.1/3 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.3.4; table 7.1.2.4.1/4 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Request at clause 7.2.2.4.1; table 7.1.2.5.1/1 is captioned 'SWm Authorization Information Update Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Answer at clause 7.2.2.4.2; table 7.1.2.5.1/2 is captioned 'SWm Authorization Information Update Answer'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/1 is captioned 'Authentication request'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/2 is captioned 'Authentication Data content - request', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/3 is captioned 'Authentication Data content - request, synchronization failure', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/4 is captioned 'Authentication answer'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/5 is captioned 'Authentication Data content - response', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Request at clause 8.2.2.3; table 8.1.2.2.2.1/1 is captioned 'Non-3GPP IP Access Registration request'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Answer at clause 8.2.2.3; table 8.1.2.2.2.1/2 is captioned 'Non-3GPP IP Access Registration response'"
+    },
+    "TS29.273.py#elements-command-section-8-3-2-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Request at clause 8.2.2.4; table 8.3.2.3 is captioned 'Network Initiated Deregistration by HSS request'"
+    },
+    "TS29.273.py#elements-command-section-8-3-2-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Answer at clause 8.2.2.4; table 8.3.2.4 is captioned 'Network Initiated Deregistration by HSS response'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Request at clause 9.2.2.1.1; table 9.1.2.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Answer at clause 9.2.2.1.2; table 9.1.2.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.2.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.2.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.3.1; table 9.1.2.3.1/1 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.3.2; table 9.1.2.3.1/2 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 9.2.2.4.1; table 9.1.2.4.1/1 is captioned 'S6b Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 9.2.2.4.2; table 9.1.2.4.1/2 is captioned 'S6b Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.4.3; table 9.1.2.4.1/3 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.4.4; table 9.1.2.4.1/4 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Request at clause 9.2.2.6.1; table 9.1.2.5.1/1 is captioned 'S6b Re-authorization request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Answer at clause 9.2.2.6.2; table 9.1.2.5.1/2 is captioned 'S6b Re-authorization response'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.5.1/3 is captioned 'Authorization Request when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.5.1/4 is captioned 'Authorization Answer when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-6-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Request at clause 9.2.2.5.1; table 9.1.2.6.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-6-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Answer at clause 9.2.2.5.2; table 9.1.2.6.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-eap-payload-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-4-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-5-1-2-3-1-5": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-5-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-sip-authenticationscheme-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "the cell drops a hyphen: TS 29.229 clause 6.3.9 defines SIP-Authentication-Scheme, which SIP-Auth-Data-Item's body (clause 8.2.3.9) and table 8.1.2.1.1/2 print"
+    },
+    "TS29.273.py#elements-subscription-id-5-1-2-1-2": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-5-1-2-3-1-4": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-5-1-2-3-1-6": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-7-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-7-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
     "TS29.273.py#emergency-services-clause": {
      "kind": "correction",
      "reason": "Emergency-Services is defined in clause 7.2.3.4; clause 7.2.3.5 defines AAR-Flags."
@@ -5470,6 +6573,554 @@
     "TS29.273.py#elements-application-7-1-2-2-1-2": {
      "kind": "correction",
      "reason": "clause 7.1.2.2.1 is an SWm procedure, and clause 7.2.1 says 'The Diameter application for the SWm reference point shall use the Diameter Application Id with value 16777264'; the document prints AA-Request/Answer for STa, SWm and S6b"
+    },
+    "TS29.273.py#elements-auth-req-type-6-1-2-1-3-1": {
+     "kind": "correction",
+     "reason": "RFC 6733 clause 8.7 defines Auth-Request-Type, which table 5.1.2.3.1/3 maps the same 'Request-Type' element to"
+    },
+    "TS29.273.py#elements-avp-8-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/2 is captioned 'Authentication Data content - request', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-avp-8-1-2-1-1-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/3 is captioned 'Authentication Data content - request, synchronization failure', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-avp-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/5 is captioned 'Authentication Data content - response', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-calling-station-id-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4005 clause 4.6 spells its AVP Calling-Station-Id, as the Diameter-EAP-Requests' ABNF prints it"
+    },
+    "TS29.273.py#elements-calling-station-id-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4005 clause 4.6 spells its AVP Calling-Station-Id, as the Diameter-EAP-Requests' ABNF prints it"
+    },
+    "TS29.273.py#elements-calling-station-id-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4005 clause 4.6 spells its AVP Calling-Station-Id, as the Diameter-EAP-Requests' ABNF prints it"
+    },
+    "TS29.273.py#elements-command-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.1/1 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-4-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.1/2 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Request at clause 4.2.2.4.1; table 4.1.2.4.1/1 is captioned 'SWa Re-auth request'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Answer at clause 4.2.2.4.2; table 4.1.2.4.1/2 is captioned 'SWa Re-auth response'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.4.1/3 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-4-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.4.1/4 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.1/1 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.1/2 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Request at clause 5.2.2.2.1; table 5.1.2.2.1/1 is captioned 'Information Elements passed in ASR message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Answer at clause 5.2.2.2.2; table 5.1.2.2.1/2 is captioned 'Information Elements passed in ASA message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Request at clause 5.2.2.2.3; table 5.1.2.2.1/3 is captioned 'Information Elements passed in STR message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-2-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Answer at clause 5.2.2.2.4; table 5.1.2.2.1/4 is captioned 'Information Elements passed in STA message'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Request at clause 5.2.2.3.1; table 5.1.2.3.1/1 is captioned 'STa Re-Auth request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Answer at clause 5.2.2.3.2; table 5.1.2.3.1/2 is captioned 'STa Re-Auth response'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Request at clause 5.2.2.3.3; table 5.1.2.3.1/3 is captioned 'STa Authorization Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Answer at clause 5.2.2.3.4; table 5.1.2.3.1/4 is captioned 'STa Authorization response'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-5": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.3.1/5 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-3-1-6": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.3.1/6 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Request at clause 5.2.2.4.1; table 5.1.2.4.1/1 is captioned 'STa Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Answer at clause 5.2.2.4.2; table 5.1.2.4.1/2 is captioned 'STa Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-5-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.5.1/1 is captioned 'STa ERP Re-authentication Request'"
+    },
+    "TS29.273.py#elements-command-5-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.5.1/2 is captioned 'STa ERP Re-authentication Answer'"
+    },
+    "TS29.273.py#elements-command-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.1 says 'the SWd interface shall support the trusted non-3GPP access authentication and authorization procedure defined in clause 5.1.2.1', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes', the 3GPP AAA Proxy forwarding 'the Diameter commands', and 'Table 6.1.2.1.1/1 describes the trusted non-3GPP access authentication and authorization request forwarded on the SWd interface'; clause 6.2.2.1.1, 'Commands for STa PMIPv6 or GTPv2 authentication and authorization procedures', prints Diameter-EAP-Request at clause 6.2.2.1.1.1; table 6.1.2.1.1-1 is captioned 'Trusted non-3GPP Access Authentication and Authorization Request on SWd'"
+    },
+    "TS29.273.py#elements-command-6-1-2-1-3-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.3 says 'the SWd interface shall support the trusted non-3GPP access and service authorization information update procedure defined in clause 5.1.2.3', whose authorization request clause 5.1.2.3.1 maps to 'AA-Request and AA-Answer', and 'Table 6.1.2.1.3/1 describes the trusted non-3GPP access authorization request forwarded on the SWd interface'; clause 6.2.2.1.3 says 'The ABNFs defined for the STa interface in clause 5.2.2.3 and in its clauses apply', and clause 5.2.2.3 prints AA-Request at clause 5.2.2.3.3; table 6.1.2.1.3/1 is captioned 'Trusted Non-3GPP Access Authorization Request on SWd interface'"
+    },
+    "TS29.273.py#elements-command-7-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Request at clause 7.2.2.1.1; table 7.1.2.1.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Answer at clause 7.2.2.1.2; table 7.1.2.1.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.2.1; table 7.1.2.3.1/1 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.2.2; table 7.1.2.3.1/2 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 7.2.2.3.1; table 7.1.2.4.1/1 is captioned 'SWm Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 7.2.2.3.2; table 7.1.2.4.1/2 is captioned 'SWm Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.3.3; table 7.1.2.4.1/3 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.3.4; table 7.1.2.4.1/4 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-7-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Request at clause 7.2.2.4.1; table 7.1.2.5.1/1 is captioned 'SWm Authorization Information Update Request'"
+    },
+    "TS29.273.py#elements-command-7-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Answer at clause 7.2.2.4.2; table 7.1.2.5.1/2 is captioned 'SWm Authorization Information Update Answer'"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/1 is captioned 'Authentication request'"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/2 is captioned 'Authentication Data content - request', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/3 is captioned 'Authentication Data content - request, synchronization failure', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/4 is captioned 'Authentication answer'"
+    },
+    "TS29.273.py#elements-command-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/5 is captioned 'Authentication Data content - response', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-8-1-2-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Request at clause 8.2.2.3; table 8.1.2.2.2.1/1 is captioned 'Non-3GPP IP Access Registration request'"
+    },
+    "TS29.273.py#elements-command-8-1-2-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Answer at clause 8.2.2.3; table 8.1.2.2.2.1/2 is captioned 'Non-3GPP IP Access Registration response'"
+    },
+    "TS29.273.py#elements-command-8-3-2-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Request at clause 8.2.2.4; table 8.3.2.3 is captioned 'Network Initiated Deregistration by HSS request'"
+    },
+    "TS29.273.py#elements-command-8-3-2-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Answer at clause 8.2.2.4; table 8.3.2.4 is captioned 'Network Initiated Deregistration by HSS response'"
+    },
+    "TS29.273.py#elements-command-9-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Request at clause 9.2.2.1.1; table 9.1.2.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Answer at clause 9.2.2.1.2; table 9.1.2.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.2.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.2.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.3.1; table 9.1.2.3.1/1 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.3.2; table 9.1.2.3.1/2 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 9.2.2.4.1; table 9.1.2.4.1/1 is captioned 'S6b Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 9.2.2.4.2; table 9.1.2.4.1/2 is captioned 'S6b Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.4.3; table 9.1.2.4.1/3 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.4.4; table 9.1.2.4.1/4 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Request at clause 9.2.2.6.1; table 9.1.2.5.1/1 is captioned 'S6b Re-authorization request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Answer at clause 9.2.2.6.2; table 9.1.2.5.1/2 is captioned 'S6b Re-authorization response'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.5.1/3 is captioned 'Authorization Request when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-9-1-2-5-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.5.1/4 is captioned 'Authorization Answer when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-9-1-2-6-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Request at clause 9.2.2.5.1; table 9.1.2.6.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-9-1-2-6-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Answer at clause 9.2.2.5.2; table 9.1.2.6.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.1/1 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.1.1 says the procedure 'follows the STa Authentication and Authorization procedure', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]', and clause 4.2.1 says 'The first authentication command exchange (DER/DEA) is common between the SWa and STa reference points'; clause 4.2.2.1, 'Commands for SWa authentication and authorization procedures', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.1/2 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Request at clause 4.2.2.4.1; table 4.1.2.4.1/1 is captioned 'SWa Re-auth request'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Re-Auth-Answer at clause 4.2.2.4.2; table 4.1.2.4.1/2 is captioned 'SWa Re-auth response'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Request at clause 4.2.2.1.1; table 4.1.2.4.1/3 is captioned 'SWa Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-4-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 4.1.2.4.1 says 'This procedure is mapped to the Diameter command codes Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 4.1.2.4.1/1 and 4.1.2.4.1/2', then the SWa authentication and authorization procedure 'using DER/DEA commands ... Information element contents for these messages shall be as shown in tables 4.1.2.4.1/3 and 4.1.2.4.1/4'; clause 4.2.2.4, 'Commands for SWa Re-Authentication and Re-Authorization Procedures', whose DER and DEA clauses 'Refer to clause 4.2.2.1.1', 'Refer to clause 4.2.2.1.2', prints Diameter-EAP-Answer at clause 4.2.2.1.2; table 4.1.2.4.1/4 is captioned 'SWa Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.1/1 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.1.1 says 'When EAP is used, the trusted non-3GPP access authentication and authorization procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.1/2 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Request at clause 5.2.2.2.1; table 5.1.2.2.1/1 is captioned 'Information Elements passed in ASR message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Abort-Session-Answer at clause 5.2.2.2.2; table 5.1.2.2.1/2 is captioned 'Information Elements passed in ASA message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Request at clause 5.2.2.2.3; table 5.1.2.2.1/3 is captioned 'Information Elements passed in STR message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-2-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.2.1 says 'This procedure is mapped to the Diameter command codes Diameter-Abort-Session-Request (ASR), Diameter-Abort-Session-Answer (ASA), Diameter-Session-Termination-Request (STR) and Diameter-Session-Termination-Answer (STA) specified in IETF RFC 6733 [58]'; clause 5.2.2.2, 'Commands for STa HSS/AAA Initiated Detach for Trusted non-3GPP Access', prints Session-Termination-Answer at clause 5.2.2.2.4; table 5.1.2.2.1/4 is captioned 'Information Elements passed in STA message'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Request at clause 5.2.2.3.1; table 5.1.2.3.1/1 is captioned 'STa Re-Auth request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Re-Auth-Answer at clause 5.2.2.3.2; table 5.1.2.3.1/2 is captioned 'STa Re-Auth response'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-3": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Request at clause 5.2.2.3.3; table 5.1.2.3.1/3 is captioned 'STa Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-4": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints AA-Answer at clause 5.2.2.3.4; table 5.1.2.3.1/4 is captioned 'STa Authorization response'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-5": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.3.1/5 is captioned 'STa Access Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-3-1-6": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.3.1 says 'This procedure is mapped to the Diameter command Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages are shown in tables 5.1.2.3.1/1 and 5.1.2.3.1/2', then 'based on the reuse of the Diameter command codes AA-Request and AA-Answer commands specified in IETF RFC 4005 [4]. Information element contents for these messages are shown in tables 5.1.2.3.1/3 and 5.1.2.3.1/4', and 'based on the reuse of the Diameter commands Diameter-EAP-Request and Diameter-EAP-Answer specified in IETF RFC 4072 [5]. Information element contents for these messages are shown in tables 5.1.2.3.1/5 and 5.1.2.3.1/6'; clause 5.2.2.3, 'Commands for Re-Authentication and Re-Authorization Procedure', whose DER and DEA clauses 'Refer to clause 5.2.2.1.1', 'Refer to clause 5.2.2.1.2', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.3.1/6 is captioned 'Trusted non-3GPP Access Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Request at clause 5.2.2.4.1; table 5.1.2.4.1/1 is captioned 'STa Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.4.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 5.2.2.4, 'Commands for Trusted non-3GPP Access network Initiated Session Termination', prints Session-Termination-Answer at clause 5.2.2.4.2; table 5.1.2.4.1/2 is captioned 'STa Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Request at clause 5.2.2.1.1; table 5.1.2.5.1/1 is captioned 'STa ERP Re-authentication Request'"
+    },
+    "TS29.273.py#elements-command-section-5-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 5.1.2.5.1 says 'When ERP is used, the ERP re-authentication procedure shall be mapped to the Diameter-EAP-Request and Diameter-EAP-Answer command codes specified in IETF RFC 4072 [5]'; clause 5.2.2.1, 'Commands for STa PMIPv6 or GTPv2 or ERP (re-)authentication and authorization procedures', prints Diameter-EAP-Answer at clause 5.2.2.1.2; table 5.1.2.5.1/2 is captioned 'STa ERP Re-authentication Answer'"
+    },
+    "TS29.273.py#elements-command-section-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.1 says 'the SWd interface shall support the trusted non-3GPP access authentication and authorization procedure defined in clause 5.1.2.1', which clause 5.1.2.1.1 maps 'to the Diameter-EAP-Request and Diameter-EAP-Answer command codes', the 3GPP AAA Proxy forwarding 'the Diameter commands', and 'Table 6.1.2.1.1/1 describes the trusted non-3GPP access authentication and authorization request forwarded on the SWd interface'; clause 6.2.2.1.1, 'Commands for STa PMIPv6 or GTPv2 authentication and authorization procedures', prints Diameter-EAP-Request at clause 6.2.2.1.1.1; table 6.1.2.1.1-1 is captioned 'Trusted non-3GPP Access Authentication and Authorization Request on SWd'"
+    },
+    "TS29.273.py#elements-command-section-6-1-2-1-3-1": {
+     "kind": "correction",
+     "reason": "clause 6.1.2.1.3 says 'the SWd interface shall support the trusted non-3GPP access and service authorization information update procedure defined in clause 5.1.2.3', whose authorization request clause 5.1.2.3.1 maps to 'AA-Request and AA-Answer', and 'Table 6.1.2.1.3/1 describes the trusted non-3GPP access authorization request forwarded on the SWd interface'; clause 6.2.2.1.3 says 'The ABNFs defined for the STa interface in clause 5.2.2.3 and in its clauses apply', and clause 5.2.2.3 prints AA-Request at clause 5.2.2.3.3; table 6.1.2.1.3/1 is captioned 'Trusted Non-3GPP Access Authorization Request on SWd interface'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Request at clause 7.2.2.1.1; table 7.1.2.1.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.1.1 says 'The SWm reference point shall perform authentication and authorization based on the reuse of the DER/DEA command set defined in Diameter EAP application, IETF RFC 4072 [5]'; clause 7.2.2.1, 'Commands for SWm Authentication and Authorization Procedures', prints Diameter-EAP-Answer at clause 7.2.2.1.2; table 7.1.2.1.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.2.1; table 7.1.2.3.1/1 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 7.2.2.2, 'Commands for ePDG Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.2.2; table 7.1.2.3.1/2 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 7.2.2.3.1; table 7.1.2.4.1/1 is captioned 'SWm Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 7.2.2.3.2; table 7.1.2.4.1/2 is captioned 'SWm Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 7.2.2.3.3; table 7.1.2.4.1/3 is captioned 'SWm Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 7.2.2.3, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 7.2.2.3.4; table 7.1.2.4.1/4 is captioned 'SWm Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Request at clause 7.2.2.4.1; table 7.1.2.5.1/1 is captioned 'SWm Authorization Information Update Request'"
+    },
+    "TS29.273.py#elements-command-section-7-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer specified in IETF RFC 6733 [58]. Information element contents for these messages shall be as shown in tables 7.1.2.5.1/1 and 7.1.2.5.1/2'; clause 7.2.2.4, 'Commands for Authorization Information Update', prints Re-Auth-Answer at clause 7.2.2.4.2; table 7.1.2.5.1/2 is captioned 'SWm Authorization Information Update Answer'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/1 is captioned 'Authentication request'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/2 is captioned 'Authentication Data content - request', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Request at clause 8.2.2.1; table 8.1.2.1.1/3 is captioned 'Authentication Data content - request, synchronization failure', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/4 is captioned 'Authentication answer'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.1.1 is the Authentication Procedure, and clause 8.2.2.1 says the Multimedia-Authentication-Request (MAR) command 'is sent by the 3GPP AAA Server to the HSS in order to request security information. This corresponds to clause 8.1.2.1', the Multimedia-Authentication-Answer (MAA) 'is sent by a server in response'; the document prints Multimedia-Auth-Answer at clause 8.2.2.1; table 8.1.2.1.1/5 is captioned 'Authentication Data content - response', the element tables 8.1.2.1.1/1 and /4 map to SIP-Auth-Data-Item"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Request at clause 8.2.2.3; table 8.1.2.2.2.1/1 is captioned 'Non-3GPP IP Access Registration request'"
+    },
+    "TS29.273.py#elements-command-section-8-1-2-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.2.1 is the UE/PDN Registration/DeRegistration Notification, and clause 8.2.2.3 says the Server-Assignment-Request (SAR) command 'is sent by the 3GPP AAA Server to the HSS; this corresponds to clause 8.1.2.2.2', the Server-Assignment-Answer (SAA) 'to confirm the registration, de-registration, user profile download or restoration procedure'; the document prints Server-Assignment-Answer at clause 8.2.2.3; table 8.1.2.2.2.1/2 is captioned 'Non-3GPP IP Access Registration response'"
+    },
+    "TS29.273.py#elements-command-section-8-3-2-3": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Request at clause 8.2.2.4; table 8.3.2.3 is captioned 'Network Initiated Deregistration by HSS request'"
+    },
+    "TS29.273.py#elements-command-section-8-3-2-4": {
+     "kind": "correction",
+     "reason": "clause 8.1.2.2.3.1 is the Network Initiated De-Registration by HSS, and clause 8.2.2.4 says the Registration-Termination-Request (RTR) command 'is sent by a Diameter Multimedia server to a Diameter Multimedia client in order to request the de-registration of a user. This corresponds to clause 8.1.2.2.3', the Registration-Termination-Answer (RTA) 'is sent by a client in response'; the document prints Registration-Termination-Answer at clause 8.2.2.4; table 8.3.2.4 is captioned 'Network Initiated Deregistration by HSS response'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Request at clause 9.2.2.1.1; table 9.1.2.1/1 is captioned 'Authentication and Authorization Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.1.1 says 'The S6b reference point performs authentication based on reuse of the DER/DEA command set defined in Diameter EAP'; clause 9.2.2.1, 'Commands for S6b DSMIPv6 Authorization Procedures', prints Diameter-EAP-Answer at clause 9.2.2.1.2; table 9.1.2.1/2 is captioned 'Authentication and Authorization Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-2-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.2.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.2.1 says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands and the Diameter extensions defined for PMIP in IETF RFC 5779 [2]'; clause 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.2.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-3-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.3.1; table 9.1.2.3.1/1 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-3-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.3.1 says 'These procedures are based on the reuse of Diameter STR and STA commands as specified in IETF RFC 6733 [58]'; clause 9.2.2.3, 'Commands for PDN GW Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.3.2; table 9.1.2.3.1/2 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Request at clause 9.2.2.4.1; table 9.1.2.4.1/1 is captioned 'S6b Abort Session Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Abort-Session-Answer at clause 9.2.2.4.2; table 9.1.2.4.1/2 is captioned 'S6b Abort Session Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Request at clause 9.2.2.4.3; table 9.1.2.4.1/3 is captioned 'S6b Session Termination Request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-4-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.4.1 says 'This procedure is based on the reuse of NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands'; clause 9.2.2.4, 'Commands for 3GPP AAA Server Initiated Session Termination', prints Session-Termination-Answer at clause 9.2.2.4.4; table 9.1.2.4.1/4 is captioned 'S6b Session Termination Answer'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Request at clause 9.2.2.6.1; table 9.1.2.5.1/1 is captioned 'S6b Re-authorization request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints Re-Auth-Answer at clause 9.2.2.6.2; table 9.1.2.5.1/2 is captioned 'S6b Re-authorization response'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-3": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Request at clause 9.2.2.2.1; table 9.1.2.5.1/3 is captioned 'Authorization Request when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-5-1-4": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.5.1 says 'This procedure is based on the reuse of Diameter RAR and RAA commands as specified in IETF RFC 6733 [58]. The information element content for these messages is shown in tables 9.1.2.5.1/1 and 9.1.2.5.1/2', and of the authorization procedure that follows, 'The authorization procedure for PMIPv6 or GTPv2 is described in the clause 9.1.2.2. Tables 9.1.2.5.1/3 and 9.1.2.5.1/4 describe the message contents in case of DSMIPv6', clause 9.1.2.2.1 being 'based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clauses 9.2.2.6, 'Commands for S6b Service Authorization Information Update Procedures', and 9.2.2.2, 'Commands for S6b PMIPv6, GTPv2 or DSMIPv6 Authorization Procedures', prints AA-Answer at clause 9.2.2.2.2; table 9.1.2.5.1/4 is captioned 'Authorization Answer when using DSMIPv6'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-6-1-1": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Request at clause 9.2.2.5.1; table 9.1.2.6.1/1 is captioned 'Authorization request'"
+    },
+    "TS29.273.py#elements-command-section-9-1-2-6-1-2": {
+     "kind": "correction",
+     "reason": "clause 9.1.2.6.1 is under 'Authorization Procedures when using MIPv4 FACoA' and says 'The procedures are based on the reuse of NASREQ IETF RFC 4005 [4] AAR and AAA commands'; clause 9.2.2.5, 'Commands for S6b MIPv4 FACoA Authorization Procedures', prints AA-Answer at clause 9.2.2.5.2; table 9.1.2.6.1/2 is captioned 'Authorization answer'"
+    },
+    "TS29.273.py#elements-eap-payload-4-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-4-1-2-4-1-3": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-5-1-2-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-5-1-2-3-1-5": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-5-1-2-5-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-eap-payload-6-1-2-1-1-1": {
+     "kind": "correction",
+     "reason": "RFC 4072 clause 4.1.1 defines EAP-Payload, as the commands' ABNF prints it"
+    },
+    "TS29.273.py#elements-sip-authenticationscheme-8-1-2-1-1-5": {
+     "kind": "correction",
+     "reason": "the cell drops a hyphen: TS 29.229 clause 6.3.9 defines SIP-Authentication-Scheme, which SIP-Auth-Data-Item's body (clause 8.2.3.9) and table 8.1.2.1.1/2 print"
+    },
+    "TS29.273.py#elements-subscription-id-5-1-2-1-2": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-5-1-2-3-1-4": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-5-1-2-3-1-6": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-7-1-2-1-1-2": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
+    },
+    "TS29.273.py#elements-subscription-id-7-1-2-2-1-2": {
+     "kind": "correction",
+     "reason": "RFC 4006 clause 8.46 spells its AVP Subscription-Id."
     },
     "TS29.273.py#emergency-services-clause": {
      "kind": "correction",
@@ -5736,6 +7387,44 @@
     }
    ],
    "version": "19.0.0"
+  },
+  "29328-i20": {
+   "edits": {
+    "TS29.328.py#user-identity-content-unattached": {
+     "expect": "table 7.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "table 7.1.1, 'User Identity content', tabulates the User Identity information element, 'IMS Public User Identity, Public Service Identity, MSISDN or External Identifier according to the conditions described in table 7.1.1' (clause 7.1), which tables 6.1.1.1, 6.1.2.1, 6.1.3.1 and 6.1.4.1 map to User-Identity in Sh-Pull, Sh-Update, Sh-Subs-Notif and Sh-Notif: four commands, where a table names one",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       8
+      ]
+     ]
+    }
+   },
+   "reference": "TS29.328",
+   "renames": [],
+   "version": "18.2.0"
+  },
+  "29328-j20": {
+   "edits": {
+    "TS29.328.py#user-identity-content-unattached": {
+     "expect": "table 7.1.1 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "table 7.1.1, 'User Identity content', tabulates the User Identity information element, 'IMS Public User Identity, Public Service Identity, MSISDN or External Identifier according to the conditions described in table 7.1.1' (clause 7.1), which tables 6.1.1.1, 6.1.2.1, 6.1.3.1 and 6.1.4.1 map to User-Identity in Sh-Pull, Sh-Update, Sh-Subs-Notif and Sh-Notif: four commands, where a table names one",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       8
+      ]
+     ]
+    }
+   },
+   "reference": "TS29.328",
+   "renames": [],
+   "version": "19.2.0"
   },
   "29329-i00": {
    "edits": {

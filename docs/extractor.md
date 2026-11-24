@@ -457,9 +457,15 @@ Description" (any case, "Cat" without its full stop) becomes an
 - Where the sentence goes on "specified in TS 29.229 [5]" or "in clause 7 of
   TS 29.272 [29]", the document is `; From:`; a clause alone names none.
 - Which command a table without the sentence describes, the application of a
-  command printed for several, and the grouped AVP a content table
-  tabulates are corrections (`information_elements`), each citing the
-  clause: TS 29.272's S6a and S7a tables, TS 29.228 clause 6.3.
+  command printed for several, the clause of one printed more than once
+  under one application, and the grouped AVP a content table tabulates are
+  corrections (`information_elements`), each citing the clause: TS 29.272's
+  S6a and S7a tables, TS 29.228 clause 6.3, TS 29.273's procedure tables.
+  TS 29.273 names its commands in no one phrasing ("based on the reuse of
+  NASREQ IETF RFC 4005 [4] ASR, ASA, STR and STA commands", "the DER/DEA
+  command set", or for SWx only in the command clause, "This corresponds to
+  clause 8.1.2.1"), and its procedures share commands under one
+  application, so the extractor reads none of it.
 
 TS 29.272 and 29.273 print most of these tables; nineteen documents do in
 all.

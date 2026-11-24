@@ -1548,14 +1548,16 @@ Equipment-Status       TS29.272   -
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-4-1-2-1-1)
+; Command-Section: 4.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-1-1)
 ; Section: 4.1.2.1.1
 ; Table: 4.1.2.1/1
 ; Page: 18
 ; Columns: Name                                  AVP                         Cat
 "User Identity"                                  User-Name                   M
-"EAP payload"                                    EAP-payload                 M
+"EAP payload"                                    EAP-Payload                 M ;; corrected: (TS29.273.py#elements-eap-payload-4-1-2-1-1)
 "Authentication Request Type"                    Auth-Request-Type           M
-"UE Layer-2 address"                             Calling-Station-ID          M
+"UE Layer-2 address"                             Calling-Station-Id          M ;; corrected: (TS29.273.py#elements-calling-station-id-4-1-2-1-1)
 "Access Type"                                    RAT-Type                    C
 "Access Network Identity"                        ANID                        O
 "Full Name for Network"                          Full-Network-Name           O
@@ -1569,6 +1571,8 @@ Equipment-Status       TS29.272   -
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-4-1-2-1-2)
+; Command-Section: 4.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-1-2)
 ; Section: 4.1.2.1.1
 ; Table: 4.1.2.1/2
 ; Page: 18
@@ -1588,6 +1592,8 @@ Equipment-Status       TS29.272   -
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Request ;; corrected: (TS29.273.py#elements-command-4-1-2-4-1-1)
+; Command-Section: 4.2.2.4.1 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-4-1-1)
 ; Section: 4.1.2.4.1
 ; Table: 4.1.2.4.1/1
 ; Page: 22
@@ -1598,6 +1604,8 @@ Equipment-Status       TS29.272   -
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Answer ;; corrected: (TS29.273.py#elements-command-4-1-2-4-1-2)
+; Command-Section: 4.2.2.4.2 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-4-1-2)
 ; Section: 4.1.2.4.1
 ; Table: 4.1.2.4.1/2
 ; Page: 22
@@ -1607,17 +1615,21 @@ Result                      Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-4-1-2-4-1-3)
+; Command-Section: 4.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-4-1-3)
 ; Section: 4.1.2.4.1
 ; Table: 4.1.2.4.1/3
 ; Page: 22
 ; Columns: Name                 AVP                         Cat
 "User Identity"                 User-Name                   M
-"EAP payload"                   EAP-payload                 M
+"EAP payload"                   EAP-Payload                 M ;; corrected: (TS29.273.py#elements-eap-payload-4-1-2-4-1-3)
 "Authentication Request Type"   Auth-Request-Type           M
 "High Priority Access Info"     High-Priority-Access-Info   C
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-4-1-2-4-1-4)
+; Command-Section: 4.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-4-1-4)
 ; Section: 4.1.2.4.1
 ; Table: 4.1.2.4.1/4
 ; Page: 22
@@ -1633,14 +1645,16 @@ Result                      Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-1-1)
+; Command-Section: 5.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-1-1)
 ; Section: 5.1.2.1.1
 ; Table: 5.1.2.1/1
 ; Page: 27
 ; Columns: Name                                   AVP                            Cat
 "User Identity"                                   User-Name                      M
-"EAP payload"                                     EAP-payload                    M
+"EAP payload"                                     EAP-Payload                    M ;; corrected: (TS29.273.py#elements-eap-payload-5-1-2-1-1)
 "Authentication Request Type"                     Auth-Request-Type              M
-"UE Layer-2 address"                              Calling-Station-ID             M
+"UE Layer-2 address"                              Calling-Station-Id             M ;; corrected: (TS29.273.py#elements-calling-station-id-5-1-2-1-1)
 "Supported 3GPP QoS profile"                      QoS-Capability                 O
 "Mobility Capabilities"                           MIP6-Feature-Vector            C
 "Access Type"                                     RAT-Type                       M
@@ -1664,6 +1678,8 @@ Result                      Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-1-2)
+; Command-Section: 5.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-1-2)
 ; Section: 5.1.2.1.1
 ; Table: 5.1.2.1/2
 ; Page: 27
@@ -1689,7 +1705,7 @@ Result                      Result-Code/Experimental-Result   M
 FA-RK                                            MIP-FA-RK                                  C
 FA-RK-SPI                                        MIP-FA-RK-SPI                              C
 "Trace information"                              Trace-Info                                 C
-MSISDN                                           Subscription-ID                            C
+MSISDN                                           Subscription-Id                            C ;; corrected: (TS29.273.py#elements-subscription-id-5-1-2-1-2)
 "DEA Flags"                                      DEA-Flags                                  O
 "Selected TWAN Connection Mode"                  TWAN-Connection-Mode                       C
 "Requested Connectivity Parameters"              TWAN-Connectivity-Parameters               C
@@ -1704,6 +1720,8 @@ MSISDN                                           Subscription-ID                
 
 
 ; Type: Information Elements
+; Command: Abort-Session-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-2-1-1)
+; Command-Section: 5.2.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-2-1-1)
 ; Section: 5.1.2.2.1
 ; Table: 5.1.2.2.1/1
 ; Page: 49
@@ -1713,6 +1731,8 @@ Auth-Session-State          Auth-Session-State   O
 
 
 ; Type: Information Elements
+; Command: Abort-Session-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-2-1-2)
+; Command-Section: 5.2.2.2.2 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-2-1-2)
 ; Section: 5.1.2.2.1
 ; Table: 5.1.2.2.1/2
 ; Page: 49
@@ -1721,6 +1741,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-2-1-3)
+; Command-Section: 5.2.2.2.3 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-2-1-3)
 ; Section: 5.1.2.2.1
 ; Table: 5.1.2.2.1/3
 ; Page: 49
@@ -1729,6 +1751,8 @@ Termination-Cause   Termination-Cause   M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-2-1-4)
+; Command-Section: 5.2.2.2.4 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-2-1-4)
 ; Section: 5.1.2.2.1
 ; Table: 5.1.2.2.1/4
 ; Page: 49
@@ -1737,6 +1761,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-3-1-1)
+; Command-Section: 5.2.2.3.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-3-1-1)
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/1
 ; Page: 51
@@ -1747,6 +1773,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-3-1-2)
+; Command-Section: 5.2.2.3.2 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-3-1-2)
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/2
 ; Page: 51
@@ -1756,6 +1784,8 @@ Result                      Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-3-1-3)
+; Command-Section: 5.2.2.3.3 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-3-1-3)
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/3
 ; Page: 51
@@ -1770,6 +1800,8 @@ Request-Type                   Auth-Request-Type           M
 
 
 ; Type: Information Elements
+; Command: AA-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-3-1-4)
+; Command-Section: 5.2.2.3.4 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-3-1-4)
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/4
 ; Page: 51
@@ -1785,24 +1817,28 @@ Request-Type                    Auth-Request-Type                         M
 "UE AMBR"                       AMBR                                      C
 "Mobility Capabilities"         MIP6-Feature-Vector                       C
 "Trace information"             Trace-Info                                C
-MSISDN                          Subscription-ID                           C
+MSISDN                          Subscription-Id                           C ;; corrected: (TS29.273.py#elements-subscription-id-5-1-2-3-1-4)
 "Emergency Info"                Emergency-Info                            C
 "UE Usage Type"                 UE-Usage-Type                             C
 "MPS Priority"                  MPS-Priority                              C
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-3-1-5)
+; Command-Section: 5.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-3-1-5)
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/5
 ; Page: 51
 ; Columns: Name                 AVP                         Cat
 "User Identity"                 User-Name                   M
-"EAP payload"                   EAP-payload                 M
+"EAP payload"                   EAP-Payload                 M ;; corrected: (TS29.273.py#elements-eap-payload-5-1-2-3-1-5)
 "Authentication Request Type"   Auth-Request-Type           M
 "High Priority Access Info"     High-Priority-Access-Info   C
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-3-1-6)
+; Command-Section: 5.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-3-1-6)
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/6
 ; Page: 51
@@ -1822,7 +1858,7 @@ MSISDN                          Subscription-ID                           C
 FA-RK                           MIP-FA-RK                                  C
 FA-RK-SPI                       MIP-FA-RK-SPI                              C
 "Trace information"             Trace-Info                                 C
-MSISDN                          Subscription-ID                            C
+MSISDN                          Subscription-Id                            C ;; corrected: (TS29.273.py#elements-subscription-id-5-1-2-3-1-6)
 "WLCP Key"                      WLCP-Key                                   C
 "Emergency Info"                Emergency-Info                             C
 "UE Usage Type"                 UE-Usage-Type                              C
@@ -1830,6 +1866,8 @@ MSISDN                          Subscription-ID                            C
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-4-1-1)
+; Command-Section: 5.2.2.4.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-4-1-1)
 ; Section: 5.1.2.4.1
 ; Table: 5.1.2.4.1/1
 ; Page: 63
@@ -1839,6 +1877,8 @@ MSISDN                          Subscription-ID                            C
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-4-1-2)
+; Command-Section: 5.2.2.4.2 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-4-1-2)
 ; Section: 5.1.2.4.1
 ; Table: 5.1.2.4.1/2
 ; Page: 63
@@ -1847,17 +1887,21 @@ Result            Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-5-1-1)
+; Command-Section: 5.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-5-1-1)
 ; Section: 5.1.2.5.1
 ; Table: 5.1.2.5.1/1
 ; Page: 64
 ; Columns: Name                 AVP                 Cat
 KeyName-NAI                     User-Name           M
-EAP-Initiate                    EAP-payload         M
+EAP-Initiate                    EAP-Payload         M ;; corrected: (TS29.273.py#elements-eap-payload-5-1-2-5-1-1)
 "Authentication Request Type"   Auth-Request-Type   M
 DER-Flags                       DER-Flags           M
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-5-1-2-5-1-2)
+; Command-Section: 5.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-5-1-2)
 ; Section: 5.1.2.5.1
 ; Table: 5.1.2.5.1/2
 ; Page: 64
@@ -1982,14 +2026,16 @@ HPA_Configured = 0
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-6-1-2-1-1-1)
+; Command-Section: 6.2.2.1.1.1 ;; corrected: (TS29.273.py#elements-command-section-6-1-2-1-1-1)
 ; Section: 6.1.2.1.1
 ; Table: 6.1.2.1.1-1
 ; Page: 83
 ; Columns: Name                                   AVP                            Cat
 "User Identity"                                   User-Name                      M
-"EAP payload"                                     EAP-payload                    M
+"EAP payload"                                     EAP-Payload                    M ;; corrected: (TS29.273.py#elements-eap-payload-6-1-2-1-1-1)
 "Authentication Request Type"                     Auth-Request-Type              M
-"UE Layer-2 address"                              Calling-Station-ID             M
+"UE Layer-2 address"                              Calling-Station-Id             M ;; corrected: (TS29.273.py#elements-calling-station-id-6-1-2-1-1-1)
 "Supported 3GPP QoS profile"                      QoS-Capability                 O
 "Mobility Capabilities"                           MIP6-Feature-Vector            C
 "Access Type"                                     RAT-Type                       M
@@ -2011,12 +2057,14 @@ HPA_Configured = 0
 
 
 ; Type: Information Elements
+; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-6-1-2-1-3-1)
+; Command-Section: 5.2.2.3.3 ;; corrected: (TS29.273.py#elements-command-section-6-1-2-1-3-1)
 ; Section: 6.1.2.1.3
 ; Table: 6.1.2.1.3/1
 ; Page: 86
 ; Columns: Name                AVP                          Cat
 "Permanent User Identity"      User-Name                    M
-Request-Type                   Auth-Req-Type                M
+Request-Type                   Auth-Request-Type            M ;; corrected: (TS29.273.py#elements-auth-req-type-6-1-2-1-3-1)
 "Visited Network Identifier"   Visited-Network-Identifier   M
 "Routing Information"          Destination-Host             M
 "Supported 3GPP QoS profile"   QoS-Capability               O
@@ -2024,6 +2072,8 @@ Request-Type                   Auth-Req-Type                M
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-7-1-2-1-1-1)
+; Command-Section: 7.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-1-1-1)
 ; Section: 7.1.2.1.1
 ; Table: 7.1.2.1.1/1
 ; Page: 94
@@ -2044,6 +2094,8 @@ APN                                              Service-Selection            C
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-7-1-2-1-1-2)
+; Command-Section: 7.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-1-1-2)
 ; Section: 7.1.2.1.1
 ; Table: 7.1.2.1.1/2
 ; Page: 94
@@ -2058,7 +2110,7 @@ Master-Session-Key                               EAP-Master-Session-Key         
 "APN-OI replacement"                             APN-OI-Replacement                     C
 "APN and PGW Data"                               APN-Configuration                      C
 "Trace information"                              Trace-Info                             C
-MSISDN                                           Subscription-ID                        C
+MSISDN                                           Subscription-Id                        C ;; corrected: (TS29.273.py#elements-subscription-id-7-1-2-1-1-2)
 "Session time"                                   Session-Timeout                        C
 "Permanent User Identity"                        Mobile-Node-Identifier                 C
 "Serving GW Address"                             MIP6-Agent-Info                        O
@@ -2102,7 +2154,7 @@ MSISDN                                           Subscription-ID                
 "APN-OI replacement"          APN-OI-Replacement                        C
 "APN and PGW Data"            APN-Configuration                         C
 "Trace information"           Trace-Info                                C
-MSISDN                        Subscription-ID                           C
+MSISDN                        Subscription-Id                           C ;; corrected: (TS29.273.py#elements-subscription-id-7-1-2-2-1-2)
 "UE Charging Data"            3GPP-Charging-Characteristics             O
 "Session time"                Session-Timeout                           C
 "WLAN Location Information"   Access-Network-Info                       O
@@ -2112,6 +2164,8 @@ MSISDN                        Subscription-ID                           C
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-7-1-2-3-1-1)
+; Command-Section: 7.2.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-3-1-1)
 ; Section: 7.1.2.3.1
 ; Table: 7.1.2.3.1/1
 ; Page: 113
@@ -2121,6 +2175,8 @@ MSISDN                        Subscription-ID                           C
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Answer ;; corrected: (TS29.273.py#elements-command-7-1-2-3-1-2)
+; Command-Section: 7.2.2.2.2 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-3-1-2)
 ; Section: 7.1.2.3.1
 ; Table: 7.1.2.3.1/2
 ; Page: 113
@@ -2129,6 +2185,8 @@ Result            Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Abort-Session-Request ;; corrected: (TS29.273.py#elements-command-7-1-2-4-1-1)
+; Command-Section: 7.2.2.3.1 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-4-1-1)
 ; Section: 7.1.2.4.1
 ; Table: 7.1.2.4.1/1
 ; Page: 114
@@ -2138,6 +2196,8 @@ Auth-Session-State          Auth-Session-State   O
 
 
 ; Type: Information Elements
+; Command: Abort-Session-Answer ;; corrected: (TS29.273.py#elements-command-7-1-2-4-1-2)
+; Command-Section: 7.2.2.3.2 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-4-1-2)
 ; Section: 7.1.2.4.1
 ; Table: 7.1.2.4.1/2
 ; Page: 114
@@ -2146,6 +2206,8 @@ Result            Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-7-1-2-4-1-3)
+; Command-Section: 7.2.2.3.3 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-4-1-3)
 ; Section: 7.1.2.4.1
 ; Table: 7.1.2.4.1/3
 ; Page: 114
@@ -2154,6 +2216,8 @@ Termination-Cause   Termination-Cause   M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Answer ;; corrected: (TS29.273.py#elements-command-7-1-2-4-1-4)
+; Command-Section: 7.2.2.3.4 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-4-1-4)
 ; Section: 7.1.2.4.1
 ; Table: 7.1.2.4.1/4
 ; Page: 114
@@ -2162,6 +2226,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Request ;; corrected: (TS29.273.py#elements-command-7-1-2-5-1-1)
+; Command-Section: 7.2.2.4.1 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-5-1-1)
 ; Section: 7.1.2.5.1
 ; Table: 7.1.2.5.1/1
 ; Page: 116
@@ -2172,6 +2238,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Answer ;; corrected: (TS29.273.py#elements-command-7-1-2-5-1-2)
+; Command-Section: 7.2.2.4.2 ;; corrected: (TS29.273.py#elements-command-section-7-1-2-5-1-2)
 ; Section: 7.1.2.5.1
 ; Table: 7.1.2.5.1/2
 ; Page: 116
@@ -2199,6 +2267,8 @@ WLAN-Location-Info-Request = 0
 
 
 ; Type: Information Elements
+; Command: Multimedia-Auth-Request ;; corrected: (TS29.273.py#elements-command-8-1-2-1-1-1)
+; Command-Section: 8.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-1-1-1)
 ; Section: 8.1.2.1.1
 ; Table: 8.1.2.1.1/1
 ; Page: 125
@@ -2217,6 +2287,9 @@ IMSI                                             User-Name                    M
 
 
 ; Type: Information Elements
+; Command: Multimedia-Auth-Request ;; corrected: (TS29.273.py#elements-command-8-1-2-1-1-2)
+; Command-Section: 8.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-1-1-2)
+; AVP: SIP-Auth-Data-Item ;; corrected: (TS29.273.py#elements-avp-8-1-2-1-1-2)
 ; Section: 8.1.2.1.1
 ; Table: 8.1.2.1.1/2
 ; Page: 125
@@ -2225,6 +2298,9 @@ IMSI                                             User-Name                    M
 
 
 ; Type: Information Elements
+; Command: Multimedia-Auth-Request ;; corrected: (TS29.273.py#elements-command-8-1-2-1-1-3)
+; Command-Section: 8.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-1-1-3)
+; AVP: SIP-Auth-Data-Item ;; corrected: (TS29.273.py#elements-avp-8-1-2-1-1-3)
 ; Section: 8.1.2.1.1
 ; Table: 8.1.2.1.1/3
 ; Page: 125
@@ -2234,6 +2310,8 @@ IMSI                                             User-Name                    M
 
 
 ; Type: Information Elements
+; Command: Multimedia-Auth-Answer ;; corrected: (TS29.273.py#elements-command-8-1-2-1-1-4)
+; Command-Section: 8.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-1-1-4)
 ; Section: 8.1.2.1.1
 ; Table: 8.1.2.1.1/4
 ; Page: 125
@@ -2247,19 +2325,24 @@ Result                                           Result-Code/Experimental-Result
 
 
 ; Type: Information Elements
+; Command: Multimedia-Auth-Answer ;; corrected: (TS29.273.py#elements-command-8-1-2-1-1-5)
+; Command-Section: 8.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-1-1-5)
+; AVP: SIP-Auth-Data-Item ;; corrected: (TS29.273.py#elements-avp-8-1-2-1-1-5)
 ; Section: 8.1.2.1.1
 ; Table: 8.1.2.1.1/5
 ; Page: 125
-; Columns: Name                    AVP                        Cat
-"Item Number"                      SIP-Item-Number            C
-"Authentication Method"            SIP-AuthenticationScheme   M
-"Authentication Information AKA"   SIP-Authenticate           M
-"Authorization Information AKA"    SIP-Authorization          M
-"Confidentiality Key AKA"          Confidentiality-Key        M
-"Integrity Key AKA"                Integrity-Key              M
+; Columns: Name                    AVP                         Cat
+"Item Number"                      SIP-Item-Number             C
+"Authentication Method"            SIP-Authentication-Scheme   M ;; corrected: (TS29.273.py#elements-sip-authenticationscheme-8-1-2-1-1-5)
+"Authentication Information AKA"   SIP-Authenticate            M
+"Authorization Information AKA"    SIP-Authorization           M
+"Confidentiality Key AKA"          Confidentiality-Key         M
+"Integrity Key AKA"                Integrity-Key               M
 
 
 ; Type: Information Elements
+; Command: Server-Assignment-Request ;; corrected: (TS29.273.py#elements-command-8-1-2-2-2-1-1)
+; Command-Section: 8.2.2.3 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-2-2-1-1)
 ; Section: 8.1.2.2.2.1
 ; Table: 8.1.2.2.2.1/1
 ; Columns: Name                                  AVP                          Cat
@@ -2276,6 +2359,8 @@ IMSI                                             User-Name                    M
 
 
 ; Type: Information Elements
+; Command: Server-Assignment-Answer ;; corrected: (TS29.273.py#elements-command-8-1-2-2-2-1-2)
+; Command-Section: 8.2.2.3 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-2-2-1-2)
 ; Section: 8.1.2.2.2.1
 ; Table: 8.1.2.2.2.1/2
 ; Columns: Name                                  AVP                               Cat
@@ -2287,6 +2372,8 @@ IMSI                                             User-Name                      
 
 
 ; Type: Information Elements
+; Command: Registration-Termination-Request ;; corrected: (TS29.273.py#elements-command-8-3-2-3)
+; Command-Section: 8.2.2.4 ;; corrected: (TS29.273.py#elements-command-section-8-3-2-3)
 ; Section: 8.1.2.2.3.1
 ; Table: 8.3.2.3
 ; Columns: Name                                  AVP                     Cat
@@ -2297,6 +2384,8 @@ IMSI                                             User-Name               M
 
 
 ; Type: Information Elements
+; Command: Registration-Termination-Answer ;; corrected: (TS29.273.py#elements-command-8-3-2-4)
+; Command-Section: 8.2.2.4 ;; corrected: (TS29.273.py#elements-command-section-8-3-2-4)
 ; Section: 8.1.2.2.3.1
 ; Table: 8.3.2.4
 ; Columns: Name                                  AVP                               Cat
@@ -2512,6 +2601,8 @@ NSWO-Access-Authorization = 1
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-1-1)
+; Command-Section: 9.2.2.1.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-1-1)
 ; Section: 9.1.2.1.1
 ; Table: 9.1.2.1/1
 ; Page: 157
@@ -2533,6 +2624,8 @@ APN                                              Service-Selection            O
 
 
 ; Type: Information Elements
+; Command: Diameter-EAP-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-1-2)
+; Command-Section: 9.2.2.1.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-1-2)
 ; Section: 9.1.2.1.1
 ; Table: 9.1.2.1/2
 ; Page: 157
@@ -2556,6 +2649,8 @@ APN                                              Service-Selection            O
 
 
 ; Type: Information Elements
+; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-2-1-1)
+; Command-Section: 9.2.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-2-1-1)
 ; Section: 9.1.2.2.1
 ; Table: 9.1.2.2.1/1
 ; Page: 163
@@ -2574,6 +2669,8 @@ APN                                              Service-Selection            M
 
 
 ; Type: Information Elements
+; Command: AA-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-2-1-2)
+; Command-Section: 9.2.2.2.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-2-1-2)
 ; Section: 9.1.2.2.1
 ; Table: 9.1.2.2.1/2
 ; Page: 163
@@ -2590,6 +2687,8 @@ APN                                              Service-Selection            M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-3-1-1)
+; Command-Section: 9.2.2.3.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-3-1-1)
 ; Section: 9.1.2.3.1
 ; Table: 9.1.2.3.1/1
 ; Page: 169
@@ -2599,6 +2698,8 @@ APN                                              Service-Selection            M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-3-1-2)
+; Command-Section: 9.2.2.3.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-3-1-2)
 ; Section: 9.1.2.3.1
 ; Table: 9.1.2.3.1/2
 ; Page: 169
@@ -2607,6 +2708,8 @@ Result            Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: Abort-Session-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-4-1-1)
+; Command-Section: 9.2.2.4.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-4-1-1)
 ; Section: 9.1.2.4.1
 ; Table: 9.1.2.4.1/1
 ; Page: 171
@@ -2616,6 +2719,8 @@ Auth-Session-State          Auth-Session-State   O
 
 
 ; Type: Information Elements
+; Command: Abort-Session-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-4-1-2)
+; Command-Section: 9.2.2.4.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-4-1-2)
 ; Section: 9.1.2.4.1
 ; Table: 9.1.2.4.1/2
 ; Page: 171
@@ -2624,6 +2729,8 @@ Result            Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-4-1-3)
+; Command-Section: 9.2.2.4.3 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-4-1-3)
 ; Section: 9.1.2.4.1
 ; Table: 9.1.2.4.1/3
 ; Page: 171
@@ -2632,6 +2739,8 @@ Termination-Cause   Termination-Cause   M
 
 
 ; Type: Information Elements
+; Command: Session-Termination-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-4-1-4)
+; Command-Section: 9.2.2.4.4 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-4-1-4)
 ; Section: 9.1.2.4.1
 ; Table: 9.1.2.4.1/4
 ; Page: 171
@@ -2640,6 +2749,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-5-1-1)
+; Command-Section: 9.2.2.6.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-5-1-1)
 ; Section: 9.1.2.5.1
 ; Table: 9.1.2.5.1/1
 ; Page: 173
@@ -2650,6 +2761,8 @@ Result-Code       Result-Code   M
 
 
 ; Type: Information Elements
+; Command: Re-Auth-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-5-1-2)
+; Command-Section: 9.2.2.6.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-5-1-2)
 ; Section: 9.1.2.5.1
 ; Table: 9.1.2.5.1/2
 ; Page: 173
@@ -2658,6 +2771,8 @@ Result            Result-Code/Experimental-Result   M
 
 
 ; Type: Information Elements
+; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-5-1-3)
+; Command-Section: 9.2.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-5-1-3)
 ; Section: 9.1.2.5.1
 ; Table: 9.1.2.5.1/3
 ; Page: 173
@@ -2672,6 +2787,8 @@ APN                             Service-Selection            O
 
 
 ; Type: Information Elements
+; Command: AA-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-5-1-4)
+; Command-Section: 9.2.2.2.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-5-1-4)
 ; Section: 9.1.2.5.1
 ; Table: 9.1.2.5.1/4
 ; Page: 173
@@ -2686,6 +2803,8 @@ APN                             Service-Selection            O
 
 
 ; Type: Information Elements
+; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-6-1-1)
+; Command-Section: 9.2.2.5.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-6-1-1)
 ; Section: 9.1.2.6.1
 ; Table: 9.1.2.6.1/1
 ; Page: 178
@@ -2702,6 +2821,8 @@ APN                                              Service-Selection            C
 
 
 ; Type: Information Elements
+; Command: AA-Answer ;; corrected: (TS29.273.py#elements-command-9-1-2-6-1-2)
+; Command-Section: 9.2.2.5.2 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-6-1-2)
 ; Section: 9.1.2.6.1
 ; Table: 9.1.2.6.1/2
 ; Page: 178

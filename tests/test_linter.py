@@ -101,7 +101,10 @@ _RAW_ERRORS = {
     "TS29.272.raw": ["duplicate-identity"]
     + ["elements-command-ambiguous"] * 12
     + ["table-definition-mismatch", "vendor-id-mismatch"],
-    "TS29.344.raw": ["one-name-two-commands", "one-name-two-commands"],
+    # Clauses 6.2.11 and 6.2.12 print clause 6.2.3's and 6.2.4's command names,
+    # so table 5.2.1-1's and 5.2.1-2's command prints twice under PC4a's
+    # application until corrected.
+    "TS29.344.raw": ["elements-command-ambiguous"] * 2 + ["one-name-two-commands"] * 2,
     "TS29.388.raw": [
         "duplicate-definition",
         "duplicate-identity",
@@ -663,9 +666,69 @@ _STANDING_CORPUS_NOTES = {
 }
 
 
+# TS 29.234 V11.2.0's information-element tables, in file order: the copy is
+# held for citations, and none is attached.
+_TS29_234_TABLES = [
+    "4.3.1.1",
+    "4.3.1.2",
+    "4.3.2.1",
+    "4.3.2.2",
+    "4.3.3.1",
+    "4.3.3.2",
+    "4.3.4.1",
+    "4.3.4.2",
+    "4.5.2.1",
+    "4.5.2.2",
+    "5.4.1.1",
+    "5.4.1.2",
+    "6.3.1.1",
+    "6.3.1.2",
+    "6.3.1.3",
+    "6.3.1.4",
+    "6.3.1.5",
+    "6.3.2.1",
+    "6.3.2.2",
+    "6.3.2.3",
+    "6.3.2.4",
+    "6.3.3.1",
+    "6.3.3.2",
+    "8.3.1.1",
+    "8.3.1.2",
+    "clause-8.3.2",
+    "8.3.2.2",
+    "8.3.3.1",
+    "8.3.3.2",
+    "8.3.4.1",
+    "8.3.4.2",
+    "8.3.5.1",
+    "8.3.5.2",
+    "9.3.1.1",
+    "9.3.1.2",
+    "9.3.2.1",
+    "9.3.2.2",
+    "9.3.3.1",
+    "9.3.3.2",
+    "11.3.1.1",
+    "11.3.1.2",
+    "11.3.2.1",
+    "11.3.2.2",
+    "11.3.3.1",
+    "11.3.3.2",
+]
+
 # Notes the specifications' corrections modules accept as overrides their
 # documents state, by acceptance (docs/linter.md#standing-findings).
 _ACCEPTED_CORPUS_NOTES = {
+    "29234-b20": {
+        "elements-unattached": [
+            f"TS29.234.py#elements-unattached-{label.replace('.', '-')}"
+            for label in _TS29_234_TABLES
+        ]
+    },
+    # Table 7.1.1 tabulates User-Identity, which four commands carry.
+    "TS29.328": {
+        "elements-unattached": ["TS29.328.py#user-identity-content-unattached"]
+    },
     "TS29.214": {"section-mismatch": ["TS29.214.py#pc-session-recovery-status-clause"]},
     # Release 18's copy has no PC-Session-Recovery-Status, a Release 19 AVP.
     "29214-i40": {},
@@ -799,14 +862,19 @@ def _expected[T](pins: dict[str, T], found: dict[Path, T]) -> dict[str, T]:
     }
 
 
-# The information-element notes per corrected file and rule: tables no
-# correction yet names a command for (TS 29.273's, TS 29.234's, TS 29.140's and
-# TS 29.328's User Identity content), mapping cells naming no AVP, mostly a
+# The information-element notes per corrected file and rule, those accepted
+# aside (`_ACCEPTED_CORPUS_NOTES`): mapping cells naming no AVP, mostly a
 # misprinted name, rows mapping an AVP the command's body lacks, and rows whose
 # category the ABNF disagrees with (docs/linter.md#information-elements).
 _ELEMENT_NOTES = {
     "TS29.128": {"element-not-in-command": 1, "element-optional-in-abnf": 2},
-    "29140-700": {"element-unmapped": 3, "elements-unattached": 2},
+    # Table 4.1.1.2 lists members of MPA's grouped Status and
+    # Result-Recipient-Address as the command's.
+    "29140-700": {
+        "element-not-in-command": 6,
+        "element-optional-in-abnf": 2,
+        "element-unmapped": 3,
+    },
     "TS29.172": {"element-not-in-command": 4},
     "TS29.219": {"element-optional-in-abnf": 1},
     "TS29.228": {
@@ -814,24 +882,21 @@ _ELEMENT_NOTES = {
         "element-optional-in-abnf": 2,
         "element-required-in-abnf": 2,
     },
-    "29234-b20": {"element-unmapped": 36, "elements-unattached": 45},
+    "29234-b20": {"element-unmapped": 36},
     "TS29.272": {
         "element-not-in-command": 2,
         "element-optional-in-abnf": 1,
         "element-unmapped": 2,
     },
+    # Most tables give User-Name category M where the ABNF has
+    # [ User-Name ]; SWx's content tables, SIP-Auth-Data-Item's members.
     "TS29.273": {
-        "element-not-in-command": 2,
-        "element-optional-in-abnf": 4,
+        "element-not-in-command": 14,
+        "element-optional-in-abnf": 58,
         "element-unmapped": 25,
-        "elements-unattached": 59,
     },
     "TS29.283": {"element-optional-in-abnf": 6},
-    "TS29.328": {
-        "element-optional-in-abnf": 3,
-        "element-unmapped": 1,
-        "elements-unattached": 1,
-    },
+    "TS29.328": {"element-optional-in-abnf": 3, "element-unmapped": 1},
     "TS29.330": {"element-not-in-command": 1, "element-optional-in-abnf": 3},
     "TS29.336": {"element-not-in-command": 1},
     "TS29.337": {"element-not-in-command": 3},
@@ -845,7 +910,15 @@ def test_the_corrected_corpus_has_only_its_counted_element_notes():
     counted: dict[Path, dict[str, int]] = {}
     for entry in books:
         by_rule = counted.setdefault(entry.path, {})
-        for finding in linter.lint_with_corpus(entry.spec, books):
+        declared = corrections.in_release(
+            corrections.load(_ROOT / "edits" / "corrections", entry.spec.specification),
+            entry.spec.version,
+        )
+        for finding in linter.lint_with_corpus(
+            entry.spec, books, corrections.acceptances(declared)
+        ):
+            if finding.severity is linter.Severity.ACCEPTED:
+                continue  # pinned by acceptance, `_ACCEPTED_CORPUS_NOTES`
             if finding.rule in ELEMENT_RULES:
                 assert finding.severity is linter.Severity.NOTE, finding
                 by_rule[finding.rule] = by_rule.get(finding.rule, 0) + 1
@@ -1354,6 +1427,63 @@ def test_a_cross_file_rule_no_committed_file_triggers(
 
     assert finding.severity is severity
     assert fact in finding.message
+
+
+# A command printed twice under one application, as TS 29.273 prints
+# Diameter-EAP-Request for SWa and for STa under STa's application.
+_TWICE = (
+    _ccr("4.2.2.1", "272, REQ, PXY, 16777250"),
+    _ccr("5.2.2.1", "272, REQ, PXY, 16777250").replace(
+        "< Session-Id >", "< Session-Id >\n        [ User-Name ]"
+    ),
+)
+
+
+def _elements_for(section: str | None) -> str:
+    line = "" if section is None else f"; Command-Section: {section}\n"
+    return (
+        "; Type: Information Elements\n; Command: Credit-Control-Request\n"
+        f"{line}; Section: 5.1.2.1\n; Table: 5.1.2.1/1\n; Columns: Name AVP Cat\n"
+        "Identity User-Name M"
+    )
+
+
+@pytest.mark.parametrize(
+    ("section", "rule", "fact"),
+    [
+        pytest.param(
+            None,
+            "elements-command-ambiguous",
+            "prints at clauses 4.2.2.1, 5.2.2.1 under application 16777250; a"
+            " correction names the clause",
+            id="no-clause",
+        ),
+        pytest.param(
+            "6.2.2.1",
+            "elements-command-unknown",
+            "describes Credit-Control-Request at clause 6.2.2.1, which the file"
+            " prints at clauses 4.2.2.1, 5.2.2.1 only",
+            id="no-such-clause",
+        ),
+        pytest.param(
+            "4.2.2.1",
+            "element-not-in-command",
+            "which CCR's ABNF (clause 4.2.2.1) does not hold",
+            id="the-clause-named",
+        ),
+        pytest.param(
+            "5.2.2.1",
+            "element-optional-in-abnf",
+            "User-Name is optional in CCR's ABNF (clause 5.2.2.1)",
+            id="the-other-clause",
+        ),
+    ],
+)
+def test_a_table_is_held_to_the_print_its_clause_names(section, rule, fact):
+    findings = linter.lint(_dad("3GPP TS 29.273", *_TWICE, _elements_for(section)))
+
+    assert {f.rule for f in findings if f.rule in ELEMENT_RULES} == {rule}
+    assert fact in _only(findings, rule).message
 
 
 def test_the_record_of_known_holes_is_held_to_the_corpus():

@@ -72,6 +72,7 @@ _VERSION = pydantic.TypeAdapter(ast.Version)
 _INLINE_TEXT = pydantic.TypeAdapter(ast.InlineText)
 _UNSIGNED32 = pydantic.TypeAdapter(ast.Unsigned32)
 _SPEC_REF = pydantic.TypeAdapter(ast.SpecRef)
+_SECTION_NUMBER = pydantic.TypeAdapter(ast.SectionNumber)
 _VERSIONS_TEXT = pydantic.TypeAdapter(ast.VersionsText)
 
 
@@ -968,6 +969,7 @@ def _parse_information_elements(
     # extractor reads, and where only one application prints it.
     command = directives.pop("Command", None)
     application_id = directives.pop("Application-ID", None)
+    command_section = directives.pop("Command-Section", None)
     origin = directives.pop("From", None)
     avp = directives.pop("AVP", None)
     table = directives.pop("Table", None)
@@ -988,6 +990,9 @@ def _parse_information_elements(
     if origin is not None:
         with _validated(origin.lineno):
             _SPEC_REF.validate_python(origin.value)
+    if command_section is not None:
+        with _validated(command_section.lineno):
+            _SECTION_NUMBER.validate_python(command_section.value)
     rows = []
     for row_lineno, (name, mapping, category) in _cells(body, 3):
         element = _text_cell(name, row_lineno, "Name")
@@ -1010,6 +1015,7 @@ def _parse_information_elements(
         return ast.InformationElements(
             command=None if command is None else command.value,
             application_id=number,
+            command_section=None if command_section is None else command_section.value,
             origin=None if origin is None else origin.value,
             avp=None if avp is None else avp.value,
             table=None if table is None else table.value,
@@ -1267,6 +1273,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Note": ("note",),
     "Reprints": ("reprints",),
     "Command": ("command",),
+    "Command-Section": ("command_section",),
     "From": ("origin",),
     "AVP": ("avp",),
     "Kind": ("kind",),

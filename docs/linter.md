@@ -107,8 +107,8 @@ the file does not print is not judged.
 | Rule | Severity | Reports |
 |---|---|---|
 | `elements-unattached` | note | a table naming no command; a correction names the one it describes |
-| `elements-command-unknown` | error | a command neither the file nor the documents it cites for it print |
-| `elements-command-ambiguous` | error | a command the file prints for several applications, the table naming none |
+| `elements-command-unknown` | error | a command neither the file nor the documents it cites for it print, or none at the clause the table names |
+| `elements-command-ambiguous` | error | a command the file prints for several applications, the table naming none, or more than once under the one application, the table naming no clause |
 | `element-unmapped` | note | a row whose mapping cell names no AVP, kept as printed |
 | `element-not-in-command` | note | a row mapping an AVP the command's body, or the grouped AVP's the table describes, does not hold |
 | `element-required-in-abnf` | note | an AVP the body requires (`{ }` or `< >`) that a row gives category O or C |
@@ -266,10 +266,9 @@ correcting them would invent something the documents do not say.
 | `registry-result-code-name` | TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`; TS 29.283's `DIAMETER_ERROR_DATA OUT_OF_SYNC` | no clause settles the name |
 | `registry-application-name` | TS 29.272's `S7a/S7d` for 16777308, "3GPP S7a" in table 4.1 | names differ |
 | `undefined-avp` | the names defined nowhere ([consumers.md](consumers.md#undefined-names)) | each block's reason lists what was searched |
-| `element-optional-in-abnf`, `element-required-in-abnf` | 24 and 3 rows, TS 29.283's six the most | the table and the ABNF say different things |
-| `element-not-in-command` | 18 rows, as TS 29.172's `Age-of-Location-Estimate` in PLA | the table lists what the body does not |
+| `element-optional-in-abnf`, `element-required-in-abnf` | 80 and 3 rows, TS 29.273's 58 the most, most a `User-Name` its tables give M where the ABNF has `[ User-Name ]` | the table and the ABNF say different things |
+| `element-not-in-command` | 36 rows, as TS 29.172's `Age-of-Location-Estimate` in PLA and TS 29.273's `Transport-Access-Type` in STa's DER | the table lists what the body does not |
 | `element-unmapped` | 68 cells, 36 of them TS 29.234's | most print a name with a space or another's spelling; a correction may name the AVP |
-| `elements-unattached` | 107 tables: TS 29.273's 59, TS 29.234's 45, TS 29.140's 2 and TS 29.328 table 7.1.1 | no sentence the extractor reads names their commands; a correction names each |
 
 Accepted findings, each cited by `edits/corrections/<SpecRef>.py#<id>`:
 
@@ -280,3 +279,4 @@ Accepted findings, each cited by `edits/corrections/<SpecRef>.py#<id>`:
 | `reused-row-mismatch` | TS 32.299's `Supported-Features` |
 | `section-mismatch` | misprinted clauses kept as printed (TS 29.214's `PC-Session-Recovery-Status`, TS 29.273's `Trace-Info`); TS 29.273's `MIP6-Agent-Info`; RFC 5778's `MIP6-Auth-Mode` |
 | `section-unknown` | RFC 6942's scope over prose clauses 5.2 and 6; oneM2M TS-0004's clause 6.6.3 |
+| `elements-unattached` | TS 29.234's 45 tables, an old copy held for citations; TS 29.328 table 7.1.1, User-Identity's content, which four commands carry |
