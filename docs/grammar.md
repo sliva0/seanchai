@@ -648,10 +648,10 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
 ```
 
 - The block is interpreted: no document prints it as structure, no extractor
-  writes it, and only a correction declares it
-  ([corrections.md](corrections.md#interpreted-constraints)), so only a
-  corrected file holds one. It stands in clause order after the last block
-  of its clause or one before it, beside the clause it reads.
+  writes it, and a person writes it in the document's interpretations file
+  ([below](#interpretations-files)), so only a corrected file of the corpus
+  holds one. It stands in clause order after the last block of its clause or
+  one before it, beside the clause it reads.
 - `; AVP:` is the AVP the rules constrain. `; Command:`, with
   `; Application-ID:` where the file prints the command for several
   applications, or `; Within:`, a grouped AVP, scopes them to the AVP as a
@@ -687,6 +687,47 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
 - `text-only` is a rule the quote states that no kind expresses: one
   depending on an earlier message, a feature, the node or the subscriber,
   or on more than the kinds can say. It is a reading's only rule.
+
+### Interpretations files
+
+```abnf
+interpretations = interprets-line *(2*NL interpretation) NL
+interprets-line = "; Interprets: " inline-text   ; as spec-line's title
+interpretation  = "; Type: Interpreted Constraints" NL
+                  "; Id: " id NL
+                  ; then interpreted-constraints's lines after its
+                  ; ; Type:, without ; Page:
+id              = 1*(LOWER / DIGIT) *("-" 1*(LOWER / DIGIT))
+LOWER           = %x61-7A
+```
+
+A `.dadx` file, `edits/interpretations/TS29.272.dadx`, holds what a person
+read in one document's prose, merged into its corrected copies as the corpus
+is rebuilt ([constraints.md](constraints.md#the-interpretations-file)). It is
+no document: the corpus loaders read `*.dad` and refuse it by name.
+
+```dad
+; Interprets: 3GPP TS 29.272
+;; Read in clause order.
+
+
+; Type: Interpreted Constraints
+; Id: ue-usage-type-range
+; AVP: UE-Usage-Type
+; Section: 7.3.202
+; Versions: 18.7.0..19.6.0
+"The allowed values of UE-Usage-Type shall be in the range of 0 to 255."
+    range 0..255
+```
+
+- `; Interprets:` names the document as its files' `; Specification:` does,
+  and the file is named by its spec-ref.
+- `; Id:` is unique in the file; the corrected file's `;; interpreted:` note
+  cites the block by it.
+- No block has a `; Page:`, which is read from each copy's source.
+- Each block's `; Section:` sorts at or after the one above it
+  (`ast.section_sort_key`): the blocks follow the document's clause order.
+- Comments follow the `.dad` rules and stay in the file.
 
 ## Text values
 

@@ -14,6 +14,7 @@ from ._base import (
     _DEFAULT_ALIASES,
     _DEFAULT_CORPUS,
     _DEFAULT_CORRECTIONS,
+    _DEFAULT_INTERPRETATIONS,
     _DEFAULT_SOURCES,
     _DEFAULT_TRANSCRIPTIONS,
     _DEFAULT_UNCLAIMED,
@@ -248,6 +249,12 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
     help="Directory with per-spec correction modules. Executes Python from it.",
 )
 @click.option(
+    "--interpretations",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=_DEFAULT_INTERPRETATIONS,
+    help="Directory with per-spec interpretations files (<SpecRef>.dadx).",
+)
+@click.option(
     "--transcriptions",
     type=click.Path(file_okay=False, path_type=Path),
     default=_DEFAULT_TRANSCRIPTIONS,
@@ -291,6 +298,7 @@ def regenerate(
     output: Path | None,
     sources: Path,
     corrections: Path,
+    interpretations: Path,
     transcriptions: Path,
     add: tuple[str, ...],
     only: tuple[str, ...],
@@ -334,6 +342,7 @@ def regenerate(
         ("--corpus", corpus),
         ("--sources", sources),
         ("--corrections", corrections),
+        ("--interpretations", interpretations),
         ("--transcriptions", transcriptions),
     ):
         if not directory.is_dir():
@@ -347,6 +356,7 @@ def regenerate(
             output if output is not None else corpus,
             sources_dir=sources,
             corrections_dir=corrections,
+            interpretations_dir=interpretations,
             transcriptions_dir=transcriptions,
             add=add,
             only=only,
@@ -432,6 +442,12 @@ def _echo_outcome(outcome) -> None:
     " from it, so it has no default.",
 )
 @click.option(
+    "--interpretations",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with interpretations files (<SpecRef>.dadx), merged after"
+    " the corrections, their quotes unchecked and their blocks unpaged.",
+)
+@click.option(
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
@@ -444,6 +460,7 @@ def extract(
     link: str | None,
     sources: Path | None,
     corrections: Path | None,
+    interpretations: Path | None,
     output: Path | None,
 ) -> None:
     """Extract a canonical `.dad` file from a 3GPP specification docx.
@@ -470,10 +487,12 @@ def extract(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        if corrections is not None:
+        if corrections is not None or interpretations is not None:
             # A corpus run may pass a directory holding modules for only some
             # of its specifications, so a spec without one is not an error.
-            spec, comments = _correct(spec, comments, corrections, required=False)
+            spec, comments = _correct(
+                spec, comments, corrections, required=False, interpreted=interpretations
+            )
     _write(spec, output, comments)
 
 
@@ -493,6 +512,12 @@ def extract(
     " from it, so it has no default.",
 )
 @click.option(
+    "--interpretations",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with interpretations files (<SpecRef>.dadx), merged after"
+    " the corrections, their quotes unchecked and their blocks unpaged.",
+)
+@click.option(
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
@@ -504,6 +529,7 @@ def extract_rfc(
     link: str | None,
     sources: Path | None,
     corrections: Path | None,
+    interpretations: Path | None,
     output: Path | None,
 ) -> None:
     """Extract a canonical `.dad` file from an RFC's plain-text rendering.
@@ -524,8 +550,10 @@ def extract_rfc(
             for warning in warnings:
                 prefix = click.style("warning", fg="yellow")
                 click.echo(f"{prefix}: {warning}", err=True)
-        if corrections is not None:
-            spec, comments = _correct(spec, comments, corrections, required=False)
+        if corrections is not None or interpretations is not None:
+            spec, comments = _correct(
+                spec, comments, corrections, required=False, interpreted=interpretations
+            )
     _write(spec, output, comments)
 
 
@@ -538,13 +566,21 @@ def extract_rfc(
     help="Directory with correction modules (<SpecRef>.py). Executes Python from it.",
 )
 @click.option(
+    "--interpretations",
+    type=click.Path(file_okay=False, exists=True, path_type=Path),
+    help="Directory with interpretations files (<SpecRef>.dadx), merged after"
+    " the corrections, their quotes unchecked and their blocks unpaged.",
+)
+@click.option(
     "-o",
     "--output",
     type=click.Path(dir_okay=False, path_type=Path),
     show_default="stdout",
     help="Output .dad path.",
 )
-def correct(source: Path, corrections: Path, output: Path | None) -> None:
+def correct(
+    source: Path, corrections: Path, interpretations: Path | None, output: Path | None
+) -> None:
     """Apply a specification's corrections to a raw `.dad` file.
 
     SOURCE must be raw extractor output; an already corrected file fails,
@@ -565,17 +601,30 @@ def correct(source: Path, corrections: Path, output: Path | None) -> None:
         with _naming(source):
             text = source.read_text(encoding="utf-8")
             spec, comments = parser.parse_with_comments(text)
-        corrected, notes = _correct(spec, comments, corrections, required=True)
+        corrected, notes = _correct(
+            spec, comments, corrections, required=True, interpreted=interpretations
+        )
     _write(corrected, output, notes)
 
 
-def _correct(spec, comments: Comments, directory: Path, required: bool):
+def _correct(
+    spec,
+    comments: Comments,
+    directory: Path | None,
+    required: bool,
+    interpreted: Path | None = None,
+):
     """The corrected tree, and `comments` moved with their lines plus notes
-    marking what changed."""
+    marking what changed: `directory`'s corrections, then `interpreted`'s
+    interpretations."""
     from ..dad import corrections as corrections_module
+    from ..dad import interpretations
 
     declared = corrections_module.in_release(
-        corrections_module.load(directory, spec.specification, required=required),
+        [
+            *corrections_module.load(directory, spec.specification, required=required),
+            *interpretations.load(interpreted, spec.specification),
+        ],
         spec.version,
     )
     corrected, results, notes = corrections_module.apply_with_comments(
@@ -593,7 +642,7 @@ def _correct(spec, comments: Comments, directory: Path, required: bool):
         elif isinstance(edit, corrections_module.Supply):
             verb = click.style("supplied", fg="green")
             click.echo(f"{verb}: {result.node} {reason}", err=True)
-        elif isinstance(edit, corrections_module.Interpret):
+        elif isinstance(edit, corrections_module.Interpretation):
             verb = click.style("interpreted", fg="green")
             click.echo(f"{verb}: {result.node} {reason}", err=True)
         else:

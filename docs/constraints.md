@@ -4,8 +4,9 @@ A `.dad` file says what a document prints as structure: an AVP is an
 `OctetString`, an `Unsigned32`. The clause defining the AVP says more, in
 prose: "encoded as a TBCD-string", "in the range of 0 to 255", "shall only be
 present when Non-IP-PDN-Type-Indicator is set to TRUE (1)". No extractor reads
-that reliably, so a person reads the clause and declares what it says, pinned
-to the sentences read. The corpus calls the result interpreted constraints.
+that reliably, so a person reads the clause and writes down what it says,
+pinned to the sentences read. The corpus calls the result interpreted
+constraints.
 
 ## What "interpreted" means
 
@@ -15,9 +16,12 @@ decided that "It should consist of 14 digits ... It may also include a 15th
 digit" means `length 14..15 digits` of `digits`. The corpus keeps that apart
 from the printed facts, so a consumer can weigh it:
 
-- Only a corrected file holds the block, `; Type: Interpreted Constraints`;
-  the raw file is what the extractor read. A note on its `; Type:` line cites
-  the declaration (`;; interpreted: (TS29.272.py#imei-digits)`).
+- The blocks are written by hand, one file per document, in the document's
+  interpretations file, `edits/interpretations/TS29.272.dadx`, in the block
+  syntax itself ([below](#the-interpretations-file)). Only a corrected file
+  holds them, `; Type: Interpreted Constraints`; the raw file is what the
+  extractor read. A note on each block's `; Type:` line cites the block it
+  was merged from (`;; interpreted: (TS29.272.dadx#imei-digits)`).
 - Each rule stands after the sentences it was read from, verbatim. Rebuilding
   the corpus from the documents checks every sentence against its clause, and
   fails when the document no longer prints it, as a correction does when the
@@ -26,7 +30,7 @@ from the printed facts, so a consumer can weigh it:
   checked against. A reading is carried to another release's copy only once
   its sentences are found there, and is otherwise left out of that copy: of
   TS 29.272's 157, Release 18's copy holds 152
-  ([corrections.md](corrections.md#interpreted-constraints)).
+  ([below](#the-interpretations-file)).
 - The model's `Constraint`, the dictionary's and the export's say
   `interpreted`; the Wireshark plugin reports a breach as a note, whatever
   the quote's wording, its line ending in `interpreted`
@@ -44,7 +48,7 @@ on it.
 TS 29.272's file prints it:
 
 ```dad
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#imei-digits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#imei-digits)
 ; AVP: IMEI
 ; Section: 7.3.4
 ; Page: 100
@@ -54,7 +58,7 @@ TS 29.272's file prints it:
     length 14..15 digits
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ue-usage-type-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ue-usage-type-range)
 ; AVP: UE-Usage-Type
 ; Section: 7.3.202
 ; Page: 166
@@ -63,7 +67,7 @@ TS 29.272's file prints it:
     range 0..255
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-non-ip-delivery)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-non-ip-delivery)
 ; AVP: Non-IP-Data-Delivery-Mechanism
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -168,32 +172,111 @@ integer's payload or an OctetString's (`bits_value`, `bits_problem`).
   wire
   ([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)).
 
+## The interpretations file
+
+A document's interpretations are written in `edits/interpretations/`, one
+file per document named by its reference with the suffix `.dadx`:
+`TS29.272.dadx`. The syntax is the `.dad` syntax
+([grammar.md](grammar.md#interpretations-files)); the suffix keeps the corpus
+loaders and `--with`, which read `*.dad`, from taking the file for a
+document. It holds a `; Interprets:` header naming the document as its
+`; Specification:` does, then the blocks, in the document's clause order, so
+a reviewer reads it beside the specification:
+
+```dad
+; Interprets: 3GPP TS 29.272
+
+
+; Type: Interpreted Constraints
+; Id: apn-configuration-non-ip-delivery
+; AVP: Non-IP-Data-Delivery-Mechanism
+; Within: APN-Configuration
+; Section: 7.3.35
+; Versions: 18.7.0..19.6.0
+"The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1)."
+    requires Non-IP-PDN-Type-Indicator = TRUE
+```
+
+- A person writes the scope (`; AVP:`, `; Within:` or `; Command:` with
+  `; Application-ID:`, `; Section:`, `; Table:`), the quotes and the rules,
+  and `; Versions:`, the range the quotes were checked against.
+- `; Id:` names the block: a kebab-case name, unique in the file, naming what
+  is read (`imei-digits`), not where. The corrected file's note and the
+  corrections record cite it as `TS29.272.dadx#imei-digits`, so it stays put
+  when the clause is renumbered or the block moves.
+- `; Page:` is not written: it is the clause's page in each copy, read from
+  that copy's source as the block is merged, so one block serves the copies
+  of several releases.
+- `;;` comments are the author's notes; they stay in the file and do not
+  reach the corrected one.
+
+`seanchai corpus regenerate` merges the file into each corrected copy after
+the document's corrections:
+
+- Each block whose range spans the copy's release is placed after the last
+  block whose clause sorts at or before its own, in the order written: a
+  block reading clause 7.3.9 follows clause 7.3.8's, and one reading an
+  information element's description follows its table.
+- Every quote must be within one paragraph or table cell of its clause once
+  whitespace is collapsed, as the extractor reads it; an RFC's quote within
+  one paragraph, its lines joined. A miss fails the document, naming the
+  file and line of the quote:
+  `edits/interpretations/TS29.272.dadx:435: imei-digits: clause 7.3.4 does
+  not print 'It should consist of 16 digits, ...'`. A transcription has no
+  source text to check against, so a file for one is refused.
+- Merging expects the corrected file to hold every AVP a block names, one
+  command of its scope's name, the AVP in the command's or the grouped AVP's
+  printed body, and no other block for the same AVP, scope and clause.
+- A block applies only to copies of the releases its range spans, since
+  whether a clause prints a sentence is a fact of each copy. Another
+  release's are offered: `regenerate` counts them in a warning, and with
+  `--expand-ranges`, on a copy of a release no block of the file spans, it
+  holds the quotes of each of the nearest reviewed release's (the oldest
+  above, else the newest below) to the copy's text. Each it finds is merged
+  and its `; Versions:` line widened to the copy in the file; each it does
+  not is reported as `not carried:` with the sentence the clause lacks, and
+  stays out. Release 18's copy holds 152 of TS 29.272's 157; the five it
+  does not read sentences Release 19 added.
+- `corrections.json` records each block by its citation, kind `interpret`,
+  with its clause and quotes
+  ([corrections.md](corrections.md#the-corrections-record)).
+
+`seanchai format` keeps the file in canonical form, comments included, and
+`seanchai lint FILE.dadx` checks it: its syntax, rules, ids and clause order
+as it is read, and with a corpus the `constraint-*` rules in each copy of the
+document a block's range spans, as the copy would read the block merged in
+place of its own ([linter.md](linter.md#interpreted-constraints)).
+`seanchai corpus correct` and `corpus extract` take `--interpretations DIR`
+to merge a file without its source: no quote is checked and no block is
+paged.
+
+A file of your own beside a private `--with` document is not read: write
+that document's Interpreted Constraints blocks in its `.dad` itself, as any
+file may hold them, with no source to hold their quotes to.
+
 ## Adding them for another document
 
 1. Read every AVP clause of the document, and the descriptions of its
    information-element tables' C rows. Keep the source text at hand:
    `seanchai.extractor.tgpp_docx.clause_texts(docx, Path("edits/sources"))`
    gives each clause's paragraphs and cells as the quote check reads them.
-2. For each rule a clause states, declare an `Interpret` in the document's
-   corrections module
-   ([corrections.md](corrections.md#interpreted-constraints)), in clause
-   order: the AVP, its scope where the clause speaks of the AVP in a
-   command or grouped AVP, the clause and table, and readings of the
-   shortest quotes that state the rule. The page is read from the PDF.
-3. Prefer `text_only` to a rule the quote does not settle. A rule depending on
-   an earlier message, a feature, the node, the interface or the subscriber
-   is `text_only`; so is a NOTE outside a table, which states no requirement.
-   A clause pointing at another document for a layout is an `element`.
-4. Run `uv run seanchai corpus regenerate --spec <SpecRef>`. A quote the
-   clause does not print fails the document. Then `uv run seanchai lint` on
-   the corrected file.
+2. Create `edits/interpretations/<SpecRef>.dadx` with its `; Interprets:`
+   line, and for each rule a clause states write a block, in clause order:
+   an `; Id:`, the AVP, its scope where the clause speaks of the AVP in a
+   command or grouped AVP, the clause and table, the version read as
+   `; Versions:`, and readings of the shortest quotes that state the rule.
+3. Prefer `text-only` to a rule the quote does not settle. A rule depending
+   on an earlier message, a feature, the node, the interface or the
+   subscriber is `text-only`; so is a NOTE outside a table, which states no
+   requirement. A clause pointing at another document for a layout is an
+   `element`.
+4. Run `uv run seanchai format edits/interpretations/<SpecRef>.dadx` and
+   `uv run seanchai lint edits/interpretations/<SpecRef>.dadx`, then
+   `uv run seanchai corpus regenerate --spec <SpecRef>`. A quote the clause
+   does not print fails the document at the quote's line.
 5. A layout no codec describes needs a codec, defined with its clause in
    `ast.Codec`, `seanchai.constraints`, the plugin's `core.lua` and this
    page, with byte vectors in `tests/test_constraints.py`.
-
-A 3GPP docx and an RFC's text are checked against their source, an RFC's
-quote within one paragraph, its lines joined. A transcription has no source
-text to check against, so an `Interpret` for one is refused.
 
 ## TS 29.272
 

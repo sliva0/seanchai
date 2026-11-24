@@ -486,7 +486,8 @@ class DocumentSummary(_Model):
 
 class Document(DocumentSummary):
     """`documents/<id>.json`: one corrected file, with what the page shows of
-    it. `corrections` is keyed by citation, `TS29.272.py#area-scope-code`.
+    it. `corrections` is keyed by citation, `TS29.272.py#area-scope-code`
+    or an interpretation's `TS29.272.dadx#imei-digits`.
     `blocks` are its `; Type:` blocks in file order, by index into `lines`."""
 
     schema_version: _Version

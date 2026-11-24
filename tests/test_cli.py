@@ -9,7 +9,7 @@ import docx
 import pytest
 import seanchai_corpus
 from click.testing import CliRunner
-from conftest import _CORPUS_DIR, _corpus
+from conftest import _CORPUS_DIR, _ROOT, _corpus
 
 import seanchai
 from seanchai.cli import main
@@ -123,9 +123,9 @@ _OUTCOMES = [
         "error: bad.dad: ",
     ),
     (["corpus", "extract", "bad.dad"], 1, "err", "error: extracting"),
-    (["lint", "empty"], 1, "err", "holds no .dad files"),
-    (["lint", "--raw", "empty"], 1, "err", "holds no .dad files"),
-    (["format", "empty"], 1, "err", "holds no .dad files"),
+    (["lint", "empty"], 1, "err", "holds no .dad or .dadx files"),
+    (["lint", "--raw", "empty"], 1, "err", "holds no .dad or .dadx files"),
+    (["format", "empty"], 1, "err", "holds no .dad or .dadx files"),
     (["lint", "--no-corpus", "rawonly"], 1, "err", "--raw reads its raw files"),
     (["show", "no-such-avp"], 1, "err", "error: no AVP no-such-avp"),
     (["commands", "--application", "99"], 1, "err", "error: no application 99"),
@@ -557,6 +557,73 @@ def test_every_committed_dad_file_is_a_format_fixed_point():
 
     assert result.exit_code == 0, result.stdout
     assert f"would reformat 0 of {len(paths)} files" in result.stderr
+
+
+def test_every_committed_interpretations_file_is_a_format_fixed_point():
+    paths = sorted((_ROOT / "edits" / "interpretations").glob("*.dadx"))
+
+    result = _invoke("format", "--check", *paths)
+
+    assert paths
+    assert result.exit_code == 0, result.stdout
+    assert f"would reformat 0 of {len(paths)} files" in result.stderr
+
+
+_INTERPRETATIONS = """\
+; Interprets: 3GPP TS 29.272
+;; In clause order.
+
+
+; Type: Interpreted Constraints
+; Id: ue-usage-type-range
+; AVP: UE-Usage-Type
+; Section: 7.3.202
+; Versions: 18.7.0..19.6.0
+"The allowed values of UE-Usage-Type shall be in the range of 0 to 255."
+  range 0..255
+"""
+
+
+def test_an_interpretations_file_is_formatted_and_linted_against_the_corpus(
+    tmp_path,
+):
+    """Its blocks are read as each copy of the document would read them
+    merged: a name the copy does not hold is the linter's error, at the
+    block's line."""
+    source = tmp_path / "TS29.272.dadx"
+    source.write_text(_INTERPRETATIONS)
+
+    assert _invoke("format", "--check", source).exit_code == 1
+    assert _invoke("format", tmp_path).exit_code == 0
+    assert "\n    range 0..255\n" in source.read_text()
+    assert _invoke("lint", source).exit_code == 0
+
+    source.write_text(source.read_text().replace("UE-Usage-Type\n", "UE-Usage\n"))
+    linted = _invoke("lint", "--output-format", "concise", source)
+
+    assert linted.exit_code == 1
+    for copy in ("29272-i70.dad", "29272-j60.dad"):
+        assert (
+            f"{source} (in {copy}): error: [constraint-avp-unknown] line 5:"
+            " UE-Usage: the file holds no AVP UE-Usage (clause 7.3.202)"
+        ) in linted.stdout
+    alone = _invoke("lint", "--no-corpus", source)
+    assert alone.exit_code == 0
+
+    source.write_text(source.read_text().replace("; Id: ue-usage-type-range\n", ""))
+    broken = _invoke("lint", source)
+    assert broken.exit_code == 1
+    assert "line 5: missing directive 'Id'" in broken.stderr
+
+
+def test_an_interpretations_file_is_no_document_to_read_beside_the_corpus(tmp_path):
+    source = tmp_path / "Private-ACME-HSS.dadx"
+    source.write_text(_INTERPRETATIONS)
+
+    result = _invoke("show", "--with", source, "UE-Usage-Type")
+
+    assert result.exit_code == 1
+    assert "an interpretations file is merged into its document's" in result.stderr
 
 
 _HAND_EDITED = """\

@@ -1,4 +1,4 @@
-"""The error an edit layer raises, shared by `corrections` and `interpret`."""
+"""The error an edit layer raises, shared by `corrections` and `interpretations`."""
 
 from ..errors import SeanchaiError
 

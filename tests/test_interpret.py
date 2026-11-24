@@ -1,42 +1,14 @@
-"""Interpreted constraints: the block's grammar, the `Interpret` declaration
-that writes it, and the quote check against the source document."""
+"""Interpreted constraints: the block's grammar, the interpretations file
+(`.dadx`) that writes it, its merge into a corrected file and the quote check
+against the source document."""
 
-import dataclasses
+from pathlib import Path
 
 import pytest
 from conftest import _ROOT
 
-from seanchai.dad import ast, corrections, formatter, parser
-from seanchai.dad.ast import Codec
+from seanchai.dad import ast, corrections, formatter, interpretations, parser
 from seanchai.dad.corrections import CorrectionError
-from seanchai.dad.interpret import (
-    Interpret,
-    absent_if,
-    bit,
-    bits_at_least_one,
-    bits_at_most_one,
-    bits_clear,
-    bits_only,
-    bits_set,
-    characters,
-    default,
-    digits,
-    element,
-    encoding,
-    equals,
-    exclude,
-    excludes,
-    members_at_least_one,
-    members_only,
-    octets,
-    present_if,
-    range_of,
-    reading,
-    requires,
-    text_only,
-    unique,
-    values_if,
-)
 
 _HEADER = "; Specification: 3GPP TS 29.999\n; Version: 19.0.0\n; Vendor-ID: 10415\n"
 
@@ -286,60 +258,185 @@ def test_a_malformed_block_is_refused_at_its_line(text, lineno, fact):
     assert fact in str(error.value)
 
 
-def test_the_builders_spell_the_rules_the_file_prints():
-    rules = [
-        octets(3),
-        octets(1, None),
-        digits(14, 15),
-        characters(None, 8),
-        range_of(0, 255),
-        exclude(0),
-        encoding(Codec.E164_TBCD),
-        element("TS23.003", "4.4", "Zone Code"),
-        requires(equals("Non-IP-PDN-Type-Indicator", "TRUE")),
-        present_if(bit("DSR-Flags", "Delete monitoring events")),
-        absent_if("MIP6-Agent-Info"),
-        excludes(equals("Level", 2), "Other"),
-        default("NOT_RELAY_NODE"),
-        bits_at_most_one(3, 6),
-        bits_at_least_one(0, 1),
-        bits_set(1),
-        bits_clear(0, 3),
-        bits_only(9),
-        members_at_least_one("SCEF-Realm"),
-        members_only("IMEI", "Software-Version"),
-        unique(),
-        values_if(1, equals("Monitoring-Type", "UE_REACHABILITY")),
-        values_if((1, 2), "Other", bit("Flags", 3)),
-        text_only(),
-    ]
+# --- the interpretations file ----------------------------------------------
 
-    assert [formatter.constraint_rule(rule) for rule in rules] == [
-        "length 3 octets",
-        "length 1..* octets",
-        "length 14..15 digits",
-        "length *..8 characters",
-        "range 0..255",
-        "exclude 0",
-        "encoding e164-tbcd",
-        'encoding element TS23.003 4.4 "Zone Code"',
-        "requires Non-IP-PDN-Type-Indicator = TRUE",
-        'present-if DSR-Flags bit "Delete monitoring events"',
-        "absent-if MIP6-Agent-Info",
-        "excludes Level = 2 or Other",
-        "default NOT_RELAY_NODE",
-        "bits at-most-one 3 6",
-        "bits at-least-one 0 1",
-        "bits set 1",
-        "bits clear 0 3",
-        "bits only 9",
-        "members at-least-one SCEF-Realm",
-        "members only IMEI Software-Version",
-        "unique",
-        "values 1 if Monitoring-Type = UE_REACHABILITY",
-        "values 1, 2 if Other or Flags bit 3",
-        "text-only",
+_INTERPRETS = "; Interprets: 3GPP TS 29.999\n"
+
+
+def _written(
+    *body: str,
+    id: str = "example-number-layout",
+    avp: str = "Example-Number",
+    section: str = "6.3.2",
+    scope: tuple[str, ...] = (),
+    versions: str = "19.0.0",
+) -> str:
+    """One block of an interpretations file, as a person writes it."""
+    return "\n".join(
+        (
+            "; Type: Interpreted Constraints",
+            f"; Id: {id}",
+            f"; AVP: {avp}",
+            *scope,
+            f"; Section: {section}",
+            f"; Versions: {versions}",
+            *(body or ('"It is a number."', "    encoding e164-tbcd")),
+        )
+    )
+
+
+def _dadx(*blocks: str) -> str:
+    return _INTERPRETS + "".join(f"\n\n{block}\n" for block in blocks)
+
+
+_FILE = (
+    "; Interprets: 3GPP TS 29.999\n"
+    ";; Read in clause order.\n"
+    "\n"
+    "\n"
+    "; Type: Interpreted Constraints\n"
+    "; Id: example-flags-in-request\n"
+    "; AVP: Example-Number\n"
+    "; Command: Example-Request\n"
+    "; Application-ID: 99\n"
+    "; Section: 6.1.1\n"
+    "; Table: 6.1.1/1\n"
+    "; Versions: 19.0.0 ;; widened by hand\n"
+    '"Only with the flag."\n'
+    "    requires Example-Flags bit 0\n"
+    "\n"
+    "\n"
+    ";; The AVP's own clause.\n"
+    "; Type: Interpreted Constraints\n"
+    "; Id: example-number-layout\n"
+    "; AVP: Example-Number\n"
+    "; Section: 6.3.2\n"
+    "; Versions: 18.0.0..19.0.0\n"
+    '"It is a number."\n'
+    "    encoding e164-tbcd\n"
+)
+
+
+def test_an_interpretations_file_reads_and_writes_back():
+    tree, comments = parser.parse_interpretations_with_comments(_FILE)
+    _, declared = interpretations.parse(_FILE, Path("TS29.999.dadx"))
+
+    assert tree.interprets == "3GPP TS 29.999"
+    assert [block.id for block in tree.sections] == [
+        "example-flags-in-request",
+        "example-number-layout",
     ]
+    assert formatter.format_interpretations(tree, comments) == _FILE
+    first, second = declared
+    assert first.lines == (5, 13, 14)
+    assert first.cited == "TS29.999.dadx#example-flags-in-request"
+    assert first.at(0) == "TS29.999.dadx:13: example-flags-in-request"
+    # The corrected file prints the block without its id.
+    assert first.node == ast.InterpretedConstraints(
+        avp="Example-Number",
+        command="Example-Request",
+        application_id=99,
+        table="6.1.1/1",
+        source=ast.SourceRef(section="6.1.1"),
+        versions="19.0.0",
+        body=(
+            ast.Quote(text="Only with the flag."),
+            ast.PredicateRule(
+                kind=ast.PredicateKind.REQUIRES,
+                conditions=(ast.Condition(avp="Example-Flags", bit=0),),
+            ),
+        ),
+    )
+    assert "; Id:" not in formatter.format_spec(
+        ast.Specification(
+            specification="3GPP TS 29.999", vendor_id=10415, sections=(second.node,)
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    ("text", "lineno", "fact"),
+    [
+        pytest.param(
+            _dadx(_written()).replace("; Id: example-number-layout\n", ""),
+            4,
+            "missing directive 'Id'",
+            id="no-id",
+        ),
+        pytest.param(
+            _dadx(_written(id="Not_Kebab")), 5, "should match pattern", id="id"
+        ),
+        pytest.param(
+            _dadx(_written(), _written(section="6.3.3")),
+            14,
+            "names the block at line 4 too",
+            id="id-twice",
+        ),
+        pytest.param(
+            _dadx(_written().replace("; Versions:", "; Page: 13\n; Versions:")),
+            8,
+            "a page is not written",
+            id="page",
+        ),
+        pytest.param(
+            _dadx(_written(), _written(id="earlier", section="6.3.1")),
+            13,
+            "clause 6.3.1 comes before clause 6.3.2",
+            id="clause-order",
+        ),
+        pytest.param(
+            _dadx(_written('"Q."')),
+            4,
+            "at least 2 items",
+            id="nothing-read",
+        ),
+        pytest.param(
+            _dadx(_written(scope=("; Application-ID: 1",))),
+            4,
+            "Application-ID",
+            id="application-without-command",
+        ),
+        pytest.param(
+            _dadx("; Type: Undefined AVP\n; Name: X\n; Section: 6.3.2"),
+            4,
+            "Interpreted Constraints blocks only",
+            id="other-block",
+        ),
+        pytest.param(
+            _dadx(_written()).replace("; Interprets:", "; Specification:"),
+            1,
+            "missing directive 'Interprets'",
+            id="header",
+        ),
+        pytest.param(
+            _dadx(_written()).replace("3GPP TS 29.999", "Nothing"),
+            1,
+            "does not name a supported document",
+            id="document",
+        ),
+    ],
+)
+def test_a_malformed_interpretations_file_is_refused_at_its_line(text, lineno, fact):
+    with pytest.raises(parser.DadParseError) as error:
+        parser.parse_interpretations(text)
+
+    assert error.value.lineno == lineno
+    assert fact in str(error.value)
+
+
+def test_a_document_reads_its_own_interpretations_file_and_no_other(tmp_path):
+    (tmp_path / "TS29.999.dadx").write_text(_dadx(_written()), encoding="utf-8")
+    (tmp_path / "TS29.998.dadx").write_text(_dadx(_written()), encoding="utf-8")
+
+    (item,) = interpretations.load(tmp_path, "3GPP TS 29.999")
+    assert item.cited == "TS29.999.dadx#example-number-layout"
+    assert interpretations.load(tmp_path, "3GPP TS 29.997") == []
+    assert interpretations.load(None, "3GPP TS 29.999") == []
+    with pytest.raises(CorrectionError, match=r"interprets '3GPP TS 29\.999'"):
+        interpretations.load(tmp_path, "3GPP TS 29.998")
+    (tmp_path / "TS29.997.dadx").write_text("; Interprets: x\n", encoding="utf-8")
+    with pytest.raises(CorrectionError, match=r"TS29\.997\.dadx: line 1:"):
+        interpretations.load(tmp_path, "3GPP TS 29.997")
 
 
 # --- the declaration ---------------------------------------------------------
@@ -371,38 +468,26 @@ _RAW = _dad(
 
 
 def _interpret(
-    *,
+    *body: str,
+    path: Path | None = None,
     id: str = "example-number-layout",
     avp: str = "Example-Number",
     section: str = "6.3.2",
-    page: int | None = None,
-    readings: tuple[ast.Reading, ...] = (
-        reading("It is a number.", encoding(Codec.E164_TBCD)),
-    ),
-    command: str | None = None,
-    application_id: int | None = None,
-    within: str | None = None,
-    origin: str = "",
-) -> Interpret:
-    return Interpret(
-        id=id,
-        avp=avp,
-        section=section,
-        page=page,
-        readings=readings,
-        command=command,
-        application_id=application_id,
-        within=within,
-        versions="19.0.0",
-        origin=origin,
+    scope: tuple[str, ...] = (),
+    versions: str = "19.0.0",
+) -> interpretations.Interpretation:
+    """One block, as an interpretations file at `path` writes it."""
+    text = _dadx(
+        _written(*body, id=id, avp=avp, section=section, scope=scope, versions=versions)
     )
+    _, (item,) = interpretations.parse(text, path)
+    return item
 
 
 def test_an_interpretation_applies_only_in_a_release_its_range_spans():
     """Release 18, which the correction's range spans, takes no Release 19
     interpretation; they are offered to it, and to Release 17 too, until one
     of the module's ranges spans the release."""
-    reviewed = dataclasses.replace(_interpret(), id="reviewed")
     correction = corrections.Correction(
         id="spelling",
         target=corrections.definition("Example-Number"),
@@ -419,7 +504,7 @@ def test_an_interpretation_applies_only_in_a_release_its_range_spans():
     assert corrections.offered(module, "18.1.0") == [_interpret()]
     assert corrections.offered(module, "17.0.0") == [_interpret()]
     assert corrections.offered(module, "19.0.0") == []
-    widened = dataclasses.replace(reviewed, versions="18.1.0..19.0.0")
+    widened = _interpret(id="reviewed", versions="18.1.0..19.0.0")
     assert corrections.offered([*module, widened], "18.1.0") == []
     assert corrections.in_release([*module, widened], "18.1.0") == [
         correction,
@@ -430,21 +515,20 @@ def test_an_interpretation_applies_only_in_a_release_its_range_spans():
 def test_an_interpretation_stands_beside_the_clause_it_reads():
     spec, comments = parser.parse_with_comments(_RAW)
     declared = [
-        _interpret(origin="TS29.999.py"),
+        _interpret(path=Path("TS29.999.dadx")),
         _interpret(
+            '"Only with the flag."',
+            "    requires Example-Flags bit 0",
             id="example-flags-in-request",
-            avp="Example-Number",
-            command="Example-Request",
+            scope=("; Command: Example-Request",),
             section="6.1.1",
-            readings=(
-                reading("Only with the flag.", requires(bit("Example-Flags", 0))),
-            ),
         ),
         _interpret(
+            '"Never zero."',
+            "    text-only",
             id="example-number-in-group",
-            within="Example-Group",
+            scope=("; Within: Example-Group",),
             section="6.3.5",
-            readings=(reading("Never zero.", text_only()),),
         ),
     ]
 
@@ -462,7 +546,7 @@ def test_an_interpretation_stands_beside_the_clause_it_reads():
     text = formatter.format_spec(corrected, notes)
     assert (
         "; Type: Interpreted Constraints ;; interpreted:"
-        " (TS29.999.py#example-number-layout)"
+        " (TS29.999.dadx#example-number-layout)"
     ) in text
     assert parser.parse(text) == corrected
 
@@ -476,21 +560,17 @@ def test_an_interpretation_stands_beside_the_clause_it_reads():
             id="avp",
         ),
         pytest.param(
-            [
-                _interpret(
-                    readings=(reading("Q.", requires("Example-Missing")),),
-                )
-            ],
+            [_interpret('"Q."', "    requires Example-Missing")],
             "the file holds no AVP 'Example-Missing'",
             id="condition",
         ),
         pytest.param(
-            [_interpret(command="Example-Answer")],
+            [_interpret(scope=("; Command: Example-Answer",))],
             "0 commands 'Example-Answer' match",
             id="command",
         ),
         pytest.param(
-            [_interpret(avp="Example-Flags", within="Example-Group")],
+            [_interpret(avp="Example-Flags", scope=("; Within: Example-Group",))],
             "the body of Example-Group does not hold Example-Flags",
             id="member",
         ),
@@ -506,43 +586,34 @@ def test_an_interpretation_expects_what_it_names(declared, message):
         corrections.apply(parser.parse(_RAW), declared)
 
 
-@pytest.mark.parametrize(
-    ("fields", "message"),
-    [
-        pytest.param({"id": "Not_Kebab"}, "kebab-case", id="id"),
-        pytest.param({"readings": ()}, "reads something", id="nothing"),
-        pytest.param({"application_id": 1}, "Application-ID", id="application"),
-    ],
-)
-def test_an_interpretation_declared_wrongly_is_refused(fields, message):
-    with pytest.raises(CorrectionError, match=message):
-        _interpret(**fields)
-
-
 def test_a_quote_is_held_to_its_clause_and_its_page_read_from_the_copy():
     declared = [
         _interpret(
-            readings=(
-                reading(
-                    ("It is  a\u00a0number.", "Encoded as TBCD."),
-                    encoding(Codec.E164_TBCD),
-                ),
-            ),
+            '"It is  a\u00a0number."',
+            '"Encoded as TBCD."',
+            "    encoding e164-tbcd",
+            path=Path("TS29.999.dadx"),
         )
     ]
     clauses = {
         "6.3.2": ["The AVP is of type OctetString. It is a number.", "Encoded as TBCD."]
     }
 
-    corrections.check_quotes(declared, clauses)
-    with pytest.raises(CorrectionError, match=r"does not print 'Encoded as TBCD\.'"):
-        corrections.check_quotes(declared, {"6.3.2": ["It is a number."]})
-    with pytest.raises(CorrectionError, match=r"has no clause 6\.3\.2"):
-        corrections.check_quotes(declared, {})
+    interpretations.check_quotes(declared, clauses)
+    with pytest.raises(
+        CorrectionError,
+        match=r"^TS29\.999\.dadx:10: example-number-layout: clause 6\.3\.2 does not"
+        r" print 'Encoded as TBCD\.'$",
+    ):
+        interpretations.check_quotes(declared, {"6.3.2": ["It is a number."]})
+    with pytest.raises(
+        CorrectionError, match=r"^TS29\.999\.dadx:4: .* has no clause 6\.3\.2$"
+    ):
+        interpretations.check_quotes(declared, {})
     (item,) = declared
-    assert corrections.paged(item, {"6.3.2": 13}).node.source.page == 13
-    assert corrections.paged(item, {}).page is None
-    assert corrections.paged(item, None) is item
+    assert interpretations.paged(item, {"6.3.2": 13}).node.source.page == 13
+    assert interpretations.paged(item, {}).page is None
+    assert interpretations.paged(item, None) is item
 
 
 @pytest.mark.sources
@@ -555,19 +626,21 @@ def test_a_quote_the_document_does_not_print_fails_against_the_source():
         _ROOT / "edits/sources",
     )
     printed = _interpret(
+        '"It may also include a 15th digit."',
+        "    length 14..15 digits",
         avp="IMEI",
         section="7.3.4",
-        readings=(reading("It may also include a 15th digit.", digits(14, 15)),),
     )
     misread = _interpret(
+        '"It may also include a 16th digit."',
+        "    length 14..16 digits",
         avp="IMEI",
         section="7.3.4",
-        readings=(reading("It may also include a 16th digit.", digits(14, 16)),),
     )
 
-    corrections.check_quotes([printed], texts)
+    interpretations.check_quotes([printed], texts)
     with pytest.raises(CorrectionError, match="16th digit"):
-        corrections.check_quotes([misread], texts)
+        interpretations.check_quotes([misread], texts)
 
 
 # --- the linter, the model and the dictionary ---------------------------------
@@ -884,7 +957,9 @@ def test_the_model_and_the_dictionary_carry_the_reading_documents_constraints(
     (message,) = built.messages("TS29.999")
     assert cited is not None and origin is not None
     assert isinstance(group, Grouped)
-    assert [each.rules for each in cited.constraints] == [(octets(3),)]
+    assert [each.rules for each in cited.constraints] == [
+        (ast.LengthRule(unit=ast.LengthUnit.OCTETS, low=3, high=3),)
+    ]
     assert all(each.interpreted for each in cited.constraints)
     assert origin.constraints == ()
     assert [each.within for each in group.member_constraints] == ["Example-Group"]

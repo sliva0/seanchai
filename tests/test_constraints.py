@@ -12,23 +12,26 @@ from typing import cast
 import pytest
 
 from seanchai import constraints, wireshark
-from seanchai.dad import ast
+from seanchai.dad import ast, parser
 from seanchai.dad.ast import Codec, DataType
-from seanchai.dad.interpret import (
-    bits_at_least_one,
-    bits_at_most_one,
-    bits_clear,
-    bits_only,
-    bits_set,
-    characters,
-    default,
-    digits,
-    exclude,
-    octets,
-    range_of,
-)
 
 CORE = Path(wireshark.__file__).parent / "core.lua"
+
+
+def _rule(text: str) -> ast.ConstraintRule:
+    """One rule, as an interpreted-constraints block spells it."""
+    spec = parser.parse(
+        "; Specification: 3GPP TS 29.999\n; Vendor-ID: 10415\n\n\n"
+        "; Type: Interpreted Constraints\n; AVP: Example\n; Section: 7.3.1\n"
+        f'; Versions: *..*\n"Read."\n    {text}\n'
+    )
+    block = spec.sections[0]
+    assert isinstance(block, ast.InterpretedConstraints)
+    rule = block.body[1]
+    assert not isinstance(rule, ast.Quote)
+    return rule
+
+
 LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.which(name)]
 
 # (codec, payload, whether the layout holds)
@@ -177,13 +180,32 @@ def _u32(value: int) -> bytes:
 @pytest.mark.parametrize(
     ("rule", "payload", "data_type", "codec", "holds"),
     [
-        pytest.param(octets(3), b"abc", DataType.OCTET_STRING, None, True, id="octets"),
-        pytest.param(octets(3), b"ab", DataType.OCTET_STRING, None, False, id="short"),
         pytest.param(
-            octets(1, None), b"", DataType.OCTET_STRING, None, False, id="at-least"
+            _rule("length 3 octets"),
+            b"abc",
+            DataType.OCTET_STRING,
+            None,
+            True,
+            id="octets",
         ),
         pytest.param(
-            characters(None, 2),
+            _rule("length 3 octets"),
+            b"ab",
+            DataType.OCTET_STRING,
+            None,
+            False,
+            id="short",
+        ),
+        pytest.param(
+            _rule("length 1..* octets"),
+            b"",
+            DataType.OCTET_STRING,
+            None,
+            False,
+            id="at-least",
+        ),
+        pytest.param(
+            _rule("length *..2 characters"),
             "äö".encode(),
             DataType.UTF8_STRING,
             None,
@@ -191,7 +213,7 @@ def _u32(value: int) -> bytes:
             id="characters",
         ),
         pytest.param(
-            digits(14, 15),
+            _rule("length 14..15 digits"),
             b"35209900176148",
             DataType.UTF8_STRING,
             Codec.DIGITS,
@@ -199,7 +221,7 @@ def _u32(value: int) -> bytes:
             id="imei",
         ),
         pytest.param(
-            digits(14, 15),
+            _rule("length 14..15 digits"),
             b"3520990017614",
             DataType.UTF8_STRING,
             Codec.DIGITS,
@@ -207,7 +229,7 @@ def _u32(value: int) -> bytes:
             id="imei-short",
         ),
         pytest.param(
-            digits(5),
+            _rule("length 5 digits"),
             b"\x21\x43\xf5",
             DataType.OCTET_STRING,
             Codec.E164_TBCD,
@@ -215,7 +237,7 @@ def _u32(value: int) -> bytes:
             id="tbcd-digits",
         ),
         pytest.param(
-            digits(5),
+            _rule("length 5 digits"),
             b"\x21\x43\xf5",
             DataType.OCTET_STRING,
             None,
@@ -223,10 +245,15 @@ def _u32(value: int) -> bytes:
             id="digits-without-codec",
         ),
         pytest.param(
-            range_of(0, 255), _u32(255), DataType.UNSIGNED32, None, True, id="range"
+            _rule("range 0..255"),
+            _u32(255),
+            DataType.UNSIGNED32,
+            None,
+            True,
+            id="range",
         ),
         pytest.param(
-            range_of(0, 255),
+            _rule("range 0..255"),
             _u32(256),
             DataType.UNSIGNED32,
             None,
@@ -234,7 +261,7 @@ def _u32(value: int) -> bytes:
             id="range-above",
         ),
         pytest.param(
-            range_of(-1, None),
+            _rule("range -1..*"),
             _u32(0xFFFFFFFF),
             DataType.INTEGER32,
             None,
@@ -242,23 +269,32 @@ def _u32(value: int) -> bytes:
             id="range-negative",
         ),
         pytest.param(
-            range_of(-1, None),
+            _rule("range -1..*"),
             _u32(0xFFFFFFFE),
             DataType.INTEGER32,
             None,
             False,
             id="range-below",
         ),
-        pytest.param(exclude(0), _u32(0), DataType.UNSIGNED32, None, False, id="zero"),
-        pytest.param(exclude(0), _u32(1), DataType.UNSIGNED32, None, True, id="one"),
         pytest.param(
-            exclude(0), b"\0", DataType.UNSIGNED32, None, None, id="exclude-malformed"
+            _rule("exclude 0"), _u32(0), DataType.UNSIGNED32, None, False, id="zero"
+        ),
+        pytest.param(
+            _rule("exclude 0"), _u32(1), DataType.UNSIGNED32, None, True, id="one"
+        ),
+        pytest.param(
+            _rule("exclude 0"),
+            b"\0",
+            DataType.UNSIGNED32,
+            None,
+            None,
+            id="exclude-malformed",
         ),
         pytest.param(
             ast.TextOnly(), b"", DataType.OCTET_STRING, None, None, id="text-only"
         ),
         pytest.param(
-            bits_at_most_one(3, 6),
+            _rule("bits at-most-one 3 6"),
             _u32(8),
             DataType.UNSIGNED32,
             None,
@@ -266,7 +302,7 @@ def _u32(value: int) -> bytes:
             id="one-bit",
         ),
         pytest.param(
-            bits_at_most_one(3, 6),
+            _rule("bits at-most-one 3 6"),
             _u32(8 | 64),
             DataType.UNSIGNED32,
             None,
@@ -274,28 +310,40 @@ def _u32(value: int) -> bytes:
             id="both-bits",
         ),
         pytest.param(
-            bits_at_least_one(0, 1),
+            _rule("bits at-least-one 0 1"),
             _u32(4),
             DataType.UNSIGNED32,
             None,
             False,
             id="no-bit",
         ),
-        pytest.param(bits_set(1), _u32(2), DataType.UNSIGNED32, None, True, id="set"),
         pytest.param(
-            bits_set(0, 1), _u32(2), DataType.UNSIGNED32, None, False, id="unset"
+            _rule("bits set 1"), _u32(2), DataType.UNSIGNED32, None, True, id="set"
         ),
         pytest.param(
-            bits_clear(0), _u32(2), DataType.UNSIGNED32, None, True, id="clear"
+            _rule("bits set 0 1"), _u32(2), DataType.UNSIGNED32, None, False, id="unset"
         ),
         pytest.param(
-            bits_clear(0), _u32(3), DataType.UNSIGNED32, None, False, id="not-clear"
+            _rule("bits clear 0"), _u32(2), DataType.UNSIGNED32, None, True, id="clear"
         ),
         pytest.param(
-            bits_only(9), _u32(1 << 9), DataType.UNSIGNED32, None, True, id="only"
+            _rule("bits clear 0"),
+            _u32(3),
+            DataType.UNSIGNED32,
+            None,
+            False,
+            id="not-clear",
         ),
         pytest.param(
-            bits_only(9),
+            _rule("bits only 9"),
+            _u32(1 << 9),
+            DataType.UNSIGNED32,
+            None,
+            True,
+            id="only",
+        ),
+        pytest.param(
+            _rule("bits only 9"),
             _u32(1 << 9 | 1),
             DataType.UNSIGNED32,
             None,
@@ -305,7 +353,7 @@ def _u32(value: int) -> bytes:
         # An OctetString's octets as one big-endian number: TS 29.272 clause
         # 7.3.216's octet, its 4 most significant bits 0.
         pytest.param(
-            bits_clear(4, 5, 6, 7),
+            _rule("bits clear 4 5 6 7"),
             b"\x05",
             DataType.OCTET_STRING,
             None,
@@ -313,7 +361,7 @@ def _u32(value: int) -> bytes:
             id="octet-clear",
         ),
         pytest.param(
-            bits_clear(4, 5, 6, 7),
+            _rule("bits clear 4 5 6 7"),
             b"\x15",
             DataType.OCTET_STRING,
             None,
@@ -321,12 +369,24 @@ def _u32(value: int) -> bytes:
             id="octet-not-clear",
         ),
         pytest.param(
-            bits_set(8), b"\x01\x00", DataType.OCTET_STRING, None, True, id="octets"
+            _rule("bits set 8"),
+            b"\x01\x00",
+            DataType.OCTET_STRING,
+            None,
+            True,
+            id="octets",
         ),
         pytest.param(
-            bits_clear(0), b"", DataType.UTF8_STRING, None, None, id="bits-of-text"
+            _rule("bits clear 0"),
+            b"",
+            DataType.UTF8_STRING,
+            None,
+            None,
+            id="bits-of-text",
         ),
-        pytest.param(default(0), b"", DataType.UNSIGNED32, None, None, id="default"),
+        pytest.param(
+            _rule("default 0"), b"", DataType.UNSIGNED32, None, None, id="default"
+        ),
     ],
 )
 def test_each_value_rule_holds_or_breaks(rule, payload, data_type, codec, holds):

@@ -2,12 +2,14 @@
 
 A corrected `.dad` file cites declarations such as
 `TS29.272.py#area-scope-code` in `edits/corrections/`, which is Python and
-not shipped. `seanchai corpus regenerate` writes `corrections.json` next to
-`holes.toml` so a reader need not run it: per document, each declaration's
-kind and reason, what each acceptance accepts, and the renames. See
-docs/corrections.md.
+not shipped, and blocks such as `TS29.272.dadx#imei-digits` in
+`edits/interpretations/`, which is not shipped either. `seanchai corpus
+regenerate` writes `corrections.json` next to `holes.toml` so a reader need
+not run or read them: per document, each declaration's kind and reason, an
+interpretation's clause and quotes, what each acceptance accepts, and the
+renames. See docs/corrections.md.
 
-The modules stay the source; a test holds the committed file to them.
+The edit files stay the source; a test holds the committed file to them.
 """
 
 from __future__ import annotations
@@ -21,11 +23,14 @@ from typing import Annotated, Literal
 import pydantic
 
 from .corpus import Corpus, CorpusError
-from .dad import ast, corrections
+from .dad import ast, corrections, interpretations
 
 RECORD_NAME = "corrections.json"
 
-_NOTE = "Written by `seanchai corpus regenerate` from edits/corrections; do not edit."
+_NOTE = (
+    "Written by `seanchai corpus regenerate` from edits/corrections and"
+    " edits/interpretations; do not edit."
+)
 
 
 class _Model(pydantic.BaseModel):
@@ -63,7 +68,7 @@ class RecordedDocument(_Model):
 
     reference: str
     version: str | None
-    # By citation, `TS29.272.py#area-scope-code`.
+    # By citation, `TS29.272.py#area-scope-code`, `TS29.272.dadx#imei-digits`.
     edits: dict[
         str,
         Annotated[
@@ -92,7 +97,11 @@ class RecordedDocument(_Model):
                     targets=tuple(path for path, _ in item.target.locate(spec)),
                 )
                 continue
-            kind = type(item).__name__.lower()
+            kind = (
+                "interpret"
+                if isinstance(item, corrections.Interpretation)
+                else type(item).__name__.lower()
+            )
             edits[item.cited] = RecordedEdit.model_validate(
                 {"kind": kind, "reason": item.reason}
             )
@@ -169,13 +178,23 @@ class CorrectionRecord(_Model):
         )
 
 
-def build(books: Corpus, corrections_directory: Path) -> CorrectionRecord:
+def build(
+    books: Corpus,
+    corrections_directory: Path,
+    interpretations_directory: Path | None = None,
+) -> CorrectionRecord:
     """Build the record for every file in `books` from the modules in
-    `corrections_directory`, executing them."""
+    `corrections_directory`, executing them, and the interpretations files
+    in `interpretations_directory`."""
     documents = {}
     for entry in books:
         declarations = corrections.in_release(
-            corrections.load(corrections_directory, entry.spec.specification),
+            [
+                *corrections.load(corrections_directory, entry.spec.specification),
+                *interpretations.load(
+                    interpretations_directory, entry.spec.specification
+                ),
+            ],
             entry.spec.version,
         )
         if declarations:
@@ -183,13 +202,20 @@ def build(books: Corpus, corrections_directory: Path) -> CorrectionRecord:
     return CorrectionRecord(documents=documents)
 
 
-def write(corpus: Path, corrections_directory: Path) -> Path | None:
+def write(
+    corpus: Path,
+    corrections_directory: Path,
+    interpretations_directory: Path | None = None,
+) -> Path | None:
     """Rewrite `corpus`'s record from what it now holds, if it holds anything."""
     books = Corpus.load([corpus])
     if not len(books):
         return None
     path = corpus / RECORD_NAME
-    path.write_text(build(books, corrections_directory).render(), encoding="utf-8")
+    path.write_text(
+        build(books, corrections_directory, interpretations_directory).render(),
+        encoding="utf-8",
+    )
     return path
 
 

@@ -1053,7 +1053,16 @@ class Corpus:
     def _files(paths: Iterable[Path]) -> Iterator[Path]:
         for path in paths:
             if path.is_dir():
+                # `*.dad` takes no `.dadx`, an interpretations file
+                # (`dad.interpretations`), which is no document.
                 yield from sorted(path.rglob("*.dad"))
+            elif path.suffix == ".dadx":
+                raise CorpusError(
+                    f"{path}: an interpretations file is merged into its"
+                    " document's corrected copy as the corpus is rebuilt, and"
+                    " is no document to read; write a document's own"
+                    " Interpreted Constraints blocks in its .dad"
+                )
             else:
                 yield path
 

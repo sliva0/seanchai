@@ -24,8 +24,9 @@ fails every `expect`, so "already corrected" never looks like "fixed
 upstream".
 
 Besides `Correction` (one field) there are `Delete`, `Insert` and `Supply`,
-each failing when upstream changes the state it expects, and `Interpret`
-(`interpret.py`), which adds what a person read in a clause's prose.
+each failing when upstream changes the state it expects. `apply` also merges
+a document's `interpretations.Interpretation`s, what a person read in its
+clauses' prose, written apart from the corrections in a `.dadx` file.
 `Accept` changes nothing; it marks one linter finding as a deliberate
 override, and `apply` skips it.
 """
@@ -43,7 +44,7 @@ import pydantic
 from .._versions import VersionRange, applies, reviewed_release, spans
 from . import ast, formatter
 from ._errors import CorrectionError
-from .interpret import Interpret, check_quotes, paged
+from .interpretations import Interpretation
 
 __all__ = [
     "UNSPECIFIED",
@@ -54,7 +55,7 @@ __all__ = [
     "Delete",
     "Edit",
     "Insert",
-    "Interpret",
+    "Interpretation",
     "Result",
     "Selector",
     "Supply",
@@ -65,7 +66,6 @@ __all__ = [
     "apply_with_comments",
     "avp_rule",
     "avp_table",
-    "check_quotes",
     "definition",
     "edits",
     "element_row",
@@ -78,7 +78,6 @@ __all__ = [
     "module_path",
     "notes",
     "offered",
-    "paged",
     "registry_reservation",
     "registry_row",
     "reused_avps",
@@ -859,9 +858,9 @@ class Accept:
         return _cited(self)
 
 
-# What a corrections module may declare: the edits `apply` makes, and the
-# acceptances it skips.
-Edit = Correction | Delete | Insert | Supply | Interpret
+# What `apply` takes: the edits a corrections module declares and the
+# interpretations a `.dadx` file writes, and the acceptances it skips.
+Edit = Correction | Delete | Insert | Supply | Interpretation
 Declaration = Edit | Accept
 
 
@@ -1267,7 +1266,7 @@ def _check_undefined(spec: ast.Specification, node: ast.UndefinedAvp) -> None:
 def _placed_constraints(
     spec: ast.Specification,
     sections: list[tuple[_Origin, Any]] | None,
-    interpret: Interpret,
+    interpret: Interpretation,
     origin: _Added,
 ) -> list[tuple[_Origin, Any]]:
     """Return the file's sections with the declared constraints placed in
@@ -1290,8 +1289,8 @@ def _placed_constraints(
             and section.source.section == node.source.section
         ):
             raise CorrectionError(
-                f"{interpret.id}: clause {node.source.section} already holds"
-                f" constraints on {interpret.scope()}; declare them together"
+                f"{interpret.at()}: clause {node.source.section} already holds"
+                f" constraints on {interpret.scope()}; write them in one block"
             )
     key = ast.section_sort_key(node.source.section)
     position = max(
@@ -1323,11 +1322,11 @@ def _held(spec: ast.Specification) -> set[str]:
     return held
 
 
-def _check_interpreted(spec: ast.Specification, interpret: Interpret) -> None:
-    """Check an `Interpret` against the corrected file: it holds every AVP
+def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> None:
+    """Check an `Interpretation` against the corrected file: it holds every AVP
     the block names, the command scoping it once, and the AVP in the
     command's or the grouped AVP's body where the file prints that body."""
-    described = f"{interpret.cited}: {interpret.scope()}"
+    described = f"{interpret.at()}: {interpret.scope()}"
     held = _held(spec)
     node = interpret.node
     names = [node.avp, *([node.within] if node.within else [])]
@@ -1548,7 +1547,7 @@ def in_release(
         [
             VersionRange.parse(item.versions)
             for item in declarations
-            if not isinstance(item, Interpret)
+            if not isinstance(item, Interpretation)
         ],
         version,
     )
@@ -1557,7 +1556,7 @@ def in_release(
         for item in declarations
         if (
             spans(VersionRange.parse(item.versions), version)
-            if isinstance(item, Interpret)
+            if isinstance(item, Interpretation)
             else applies(VersionRange.parse(item.versions), release)
         )
     ]
@@ -1565,13 +1564,15 @@ def in_release(
 
 def offered(
     declarations: Sequence[Declaration], version: str | None
-) -> list[Interpret]:
+) -> list[Interpretation]:
     """The interpretations another release reviewed that `version`'s copy may
     take: none if one spans its release already, else those of the release
     `_versions.reviewed_release` chooses among the interpretations, the
     oldest above or the newest below. Each is a candidate only, to be held to
     the copy's text (`check_quotes`) before its range is widened."""
-    interpretations = [item for item in declarations if isinstance(item, Interpret)]
+    interpretations = [
+        item for item in declarations if isinstance(item, Interpretation)
+    ]
     if version is None or any(
         spans(VersionRange.parse(item.versions), version) for item in interpretations
     ):
@@ -1615,7 +1616,7 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
     results = []
     origins: list[_Origin] = []  # per result: what `plan.placed` knows it by
     for index, correction in enumerate(corrections):
-        if isinstance(correction, Interpret):
+        if isinstance(correction, Interpretation):
             plan.rows[("sections",)] = _placed_constraints(
                 tree, plan.rows.get(("sections",)), correction, _Added(index)
             )
@@ -1783,7 +1784,7 @@ def _applied(spec: ast.Specification, corrections: Sequence[Edit]) -> _Applied:
     for edit in corrections:
         if isinstance(edit, Insert) and isinstance(edit.node, ast.UndefinedAvp):
             _check_undefined(rebuilt, edit.node)
-        if isinstance(edit, Interpret):
+        if isinstance(edit, Interpretation):
             _check_interpreted(rebuilt, edit)
     for path, description in targets.items():
         if path not in plan.placed:
@@ -1998,7 +1999,7 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
                 index,
             )
             continue
-        if isinstance(edit, Interpret):
+        if isinstance(edit, Interpretation):
             # The block is the declaration's; its first line cites it.
             yield (
                 "trailing",
@@ -2133,12 +2134,13 @@ def _corrections_of(path: Path) -> list[Declaration]:
             f"{path}: CORRECTIONS must be a list, not a {type(corrections).__name__}"
         )
     if not all(
-        isinstance(item, Correction | Delete | Insert | Supply | Interpret | Accept)
+        isinstance(item, Correction | Delete | Insert | Supply | Accept)
         for item in corrections
     ):
         raise CorrectionError(
-            f"{path}: CORRECTIONS must hold Correction, Delete, Insert, Supply,"
-            " Interpret or Accept objects"
+            f"{path}: CORRECTIONS must hold Correction, Delete, Insert, Supply"
+            " or Accept objects; interpretations are written in"
+            " edits/interpretations/<SpecRef>.dadx"
         )
     seen: set[str] = set()
     for item in corrections:

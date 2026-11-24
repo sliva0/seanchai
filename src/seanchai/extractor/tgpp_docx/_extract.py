@@ -227,7 +227,7 @@ def clause_texts(
 ) -> dict[str, list[str]]:
     """Each numbered clause's paragraphs and table cells, normalized and
     patched as `extract` reads them, by clause number: what an interpreted
-    constraint's quotes are checked against (`dad.interpret.check_quotes`).
+    constraint's quotes are checked against (`dad.interpretations.check_quotes`).
     """
     with boundary(f"reading {docx_path}"):
         document = docx.Document(str(docx_path))

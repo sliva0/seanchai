@@ -1014,7 +1014,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 "Reset-IDs (See 7.3.184)"                  Reset-ID                          O
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ula-ula-flags)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-ula-flags)
 ; AVP: ULA-Flags
 ; Command: Update-Location-Answer
 ; Section: 5.2.1.1.1
@@ -1025,7 +1025,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
     requires Result-Code = DIAMETER_SUCCESS
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ula-subscription-data)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-subscription-data)
 ; AVP: Subscription-Data
 ; Command: Update-Location-Answer
 ; Section: 5.2.1.1.1
@@ -1036,7 +1036,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-sgsn-number)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-sgsn-number)
 ; AVP: SGSN-Number
 ; Command: Update-Location-Request
 ; Section: 5.2.1.1.1
@@ -1047,7 +1047,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-ue-srvcc-capability)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-ue-srvcc-capability)
 ; AVP: UE-SRVCC-Capability
 ; Command: Update-Location-Request
 ; Section: 5.2.1.1.1
@@ -1058,7 +1058,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-mme-number-for-mt-sms)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-mme-number-for-mt-sms)
 ; AVP: MME-Number-for-MT-SMS
 ; Command: Update-Location-Request
 ; Section: 5.2.1.1.1
@@ -1069,7 +1069,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ulr-sms-register-request)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-sms-register-request)
 ; AVP: SMS-Register-Request
 ; Command: Update-Location-Request
 ; Section: 5.2.1.1.1
@@ -1126,7 +1126,7 @@ IMSI                                       User-Name                  M
 "PUA-Flags (See 7.3.48)"                   PUA-Flags                         C
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pua-pua-flags)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-pua-flags)
 ; AVP: PUA-Flags
 ; Command: Purge-UE-Answer
 ; Section: 5.2.1.3.1
@@ -1172,7 +1172,7 @@ IMSI                                       User-Name            M
 "Supported Services (TS 29.336 [54])"                  Supported-Services                     O
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-ims-voice-over-ps-sessions-supported)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-ims-voice-over-ps-sessions-supported)
 ; AVP: IMS-Voice-Over-PS-Sessions-Supported
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1184,7 +1184,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-last-ue-activity-time)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-last-ue-activity-time)
 ; AVP: Last-UE-Activity-Time
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1196,7 +1196,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-rat-type)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-rat-type)
 ; AVP: RAT-Type
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1208,7 +1208,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-eps-user-state)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-eps-user-state)
 ; AVP: EPS-User-State
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1220,7 +1220,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-eps-location-information)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-eps-location-information)
 ; AVP: EPS-Location-Information
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1232,7 +1232,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-local-time-zone)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-local-time-zone)
 ; AVP: Local-Time-Zone
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1244,7 +1244,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-monitoring-event-report)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-monitoring-event-report)
 ; AVP: Monitoring-Event-Report
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1256,7 +1256,7 @@ IMSI                                       User-Name            M
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ida-monitoring-event-config-status)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-monitoring-event-config-status)
 ; AVP: Monitoring-Event-Config-Status
 ; Command: Insert-Subscriber-Data-Answer
 ; Application-ID: 16777251
@@ -1299,7 +1299,7 @@ IMSI                                       User-Name              M
 "DSA Flags (See 7.3.26)"                   DSA-Flags                         C
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-trace-reference)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-trace-reference)
 ; AVP: Trace-Reference
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251
@@ -1311,7 +1311,7 @@ IMSI                                       User-Name              M
     requires DSR-Flags bit "Trace Data Withdrawal"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-context-identifier)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-context-identifier)
 ; AVP: Context-Identifier
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251
@@ -1327,7 +1327,7 @@ IMSI                                       User-Name              M
     exclude 0
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-ts-code)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-ts-code)
 ; AVP: TS-Code
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251
@@ -1339,7 +1339,7 @@ IMSI                                       User-Name              M
     requires DSR-Flags bit "SMS Withdrawal"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-ss-code)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-ss-code)
 ; AVP: SS-Code
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251
@@ -1351,7 +1351,7 @@ IMSI                                       User-Name              M
     requires DSR-Flags bit "SMS Withdrawal" or DSR-Flags bit "LCS Withdrawal"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-scef-id)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-scef-id)
 ; AVP: SCEF-ID
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251
@@ -1363,7 +1363,7 @@ IMSI                                       User-Name              M
     present-if DSR-Flags bit "Delete monitoring events"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-edrx-related-rat)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-edrx-related-rat)
 ; AVP: eDRX-Related-RAT
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777251
@@ -1402,7 +1402,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 "UE Usage Type (See 7.3.202)"              UE-Usage-Type                     C
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#aia-ue-usage-type)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-ue-usage-type)
 ; AVP: UE-Usage-Type
 ; Command: Authentication-Information-Answer
 ; Section: 5.2.3.1.1
@@ -1470,7 +1470,7 @@ IMSI                                                                User-Name   
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-terminal-information)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-terminal-information)
 ; AVP: Terminal-Information
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1481,7 +1481,7 @@ IMSI                                                                User-Name   
     members only IMEI Software-Version
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-mip6-agent-info)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-mip6-agent-info)
 ; AVP: MIP6-Agent-Info
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1492,7 +1492,7 @@ IMSI                                                                User-Name   
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-visited-network-identifier)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-visited-network-identifier)
 ; AVP: Visited-Network-Identifier
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1503,7 +1503,7 @@ IMSI                                                                User-Name   
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-service-selection)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-service-selection)
 ; AVP: Service-Selection
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1516,7 +1516,7 @@ IMSI                                                                User-Name   
     absent-if Emergency-Services bit Emergency-Indication
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-alert-reason)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-alert-reason)
 ; AVP: Alert-Reason
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1527,7 +1527,7 @@ IMSI                                                                User-Name   
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-ue-srvcc-capability)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-ue-srvcc-capability)
 ; AVP: UE-SRVCC-Capability
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1538,7 +1538,7 @@ IMSI                                                                User-Name   
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-nor-flags)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-nor-flags)
 ; AVP: NOR-Flags
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1549,7 +1549,7 @@ IMSI                                                                User-Name   
     default 0
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-homogeneous-support)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-homogeneous-support)
 ; AVP: Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1560,7 +1560,7 @@ IMSI                                                                User-Name   
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-monitoring-event-config-status)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-monitoring-event-config-status)
 ; AVP: Monitoring-Event-Config-Status
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1571,7 +1571,7 @@ IMSI                                                                User-Name   
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nor-emergency-services)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-emergency-services)
 ; AVP: Emergency-Services
 ; Command: Notify-Request
 ; Section: 5.2.5.1.1
@@ -1607,7 +1607,7 @@ MSISDN                                     MSISDN               C
 "UVA Flags (See 7.3.154)"                     UVA-Flags                         C
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#uvr-sgsn-number)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uvr-sgsn-number)
 ; AVP: SGSN-Number
 ; Command: Update-VCSG-Location-Request
 ; Section: 5A.2.1.1.1
@@ -1618,7 +1618,7 @@ MSISDN                                     MSISDN               C
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#uva-vplmn-csg-subscription-data)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uva-vplmn-csg-subscription-data)
 ; AVP: VPLMN-CSG-Subscription-Data
 ; Command: Update-VCSG-Location-Answer
 ; Section: 5A.2.1.1.1
@@ -1737,7 +1737,7 @@ IMSI                                 User-Name              O
 "Equipment Status (See 7.3.51)"   Equipment-Status                  C
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#eca-equipment-status)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-equipment-status)
 ; AVP: Equipment-Status
 ; Command: ME-Identity-Check-Answer
 ; Section: 6.2.1.1
@@ -1805,7 +1805,7 @@ Subscription-Data ::= < AVP header: 1400 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#subscription-data-ambr-not-both-zero)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#subscription-data-ambr-not-both-zero)
 ; AVP: AMBR
 ; Within: Subscription-Data
 ; Section: 7.3.2
@@ -1826,7 +1826,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#imei-digits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#imei-digits)
 ; AVP: IMEI
 ; Section: 7.3.4
 ; Page: 99
@@ -1836,7 +1836,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
     length 14..15 digits
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#software-version-digits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#software-version-digits)
 ; AVP: Software-Version
 ; Section: 7.3.5
 ; Page: 99
@@ -1846,7 +1846,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
     length 2 digits
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#3gpp2-meid-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#3gpp2-meid-element)
 ; AVP: 3GPP2-MEID
 ; Section: 7.3.6
 ; Page: 99
@@ -1886,7 +1886,7 @@ Dual-Registration-5G-Indicator               = 8
 "MME Registered for SMS" = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#visited-plmn-id-layout)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#visited-plmn-id-layout)
 ; AVP: Visited-PLMN-Id
 ; Section: 7.3.9
 ; Page: 102
@@ -2126,7 +2126,7 @@ eDRX-Cycle-Length-Withdrawal                     = 30 ;; corrected: (TS29.272.py
 Service-Gap-Time-Withdrawal                      = 31
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-flags-exclusive-bits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-flags-exclusive-bits)
 ; AVP: DSR-Flags
 ; Section: 7.3.25
 ; Table: 7.3.25/1
@@ -2140,7 +2140,7 @@ Service-Gap-Time-Withdrawal                      = 31
     bits at-most-one 3 6
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dsr-flags-s7a-bits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-flags-s7a-bits)
 ; AVP: DSR-Flags
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777308
@@ -2226,7 +2226,7 @@ Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
 "NR eRedCap not allowed as primary RAT"                                                                       = 30
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#access-restriction-data-bits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#access-restriction-data-bits)
 ; AVP: Access-Restriction-Data
 ; Section: 7.3.31
 ; Table: 7.3.31/1
@@ -2236,7 +2236,7 @@ Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-oi-replacement-labels)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-oi-replacement-labels)
 ; AVP: APN-OI-Replacement
 ; Section: 7.3.32
 ; Page: 125
@@ -2267,7 +2267,7 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-profile-default-context)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-profile-default-context)
 ; AVP: Context-Identifier
 ; Within: APN-Configuration-Profile
 ; Section: 7.3.34
@@ -2277,7 +2277,7 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-profile-additional-context)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-profile-additional-context)
 ; AVP: Additional-Context-Identifier
 ; Within: APN-Configuration-Profile
 ; Section: 7.3.34
@@ -2287,7 +2287,7 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-profile-third-context)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-profile-third-context)
 ; AVP: Third-Context-Identifier
 ; Within: APN-Configuration-Profile
 ; Section: 7.3.34
@@ -2332,7 +2332,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-context-identifier)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-context-identifier)
 ; AVP: Context-Identifier
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2346,7 +2346,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-service-selection)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-service-selection)
 ; AVP: Service-Selection
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2356,7 +2356,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     unique
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-served-party-ip-address)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-served-party-ip-address)
 ; AVP: Served-Party-IP-Address
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2368,7 +2368,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-pdn-gw-allocation-type)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-pdn-gw-allocation-type)
 ; AVP: PDN-GW-Allocation-Type
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2378,7 +2378,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     requires MIP6-Agent-Info
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-non-ip-delivery)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-non-ip-delivery)
 ; AVP: Non-IP-Data-Delivery-Mechanism
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2388,7 +2388,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     requires Non-IP-PDN-Type-Indicator = TRUE
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-scef-id)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-scef-id)
 ; AVP: SCEF-ID
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2399,7 +2399,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     requires Non-IP-Data-Delivery-Mechanism = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-scef-realm)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-scef-realm)
 ; AVP: SCEF-Realm
 ; Within: APN-Configuration
 ; Section: 7.3.35
@@ -2410,7 +2410,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
     requires Non-IP-Data-Delivery-Mechanism = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#service-selection-apn)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#service-selection-apn)
 ; AVP: Service-Selection
 ; Section: 7.3.36
 ; Page: 128
@@ -2429,7 +2429,7 @@ EPS-Subscribed-QoS-Profile ::= < AVP header: 1431 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#eps-subscribed-qos-profile-non-gbr)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eps-subscribed-qos-profile-non-gbr)
 ; AVP: QoS-Class-Identifier
 ; Within: EPS-Subscribed-QoS-Profile
 ; Section: 7.3.37
@@ -2450,7 +2450,7 @@ VPLMN-Dynamic-Address-Allowed ::= < Enumerated AVP header: 1432 10415 >
         ALLOWED    = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#stn-sr-e164)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#stn-sr-e164)
 ; AVP: STN-SR
 ; Section: 7.3.39
 ; Page: 129
@@ -2470,7 +2470,7 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
         [ Pre-emption-Vulnerability ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#allocation-retention-priority-pre-emption-capability-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#allocation-retention-priority-pre-emption-capability-default)
 ; AVP: Pre-emption-Capability
 ; Within: Allocation-Retention-Priority
 ; Section: 7.3.40
@@ -2480,7 +2480,7 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
     default PRE-EMPTION_CAPABILITY_DISABLED
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#allocation-retention-priority-pre-emption-vulnerability-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#allocation-retention-priority-pre-emption-vulnerability-default)
 ; AVP: Pre-emption-Vulnerability
 ; Within: Allocation-Retention-Priority
 ; Section: 7.3.40
@@ -2502,7 +2502,7 @@ AMBR ::= < AVP header: 1435 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ambr-extended-max-requested-bw-ul)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ambr-extended-max-requested-bw-ul)
 ; AVP: Extended-Max-Requested-BW-UL
 ; Within: AMBR
 ; Section: 7.3.41
@@ -2513,7 +2513,7 @@ AMBR ::= < AVP header: 1435 10415 >
     requires Max-Requested-Bandwidth-UL = 4294967295
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ambr-extended-max-requested-bw-dl)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ambr-extended-max-requested-bw-dl)
 ; AVP: Extended-Max-Requested-BW-DL
 ; Within: AMBR
 ; Section: 7.3.41
@@ -2524,7 +2524,7 @@ AMBR ::= < AVP header: 1435 10415 >
     requires Max-Requested-Bandwidth-DL = 4294967295
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip-home-agent-host-destination-host)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mip-home-agent-host-destination-host)
 ; AVP: Destination-Host
 ; Within: MIP-Home-Agent-Host
 ; Section: 7.3.43
@@ -2534,7 +2534,7 @@ AMBR ::= < AVP header: 1435 10415 >
     encoding element TS29.303 4.3.2
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip-home-agent-host-destination-realm)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mip-home-agent-host-destination-realm)
 ; AVP: Destination-Realm
 ; Within: MIP-Home-Agent-Host
 ; Section: 7.3.43
@@ -2565,7 +2565,7 @@ MIP6-Agent-Info ::= < AVP header: 486 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip6-agent-info-fqdn-preferred)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mip6-agent-info-fqdn-preferred)
 ; AVP: MIP-Home-Agent-Host
 ; Within: MIP6-Agent-Info
 ; Section: 7.3.45
@@ -2575,7 +2575,7 @@ MIP6-Agent-Info ::= < AVP header: 486 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mip6-agent-info-home-link-prefix)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mip6-agent-info-home-link-prefix)
 ; AVP: MIP6-Home-Link-Prefix
 ; Within: MIP6-Agent-Info
 ; Section: 7.3.45
@@ -2585,7 +2585,7 @@ MIP6-Agent-Info ::= < AVP header: 486 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#rat-frequency-selection-priority-id-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rat-frequency-selection-priority-id-range)
 ; AVP: RAT-Frequency-Selection-Priority-ID
 ; Section: 7.3.46
 ; Page: 131
@@ -2631,7 +2631,7 @@ Reserved                                            = 4
 "Removal of MME Registration for SMS"               = 9
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#user-id-digits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#user-id-digits)
 ; AVP: User-Id
 ; Section: 7.3.50
 ; Page: 132
@@ -2650,7 +2650,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
         TRACKINGLISTED   = 2
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#regional-subscription-zone-code-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#regional-subscription-zone-code-element)
 ; AVP: Regional-Subscription-Zone-Code
 ; Section: 7.3.52
 ; Page: 133
@@ -2659,7 +2659,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
     encoding element TS23.003 4.4 "Zone Code"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#rand-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rand-element)
 ; AVP: RAND
 ; Section: 7.3.53
 ; Page: 133
@@ -2668,7 +2668,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
     encoding element TS33.401 "RAND"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#xres-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#xres-element)
 ; AVP: XRES
 ; Section: 7.3.54
 ; Page: 133
@@ -2677,7 +2677,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
     encoding element TS33.401 "XRES"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#autn-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#autn-element)
 ; AVP: AUTN
 ; Section: 7.3.55
 ; Page: 133
@@ -2686,7 +2686,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
     encoding element TS33.401 "AUTN"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#kasme-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#kasme-element)
 ; AVP: KASME
 ; Section: 7.3.56
 ; Page: 133
@@ -2695,7 +2695,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
     encoding element TS33.401 "K_ASME"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sres-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#sres-element)
 ; AVP: SRES
 ; Section: 7.3.60
 ; Page: 133
@@ -2733,7 +2733,7 @@ Trace-Data ::= < AVP header: 1458 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-reference-layout)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#trace-reference-layout)
 ; AVP: Trace-Reference
 ; Section: 7.3.64
 ; Page: 134
@@ -2753,7 +2753,7 @@ Trace-Data ::= < AVP header: 1458 10415 >
 Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-ne-type-list-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#trace-ne-type-list-element)
 ; AVP: Trace-NE-Type-List
 ; Section: 7.3.68
 ; Page: 135
@@ -2762,7 +2762,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-interface-list-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#trace-interface-list-element)
 ; AVP: Trace-Interface-List
 ; Section: 7.3.69
 ; Page: 135
@@ -2771,7 +2771,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-event-list-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#trace-event-list-element)
 ; AVP: Trace-Event-List
 ; Section: 7.3.70
 ; Page: 135
@@ -2780,7 +2780,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#omc-id-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#omc-id-element)
 ; AVP: OMC-Id
 ; Section: 7.3.71
 ; Page: 135
@@ -2833,7 +2833,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-ext-pdp-address)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pdp-context-ext-pdp-address)
 ; AVP: Ext-PDP-Address
 ; Within: PDP-Context
 ; Section: 7.3.74
@@ -2845,7 +2845,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-ext-pdp-type)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pdp-context-ext-pdp-type)
 ; AVP: Ext-PDP-Type
 ; Within: PDP-Context
 ; Section: 7.3.74
@@ -2855,7 +2855,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-non-ip-delivery)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pdp-context-non-ip-delivery)
 ; AVP: Non-IP-Data-Delivery-Mechanism
 ; Within: PDP-Context
 ; Section: 7.3.74
@@ -2865,7 +2865,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-context-scef-id)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pdp-context-scef-id)
 ; AVP: SCEF-ID
 ; Within: PDP-Context
 ; Section: 7.3.74
@@ -2875,7 +2875,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
     requires Non-IP-Data-Delivery-Mechanism = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#pdp-type-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pdp-type-element)
 ; AVP: PDP-Type
 ; Section: 7.3.75
 ; Page: 137
@@ -2886,7 +2886,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ext-pdp-type-value)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ext-pdp-type-value)
 ; AVP: Ext-PDP-Type
 ; Section: 7.3.75A
 ; Page: 137
@@ -2895,7 +2895,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#qos-subscribed-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#qos-subscribed-element)
 ; AVP: QoS-Subscribed
 ; Section: 7.3.77
 ; Page: 137
@@ -2916,7 +2916,7 @@ CSG-Subscription-Data ::= < AVP header: 1436 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#csg-id-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#csg-id-element)
 ; AVP: CSG-Id
 ; Section: 7.3.79
 ; Page: 137
@@ -2946,7 +2946,7 @@ Specific-APN-Info ::= < AVP header: 1472 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#apn-configuration-specific-apn-info)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#apn-configuration-specific-apn-info)
 ; AVP: Specific-APN-Info
 ; Within: APN-Configuration
 ; Section: 7.3.82
@@ -2976,7 +2976,7 @@ LCS-Info ::= < AVP header: 1473 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#gmlc-number-e164)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#gmlc-number-e164)
 ; AVP: GMLC-Number
 ; Section: 7.3.85
 ; Page: 138
@@ -3000,7 +3000,7 @@ LCS-PrivacyException ::= < AVP header: 1475 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ss-code-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ss-code-element)
 ; AVP: SS-Code
 ; Section: 7.3.87
 ; Page: 139
@@ -3009,7 +3009,7 @@ LCS-PrivacyException ::= < AVP header: 1475 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ss-status-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ss-status-element)
 ; AVP: SS-Status
 ; Section: 7.3.88
 ; Page: 139
@@ -3040,7 +3040,7 @@ External-Client ::= < AVP header: 1479 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#client-identity-e164)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#client-identity-e164)
 ; AVP: Client-Identity
 ; Section: 7.3.91
 ; Page: 139
@@ -3082,7 +3082,7 @@ Service-Type ::= < AVP header: 1483 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#servicetypeidentity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#servicetypeidentity-element)
 ; AVP: ServiceTypeIdentity
 ; Section: 7.3.95
 ; Page: 140
@@ -3101,7 +3101,7 @@ MO-LR ::= < AVP header: 1485 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#trace-collection-entity-ip)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#trace-collection-entity-ip)
 ; AVP: Trace-Collection-Entity
 ; Section: 7.3.98
 ; Page: 141
@@ -3119,7 +3119,7 @@ Teleservice-List ::= < AVP header: 1486 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ts-code-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ts-code-element)
 ; AVP: TS-Code
 ; Section: 7.3.100
 ; Page: 141
@@ -3138,7 +3138,7 @@ Call-Barring-Info ::= < AVP header: 1488 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sgsn-number-e164)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#sgsn-number-e164)
 ; AVP: SGSN-Number
 ; Section: 7.3.102
 ; Page: 141
@@ -3174,7 +3174,7 @@ ICS-Indicator ::= < Enumerated AVP header: 1491 10415 >
         TRUE  = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#visited-network-identifier-domain)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#visited-network-identifier-domain)
 ; AVP: Visited-Network-Identifier
 ; Section: 7.3.105
 ; Page: 142
@@ -3202,7 +3202,7 @@ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ::= < Enumerated AVP header: 1
         SUPPORTED     = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#gmlc-address-ip)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#gmlc-address-ip)
 ; AVP: GMLC-Address
 ; Section: 7.3.109
 ; Page: 143
@@ -3262,7 +3262,7 @@ User-State ::= < Enumerated AVP header: 1499 10415 >
         RESERVED                           = 5
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#user-state-reserved)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#user-state-reserved)
 ; AVP: User-State
 ; Section: 7.3.114
 ; Page: 144
@@ -3305,7 +3305,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#e-utran-cell-global-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#e-utran-cell-global-identity-element)
 ; AVP: E-UTRAN-Cell-Global-Identity
 ; Section: 7.3.117
 ; Page: 146
@@ -3314,7 +3314,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#tracking-area-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#tracking-area-identity-element)
 ; AVP: Tracking-Area-Identity
 ; Section: 7.3.118
 ; Page: 146
@@ -3323,7 +3323,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#cell-global-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cell-global-identity-element)
 ; AVP: Cell-Global-Identity
 ; Section: 7.3.119
 ; Page: 146
@@ -3332,7 +3332,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#routing-area-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#routing-area-identity-element)
 ; AVP: Routing-Area-Identity
 ; Section: 7.3.120
 ; Page: 146
@@ -3341,7 +3341,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#location-area-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#location-area-identity-element)
 ; AVP: Location-Area-Identity
 ; Section: 7.3.121
 ; Page: 146
@@ -3350,7 +3350,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#service-area-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#service-area-identity-element)
 ; AVP: Service-Area-Identity
 ; Section: 7.3.122
 ; Page: 146
@@ -3359,7 +3359,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#geographical-information-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#geographical-information-element)
 ; AVP: Geographical-Information
 ; Section: 7.3.123
 ; Page: 146
@@ -3368,7 +3368,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
     encoding element TS29.002
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#geodetic-information-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#geodetic-information-element)
 ; AVP: Geodetic-Information
 ; Section: 7.3.124
 ; Page: 146
@@ -3410,7 +3410,7 @@ Error-Diagnostic ::= < Enumerated AVP header: 1614 10415 >
         ODB_VPLMN_APN           = 4
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#error-diagnostic-values)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#error-diagnostic-values)
 ; AVP: Error-Diagnostic
 ; Section: 7.3.128
 ; Page: 147
@@ -3517,7 +3517,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#list-of-measurements-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#list-of-measurements-element)
 ; AVP: List-Of-Measurements
 ; Section: 7.3.139
 ; Page: 150
@@ -3527,7 +3527,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#reporting-trigger-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#reporting-trigger-element)
 ; AVP: Reporting-Trigger
 ; Section: 7.3.140
 ; Page: 150
@@ -3553,7 +3553,7 @@ Report-Interval ::= < Enumerated AVP header: 1627 10415 >
 Report-Amount ::= < Enumerated AVP header: 1628 10415 >
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-rsrp-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#event-threshold-rsrp-element)
 ; AVP: Event-Threshold-RSRP
 ; Section: 7.3.143
 ; Page: 150
@@ -3562,7 +3562,7 @@ Report-Amount ::= < Enumerated AVP header: 1628 10415 >
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-rsrq-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#event-threshold-rsrq-element)
 ; AVP: Event-Threshold-RSRQ
 ; Section: 7.3.144
 ; Page: 150
@@ -3596,7 +3596,7 @@ Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
         RELAY_NODE     = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#relay-node-indicator-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#relay-node-indicator-default)
 ; AVP: Relay-Node-Indicator
 ; Section: 7.3.147
 ; Page: 151
@@ -3614,7 +3614,7 @@ MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
         CONSENT_GIVEN     = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mdt-user-consent-absence)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mdt-user-consent-absence)
 ; AVP: MDT-User-Consent
 ; Section: 7.3.148
 ; Page: 151
@@ -3642,7 +3642,7 @@ Subscribed-VSRVCC ::= < Enumerated AVP header: 1636 10415 >
         VSRVCC_SUBSCRIBED = 0
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#subscribed-vsrvcc-absence)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#subscribed-vsrvcc-absence)
 ; AVP: Subscribed-VSRVCC
 ; Section: 7.3.150
 ; Page: 151
@@ -3709,7 +3709,7 @@ Local-Time-Zone ::= < AVP header: 1649 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#a-msisdn-e164)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#a-msisdn-e164)
 ; AVP: A-MSISDN
 ; Section: 7.3.157
 ; Page: 153
@@ -3719,7 +3719,7 @@ Local-Time-Zone ::= < AVP header: 1649 10415 >
     encoding e164-tbcd
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mme-number-for-mt-sms-e164)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mme-number-for-mt-sms-e164)
 ; AVP: MME-Number-for-MT-SMS
 ; Section: 7.3.159
 ; Page: 153
@@ -3739,7 +3739,7 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
         NO_PREFERENCE                  = 2
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sms-register-request-skip-subscriber-data)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#sms-register-request-skip-subscriber-data)
 ; AVP: SMS-Register-Request
 ; Command: Update-Location-Request
 ; Section: 7.3.162
@@ -3749,7 +3749,7 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
     excludes ULR-Flags bit "Skip Subscriber Data"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#time-zone-format)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#time-zone-format)
 ; AVP: Time-Zone
 ; Section: 7.3.163
 ; Page: 154
@@ -3814,7 +3814,7 @@ Collection-Period-RRM-LTE ::= < Enumerated AVP header: 1657 10415 >
 Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#positioning-method-octet)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#positioning-method-octet)
 ; AVP: Positioning-Method
 ; Section: 7.3.170
 ; Page: 155
@@ -3825,7 +3825,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
     encoding element TS32.422 "Positioning Method"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#measurement-quantity-octet)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#measurement-quantity-octet)
 ; AVP: Measurement-Quantity
 ; Section: 7.3.171
 ; Page: 155
@@ -3836,7 +3836,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
     encoding element TS32.422 "Measurement quantity"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-event-1f-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#event-threshold-event-1f-element)
 ; AVP: Event-Threshold-Event-1F
 ; Section: 7.3.172
 ; Page: 156
@@ -3845,7 +3845,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-event-1i-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#event-threshold-event-1i-element)
 ; AVP: Event-Threshold-Event-1I
 ; Section: 7.3.173
 ; Page: 156
@@ -3854,7 +3854,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
     encoding element TS32.422
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#restoration-priority-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#restoration-priority-range)
 ; AVP: Restoration-Priority
 ; Section: 7.3.174
 ; Page: 156
@@ -3863,7 +3863,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
     range 1..16
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#sgs-mme-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#sgs-mme-identity-element)
 ; AVP: SGs-MME-Identity
 ; Section: 7.3.175
 ; Page: 156
@@ -3872,7 +3872,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
     encoding element TS23.003 19.4.2.4 "MME identity"
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#coupled-node-diameter-id-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#coupled-node-diameter-id-element)
 ; AVP: Coupled-Node-Diameter-ID
 ; Section: 7.3.177
 ; Page: 156
@@ -3918,7 +3918,7 @@ WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py#wl
 "WLAN offloadability for UTRAN" = 0
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mdt-allowed-plmn-id-layout)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mdt-allowed-plmn-id-layout)
 ; AVP: MDT-Allowed-PLMN-Id
 ; Section: 7.3.185
 ; Page: 157
@@ -3948,7 +3948,7 @@ Adjacent-Access-Restriction-Data ::= < AVP header: 1673 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#dl-buffering-suggested-packet-count-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dl-buffering-suggested-packet-count-range)
 ; AVP: DL-Buffering-Suggested-Packet-Count
 ; Section: 7.3.188
 ; Page: 158
@@ -3970,7 +3970,7 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#group-service-id-operator-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#group-service-id-operator-range)
 ; AVP: Group-Service-Id
 ; Section: 7.3.190
 ; Page: 159
@@ -3979,7 +3979,7 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#group-plmn-id-layout)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#group-plmn-id-layout)
 ; AVP: Group-PLMN-Id
 ; Section: 7.3.191
 ; Page: 159
@@ -4005,7 +4005,7 @@ AESE-Communication-Pattern ::= < AVP header: 3113 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#aese-communication-pattern-reference-ids)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aese-communication-pattern-reference-ids)
 ; AVP: AESE-Communication-Pattern
 ; Within: Subscription-Data
 ; Section: 7.3.193
@@ -4054,7 +4054,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-scef-realm)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#monitoring-event-configuration-scef-realm)
 ; AVP: Monitoring-Event-Configuration
 ; Within: Subscription-Data
 ; Section: 7.3.195
@@ -4064,7 +4064,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
     members at-least-one SCEF-Realm
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-monitoring-type)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#monitoring-event-configuration-monitoring-type)
 ; AVP: Monitoring-Type
 ; Within: Monitoring-Event-Configuration
 ; Section: 7.3.195
@@ -4074,7 +4074,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-configuration-maximum-number-of-reports)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#monitoring-event-configuration-maximum-number-of-reports)
 ; AVP: Maximum-Number-of-Reports
 ; Within: Monitoring-Event-Configuration
 ; Section: 7.3.195
@@ -4105,7 +4105,7 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-report-reachability-information)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#monitoring-event-report-reachability-information)
 ; AVP: Reachability-Information
 ; Within: Monitoring-Event-Report
 ; Section: 7.3.196
@@ -4115,7 +4115,7 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
     values 1 if Monitoring-Type = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#monitoring-event-report-pdn-connectivity)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#monitoring-event-report-pdn-connectivity)
 ; AVP: PDN-Connectivity-Status-Report
 ; Within: Monitoring-Event-Report
 ; Section: 7.3.196
@@ -4135,7 +4135,7 @@ UE-Reachability-Configuration ::= < AVP header: 3129 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ue-reachability-configuration-reachability-type)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ue-reachability-configuration-reachability-type)
 ; AVP: Reachability-Type
 ; Within: UE-Reachability-Configuration
 ; Section: 7.3.197
@@ -4181,7 +4181,7 @@ Roaming-status                                    = 5
 "Send UE Usage Type" = 0
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ue-usage-type-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ue-usage-type-range)
 ; AVP: UE-Usage-Type
 ; Section: 7.3.202
 ; Page: 163
@@ -4199,7 +4199,7 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
         TRUE  = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#non-ip-pdn-type-indicator-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#non-ip-pdn-type-indicator-default)
 ; AVP: Non-IP-PDN-Type-Indicator
 ; Section: 7.3.204
 ; Page: 164
@@ -4208,7 +4208,7 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
     default FALSE
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#non-ip-data-delivery-mechanism-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#non-ip-data-delivery-mechanism-default)
 ; AVP: Non-IP-Data-Delivery-Mechanism
 ; Section: 7.3.205
 ; Page: 164
@@ -4241,7 +4241,7 @@ Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
 "Data over Control Plane Preferred" = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#preferred-data-mode-bits)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#preferred-data-mode-bits)
 ; AVP: Preferred-Data-Mode
 ; Section: 7.3.209
 ; Table: 7.3.209/1
@@ -4290,7 +4290,7 @@ eDRX-Cycle-Length ::= < AVP header: 1691 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#edrx-cycle-length-value-octet)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#edrx-cycle-length-value-octet)
 ; AVP: eDRX-Cycle-Length-Value
 ; Section: 7.3.216
 ; Page: 167
@@ -4313,7 +4313,7 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#mbsfn-area-id-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mbsfn-area-id-range)
 ; AVP: MBSFN-Area-ID
 ; Section: 7.3.220
 ; Page: 167
@@ -4322,7 +4322,7 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
     range 0..255
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#carrier-frequency-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#carrier-frequency-range)
 ; AVP: Carrier-Frequency
 ; Section: 7.3.221
 ; Page: 167
@@ -4340,7 +4340,7 @@ RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
         ENABLED  = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#rds-indicator-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rds-indicator-default)
 ; AVP: RDS-Indicator
 ; Section: 7.3.222
 ; Page: 167
@@ -4412,7 +4412,7 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#operation-mode-range)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#operation-mode-range)
 ; AVP: Operation-Mode
 ; Section: 7.3.227
 ; Page: 171
@@ -4421,7 +4421,7 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
     range 0..255
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#paging-time-window-length-octet)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#paging-time-window-length-octet)
 ; AVP: Paging-Time-Window-Length
 ; Section: 7.3.228
 ; Page: 172
@@ -4462,7 +4462,7 @@ Interworking-5GS-Indicator ::= < Enumerated AVP header: 1706 10415 >
         SUBSCRIBED     = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#interworking-5gs-indicator-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#interworking-5gs-indicator-default)
 ; AVP: Interworking-5GS-Indicator
 ; Section: 7.3.231
 ; Page: 172
@@ -4480,7 +4480,7 @@ Ethernet-PDN-Type-Indicator ::= < Enumerated AVP header: 1707 10415 >
         TRUE  = 1
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#ethernet-pdn-type-indicator-default)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ethernet-pdn-type-indicator-default)
 ; AVP: Ethernet-PDN-Type-Indicator
 ; Section: 7.3.232
 ; Page: 172
@@ -4530,7 +4530,7 @@ PC5-QoS-Flow ::= < AVP header: 1712 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#5qi-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#5qi-element)
 ; AVP: 5QI
 ; Section: 7.3.238
 ; Page: 174
@@ -4571,7 +4571,7 @@ MDT-Configuration-NR ::= < AVP header: 1720 10415 >
       * [ AVP ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#event-threshold-sinr-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#event-threshold-sinr-element)
 ; AVP: Event-Threshold-SINR
 ; Section: 7.3.246
 ; Page: 175
@@ -4596,7 +4596,7 @@ Collection-Period-RRM-NR ::= < Enumerated AVP header: 1722 10415 >
 Collection-Period-M6-NR ::= < Enumerated AVP header: 1723 10415 >
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#collection-period-m7-nr-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#collection-period-m7-nr-element)
 ; AVP: Collection-Period-M7-NR
 ; Section: 7.3.249
 ; Page: 175
@@ -4615,7 +4615,7 @@ Sensor-Measurement ::= < Enumerated AVP header: 1725 10415 >
         UE_ORIENTATION      = 2
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#nr-cell-global-identity-element)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nr-cell-global-identity-element)
 ; AVP: NR-Cell-Global-Identity
 ; Section: 7.3.251
 ; Page: 176

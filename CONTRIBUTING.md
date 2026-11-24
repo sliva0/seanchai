@@ -74,10 +74,10 @@ the `sources` tests, which need `uv run seanchai corpus download`.
 |---|---|
 | `src/seanchai/` | the library and the `seanchai` command (`cli/`: the consumer, file and `corpus` commands); `wireshark/` the Wireshark plugin's generator and Lua |
 | `packages/seanchai-corpus/` | the corpus package; the `.dad` files are under `src/seanchai_corpus/dad/` |
-| `edits/` | per-document `sources/` (input patches, quirks, exclusions), `corrections/` and `transcriptions/`; `unclaimed.json` |
+| `edits/` | per-document `sources/` (input patches, quirks, exclusions), `corrections/`, `interpretations/` (`.dadx`, interpreted constraints) and `transcriptions/`; `unclaimed.json` |
 | `tests/` | tests for both packages |
 | `integrations/` | consumer scripts and staged Wireshark dictionary patches |
-| `editors/` | `.dad` syntax highlighting for VS Code, Vim and Neovim |
+| `editors/` | `.dad` and `.dadx` syntax highlighting for VS Code, Vim and Neovim |
 | `specifications/` | downloaded sources, git-ignored |
 
 Everything else is in [docs/](docs/): [development](docs/development.md),

@@ -38,7 +38,9 @@ is one TS 29.272 re-uses: `show` prints TS 29.273's definition and its bits,
 both in `s6a.json`. TS 29.272's clauses are also read for what their prose
 says of each AVP's value and presence (a PLMN identity's layout, a range, a
 member allowed only beside another), as
-[interpreted constraints][constraints], each pinned to the sentences read.
+[interpreted constraints][constraints], each pinned to the sentences read
+and written by hand in the `.dad` syntax beside the specification
+(`edits/interpretations/TS29.272.dadx`).
 Where two documents read one AVP differently, the file lists the conflict and
 where each reading is met.
 
@@ -97,11 +99,12 @@ seanchai diff --release 18 --release 19 # between the releases the corpus holds
 seanchai vectors -o OUT.json [--pcap F] # test messages, valid and breaking one rule
 ```
 
-Check and rewrite `.dad` files, the corpus's or your own sidecars:
+Check and rewrite `.dad` files, the corpus's or your own sidecars, and the
+interpretations files (`.dadx`):
 
 ```sh
-seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] [FILE.dad | DIR]...
-seanchai format [--check] [FILE.dad | DIR]...  # canonical form, ;; comments kept
+seanchai lint [--corpus DIR | --no-corpus] [--show-accepted] [FILE.dad | FILE.dadx | DIR]...
+seanchai format [--check] [FILE.dad | FILE.dadx | DIR]...  # canonical, ;; comments kept
 ```
 
 Maintain the corpus, from the root of a checkout:

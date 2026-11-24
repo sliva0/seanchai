@@ -47,6 +47,7 @@ def report(tmp_path_factory):
         tmp_path_factory.mktemp("dad"),
         sources_dir=_ROOT / "edits" / "sources",
         corrections_dir=_ROOT / "edits" / "corrections",
+        interpretations_dir=_ROOT / "edits" / "interpretations",
         transcriptions_dir=_ROOT / "edits" / "transcriptions",
         unclaimed=_ROOT / "edits" / "unclaimed.json",
     )

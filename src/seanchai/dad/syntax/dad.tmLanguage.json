@@ -22,7 +22,7 @@
   ],
   "repository": {
     "comment": {
-      "comment": "A note the corrections layer or the extractor writes names its kind and the declaration: `;; corrected: (TS29.272.py#imei-digits)`, `;; excluded: clause 8 (Sh-ee), see TS29.329.toml`.",
+      "comment": "A note the corrections layer or the extractor writes names its kind and the declaration: `;; corrected: (TS29.272.py#area-scope-code)`, `;; interpreted: (TS29.272.dadx#imei-digits)`, `;; excluded: clause 8 (Sh-ee), see TS29.329.toml`.",
       "name": "comment.line.double-semicolon.dad",
       "match": ";;.*$",
       "captures": {
@@ -33,7 +33,7 @@
               "name": "keyword.other.note.dad"
             },
             {
-              "match": "(?<=\\()[A-Za-z0-9_.+-]+\\.py#[A-Za-z0-9_.-]+(?=\\))|(?<=see )[A-Za-z0-9_.+-]+\\.toml\\b",
+              "match": "(?<=\\()[A-Za-z0-9_.+-]+\\.(?:py|dadx)#[A-Za-z0-9_.-]+(?=\\))|(?<=see )[A-Za-z0-9_.+-]+\\.toml\\b",
               "name": "markup.underline.link.declaration.dad"
             }
           ]
@@ -89,7 +89,7 @@
       }
     },
     "directive-text": {
-      "match": "^(; )(Specification|Name|Table|Values|Note)(: )(.*?)(?=;;|$)",
+      "match": "^(; )(Specification|Interprets|Name|Table|Values|Note)(: )(.*?)(?=;;|$)",
       "captures": {
         "2": { "name": "keyword.other.directive.dad" },
         "4": { "name": "string.unquoted.directive-value.dad" }

@@ -1,7 +1,7 @@
 {
   "name": "dad-syntax",
   "displayName": "Diameter AVP Dictionary (.dad)",
-  "description": "Syntax highlighting for Seanchaí .dad files",
+  "description": "Syntax highlighting for Seanchaí .dad and .dadx files",
   "version": "0.1.0",
   "publisher": "seanchai",
   "engines": {
@@ -23,7 +23,8 @@
           "dad"
         ],
         "extensions": [
-          ".dad"
+          ".dad",
+          ".dadx"
         ],
         "configuration": "./language-configuration.json"
       }

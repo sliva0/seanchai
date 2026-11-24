@@ -12,10 +12,12 @@ lambdas, conditionals and filtered comprehensions. Anything else is
 reported for a person to widen.
 
 An `Accept`'s range is widened only if the caller found it still matching
-on the rebuilt file (`accepted`); otherwise it is reported stale. An
-`Interpret` is widened as another declaration is within a release its range
-spans, and to another release only if the caller found its quotes in that
-copy (`adopted`), since no other release's interpretations stand in for it.
+on the rebuilt file (`accepted`); otherwise it is reported stale. A block of
+an interpretations file (`.dadx`) is widened as a declaration is within a
+release its range spans, and to another release only if the caller found
+its quotes in that copy (`adopted`), since no other release's
+interpretations stand in for it; its `; Versions:` line is rewritten, the
+rest of the file left byte for byte.
 """
 
 import ast
@@ -30,7 +32,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ._versions import VersionRange, applies, reviewed_release, spans
-from .dad import corrections
+from .dad import corrections, interpretations
 
 
 @dataclass
@@ -194,7 +196,7 @@ def _uncovered_sources(path: Path, data: dict, version: str, why: str) -> list[s
 
 # --- corrections modules ----------------------------------------------------
 
-_DECLARATIONS = {"Correction", "Delete", "Insert", "Supply", "Interpret", "Accept"}
+_DECLARATIONS = {"Correction", "Delete", "Insert", "Supply", "Accept"}
 
 
 def expand_corrections(
@@ -202,15 +204,12 @@ def expand_corrections(
     specification: str,
     version: str,
     accepted: Collection[str] = (),
-    adopted: Collection[str] = (),
 ) -> Expansion:
     """Widen the applied `versions=` literals in `specification`'s
     corrections module that do not cover `version`.
 
     An `Accept` is widened only if `<module>#<id>` is in `accepted`;
-    otherwise it is reported in `stale`. An `Interpret` whose range does not
-    reach `version`'s release is widened only if `<module>#<id>` is in
-    `adopted`. One whose id is not a string literal is left for a person."""
+    otherwise it is reported in `stale`."""
     path = corrections.module_path(directory, specification)
     if not path.is_file():
         return Expansion([], [])
@@ -237,22 +236,11 @@ def expand_corrections(
     explained: set[str] = set()
     declared_edits = corrections.load(directory, specification)
     release = reviewed_release(
-        [
-            VersionRange.parse(edit.versions)
-            for edit in declared_edits
-            if not isinstance(edit, corrections.Interpret)
-        ],
-        version,
+        [VersionRange.parse(edit.versions) for edit in declared_edits], version
     )
     for literal, value, kind, identifier in _range_literals(tree):
         declared = VersionRange.parse(value)
-        if kind == "Interpret":
-            if not spans(declared, version) and (
-                not identifier or f"{path.name}#{identifier}" not in adopted
-            ):
-                # Not applied here: its quotes were not found, or not tried.
-                continue
-        elif not applies(declared, release):
+        if not applies(declared, release):
             # Another release's declaration: not applied, so not widened.
             continue
         expanded = declared.expanded(version)
@@ -295,15 +283,78 @@ def expand_corrections(
     remaining = manual + [
         f"correction {edit.cited} {edit.versions}: not a string literal"
         for edit in edits
-        if (
-            (spans(VersionRange.parse(edit.versions), version) or edit.cited in adopted)
-            if isinstance(edit, corrections.Interpret)
-            else applies(VersionRange.parse(edit.versions), release)
-        )
+        if applies(VersionRange.parse(edit.versions), release)
         and not VersionRange.parse(edit.versions).covers(version)
         and str(edit.versions) not in explained
     ]
     return Expansion(widened, remaining, stale)
+
+
+# --- interpretations files -------------------------------------------------
+
+
+def expand_interpretations(
+    directory: Path,
+    specification: str,
+    version: str,
+    adopted: Collection[str] = (),
+) -> Expansion:
+    """Widen the `; Versions:` lines of `specification`'s interpretations
+    file that do not cover `version`: of each block whose range spans
+    `version`'s release, and of each whose citation is in `adopted`, the
+    blocks another release reviewed whose quotes this copy prints. A block
+    neither is not applied to the copy, and stays as it is."""
+    path = interpretations.file_path(directory, specification)
+    if not path.is_file():
+        return Expansion([], [])
+    loaded = interpretations.load(directory, specification)
+    raw = path.read_bytes()
+    lines = raw.decode("utf-8").split("\n")
+    widened = []
+    for item in loaded:
+        declared = VersionRange.parse(item.versions)
+        if not spans(declared, version) and item.cited not in adopted:
+            continue
+        expanded = declared.expanded(version)
+        if expanded == declared:
+            continue
+        lineno = next(
+            number
+            for number in range(item.lines[0], item.lines[1])
+            if lines[number - 1].startswith("; Versions: ")
+        )
+        text = lines[lineno - 1]
+        comment = text.find(";;")
+        tail = "" if comment == -1 else " " + text[comment:]
+        lines[lineno - 1] = f"; Versions: {expanded}{tail}"
+        widened.append(f"{path.name}:{lineno}: versions {declared} -> {expanded}")
+    if widened:
+        rewritten = "\n".join(lines).encode("utf-8")
+        _checked_interpretations(rewritten, path, specification, loaded)
+        path.write_bytes(rewritten)
+    return Expansion(widened, [])
+
+
+def _checked_interpretations(
+    rewritten: bytes,
+    path: Path,
+    specification: str,
+    declared: list[interpretations.Interpretation],
+) -> None:
+    """Read the rewritten file from a scratch copy and require it to write
+    what the original did, ranges aside."""
+    with tempfile.TemporaryDirectory() as scratch:
+        (Path(scratch) / path.name).write_bytes(rewritten)
+        loaded = interpretations.load(Path(scratch), specification)
+
+    def unranged(item: interpretations.Interpretation) -> object:
+        return item.block.model_copy(update={"versions": "*..*"})
+
+    if [unranged(item) for item in loaded] != [unranged(item) for item in declared]:
+        raise corrections.CorrectionError(
+            f"{path}: widening its ranges would change what it writes;"
+            " the file was left as it was"
+        )
 
 
 def _checked_rewrite(

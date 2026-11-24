@@ -1,8 +1,9 @@
 """The editors' highlighting: the TextMate grammar
 (`src/seanchai/dad/syntax/dad.tmLanguage.json`, copied to `editors/vscode/`)
 scopes each shape of line the format has as `tests/fixtures/syntax/sample.dad`
-pins, and the Vim syntax (`editors/vim/syntax/dad.vim`) colours every
-character of the sample and of each distinct line of the corpus as the
+and, for an interpretations file, `sample.dadx` pin, and the Vim syntax
+(`editors/vim/syntax/dad.vim`) colours every character of the samples, of
+each distinct line of the corpus and of the interpretations files as the
 grammar's scope there says, skipped without `vim`.
 
 The grammar is read by a small tokenizer after vscode-textmate's: `match` and
@@ -27,7 +28,9 @@ ROOT = Path(__file__).resolve().parent.parent
 GRAMMAR = ROOT / "src" / "seanchai" / "dad" / "syntax" / "dad.tmLanguage.json"
 VIM = ROOT / "editors" / "vim"
 SAMPLE = ROOT / "tests" / "fixtures" / "syntax" / "sample.dad"
+SAMPLE_DADX = SAMPLE.with_suffix(".dadx")
 CORPUS = ROOT / "packages" / "seanchai-corpus" / "src" / "seanchai_corpus" / "dad"
+INTERPRETATIONS = ROOT / "edits" / "interpretations"
 
 _LOOKBEHIND = re.compile(r"\(\?<=((?:\\.|[^()\\])+)\)")
 
@@ -150,6 +153,10 @@ def test_the_sample_is_a_dad_file():
     parser.parse(SAMPLE.read_text("utf-8"))
 
 
+def test_the_dadx_sample_is_an_interpretations_file():
+    parser.parse_interpretations(SAMPLE_DADX.read_text("utf-8"))
+
+
 # A line of the sample by its start, a token in it (its first occurrence, or
 # the one after `after`) and the innermost scope it takes.
 _SCOPED = [
@@ -203,6 +210,11 @@ _SCOPED = [
     ("Session-Id  ", "MUST", "constant.language"),
     ("Destination-Host  ", "-", "punctuation.definition.empty-cell", "RFC6733 "),
     ("; Type: Interpreted Constraints ;;", "interpreted", "keyword.other.note"),
+    (
+        "; Type: Interpreted Constraints ;;",
+        "Private-ACME-HSS.dadx#id-length",
+        "markup.underline.link.declaration",
+    ),
     ("; Versions: *..", "*", "keyword.operator"),
     ("; Versions: *..", "..", "keyword.operator.range"),
     ("    length 1..15", "characters", "constant.language.unit"),
@@ -241,14 +253,32 @@ _SCOPED = [
 ]
 
 
+# As `_SCOPED`, over `sample.dadx`.
+_SCOPED_DADX = [
+    ("; Interprets:", "Interprets", "keyword.other.directive"),
+    ("; Interprets:", "Private ACME-HSS", "string.unquoted.directive-value"),
+    ("; Id:", "Id", "keyword.other.directive"),
+    ("; Id:", "id-length", "string.unquoted.directive-value"),
+    (";; Read from", "Read", "comment.line.double-semicolon"),
+    ("    length 1..15", "characters", "constant.language.unit"),
+    ("    length 1..15", "the octets", "comment.line.double-semicolon"),
+    ("; Versions: 1.0.0", "..", "keyword.operator.range"),
+]
+
+
 def _innermost(stack: list[str]) -> str:
     return stack[-1].removesuffix(".dad") if stack else ""
 
 
-@pytest.mark.parametrize("case", _SCOPED, ids=lambda case: f"{case[0]}|{case[1]}")
-def test_the_grammar_scopes_each_shape(grammar, case):
+@pytest.mark.parametrize(
+    ("sample", "case"),
+    [(SAMPLE, case) for case in _SCOPED]
+    + [(SAMPLE_DADX, case) for case in _SCOPED_DADX],
+    ids=lambda each: f"{each[0]}|{each[1]}" if isinstance(each, tuple) else each.name,
+)
+def test_the_grammar_scopes_each_shape(grammar, sample, case):
     start, token, scope, *rest = case
-    lines = SAMPLE.read_text("utf-8").split("\n")
+    lines = sample.read_text("utf-8").split("\n")
     scopes = grammar.tokenize(lines)
     (index,) = [n for n, line in enumerate(lines) if line.startswith(start)][:1]
     line = lines[index]
@@ -333,7 +363,12 @@ def test_vim_colours_each_line_as_the_grammar_scopes_it(grammar, tmp_path):
         words = row.split()
         if words[:3] == ["hi", "def", "link"]:
             links[words[3]] = words[4]
-    files = [SAMPLE, *sorted(CORPUS.rglob("*.dad"))]
+    files = [
+        SAMPLE,
+        SAMPLE_DADX,
+        *sorted(CORPUS.rglob("*.dad")),
+        *sorted(INTERPRETATIONS.glob("*.dadx")),
+    ]
     seen: set = set()
     jobs, texts = [], {}
     for index, path in enumerate(files):

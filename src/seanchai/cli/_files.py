@@ -80,9 +80,13 @@ def lint(
 ) -> None:
     """Report structural inconsistencies in `.dad` files.
 
-    SOURCES are files or directories; a directory means its `.dad` files,
-    without the raw mirror unless --raw. With no SOURCES, lints the installed
-    corpus. Exits 1 if any error is found; notes alone do not fail.
+    SOURCES are files or directories; a directory means its `.dad` and `.dadx`
+    files, without the raw mirror unless --raw. With no SOURCES, lints the
+    installed corpus. Exits 1 if any error is found; notes alone do not fail.
+
+    A `.dadx` file, a document's interpretations, is read as its blocks: their
+    syntax, rules, ids and clause order, and with a corpus the constraint
+    rules in each copy of the document a block's range spans, as if merged.
 
     Re-used AVPs resolve against --corpus, else the installed corpus; with
     neither, or with --no-corpus, each file is linted alone. An origin missing
@@ -94,8 +98,8 @@ def lint(
     """
     from ..corpus import Corpus, CorpusNotInstalledError, installed_directory
     from ..dad import corrections as corrections_module
-    from ..dad import parser
-    from ..linter import Severity, lint_record, lint_with_corpus
+    from ..dad import interpretations, parser
+    from ..linter import Severity, lint_interpretations, lint_record, lint_with_corpus
     from ..linter import lint as lint_spec
 
     if no_corpus and corpus_paths:
@@ -113,7 +117,7 @@ def lint(
     counts = dict.fromkeys(Severity, 0)
     checked = 0
 
-    def report(source: Path, findings: list) -> None:
+    def report(source: Path | str, findings: list) -> None:
         if not notes:
             findings = [f for f in findings if f.severity is Severity.ERROR]
         for finding in findings:
@@ -146,6 +150,14 @@ def lint(
                 if not (explicit or in_repository):
                     directory = None
         for source in _dad_files(sources or (installed_directory(),), raw=raw):
+            if source.suffix == interpretations.SUFFIX:
+                tree, declared = interpretations.read(source)
+                checked += 1
+                for entry, findings in lint_interpretations(
+                    tree.interprets, declared, books
+                ):
+                    report(f"{source} (in {entry.path.name})", findings)
+                continue
             with _naming(source):
                 spec = parser.parse(source.read_text(encoding="utf-8"))
             if books is None:
@@ -172,7 +184,7 @@ def lint(
         raise SystemExit(1)
 
 
-def _echo_findings(source: Path, findings) -> None:
+def _echo_findings(source: Path | str, findings) -> None:
     """Print one file's findings under its path, errors first."""
     from ..linter import Severity
 
@@ -237,8 +249,9 @@ def _summary(counts, checked: int) -> str:
 def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
     """Rewrite `.dad` files in canonical form, keeping their `;;` comments.
 
-    SOURCES are files or directories; a directory means its `.dad` files,
-    without the raw mirror unless --raw. Every file is parsed before any is
+    SOURCES are files or directories; a directory means its `.dad` and `.dadx`
+    files, without the raw mirror unless --raw. A `.dadx` file holds a
+    document's interpretations. Every file is parsed before any is
     written, so a parse error leaves all files unchanged. Comments stay with
     the line or section they precede, or on their line if trailing.
     """
@@ -254,8 +267,12 @@ def format_command(sources: tuple[Path, ...], check: bool, raw: bool) -> None:
         # reads as canonical because the newlines were translated away.
         with _naming(source):
             text = source.read_bytes().decode("utf-8")
-            spec, comments = parser.parse_with_comments(text)
-        canonical = formatter.format_spec(spec, comments)
+            if source.suffix == ".dadx":
+                tree, notes = parser.parse_interpretations_with_comments(text)
+                canonical = formatter.format_interpretations(tree, notes)
+            else:
+                spec, comments = parser.parse_with_comments(text)
+                canonical = formatter.format_spec(spec, comments)
         if canonical != text:
             changed.append((source, text, canonical))
     for source, text, canonical in changed:

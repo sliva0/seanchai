@@ -55,7 +55,8 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
   correction re-applies to the raw output, and the linter's findings over the
   corpus are pinned. `holes.toml` pins the known holes, `corpus.toml` may
   name only copies the corpus holds and versions the catalog pins, and
-  `corrections.json` must match `edits/corrections/`.
+  `corrections.json` must match `edits/corrections/` and
+  `edits/interpretations/`, whose files are canonical.
 - Two offline pins check extractor output. RFC 5778, 6942 and 7944, copied
   into `tests/fixtures/rfc/`, must rebuild to their committed pair; the
   `sources` tests hold the copies to the downloads, so after a download
@@ -81,9 +82,10 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
 
 - `tests/test_syntax.py` holds the editors' highlighting to
   `tests/fixtures/syntax/sample.dad`, a file holding every shape of line the
-  [grammar](grammar.md) has. It tokenizes the sample with the TextMate
-  grammar and pins a scope for each shape, and, with `vim` on PATH, colours
-  the sample and each distinct line of the corpus with the Vim syntax and
+  [grammar](grammar.md) has, and `sample.dadx`, an interpretations file's. It
+  tokenizes the samples with the TextMate grammar and pins a scope for each
+  shape, and, with `vim` on PATH, colours the samples, each distinct line of
+  the corpus and the interpretations files with the Vim syntax and
   requires every character's group to be the one the grammar's scope pairs
   with (`_GROUPS`). GitHub's runner has `vim`; the Forgejo container does
   not, so there the Vim half is skipped: run it locally after changing
@@ -111,8 +113,10 @@ another.
 A format change reaches four files: the TextMate grammar
 (`src/seanchai/dad/syntax/dad.tmLanguage.json`), its copy under
 `editors/vscode/syntaxes/`, the Vim syntax (`editors/vim/syntax/dad.vim`) and
-the sample. Add the new shape to `sample.dad` (it must parse), a scope for it
-to `_SCOPED`, the patterns to both modules, and copy the grammar over. Then:
+the sample. Add the new shape to `sample.dad` (it must parse), or to
+`sample.dadx` for an interpretations file's own lines, a scope for it to
+`_SCOPED` or `_SCOPED_DADX`, the patterns to both modules, and copy the
+grammar over. Then:
 
 ```sh
 uv run pytest tests/test_syntax.py      # the Vim half needs vim on PATH
@@ -131,7 +135,8 @@ from the downloaded sources and the edit layers.
 1. `uv run seanchai corpus download` fetches the catalog into
    `specifications/`.
 2. `uv run seanchai corpus regenerate` rebuilds every document, the raw
-   mirror and `corrections.json`.
+   mirror and `corrections.json`, merging each document's interpretations
+   file after its corrections.
 3. `git diff --stat packages/seanchai-corpus` shows what changed.
 4. If the export changed, review it and run
    `uv run pytest tests/test_export.py --update-export-pin`.
@@ -260,13 +265,16 @@ diff -u /tmp/old/raw/3gpp/rel-19/29272-j50.raw.dad \
 `-o` keeps the old pair out of the corpus.
 
 `--expand-ranges` rewrites `first_version`/`last_version` in
-`edits/sources/<SpecRef>.toml` and the `versions=` string literal in
-`edits/corrections/<SpecRef>.py`, moving only the bound the version passed and
-keeping layout and comments. It prints each change as `expanded:`. An `Accept`
-is widened only while it still matches its finding, and is otherwise printed as
-`not widened, stale:`. A literal it cannot rewrite (outside the top-level
-`CORRECTIONS` statements, in a lambda, conditional or filtered comprehension,
-split by comments, or computed) is printed as `not widened, widen it by hand:`.
+`edits/sources/<SpecRef>.toml`, the `versions=` string literal in
+`edits/corrections/<SpecRef>.py` and a block's `; Versions:` line in
+`edits/interpretations/<SpecRef>.dadx`, moving only the bound the version
+passed and keeping layout and comments. It prints each change as `expanded:`.
+An `Accept` is widened only while it still matches its finding, and is
+otherwise printed as `not widened, stale:`. A literal it cannot rewrite
+(outside the top-level `CORRECTIONS` statements, in a lambda, conditional or
+filtered comprehension, split by comments, or computed) is printed as
+`not widened, widen it by hand:`. Every block of an interpretations file is
+widened where it applied, its range being a line of its own.
 
 ### A new release
 
@@ -311,7 +319,7 @@ Release 18 was added beside 19.
    release above, each checked as ever; interpretations are offered and
    carried only where their quotes are found
    ([extractor.md](extractor.md#releases),
-   [corrections.md](corrections.md#interpreted-constraints)).
+   [constraints.md](constraints.md#the-interpretations-file)).
 3. Read the source wherever a declaration fails: the defect may be absent
    in the older copy, or printed otherwise. Declare what the older copy
    needs ranged to its version alone, and keep a declaration out of a copy it

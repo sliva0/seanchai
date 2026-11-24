@@ -139,16 +139,17 @@ syn match dadListComma "," contained
 
 " Free-text directives get one uniform value color — no point picking the
 " 29.109 out of "3GPP TS 29.109". Defined after the generic line, so it wins.
-syn match dadDirectiveTextLine "^; \%(Specification\|Name\|Table\|Values\|Note\): .*$" contains=dadDirectiveKey,dadDirectiveText
+syn match dadDirectiveTextLine "^; \%(Specification\|Interprets\|Name\|Table\|Values\|Note\): .*$" contains=dadDirectiveKey,dadDirectiveText
 syn match dadDirectiveText ": \zs.*$" contained contains=dadComment
 
 " Free-text comments override everything else on the line. A note the
 " corrections layer or the extractor writes names its kind and the
-" declaration: `;; corrected: (TS29.272.py#imei-digits)`, `;; excluded: clause
-" 8 (Sh-ee), see TS29.329.toml`.
+" declaration: `;; corrected: (TS29.272.py#area-scope-code)`, `;; interpreted:
+" (TS29.272.dadx#imei-digits)`, `;; excluded: clause 8 (Sh-ee), see
+" TS29.329.toml`.
 syn match dadComment ";;.*$" contains=dadNoteKw,dadNoteRef
 syn match dadNoteKw "\%(;; \)\@3<=\%(corrected\|deleted\|excluded\|foreword\|inserted\|interpreted\|patched\|supplied\)\ze:" contained
-syn match dadNoteRef "(\@1<=[A-Za-z0-9_.+-]\+\.py#[A-Za-z0-9_.-]\+\ze)" contained
+syn match dadNoteRef "(\@1<=[A-Za-z0-9_.+-]\+\.\%(py\|dadx\)#[A-Za-z0-9_.-]\+\ze)" contained
 syn match dadNoteRef "\%(see \)\@4<=[A-Za-z0-9_.+-]\+\.toml\>" contained
 
 " An Information Elements block, up to the next block of another type: its

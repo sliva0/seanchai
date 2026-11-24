@@ -8,13 +8,12 @@ import itertools
 import pytest
 from conftest import _CORPUS_DIR, _ROOT, _corpus
 
-from seanchai.dad import ast, corrections, formatter, parser
+from seanchai.dad import ast, corrections, formatter, interpretations, parser
 from seanchai.dad.corrections import (
     Correction,
     CorrectionError,
     Delete,
     Insert,
-    Interpret,
     Supply,
     avp_rule,
     avp_table,
@@ -30,14 +29,16 @@ from seanchai.dad.corrections import (
 )
 
 _CORRECTIONS = _ROOT / "edits" / "corrections"
+_INTERPRETATIONS = _ROOT / "edits" / "interpretations"
 
 
 def _declared(
     spec: ast.Specification, corrected: ast.Specification | None = None
 ) -> list[corrections.Declaration]:
-    """`spec`'s declarations, each interpretation on the page its block
-    carries in the `corrected` file, `spec` itself if None: regenerating
-    reads the page from the source, which these tests do without."""
+    """`spec`'s declarations, then its interpretations, each on the page its
+    block carries in the `corrected` file, `spec` itself if None:
+    regenerating reads the page from the source, which these tests do
+    without."""
     pages = {
         block.source.section: block.source.page
         for block in (spec if corrected is None else corrected).sections
@@ -45,9 +46,15 @@ def _declared(
         and block.source.page is not None
     }
     return [
-        corrections.paged(item, pages) if isinstance(item, Interpret) else item
+        interpretations.paged(item, pages)
+        if isinstance(item, corrections.Interpretation)
+        else item
         for item in corrections.in_release(
-            corrections.load(_CORRECTIONS, spec.specification), spec.version
+            [
+                *corrections.load(_CORRECTIONS, spec.specification),
+                *interpretations.load(_INTERPRETATIONS, spec.specification),
+            ],
+            spec.version,
         )
     ]
 
@@ -101,7 +108,7 @@ def test_every_corrected_file_already_carries_its_corrections(path):
     }
 
     for correction in declared:
-        if isinstance(correction, Interpret):
+        if isinstance(correction, corrections.Interpretation):
             assert correction.node in spec.sections
             continue
         if isinstance(correction, Insert):

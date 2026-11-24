@@ -38,6 +38,7 @@ __all__ = [
     "avp_table_cell",
     "commented_avp_rule",
     "constraint_rule",
+    "format_interpretations",
     "format_spec",
     "marks_cell",
     "value_name",
@@ -143,6 +144,8 @@ def _directives(
     `; Table:` caption, only definitions a `; Name:`, and only an
     enumerated AVP a `; Values:`."""
     lines = notes.line(f"; Type: {section.type}", (*path, "type"))
+    if isinstance(section, ast.InterpretationBlock):
+        lines.extend(notes.line(f"; Id: {section.id}", (*path, "id")))
     if isinstance(section, ast.Registry):
         lines.extend(notes.line(f"; Registry: {section.registry}", (*path, "registry")))
     if isinstance(section, ast.ValueTable):
@@ -710,6 +713,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.ValueTable: _format_value_table,
     ast.InformationElements: _format_information_elements,
     ast.InterpretedConstraints: _format_interpreted_constraints,
+    ast.InterpretationBlock: _format_interpreted_constraints,
 }
 
 
@@ -762,4 +766,19 @@ def format_spec(spec: ast.Specification, comments: Comments = _NO_COMMENTS) -> s
         parts.append(comments.detached_at(("sections", index)))
         parts.append(_format_section(section, ("sections", index), comments))
     parts.append(comments.detached_at(("sections", len(spec.sections))))
+    return "\n\n\n".join("\n".join(part) for part in parts if part) + "\n"
+
+
+def format_interpretations(
+    tree: ast.Interpretations, comments: Comments = _NO_COMMENTS
+) -> str:
+    """Return a `.dadx` file's canonical text, laid out as `format_spec` lays
+    out a `.dad` file, optionally with its `;;` comments."""
+    header = [*comments.line(f"; Interprets: {tree.interprets}", ("interprets",))]
+    header.extend(comments.standing_at(()))
+    parts = [comments.detached_at(()), header]
+    for index, section in enumerate(tree.sections):
+        parts.append(comments.detached_at(("sections", index)))
+        parts.append(_format_section(section, ("sections", index), comments))
+    parts.append(comments.detached_at(("sections", len(tree.sections))))
     return "\n\n\n".join("\n".join(part) for part in parts if part) + "\n"

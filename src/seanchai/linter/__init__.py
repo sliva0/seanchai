@@ -18,7 +18,7 @@ and `_reused`; registry rules in `_registry`.
 """
 
 from ._findings import AvpIdentity, Finding, Severity, accept
-from ._lint import lint, lint_record, lint_with_corpus
+from ._lint import lint, lint_interpretations, lint_record, lint_with_corpus
 
 __all__ = [
     "AvpIdentity",
@@ -26,6 +26,7 @@ __all__ = [
     "Severity",
     "accept",
     "lint",
+    "lint_interpretations",
     "lint_record",
     "lint_with_corpus",
 ]

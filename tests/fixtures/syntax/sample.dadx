@@ -1,0 +1,25 @@
+; Interprets: Private ACME-HSS
+;; What the ACME-HSS document's prose says, in its clause order.
+
+
+;; Read from the clause's first paragraph.
+; Type: Interpreted Constraints
+; Id: id-length
+; AVP: ACME-Id
+; Within: ACME-Data
+; Section: 7.3.5
+; Versions: *..1.2.0
+"The ACME-Id shall be 1 to 15 characters long."
+    length 1..15 characters ;; the characters, not the octets
+
+
+; Type: Interpreted Constraints
+; Id: flags-request
+; AVP: ACME-Flags
+; Command: ACME-Request
+; Application-ID: 16777999
+; Section: 7.3.6
+; Table: 7.3.6/1
+; Versions: 1.0.0..1.2.0 ;; widened by --expand-ranges
+"It shall be present only if the Withdraw Data bit is set."
+    present-if ACME-Flags bit "Withdraw Data"

@@ -107,7 +107,7 @@ Result                                         Result-Code/Experimental-Result  
 "EAP payload"                                  "EAP payload"                      O
 Unmapped                                       -                                  -
 
-; Type: Interpreted Constraints ;; interpreted: (Private-ACME-HSS.py#id-length)
+; Type: Interpreted Constraints ;; interpreted: (Private-ACME-HSS.dadx#id-length)
 ; AVP: ACME-Id
 ; Within: ACME-Data
 ; Section: 7.3.5

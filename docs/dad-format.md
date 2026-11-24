@@ -82,9 +82,12 @@ blank lines. Each section starts with `; Type:`.
   ([grammar.md](grammar.md#file)).
 - Prose is out of the extractors' scope. What a clause's prose states of an
   AVP's value or presence (a layout, a range, a condition) is read by a
-  person and declared as an edit, which places an `Interpreted Constraints`
-  block in the corrected file beside the clause, each rule after the
-  sentences it was read from; the raw file never holds one.
+  person and written, in the block syntax, in the document's interpretations
+  file (`edits/interpretations/<SpecRef>.dadx`,
+  [grammar.md](grammar.md#interpretations-files)); rebuilding the corpus
+  merges each `Interpreted Constraints` block into the corrected file beside
+  the clause, each rule after the sentences it was read from. The raw file
+  never holds one.
 - A new `; Type:`, directive key or structural column is a format change.
   It needs a source document that cannot otherwise be recorded; consumer
   convenience belongs in the model. Mark columns are open

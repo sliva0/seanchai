@@ -31,6 +31,9 @@ if TYPE_CHECKING:
 # that directory. `regenerate` and `lint` default to the repository's own.
 _DEFAULT_SOURCES = Path("edits") / "sources"
 _DEFAULT_CORRECTIONS = Path("edits") / "corrections"
+# What a person read in each document's prose, merged after its corrections:
+# `.dad` syntax, so reading it runs nothing.
+_DEFAULT_INTERPRETATIONS = Path("edits") / "interpretations"
 _DEFAULT_TRANSCRIPTIONS = Path("edits") / "transcriptions"
 # The tables no reading claims, as looked over (`extractor.unclaimed`).
 _DEFAULT_UNCLAIMED = Path("edits") / "unclaimed.json"
@@ -147,14 +150,14 @@ def _naming(source: Path) -> Generator[None]:
 
 def _dad_files(sources: Iterable[Path], *, raw: bool = False) -> list[Path]:
     """The files `sources` name, each once, a directory expanded to its `.dad`
-    files. A directory's raw mirror is skipped unless `raw` or the directory is
-    the mirror itself."""
+    and `.dadx` (interpretations) files. A directory's raw mirror is skipped
+    unless `raw` or the directory is the mirror itself."""
     files: dict[Path, None] = {}
     for source in sources:
         if not source.is_dir():
             files[source] = None
             continue
-        found = sorted(source.rglob("*.dad"))
+        found = sorted([*source.rglob("*.dad"), *source.rglob("*.dadx")])
         kept = (
             found
             if raw or source.name == "raw"
@@ -167,7 +170,7 @@ def _dad_files(sources: Iterable[Path], *, raw: bool = False) -> list[Path]:
         )
         if not kept:
             hint = "; --raw reads its raw files" if found else ""
-            raise click.ClickException(f"{source} holds no .dad files{hint}")
+            raise click.ClickException(f"{source} holds no .dad or .dadx files{hint}")
         files.update(dict.fromkeys(kept))
     return list(files)
 

@@ -1,6 +1,8 @@
 # Editor support for `.dad` files
 
-Syntax highlighting for the format in [docs/grammar.md](../docs/grammar.md).
+Syntax highlighting for the format in [docs/grammar.md](../docs/grammar.md),
+and for interpretations files (`.dadx`, the same syntax holding a document's
+interpreted constraints, `edits/interpretations/`) as the same language.
 Table rows are zebra-striped: every second row after a `; Columns:` directive
 gets a faint background.
 
@@ -12,12 +14,14 @@ name, the AVPs it maps to and its category (M, C or O), have the shape of a
 re-used AVP table's, so both modules read the block's rows as elements up to
 the next block of another type. An interpreted constraint's rules colour
 their keyword, operands, codecs and units, and the notes the corrections layer
-and the extractor write (`;; corrected: (TS29.272.py#imei-digits)`) their kind
-and the declaration they cite, inside the comment.
+and the extractor write (`;; corrected: (TS29.272.py#area-scope-code)`,
+`;; interpreted: (TS29.272.dadx#imei-digits)`) their kind and the
+declaration they cite, inside the comment.
 
 The two modules colour every line alike: `tests/test_syntax.py` checks the
-TextMate grammar's scopes over `tests/fixtures/syntax/sample.dad`, and the
-Vim syntax against them over the sample and the corpus
+TextMate grammar's scopes over `tests/fixtures/syntax/sample.dad` and
+`sample.dadx`, and the Vim syntax against them over the samples, the corpus
+and the interpretations files
 ([docs/development.md](../docs/development.md#editor-syntax)).
 
 The TextMate grammar's source is `src/seanchai/dad/syntax/dad.tmLanguage.json`,
@@ -38,7 +42,8 @@ Reload the window to pick up grammar changes.
 
 ## Neovim
 
-`editors/vim/` is a plugin: `ftdetect/` sets the filetype for `*.dad`, and
+`editors/vim/` is a plugin: `ftdetect/` sets the filetype for `*.dad` and
+`*.dadx`, and
 `ftplugin/` and `syntax/` do the rest. Load it from a checkout with lazy.nvim:
 
 ```lua

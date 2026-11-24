@@ -1,5 +1,6 @@
-"""The corpus's record of its corrections: in sync with the modules, and all
-an export needs of them (docs/corrections.md#the-corrections-record)."""
+"""The corpus's record of its corrections: in sync with the modules and the
+interpretations files, and all an export needs of them
+(docs/corrections.md#the-corrections-record)."""
 
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from seanchai.corpus import Corpus, CorpusError
 from seanchai.dad import corrections
 
 _CORRECTIONS = _ROOT / "edits" / "corrections"
+_INTERPRETATIONS = _ROOT / "edits" / "interpretations"
 _COMMITTED = _CORPUS_DIR / _correction_record.RECORD_NAME
 
 
@@ -20,7 +22,7 @@ def books():
 
 
 def test_the_committed_record_is_what_the_modules_say(books):
-    built = _correction_record.build(books, _CORRECTIONS)
+    built = _correction_record.build(books, _CORRECTIONS, _INTERPRETATIONS)
     committed = _COMMITTED.read_text("utf-8")
     assert built.render() == committed, (
         f"{_COMMITTED} is stale: run `seanchai corpus regenerate` and commit it"

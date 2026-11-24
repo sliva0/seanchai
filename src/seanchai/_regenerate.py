@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Literal
 from . import _correction_record, _ranges, linter
 from ._versions import RangeWarning, VersionRange
 from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
-from .dad import ast, corrections, formatter, parser
+from .dad import ast, corrections, formatter, interpretations, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
 from .downloader.catalog import SOURCES, load_catalog
@@ -133,6 +133,7 @@ def regenerate(
     *,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    interpretations_dir: Path | None = None,
     transcriptions_dir: Path | None = None,
     add: Sequence[str] = (),
     only: Sequence[str] = (),
@@ -158,8 +159,12 @@ def regenerate(
     `transcriptions_dir` holds the hand transcriptions, each a source like a
     manifest record.
 
+    `interpretations_dir` holds the documents' interpretations files
+    (`dad.interpretations`), merged after their corrections.
+
     With `corrections_dir`, a run with no failure also rewrites `output`'s
-    corrections record (`seanchai._correction_record`).
+    corrections record (`seanchai._correction_record`), the interpretations
+    included.
 
     `unclaimed` is the baseline of unclaimed tables (`extractor.unclaimed`): a
     document printing one it does not list fails, and one it lists that the
@@ -182,7 +187,7 @@ def regenerate(
     baseline = Baseline.load(unclaimed) if unclaimed is not None else None
     with _Stage(
         output,
-        [sources_dir, corrections_dir] if expand_ranges else [],
+        [sources_dir, corrections_dir, interpretations_dir] if expand_ranges else [],
     ) as stage:
         return _run(
             stage,
@@ -193,6 +198,7 @@ def regenerate(
             output,
             sources_dir=stage.edits(sources_dir),
             corrections_dir=stage.edits(corrections_dir),
+            interpretations_dir=stage.edits(interpretations_dir),
             add=add,
             only=only,
             report=report,
@@ -212,6 +218,7 @@ def _run(
     *,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    interpretations_dir: Path | None,
     add: Sequence[str],
     only: Sequence[str],
     report: Callable[[Outcome], None],
@@ -243,6 +250,7 @@ def _run(
             stage,
             sources_dir,
             corrections_dir,
+            interpretations_dir,
             books,
             absent,
         )
@@ -292,7 +300,9 @@ def _run(
     record = None
     if corrections_dir is not None:
         try:
-            record = _correction_record.write(stage.corpus, corrections_dir)
+            record = _correction_record.write(
+                stage.corpus, corrections_dir, interpretations_dir
+            )
         except (CorrectionError, CorpusError, OSError) as error:
             failed = Outcome(
                 _correction_record.RECORD_NAME,
@@ -392,6 +402,7 @@ def _one(
     stage: _Stage,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    interpretations_dir: Path | None,
     books: Corpus | None,
     absent: frozenset[str] = frozenset(),
 ) -> Outcome:
@@ -428,6 +439,7 @@ def _one(
             source,
             sources_dir,
             corrections_dir,
+            interpretations_dir,
             outcome.warnings,
             outcome.unclaimed,
             adopted=outcome.adopted if books is not None else None,
@@ -439,7 +451,9 @@ def _one(
     outcome.version = spec.version
     if books is not None and spec.version is not None:
         try:
-            _expand(outcome, spec, sources_dir, corrections_dir, books)
+            _expand(
+                outcome, spec, sources_dir, corrections_dir, interpretations_dir, books
+            )
         except (CorrectionError, OSError, ValueError) as error:
             outcome.status = "failed"
             outcome.error = f"expanding ranges: {error}"
@@ -629,6 +643,7 @@ def _expand(
     spec: ast.Specification,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    interpretations_dir: Path | None,
     books: Corpus,
 ) -> None:
     """Widen the stale ranges of a specification that just rebuilt cleanly.
@@ -664,6 +679,14 @@ def _expand(
                 spec.specification,
                 spec.version,
                 accepted,
+            )
+        )
+    if interpretations_dir is not None:
+        expansions.append(
+            _ranges.expand_interpretations(
+                interpretations_dir,
+                spec.specification,
+                spec.version,
                 adopted=outcome.adopted,
             )
         )
@@ -687,6 +710,7 @@ def _produce(
     source: _Source,
     sources_dir: Path | None,
     corrections_dir: Path | None,
+    interpretations_dir: Path | None,
     warnings: list[str],
     unclaimed: list[Candidate] | None = None,
     adopted: list[str] | None = None,
@@ -729,7 +753,12 @@ def _produce(
     if unclaimed is not None:
         unclaimed.extend(found)
     raw_text = formatter.format_spec(spec, comments)
-    module = corrections.load(corrections_dir, spec.specification)
+    # The interpretations after the corrections: a block is placed in the
+    # corrected tree, and its names are looked up there.
+    module = [
+        *corrections.load(corrections_dir, spec.specification),
+        *interpretations.load(interpretations_dir, spec.specification),
+    ]
     declared = corrections.in_release(module, spec.version)
     for edit in declared:
         # `__post_init__` parsed the declared string; the annotation still
@@ -744,19 +773,19 @@ def _produce(
             " applied to this copy; --expand-ranges tries their quotes on it"
         )
         offered = []
-    interpretations = [
-        edit for edit in declared if isinstance(edit, corrections.Interpret)
+    interpreted = [
+        edit for edit in declared if isinstance(edit, corrections.Interpretation)
     ]
-    if interpretations or offered:
-        texts, pages = _clauses(source, sources_dir, [*interpretations, *offered])
-        corrections.check_quotes(interpretations, texts)
+    if interpreted or offered:
+        texts, pages = _clauses(source, sources_dir, [*interpreted, *offered])
+        interpretations.check_quotes(interpreted, texts)
         trying = {id(edit) for edit in _held(offered, texts, warnings)}
         chosen = {id(edit) for edit in declared} | trying
         # In module order, each interpretation on its clause's page here.
         placed = [
             (
-                corrections.paged(edit, pages)
-                if isinstance(edit, corrections.Interpret)
+                interpretations.paged(edit, pages)
+                if isinstance(edit, corrections.Interpretation)
                 else edit,
                 id(edit) in trying,
             )
@@ -767,10 +796,10 @@ def _produce(
         held = [
             edit
             for edit, tried in placed
-            if tried and isinstance(edit, corrections.Interpret)
+            if tried and isinstance(edit, corrections.Interpretation)
         ]
     else:
-        held: list[corrections.Interpret] = []
+        held: list[corrections.Interpretation] = []
     if declared:
         try:
             spec, _, comments = corrections.apply_with_comments(
@@ -796,13 +825,13 @@ def _produce(
 def _clauses(
     source: _Source,
     sources_dir: Path | None,
-    interpretations: Sequence[corrections.Interpret],
+    interpreted: Sequence[corrections.Interpretation],
 ) -> tuple[dict[str, list[str]], dict[str, int] | None]:
     """The text of each clause interpreted constraints are held to, and each
     clause's page in this copy, from the PDF's outline or the RFC's pages."""
     if source.transcribed:
         raise CorrectionError(
-            f"{interpretations[0].cited}: interpreted constraints are checked"
+            f"{interpreted[0].at()}: interpreted constraints are checked"
             " against a 3GPP docx or an RFC's text, and a transcription is"
             " neither"
         )
@@ -817,17 +846,17 @@ def _clauses(
 
 
 def _held(
-    offered: Sequence[corrections.Interpret],
+    offered: Sequence[corrections.Interpretation],
     texts: dict[str, list[str]],
     warnings: list[str],
-) -> list[corrections.Interpret]:
+) -> list[corrections.Interpretation]:
     """Of the interpretations `offered`, those whose every quote the copy
-    prints in its clause (`interpret.check_quotes`); the rest are reported as
+    prints in its clause (`interpretations.check_quotes`); the rest are reported as
     not carried, with what the clause lacks."""
     held = []
     for edit in offered:
         try:
-            corrections.check_quotes([edit], texts)
+            interpretations.check_quotes([edit], texts)
         except CorrectionError as error:
             warnings.append(f"not carried: {error}")
             continue
@@ -839,7 +868,7 @@ def _applicable(
     spec: ast.Specification,
     comments: formatter.Comments,
     declared: list[corrections.Declaration],
-    held: list[corrections.Interpret],
+    held: list[corrections.Interpretation],
     warnings: list[str],
 ) -> list[corrections.Declaration]:
     """`declared` without the offered interpretations the copy's corrected

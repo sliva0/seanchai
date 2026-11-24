@@ -1000,7 +1000,7 @@ a category and the ABNF disagree
 
 What a clause states in prose of an AVP's value or presence, its layout, a
 range, a condition on its siblings, is no structure a document prints. TS
-29.272's is read by hand and declared as interpreted constraints, each rule
+29.272's is read by hand and written as interpreted constraints, each rule
 pinned to the sentences it was read from; [constraints.md](constraints.md)
 gives the kinds, the codecs, how far to trust them and how to add them.
 

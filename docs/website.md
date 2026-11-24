@@ -106,9 +106,11 @@ have:
   included;
 - `source`: section and page, for a link into the source;
 - `avp`;
-- `correction`: the citation of a `;;` note;
+- `correction`: the citation of a `;;` note, a correction's
+  `TS29.272.py#area-scope-code` or an interpretation's
+  `TS29.272.dadx#imei-digits`;
 - `kind`: `comment` for a `;;` comment, `correction-note` for one citing a
-  correction.
+  correction or an interpretation.
 
 Tokens carry no highlighting. The site highlights with
 `syntax/dad.tmLanguage.json`, the editors' grammar. A line has `anchor` (the
@@ -118,7 +120,8 @@ file changes, `warning`.
 Correction reasons come from the corpus's `corrections.json`
 ([corrections.md](corrections.md#the-corrections-record)), so a plain
 `pip install` has them. `--corrections DIRECTORY` reads them from a checkout's
-correction modules instead. A note citing a correction the record lacks is
+correction modules instead, and with it `--interpretations DIRECTORY` its
+interpretations files. A note citing a correction the record lacks is
 refused as a stale record.
 
 ### Blocks

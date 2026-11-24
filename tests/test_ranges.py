@@ -187,6 +187,67 @@ def test_an_acceptance_matching_no_finding_is_reported_stale_not_widened(tmp_pat
     ]
 
 
+_DADX = """\
+; Interprets: 3GPP TS 29.999
+
+
+; Type: Interpreted Constraints
+; Id: spanned
+; AVP: A
+; Section: 7.3.1
+; Versions: 19.5.0 ;; read at its last version
+"Q."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: adopted
+; AVP: B
+; Section: 7.3.2
+; Versions: 19.5.0
+"Q."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: covering
+; AVP: C
+; Section: 7.3.3
+; Versions: 19.0.0..*
+"Q."
+    text-only
+"""
+
+
+def test_an_interpretations_file_widens_its_versions_lines_alone(tmp_path):
+    """Within the release a block's range spans it is widened as a
+    correction is; to another release only once its quotes were found there.
+    Nothing but the `; Versions:` value moves."""
+    path = tmp_path / "TS29.999.dadx"
+    path.write_text(_DADX, encoding="utf-8")
+
+    within = _ranges.expand_interpretations(tmp_path, "3GPP TS 29.999", "19.6.0")
+    assert within.widened == [
+        "TS29.999.dadx:8: versions 19.5.0 -> 19.5.0..19.6.0",
+        "TS29.999.dadx:17: versions 19.5.0 -> 19.5.0..19.6.0",
+    ]
+    assert path.read_text(encoding="utf-8") == _DADX.replace(
+        "; Versions: 19.5.0", "; Versions: 19.5.0..19.6.0"
+    )
+
+    path.write_text(_DADX, encoding="utf-8")
+    other = _ranges.expand_interpretations(
+        tmp_path, "3GPP TS 29.999", "18.7.0", adopted={"TS29.999.dadx#adopted"}
+    )
+    assert other.widened == ["TS29.999.dadx:17: versions 19.5.0 -> 18.7.0..19.5.0"]
+    assert path.read_text(encoding="utf-8") == _DADX.replace(
+        "; Versions: 19.5.0\n", "; Versions: 18.7.0..19.5.0\n"
+    )
+    assert _ranges.expand_interpretations(
+        tmp_path / "none", "3GPP TS 29.999", "18.7.0"
+    ) == _ranges.Expansion([], [])
+
+
 def test_a_range_built_by_an_expression_is_left_for_a_person(tmp_path):
     path = tmp_path / "TS29.999.py"
     text = _PYTHON.replace("versions='18.6.0'", 'versions=VersionRange.exact("18.6.0")')

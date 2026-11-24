@@ -4,10 +4,12 @@ check of the hole record against the corpus.
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Sequence
 
 from .. import corpus, model
-from ..dad import ast, corrections
+from .._versions import VersionRange, spans
+from ..dad import ast, corrections, interpretations
 from ._constraints import CONSTRAINT_RULES, _constraints
 from ._definitions import (
     _applications_agree_with_headers,
@@ -139,6 +141,72 @@ def lint_with_corpus(
         *_constraints(spec, index, lambda reference: _cited(books, spec, reference)),
     ]
     return accept(spec, _ordered(findings), acceptances)
+
+
+def lint_interpretations(
+    specification: str,
+    declared: Sequence[interpretations.Interpretation],
+    books: corpus.Corpus | None,
+) -> list[tuple[corpus.Entry, list[Finding]]]:
+    """Check an interpretations file's blocks against each corrected copy
+    `books` holds of `specification`, the document they interpret, as its
+    `; Interprets:` names it: in each copy whose
+    version a block's range spans, the `constraint-*` rules, read as the
+    copy would read the block merged in place of its own. Each finding's
+    message opens with the block's line in the file. A copy no block spans
+    is not listed; without `books` nothing is.
+
+    The file's syntax, its rules' shapes, its ids and its clause order are
+    checked as it is read (`interpretations.read`)."""
+    if books is None or not declared:
+        return []
+    reference = ast.spec_ref(specification)
+    checked = []
+    for entry in books:
+        if entry.path.name.endswith(".raw.dad"):
+            continue
+        if ast.spec_ref(entry.spec.specification) != reference:
+            continue
+        held = [
+            item
+            for item in declared
+            if spans(VersionRange.parse(item.versions), entry.spec.version)
+        ]
+        if not held:
+            continue
+        kept = [
+            section
+            for section in entry.spec.sections
+            if not isinstance(section, ast.InterpretedConstraints)
+        ]
+        merged = entry.spec.model_copy(
+            update={"sections": (*kept, *(item.node for item in held))}
+        )
+        index = _index(merged)
+
+        findings = _constraints(
+            merged, index, lambda name, spec=merged: _cited(books, spec, name)
+        )
+        checked.append(
+            (entry, _ordered([_at_line(each, held, len(kept)) for each in findings]))
+        )
+    return checked
+
+
+def _at_line(
+    finding: Finding,
+    held: Sequence[interpretations.Interpretation],
+    start: int,
+) -> Finding:
+    """`finding` naming the line of the block it is about, `held[i]` merged as
+    the section at `start + i`."""
+    path = finding.paths[0] if finding.paths else ()
+    if len(path) < 2 or not isinstance(path[1], int) or path[1] < start:
+        return finding
+    item = held[path[1] - start]
+    return dataclasses.replace(
+        finding, message=f"line {item.lines[0]}: {finding.message}"
+    )
 
 
 def _cited(

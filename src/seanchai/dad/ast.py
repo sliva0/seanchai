@@ -63,6 +63,8 @@ __all__ = [
     "GroupedAvp",
     "InformationElements",
     "InlineText",
+    "InterpretationBlock",
+    "Interpretations",
     "InterpretedConstraints",
     "LengthRule",
     "LengthUnit",
@@ -1287,8 +1289,9 @@ ELEMENT_COLUMNS = ("Name", "AVP", "Cat")
 # TBCD-string", "in the range of 0 to 255", "shall only be present when
 # Non-IP-PDN-Type-Indicator is set to TRUE (1)". No document prints these as
 # structure, so no extractor reads them: a person reads the clause and
-# declares what it says (`corrections.Interpret`), pinned to the sentence it
-# was read from, and only a corrected file holds the block. The kinds are a
+# writes what it says in the document's interpretations file
+# (`Interpretations`, `edits/interpretations/<SpecRef>.dadx`), pinned to the
+# sentence it was read from, and only a corrected file holds the block. The kinds are a
 # closed set, so a reader can check every rule without an expression
 # language; anything else the clause states is kept as `text-only`.
 
@@ -1665,9 +1668,10 @@ class InterpretedConstraints(Node):
     printing the quote, an information element's description. `versions` is
     the range of document versions the quotes were checked against.
 
-    Only a correction writes the block (`corrections.Interpret`), so only a
-    corrected file holds one, and the format marks it interpreted: nothing
-    in it is structure the document prints.
+    Only the document's interpretations file writes the block
+    (`InterpretationBlock`, merged in as the corrections are applied), so
+    only a corrected file holds one, and the format marks it interpreted:
+    nothing in it is structure the document prints.
     """
 
     type: Literal["Interpreted Constraints"] = "Interpreted Constraints"
@@ -1720,6 +1724,50 @@ class InterpretedConstraints(Node):
         if quotes and rules:
             readings.append(Reading(quotes=tuple(quotes), rules=tuple(rules)))
         return tuple(readings)
+
+
+_ID_PATTERN = r"^[a-z0-9]+(-[a-z0-9]+)*$"
+
+
+class InterpretationBlock(InterpretedConstraints):
+    """An Interpreted Constraints block as a `.dadx` file writes it by hand:
+    `id`, its `; Id:` line, names it where the corrected file's note cites it
+    (`TS29.272.dadx#imei-digits`) and the corrections record keys it. No
+    page: a copy's page is read from its source as the block is merged."""
+
+    id: Annotated[str, Field(pattern=_ID_PATTERN)]
+
+    @pydantic.model_validator(mode="after")
+    def _unpaged(self) -> InterpretationBlock:
+        if self.source.page is not None:
+            raise ValueError("a page is read from each copy's source, not written")
+        return self
+
+    @property
+    def merged(self) -> InterpretedConstraints:
+        """The block as a corrected file prints it, without its id."""
+        values = {
+            name: getattr(self, name) for name in InterpretedConstraints.model_fields
+        }
+        return InterpretedConstraints(**values)
+
+
+class Interpretations(Node):
+    """One `.dadx` file: what a person read in one document's prose, its
+    `; Interprets:` header naming the document as `; Specification:` does,
+    then its blocks in the document's clause order."""
+
+    interprets: InlineText  # "3GPP TS 29.272"
+    sections: tuple[InterpretationBlock, ...]
+
+    @pydantic.model_validator(mode="after")
+    def _unique_ids(self) -> Interpretations:
+        seen: set[str] = set()
+        for each in self.sections:
+            if each.id in seen:
+                raise ValueError(f"the id {each.id!r} names two blocks")
+            seen.add(each.id)
+        return self
 
 
 def node_at(root: Node, path: TreePath) -> Any:

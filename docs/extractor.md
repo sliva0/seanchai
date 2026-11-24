@@ -116,7 +116,7 @@ Corrections and acceptances are scoped the same way, per module.
 Interpretations are not: one applies only in the releases its own range
 spans, and is carried to another release only by `--expand-ranges` once its
 quotes are found there
-([corrections.md](corrections.md#interpreted-constraints)).
+([constraints.md](constraints.md#the-interpretations-file)).
 
 ### Quirks
 

@@ -1,1 +1,1 @@
-au BufRead,BufNewFile *.dad setfiletype dad
+au BufRead,BufNewFile *.dad,*.dadx setfiletype dad

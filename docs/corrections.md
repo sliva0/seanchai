@@ -14,13 +14,17 @@ failure.
 | exclusions | clauses the document has not finished, left out of both files | same file, `[[exclude]]` |
 | extractor code | exact-match structure that fails loudly on its own | `src/seanchai/extractor/` |
 | corrections | data that parses but is wrong | `edits/corrections/<SpecRef>.py` |
-| interpretations | what a clause's prose says of an AVP's value or presence | same file, `Interpret` |
+| interpretations | what a clause's prose says of an AVP's value or presence | `edits/interpretations/<SpecRef>.dadx` |
 | acceptances | linter notes a clause makes deliberate; no data changes | same file, `Accept` |
 
 [extractor.md](extractor.md#source-declarations) covers input patches,
 quirks and exclusions, and [transcriptions](extractor.md#transcriptions).
 This file covers corrections and acceptances
-(`src/seanchai/dad/corrections.py`).
+(`src/seanchai/dad/corrections.py`). Interpretations are no corrections: a
+correction fixes what a document misprints, an interpretation adds what its
+prose says. They are written by hand in the block syntax, not in Python, and
+[constraints.md](constraints.md#the-interpretations-file) covers them; the
+corrected file and the record cite them as the corrections are cited.
 
 ## The file
 
@@ -59,7 +63,8 @@ The node is rebuilt through pydantic, so a wrong `field` or value fails.
   the releases its range spans, to an older undeclared release below them
   and to a newer one past them, checked as ever
   ([extractor.md](extractor.md#releases)); an interpretation only to the
-  releases its range spans ([below](#interpreted-constraints)). Within a
+  releases its range spans
+  ([constraints.md](constraints.md#the-interpretations-file)). Within a
   release the range only warns: `regenerate` reports a parsed version
   outside it but still applies the declaration. Write it as a string literal
   so `--expand-ranges` can rewrite it
@@ -140,100 +145,6 @@ row, and the file must list the AVP as re-used.
 There is no free-form edit, `move` or `split`. A new structural case gets a
 named operation with its own `expect`.
 
-## Interpreted constraints
-
-`Interpret` declares what a person read in a clause's prose about one AVP's
-value or presence, as rules of a closed set of kinds, each after the
-sentences it was read from (`src/seanchai/dad/interpret.py`). It inserts an
-`Interpreted Constraints` block
-([grammar.md](grammar.md#interpreted-constraints)) into the corrected file,
-in clause order after the last block of its clause or one before it, marked
-on its `; Type:` line:
-
-```python
-from seanchai.dad.ast import Codec
-from seanchai.dad.interpret import Interpret, encoding, exclude, reading
-
-CORRECTIONS += [
-    Interpret(
-        id="visited-plmn-id-layout",
-        avp="Visited-PLMN-Id",
-        section="7.3.9",
-        readings=(
-            reading(
-                (
-                    "This AVP shall contain the concatenation of MCC and MNC.",
-                    "The content of this AVP shall be encoded as an octet"
-                    " string according to table 7.3.9-1.",
-                ),
-                encoding(Codec.PLMN_ID),
-            ),
-        ),
-        versions="19.6.0",
-    ),
-    Interpret(
-        id="apn-configuration-context-identifier",
-        avp="Context-Identifier",
-        within="APN-Configuration",
-        section="7.3.35",
-        readings=(
-            reading(
-                "The Context-Identifier in the APN-Configuration AVP shall"
-                " identify that APN configuration, and it shall not have a"
-                " value of zero.",
-                exclude(0),
-            ),
-        ),
-        versions="19.6.0",
-    ),
-]
-```
-
-```dad
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.py#visited-plmn-id-layout)
-```
-
-- The rules are built by `octets`, `digits` and `characters` (`length`),
-  `range_of`, `exclude`, `encoding` and `element`, `present_if`,
-  `absent_if`, `requires` and `excludes` over `present`, `equals` and `bit`
-  conditions (a bare name is `present`), `default`, `bits_at_most_one`,
-  `bits_at_least_one`, `bits_set`, `bits_clear` and `bits_only`,
-  `members_at_least_one` and `members_only`, `unique`, `values_if` over
-  conditions as the predicates', and `text_only`.
-- `command` (with `application_id`) or `within` scopes the rules to the AVP
-  as a member of that command or grouped AVP; `table` names the table
-  printing the quotes, an information element's description.
-- Applying it expects the corrected file to hold every AVP it names, one
-  command of the scope's name, the AVP in the command's or the grouped
-  AVP's printed body, and no other block for the same AVP, scope and
-  clause.
-- `seanchai corpus regenerate` holds every quote to the clause it cites:
-  it must be within one paragraph or table cell of the clause once
-  whitespace is collapsed, as the extractor reads it. A miss fails the
-  document, as an `expect` does. A transcription has no source text to hold
-  a quote to, so a module for one is refused.
-- The block's `; Page:` is not declared: it is the clause's page in the copy
-  corrected, from the PDF's outline, or for an RFC the page its section
-  starts on, which `regenerate` reads from the source, so that one
-  declaration serves the copies of several releases. Applied without the
-  source (`seanchai corpus correct`), a block carries no page.
-- `reason` is not declared: the record holds the quotes.
-- An interpretation applies only to copies of the releases its range spans,
-  since whether a clause prints a sentence is a fact of each copy. Another
-  release's are not applied to a copy, but offered: `regenerate` counts them
-  in a warning, and with `--expand-ranges`, on a copy of a release no
-  interpretation of the module spans, it holds the quotes of each of the
-  nearest reviewed release's (the oldest above, else the newest below) to
-  the copy's text. Each it finds is applied and its range widened to the
-  copy; each it does not is reported as `not carried:` with the sentence the
-  clause lacks, and stays out. Release 18's copy holds 152 of TS 29.272's
-  157; the five it does not read sentences Release 19 added. A
-  declaration built in a comprehension, whose id is not a literal, is widened
-  by hand.
-
-[consumers.md](consumers.md#interpreted-constraints) describes the kinds and
-codecs and how far to trust them.
-
 ## Acceptances
 
 `Accept` marks a linter note as deliberate on a clause's word, such as an
@@ -290,7 +201,7 @@ holds:
 
 A document with no declarations for its release has no entry. The file is
 sorted JSON, one field per line. `tests/test_correction_record.py` fails when
-it does not match the modules.
+it does not match the modules and the interpretations files.
 
 ## Output
 
@@ -312,7 +223,8 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 - A deletion's note replaces the deleted line:
   `;; deleted: AVP table row 'Load' (TS29.229.py#load-row-not-local)`.
 - An interpretation's block is marked `;; interpreted:` on its `; Type:`
-  line.
+  line, citing its file and `; Id:`:
+  `;; interpreted: (TS29.272.dadx#imei-digits)`.
 - An inserted row is marked `;; inserted:`, with its source where the
   `Insert` gives one:
   `;; inserted: from clause 6.3.43 (TS29.229.py#wildcarded-impu-row-missing)`.
@@ -327,11 +239,15 @@ returns them merged with the notes.
 
 ## CLI
 
-- `seanchai corpus regenerate` and `seanchai lint` read `edits/corrections/`.
+- `seanchai corpus regenerate` and `seanchai lint` read `edits/corrections/`;
+  `regenerate` also reads `edits/interpretations/` (`--interpretations`).
 - `seanchai corpus extract … --corrections DIR` corrects one extraction; a
   document without a module is fine.
 - `seanchai corpus correct RAW.dad --corrections DIR -o OUT.dad` corrects one
   raw file and requires a module with at least one correction.
+- `extract`, `extract-rfc` and `correct` merge the interpretations of
+  `--interpretations DIR` after the corrections, no quote checked and no
+  block paged.
 
 For one file the directory must be given, since loading it runs Python. The
 module name comes from `; Specification:` through `ast.spec_ref`.

@@ -37,7 +37,7 @@ from .corpus import (
     Entry,
     installed_directory,
 )
-from .dad import abnf, ast, corrections, formatter, parser
+from .dad import abnf, ast, corrections, formatter, interpretations, parser
 from .downloader.catalog import Catalog, load_catalog
 from .export_schema import (
     GENERATOR,
@@ -91,7 +91,9 @@ _WORD = re.compile(
     r';;[^\n]*?(?=;;|\n|$)|https?://[^\s]+|"(?:[^"\\]|\\.)*"'
     r"|[A-Za-z0-9_]+(?:[.\-/][A-Za-z0-9_*]+)*"
 )
-_CORRECTION = re.compile(r"\(([\w.-]+\.py#[\w-]+)\)")
+# A declaration a note cites: a corrections module's, or an interpretations
+# file's block.
+_CORRECTION = re.compile(r"\(([\w.-]+\.(?:py|dadx)#[\w-]+)\)")
 _DIRECTIVE = re.compile(r"; ([\w-]+):")
 # The TextMate grammar's source of truth, package data as `specs.toml` is.
 _GRAMMAR = Path(__file__).resolve().parent / "dad" / "syntax" / "dad.tmLanguage.json"
@@ -1043,10 +1045,14 @@ def _raw_path(entry: Entry) -> Path | None:
 
 class _Declarations:
     """The corrections an export reads: the corpus's record, or the modules
-    in a given directory, which it executes."""
+    in a given directory, which it executes, with the interpretations files
+    in another."""
 
-    def __init__(self, directory: Path | None) -> None:
+    def __init__(
+        self, directory: Path | None, interpretations_directory: Path | None = None
+    ) -> None:
         self._directory = directory
+        self._interpretations = interpretations_directory
         self._records: dict[Path, _correction_record.CorrectionRecord] = {}
 
     def _record_path(self, entry: Entry) -> Path | None:
@@ -1063,7 +1069,11 @@ class _Declarations:
         spec = entry.spec
         if self._directory is not None:
             declared = corrections.in_release(
-                corrections.load(self._directory, spec.specification), spec.version
+                [
+                    *corrections.load(self._directory, spec.specification),
+                    *interpretations.load(self._interpretations, spec.specification),
+                ],
+                spec.version,
             )
             return (
                 _correction_record.RecordedDocument.of(spec, declared)
@@ -1719,6 +1729,7 @@ def export_corpus(
     *,
     wireshark: Path | None = None,
     corrections_directory: Path | None = None,
+    interpretations_directory: Path | None = None,
     specifications: Path | None = None,
     include_pdfs: bool = False,
 ) -> Index:
@@ -1726,9 +1737,10 @@ def export_corpus(
 
     `wireshark` is a Wireshark Diameter dictionary directory whose names the
     export adds. `corrections_directory` reads corrections from the modules
-    there (executing them) instead of the corpus's record. `specifications`
-    is a `seanchai corpus download` to copy RFC texts from, and with
-    `include_pdfs` the source PDFs. `output` is untouched until the export
+    there (executing them) instead of the corpus's record, and
+    `interpretations_directory` with it the interpretations files there.
+    `specifications` is a `seanchai corpus download` to copy RFC texts from,
+    and with `include_pdfs` the source PDFs. `output` is untouched until the export
     succeeds. An `output` holding anything but a previous export, and an
     empty corpus, are refused.
     """
@@ -1740,7 +1752,7 @@ def export_corpus(
             books,
             staged,
             wireshark,
-            _Declarations(corrections_directory),
+            _Declarations(corrections_directory, interpretations_directory),
             specifications,
             include_pdfs,
         )

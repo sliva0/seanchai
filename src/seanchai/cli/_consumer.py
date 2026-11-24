@@ -543,6 +543,12 @@ def dictionary_command(
     " corrections.json. This executes Python from the directory.",
 )
 @click.option(
+    "--interpretations",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="With --corrections, read the interpretations from the <SpecRef>.dadx"
+    " files here.",
+)
+@click.option(
     "--specifications",
     type=click.Path(file_okay=False, path_type=Path),
     help="A `seanchai corpus download` directory to copy RFC texts from.",
@@ -558,6 +564,7 @@ def export_command(
     corpus_paths: tuple[Path, ...],
     wireshark: Path | None,
     corrections: Path | None,
+    interpretations: Path | None,
     specifications: Path | None,
     include_pdfs: bool,
 ) -> None:
@@ -584,6 +591,11 @@ def export_command(
             "--include-pdfs needs --specifications,"
             " a `seanchai corpus download` directory"
         )
+    if interpretations is not None and corrections is None:
+        raise click.UsageError(
+            "--interpretations is read with --corrections, in place of the"
+            " corpus's corrections.json"
+        )
     if wireshark is not None:
         _need_wireshark(wireshark)
     if specifications is not None and not specifications.is_dir():
@@ -599,6 +611,7 @@ def export_command(
                 output,
                 wireshark=wireshark,
                 corrections_directory=corrections,
+                interpretations_directory=interpretations,
                 specifications=specifications,
                 include_pdfs=include_pdfs,
             )

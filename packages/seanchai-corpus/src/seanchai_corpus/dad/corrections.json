@@ -3395,97 +3395,617 @@
   },
   "29272-i70": {
    "edits": {
-    "TS29.272.py#3gpp2-meid-element": {
+    "TS29.272.dadx#3gpp2-meid-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.6: 'For further details on the encoding of the AVP data, refer to the encoding of the Mobile Identity (MEID) octets 3 to 10 in 3GPP2 A.S0022 [28] Annex A.'"
     },
-    "TS29.272.py#5qi-element": {
+    "TS29.272.dadx#5qi-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.238: 'See TS 23.501 [69] for allowed values.'"
     },
-    "TS29.272.py#a-msisdn-e164": {
+    "TS29.272.dadx#a-msisdn-e164": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.157: 'This AVP contains an A-MSISDN, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
-    "TS29.272.py#access-restriction-data-bits": {
+    "TS29.272.dadx#access-restriction-data-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 7.3.31/1: 'NOTE 2: Bits 11 and 12 are only used when bit 4 is not set.'"
+    },
+    "TS29.272.dadx#aese-communication-pattern-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
+    },
+    "TS29.272.dadx#aia-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
+    },
+    "TS29.272.dadx#allocation-retention-priority-pre-emption-capability-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1).'"
+    },
+    "TS29.272.dadx#allocation-retention-priority-pre-emption-vulnerability-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0).'"
+    },
+    "TS29.272.dadx#ambr-extended-max-requested-bw-dl": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+    },
+    "TS29.272.dadx#ambr-extended-max-requested-bw-ul": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+    },
+    "TS29.272.dadx#apn-configuration-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero.'; 'Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription.'; 'NOTE: If interworking with MAP is needed, the Context-Identifier will be in the range of 1 and 50.'"
+    },
+    "TS29.272.dadx#apn-configuration-non-ip-delivery": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1).'"
+    },
+    "TS29.272.dadx#apn-configuration-pdn-gw-allocation-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info AVP. Therefore, it shall not be present if MIP6-Agent-Info is not present.'"
+    },
+    "TS29.272.dadx#apn-configuration-profile-additional-context": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.34: 'If present, the Additional-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than one types of APNs'"
+    },
+    "TS29.272.dadx#apn-configuration-profile-default-context": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.34: 'The Context-Identifier AVP shall identify the per subscriber's default APN configuration.'"
+    },
+    "TS29.272.dadx#apn-configuration-profile-third-context": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.34: 'If present, the Third-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than two types of APNs'"
+    },
+    "TS29.272.dadx#apn-configuration-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
+    },
+    "TS29.272.dadx#apn-configuration-scef-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
+    },
+    "TS29.272.dadx#apn-configuration-served-party-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
+    },
+    "TS29.272.dadx#apn-configuration-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs.'"
+    },
+    "TS29.272.dadx#apn-configuration-specific-apn-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.82: 'It shall only be present in the APN configuration when the APN is a wild card APN.'"
+    },
+    "TS29.272.dadx#apn-oi-replacement-labels": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.32: 'The contents of the APN-OI-Replacement AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
+    },
+    "TS29.272.dadx#autn-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.55: 'This AVP shall contain the AUTN. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#carrier-frequency-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.221: 'it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62]).'"
+    },
+    "TS29.272.dadx#cell-global-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.119: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#client-identity-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.91: 'The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#collection-period-m7-nr-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.249: 'The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes.'"
+    },
+    "TS29.272.dadx#coupled-node-diameter-id-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.177: 'This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6.'"
+    },
+    "TS29.272.dadx#csg-id-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.79: 'Values are coded according to TS 23.003 [3].'; 'Unused bits (least significant) shall be padded with zeros.'"
+    },
+    "TS29.272.dadx#dl-buffering-suggested-packet-count-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.188: '\"Extended DL Data Buffering NOT REQUESTED\" 0'; '\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1'; '\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0'"
+    },
+    "TS29.272.dadx#dsr-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags.'; 'In the \"PDN subscription contexts Withdrawal\" case, the Context-Identifier shall not be associated with the default APN configuration.'; 'For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero.'"
+    },
+    "TS29.272.dadx#dsr-edrx-related-rat": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted.'"
+    },
+    "TS29.272.dadx#dsr-flags-exclusive-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
+    },
+    "TS29.272.dadx#dsr-flags-s7a-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
+    },
+    "TS29.272.dadx#dsr-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present if the \"Delete monitoring events\" bit is set in the DSR-Flags.'"
+    },
+    "TS29.272.dadx#dsr-ss-code": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set or the \"LCS Withdrawal\" bit is set in the DSR-Flags.'"
+    },
+    "TS29.272.dadx#dsr-trace-reference": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"Trace Data Withdrawal\" bit is set in the DSR-Flags.'"
+    },
+    "TS29.272.dadx#dsr-ts-code": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted.'"
+    },
+    "TS29.272.dadx#e-utran-cell-global-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.117: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#eca-equipment-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#edrx-cycle-length-value-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.216: 'The contents of eDRX-Cycle-Length-Value shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\"'; 'the 4 most significant bits of the octet in this AVP shall be set to 0.'"
+    },
+    "TS29.272.dadx#eps-subscribed-qos-profile-non-gbr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.37: 'values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to GBR bearers, cannot be sent over S6a/S6d.'; 'The values allowed for this AVP over the S6a/S6d interface are only those associated to non-GBR bearers, as indicated in TS 23.008 [30]'"
+    },
+    "TS29.272.dadx#error-diagnostic-values": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'"
+    },
+    "TS29.272.dadx#ethernet-pdn-type-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.232: 'The default value when this AVP is not present is FALSE (0).'"
+    },
+    "TS29.272.dadx#event-threshold-event-1f-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.172: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-event-1i-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.173: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-rsrp-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.143: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-rsrq-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.144: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-sinr-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.246: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#ext-pdp-type-value": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.75A: 'Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6.'"
+    },
+    "TS29.272.dadx#geodetic-information-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.124: 'For details and octet encoding, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#geographical-information-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.123: 'For details and octet encoding, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#gmlc-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.109: 'The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of the V-GMLC associated with the serving node.'"
+    },
+    "TS29.272.dadx#gmlc-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.85: 'This AVP shall contain the ISDN number of the GMLC in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#group-plmn-id-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.191: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.191-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#group-service-id-operator-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.190: 'IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so.'"
+    },
+    "TS29.272.dadx#ida-eps-location-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS location information was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-eps-user-state": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS user state was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-ims-voice-over-ps-sessions-supported": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#ida-last-ue-activity-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#ida-local-time-zone": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if the Local Time Zone was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-monitoring-event-config-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'This Information Element shall be present if Monitoring event configuration is included in IDR.'"
+    },
+    "TS29.272.dadx#ida-monitoring-event-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported.'"
+    },
+    "TS29.272.dadx#ida-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#imei-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.4: 'It should consist of 14 digits, including the 8-digit Type Allocation Code (TAC) and the 6-digit Serial Number (SNR). It may also include a 15th digit.'"
+    },
+    "TS29.272.dadx#interworking-5gs-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.231: 'The default value when this AVP is not present is NOT-SUBSCRIBED (0).'"
+    },
+    "TS29.272.dadx#kasme-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.56: 'This AVP shall contain the K_ASME. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#list-of-measurements-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.139: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
+    },
+    "TS29.272.dadx#location-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.121: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#mbsfn-area-id-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.220: 'it shall contain the MBSFN Area ID value, in the range of 0..255 (see TS 36.331 [62]).'"
+    },
+    "TS29.272.dadx#mdt-allowed-plmn-id-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.185: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.185/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#mdt-user-consent-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.148: 'The default value when this AVP is not present in ULA is CONSENT_NOT_GIVEN (0).'; 'Absence of this AVP in IDR shall be interpreted as the MDT-User-Consent has not been modified.'"
+    },
+    "TS29.272.dadx#measurement-quantity-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.171: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Measurement quantity.'"
+    },
+    "TS29.272.dadx#mip-home-agent-host-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.43: 'Destination-Host shall contain the hostname of the PDN-GW, formatted as described in TS 29.303 [38], clause 4.3.2.'"
+    },
+    "TS29.272.dadx#mip-home-agent-host-destination-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.43: 'Destination-Realm shall be formatted as:'; 'epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
+    },
+    "TS29.272.dadx#mip6-agent-info-fqdn-preferred": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.45: 'FQDN shall be used if known to the MME/SGSN/HSS.'"
+    },
+    "TS29.272.dadx#mip6-agent-info-home-link-prefix": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.45: 'The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
+    },
+    "TS29.272.dadx#mme-number-for-mt-sms-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.159: 'This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-maximum-number-of-reports": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-monitoring-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'Monitoring-Type AVP shall be ignored for deletion of an event (i.e. when SCEF-Reference-ID-for-Deletion/SCEF-Reference-ID-for-Deletion-Ext AVP is present).'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-scef-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'"
+    },
+    "TS29.272.dadx#monitoring-event-report-pdn-connectivity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.196: 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
+    },
+    "TS29.272.dadx#monitoring-event-report-reachability-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)'"
+    },
+    "TS29.272.dadx#non-ip-data-delivery-mechanism-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.205: 'The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0).'"
+    },
+    "TS29.272.dadx#non-ip-pdn-type-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.204: 'The default value when this AVP is not present is FALSE (0).'"
+    },
+    "TS29.272.dadx#nor-alert-reason": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages.'"
+    },
+    "TS29.272.dadx#nor-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection'"
+    },
+    "TS29.272.dadx#nor-homogeneous-support": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This Information Element shall be present if Homogeneous Support of IMS Voice Over PS Sessions is modified to one of the values \"SUPPORTED\" or \"NOT_SUPPORTED\".'"
+    },
+    "TS29.272.dadx#nor-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'"
+    },
+    "TS29.272.dadx#nor-monitoring-event-config-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'"
+    },
+    "TS29.272.dadx#nor-nor-flags": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'Absence of this information element shall be interpreted as all bits set to 0.'"
+    },
+    "TS29.272.dadx#nor-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'For establishment of non-emergency PDN connections, it shall be present if the selected PDN-GW is present and is particular for one specific APN and not common to all the APNs.'; 'For establishment of emergency PDN connections (i.e., the Emergency-Services AVP is present, with the Emergency-Indication flag set), this AVP shall be left absent.'"
+    },
+    "TS29.272.dadx#nor-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface.'"
+    },
+    "TS29.272.dadx#nor-ue-srvcc-capability": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request.'"
+    },
+    "TS29.272.dadx#nor-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when the PDN GW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.272.dadx#nr-cell-global-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.251: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#omc-id-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.71: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#operation-mode-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.227: 'The allowed values of Operation-Mode shall be in the range of 0 to 255.'"
+    },
+    "TS29.272.dadx#paging-time-window-length-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.228: 'The contents of Paging-Time-Window-Length shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\"'; 'the 4 least significant bits of the octet in this AVP shall be set to 0.'"
+    },
+    "TS29.272.dadx#pdp-context-ext-pdp-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'The Ext-PDP-Address AVP may be present only if the PDP-Address AVP is present.'; 'If the Ext-PDP-Address AVP is present, then it shall not contain the same address type (IPv4 or IPv6) as the PDP-Address AVP.'"
+    },
+    "TS29.272.dadx#pdp-context-ext-pdp-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'When PDP-Type takes the value Non-IP (HEX 02), the Ext-PDP-Type AVP shall be absent.'"
+    },
+    "TS29.272.dadx#pdp-context-non-ip-delivery": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'The Non-IP-Data-Delivery-Mechanism shall only be present when PDP-Type takes the value Non-IP (HEX 02).'"
+    },
+    "TS29.272.dadx#pdp-context-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'The SCEF-ID shall only be present when Non-IP-Data-Delivery-Mechanism takes the value SCEF-BASED-DATA-DELIVERY (1).'"
+    },
+    "TS29.272.dadx#pdp-type-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.75: 'Octets are coded according to TS 29.002 [24].'; 'The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02).'"
+    },
+    "TS29.272.dadx#positioning-method-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.170: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Positioning Method.'"
+    },
+    "TS29.272.dadx#preferred-data-mode-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.209/1: 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
+    },
+    "TS29.272.dadx#pua-pua-flags": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#qos-subscribed-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.77: 'Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated).'"
+    },
+    "TS29.272.dadx#rand-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.53: 'This AVP shall contain the RAND. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#rat-frequency-selection-priority-id-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.46: 'Values shall be in the range of 1 to 256.'"
+    },
+    "TS29.272.dadx#rds-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.222: 'The default value when this AVP is not present is DISABLED (0).'"
+    },
+    "TS29.272.dadx#regional-subscription-zone-code-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.52: 'It shall contain a Zone Code (ZC) as defined in TS 23.003 [3], clause 4.4.'"
+    },
+    "TS29.272.dadx#relay-node-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.147: 'The default value when this AVP is not present is NOT_RELAY_NODE (0).'"
+    },
+    "TS29.272.dadx#reporting-trigger-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.140: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
+    },
+    "TS29.272.dadx#restoration-priority-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.174: 'Values 1 to 16 are defined, with value 1 as the highest level of priority.'"
+    },
+    "TS29.272.dadx#routing-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.120: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#service-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.122: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#service-selection-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.36: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\"), or as the wild card APN, i.e., consisting of only one ASCII label, \"*\".'"
+    },
+    "TS29.272.dadx#servicetypeidentity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.95: 'For details on the values of this AVP, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#sgs-mme-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.175: 'This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4.'"
+    },
+    "TS29.272.dadx#sgsn-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#sms-register-request-skip-subscriber-data": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'"
+    },
+    "TS29.272.dadx#software-version-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.5: 'This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3].'"
+    },
+    "TS29.272.dadx#sres-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.60: 'This AVP shall contain the SRES. See TS 33.102 [18].'"
+    },
+    "TS29.272.dadx#ss-code-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.87: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#ss-status-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.88: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#stn-sr-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.39: 'This AVP contains an STN-SR, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#subscribed-vsrvcc-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.150: 'Absence of this AVP in IDR shall be interpreted as the Subscribed-VSRVCC has not been modified.'; 'Absence of this AVP in ULA shall be interpreted as the user is not subscribed to the vSRVCC.'"
+    },
+    "TS29.272.dadx#subscription-data-ambr-not-both-zero": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.2: 'Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\".'"
+    },
+    "TS29.272.dadx#time-zone-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'"
+    },
+    "TS29.272.dadx#trace-collection-entity-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.98: 'The Trace-Collection-Entity AVP is of type Address and contains the IPv4 or IPv6 address of the Trace Collection Entity, as defined in TS 32.422 [23], clause 5.9.'"
+    },
+    "TS29.272.dadx#trace-event-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.70: 'Octets are coded according to TS 32.422 [23].'"
+    },
+    "TS29.272.dadx#trace-interface-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.69: 'Octets are coded according to TS 32.422 [23].'"
+    },
+    "TS29.272.dadx#trace-ne-type-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.68: 'Octets are coded according to TS 32.422 [23].'"
+    },
+    "TS29.272.dadx#trace-reference-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.64: 'This AVP shall contain the concatenation of MCC, MNC and Trace ID, where the Trace ID is a 3 byte Octet String.'; 'The content of this AVP shall be encoded as octet strings according to table 7.3.64/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#tracking-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.118: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#ts-code-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.100: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#ue-reachability-configuration-reachability-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.197: 'For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set.'"
+    },
+    "TS29.272.dadx#ue-usage-type-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.202: 'The allowed values of UE-Usage-Type shall be in the range of 0 to 255.'"
+    },
+    "TS29.272.dadx#ula-subscription-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request.'"
+    },
+    "TS29.272.dadx#ula-ula-flags": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#ulr-mme-number-for-mt-sms": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME.'"
+    },
+    "TS29.272.dadx#ulr-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the message is sent on the S6d interface and the SGSN supports LCS (using MAP based Lg interface) or SMS functionalities or the Gs interface.'"
+    },
+    "TS29.272.dadx#ulr-sms-register-request": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and requests to be registered for SMS.'; 'It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS.'"
+    },
+    "TS29.272.dadx#ulr-ue-srvcc-capability": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN.'"
+    },
+    "TS29.272.dadx#user-id-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.50: 'It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string.'"
+    },
+    "TS29.272.dadx#user-state-reserved": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
+    },
+    "TS29.272.dadx#uva-vplmn-csg-subscription-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set.'"
+    },
+    "TS29.272.dadx#uvr-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/1: 'It shall be present when the message is sent on the S7d interface.'"
+    },
+    "TS29.272.dadx#visited-network-identifier-domain": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.105: 'The AVP shall be encoded as:'; 'mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
+    },
+    "TS29.272.dadx#visited-plmn-id-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.9: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.9-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#xres-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.54: 'This AVP shall contain the XRES. See TS 33.401 [5].'"
     },
     "TS29.272.py#additional-context-identifier-name": {
      "kind": "correction",
      "reason": "clause 7.3.206's heading and body, and the ABNF reference in clause 7.3.34, all spell it Additional-Context-Identifier; only the table row abbreviates it"
-    },
-    "TS29.272.py#aese-communication-pattern-reference-ids": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
-    },
-    "TS29.272.py#aia-ue-usage-type": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
-    },
-    "TS29.272.py#allocation-retention-priority-pre-emption-capability-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1).'"
-    },
-    "TS29.272.py#allocation-retention-priority-pre-emption-vulnerability-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0).'"
-    },
-    "TS29.272.py#ambr-extended-max-requested-bw-dl": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
-    },
-    "TS29.272.py#ambr-extended-max-requested-bw-ul": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
-    },
-    "TS29.272.py#apn-configuration-context-identifier": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero.'; 'Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription.'; 'NOTE: If interworking with MAP is needed, the Context-Identifier will be in the range of 1 and 50.'"
-    },
-    "TS29.272.py#apn-configuration-non-ip-delivery": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1).'"
-    },
-    "TS29.272.py#apn-configuration-pdn-gw-allocation-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info AVP. Therefore, it shall not be present if MIP6-Agent-Info is not present.'"
-    },
-    "TS29.272.py#apn-configuration-profile-additional-context": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.34: 'If present, the Additional-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than one types of APNs'"
-    },
-    "TS29.272.py#apn-configuration-profile-default-context": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.34: 'The Context-Identifier AVP shall identify the per subscriber's default APN configuration.'"
-    },
-    "TS29.272.py#apn-configuration-profile-third-context": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.34: 'If present, the Third-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than two types of APNs'"
-    },
-    "TS29.272.py#apn-configuration-scef-id": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
-    },
-    "TS29.272.py#apn-configuration-scef-realm": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
-    },
-    "TS29.272.py#apn-configuration-served-party-ip-address": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
-    },
-    "TS29.272.py#apn-configuration-service-selection": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs.'"
-    },
-    "TS29.272.py#apn-configuration-specific-apn-info": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.82: 'It shall only be present in the APN configuration when the APN is a wild card APN.'"
-    },
-    "TS29.272.py#apn-oi-replacement-labels": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.32: 'The contents of the APN-OI-Replacement AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
     },
     "TS29.272.py#application-id-vcsg": {
      "kind": "insert",
@@ -3494,34 +4014,6 @@
     "TS29.272.py#area-scope-code": {
      "kind": "correction",
      "reason": "clause 7.3.138's AVP header prints Job-Type's code; table 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624"
-    },
-    "TS29.272.py#autn-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.55: 'This AVP shall contain the AUTN. See TS 33.401 [5].'"
-    },
-    "TS29.272.py#carrier-frequency-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.221: 'it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62]).'"
-    },
-    "TS29.272.py#cell-global-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.119: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#client-identity-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.91: 'The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#collection-period-m7-nr-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.249: 'The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes.'"
-    },
-    "TS29.272.py#coupled-node-diameter-id-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.177: 'This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6.'"
-    },
-    "TS29.272.py#csg-id-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.79: 'Values are coded according to TS 23.003 [3].'; 'Unused bits (least significant) shall be padded with zeros.'"
     },
     "TS29.272.py#dia-lcs-autonomous-self-location-feature-spelling": {
      "kind": "correction",
@@ -3534,54 +4026,6 @@
     "TS29.272.py#dia-lcs-transfer-to-third-party-feature-spelling": {
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, feature bit 11)"
-    },
-    "TS29.272.py#dl-buffering-suggested-packet-count-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.188: '\"Extended DL Data Buffering NOT REQUESTED\" 0'; '\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1'; '\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0'"
-    },
-    "TS29.272.py#dsr-context-identifier": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags.'; 'In the \"PDN subscription contexts Withdrawal\" case, the Context-Identifier shall not be associated with the default APN configuration.'; 'For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero.'"
-    },
-    "TS29.272.py#dsr-edrx-related-rat": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted.'"
-    },
-    "TS29.272.py#dsr-flags-exclusive-bits": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
-    },
-    "TS29.272.py#dsr-flags-s7a-bits": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
-    },
-    "TS29.272.py#dsr-scef-id": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present if the \"Delete monitoring events\" bit is set in the DSR-Flags.'"
-    },
-    "TS29.272.py#dsr-ss-code": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set or the \"LCS Withdrawal\" bit is set in the DSR-Flags.'"
-    },
-    "TS29.272.py#dsr-trace-reference": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"Trace Data Withdrawal\" bit is set in the DSR-Flags.'"
-    },
-    "TS29.272.py#dsr-ts-code": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted.'"
-    },
-    "TS29.272.py#e-utran-cell-global-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.117: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#eca-equipment-status": {
-     "kind": "interpret",
-     "reason": "interpreted from table 6.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
-    },
-    "TS29.272.py#edrx-cycle-length-value-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.216: 'The contents of eDRX-Cycle-Length-Value shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\"'; 'the 4 most significant bits of the octet in this AVP shall be set to 0.'"
     },
     "TS29.272.py#edrx-cycle-length-withdrawal-spelling": {
      "kind": "correction",
@@ -3643,42 +4087,6 @@
      "kind": "correction",
      "reason": "the re-used row cites TS 29.217, which defines eNodeB-Id (clause 5.3.10)"
     },
-    "TS29.272.py#eps-subscribed-qos-profile-non-gbr": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.37: 'values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to GBR bearers, cannot be sent over S6a/S6d.'; 'The values allowed for this AVP over the S6a/S6d interface are only those associated to non-GBR bearers, as indicated in TS 23.008 [30]'"
-    },
-    "TS29.272.py#error-diagnostic-values": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'"
-    },
-    "TS29.272.py#ethernet-pdn-type-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.232: 'The default value when this AVP is not present is FALSE (0).'"
-    },
-    "TS29.272.py#event-threshold-event-1f-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.172: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-event-1i-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.173: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-rsrp-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.143: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-rsrq-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.144: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-sinr-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.246: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#ext-pdp-type-value": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.75A: 'Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6.'"
-    },
     "TS29.272.py#extended-enodeb-id-in-mme-location-information": {
      "kind": "correction",
      "reason": "the MME-Location-Information body (clause 7.3.115) uses the re-used row's spelling; TS 29.217 defines Extended-eNodeB-Id"
@@ -3686,74 +4094,6 @@
     "TS29.272.py#extended-enodeb-id-row-spelling": {
      "kind": "correction",
      "reason": "the re-used row cites TS 29.217, which defines Extended-eNodeB-Id (clause 5.3.15)"
-    },
-    "TS29.272.py#geodetic-information-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.124: 'For details and octet encoding, see TS 29.002 [24].'"
-    },
-    "TS29.272.py#geographical-information-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.123: 'For details and octet encoding, see TS 29.002 [24].'"
-    },
-    "TS29.272.py#gmlc-address-ip": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.109: 'The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of the V-GMLC associated with the serving node.'"
-    },
-    "TS29.272.py#gmlc-number-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.85: 'This AVP shall contain the ISDN number of the GMLC in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#group-plmn-id-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.191: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.191-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
-    "TS29.272.py#group-service-id-operator-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.190: 'IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so.'"
-    },
-    "TS29.272.py#ida-eps-location-information": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS location information was requested within IDR.'"
-    },
-    "TS29.272.py#ida-eps-user-state": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS user state was requested within IDR.'"
-    },
-    "TS29.272.py#ida-ims-voice-over-ps-sessions-supported": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
-    },
-    "TS29.272.py#ida-last-ue-activity-time": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
-    },
-    "TS29.272.py#ida-local-time-zone": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if the Local Time Zone was requested within IDR.'"
-    },
-    "TS29.272.py#ida-monitoring-event-config-status": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'This Information Element shall be present if Monitoring event configuration is included in IDR.'"
-    },
-    "TS29.272.py#ida-monitoring-event-report": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported.'"
-    },
-    "TS29.272.py#ida-rat-type": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
-    },
-    "TS29.272.py#imei-digits": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.4: 'It should consist of 14 digits, including the 8-digit Type Allocation Code (TAC) and the 6-digit Serial Number (SNR). It may also include a 15th digit.'"
-    },
-    "TS29.272.py#interworking-5gs-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.231: 'The default value when this AVP is not present is NOT-SUBSCRIBED (0).'"
-    },
-    "TS29.272.py#kasme-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.56: 'This AVP shall contain the K_ASME. See TS 33.401 [5].'"
     },
     "TS29.272.py#lcs-autonomous-self-location-feature-spelling": {
      "kind": "correction",
@@ -3766,46 +4106,6 @@
     "TS29.272.py#lcs-transfer-to-third-party-feature-spelling": {
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 20)"
-    },
-    "TS29.272.py#list-of-measurements-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.139: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
-    },
-    "TS29.272.py#location-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.121: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#mbsfn-area-id-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.220: 'it shall contain the MBSFN Area ID value, in the range of 0..255 (see TS 36.331 [62]).'"
-    },
-    "TS29.272.py#mdt-allowed-plmn-id-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.185: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.185/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
-    "TS29.272.py#mdt-user-consent-absence": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.148: 'The default value when this AVP is not present in ULA is CONSENT_NOT_GIVEN (0).'; 'Absence of this AVP in IDR shall be interpreted as the MDT-User-Consent has not been modified.'"
-    },
-    "TS29.272.py#measurement-quantity-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.171: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Measurement quantity.'"
-    },
-    "TS29.272.py#mip-home-agent-host-destination-host": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.43: 'Destination-Host shall contain the hostname of the PDN-GW, formatted as described in TS 29.303 [38], clause 4.3.2.'"
-    },
-    "TS29.272.py#mip-home-agent-host-destination-realm": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.43: 'Destination-Realm shall be formatted as:'; 'epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
-    },
-    "TS29.272.py#mip6-agent-info-fqdn-preferred": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.45: 'FQDN shall be used if known to the MME/SGSN/HSS.'"
-    },
-    "TS29.272.py#mip6-agent-info-home-link-prefix": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.45: 'The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
     },
     "TS29.272.py#missing-row-communication-duration-time": {
      "kind": "insert",
@@ -3835,18 +4135,6 @@
      "kind": "insert",
      "reason": "the Communication-Pattern-Set body (clause 7.3.194) uses Stationary-Indication but table 7.3.1/2 omits the row; TS29.336 defines the AVP"
     },
-    "TS29.272.py#mme-number-for-mt-sms-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.159: 'This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#monitoring-event-configuration-maximum-number-of-reports": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
-    },
-    "TS29.272.py#monitoring-event-configuration-monitoring-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'Monitoring-Type AVP shall be ignored for deletion of an event (i.e. when SCEF-Reference-ID-for-Deletion/SCEF-Reference-ID-for-Deletion-Ext AVP is present).'"
-    },
     "TS29.272.py#monitoring-event-configuration-s6a-body": {
      "expect": "Monitoring-Event-Configuration's body, against TS29.336's definition: adds External-Identifier, SCEF-Realm, missing Association-Type, DL-Buffering-Suggested-Packet-Count, Exclude-Identifiers, Include-Identifiers, Maximum-Detection-Time, PLMN-ID-Requested",
      "kind": "accept",
@@ -3858,18 +4146,6 @@
        294
       ]
      ]
-    },
-    "TS29.272.py#monitoring-event-configuration-scef-realm": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'"
-    },
-    "TS29.272.py#monitoring-event-report-pdn-connectivity": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
-    },
-    "TS29.272.py#monitoring-event-report-reachability-information": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)'"
     },
     "TS29.272.py#monitoring-event-report-s6a-body": {
      "expect": "Monitoring-Event-Report's body, against TS29.336's definition: missing Event-Handling, IMEI-Change, Roaming-Information, SCEF-Reference-ID-for-Deletion, SCEF-Reference-ID-for-Deletion-Ext, Service-Report, Terminal-Information, Visited-PLMN-Id",
@@ -3883,121 +4159,9 @@
       ]
      ]
     },
-    "TS29.272.py#non-ip-data-delivery-mechanism-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.205: 'The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0).'"
-    },
-    "TS29.272.py#non-ip-pdn-type-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.204: 'The default value when this AVP is not present is FALSE (0).'"
-    },
-    "TS29.272.py#nor-alert-reason": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages.'"
-    },
-    "TS29.272.py#nor-emergency-services": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection'"
-    },
-    "TS29.272.py#nor-homogeneous-support": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'This Information Element shall be present if Homogeneous Support of IMS Voice Over PS Sessions is modified to one of the values \"SUPPORTED\" or \"NOT_SUPPORTED\".'"
-    },
-    "TS29.272.py#nor-mip6-agent-info": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'"
-    },
-    "TS29.272.py#nor-monitoring-event-config-status": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'"
-    },
-    "TS29.272.py#nor-nor-flags": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'Absence of this information element shall be interpreted as all bits set to 0.'"
-    },
-    "TS29.272.py#nor-service-selection": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'For establishment of non-emergency PDN connections, it shall be present if the selected PDN-GW is present and is particular for one specific APN and not common to all the APNs.'; 'For establishment of emergency PDN connections (i.e., the Emergency-Services AVP is present, with the Emergency-Indication flag set), this AVP shall be left absent.'"
-    },
-    "TS29.272.py#nor-terminal-information": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface.'"
-    },
-    "TS29.272.py#nor-ue-srvcc-capability": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request.'"
-    },
-    "TS29.272.py#nor-visited-network-identifier": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when the PDN GW Identity is present and does not contain an FQDN.'"
-    },
-    "TS29.272.py#nr-cell-global-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.251: 'Octets are coded as described in TS 29.002 [24].'"
-    },
     "TS29.272.py#odb-all-international-og-feature-spelling": {
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 4)"
-    },
-    "TS29.272.py#omc-id-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.71: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#operation-mode-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.227: 'The allowed values of Operation-Mode shall be in the range of 0 to 255.'"
-    },
-    "TS29.272.py#paging-time-window-length-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.228: 'The contents of Paging-Time-Window-Length shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\"'; 'the 4 least significant bits of the octet in this AVP shall be set to 0.'"
-    },
-    "TS29.272.py#pdp-context-ext-pdp-address": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'The Ext-PDP-Address AVP may be present only if the PDP-Address AVP is present.'; 'If the Ext-PDP-Address AVP is present, then it shall not contain the same address type (IPv4 or IPv6) as the PDP-Address AVP.'"
-    },
-    "TS29.272.py#pdp-context-ext-pdp-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'When PDP-Type takes the value Non-IP (HEX 02), the Ext-PDP-Type AVP shall be absent.'"
-    },
-    "TS29.272.py#pdp-context-non-ip-delivery": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'The Non-IP-Data-Delivery-Mechanism shall only be present when PDP-Type takes the value Non-IP (HEX 02).'"
-    },
-    "TS29.272.py#pdp-context-scef-id": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'The SCEF-ID shall only be present when Non-IP-Data-Delivery-Mechanism takes the value SCEF-BASED-DATA-DELIVERY (1).'"
-    },
-    "TS29.272.py#pdp-type-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.75: 'Octets are coded according to TS 29.002 [24].'; 'The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02).'"
-    },
-    "TS29.272.py#positioning-method-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.170: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Positioning Method.'"
-    },
-    "TS29.272.py#preferred-data-mode-bits": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.209/1: 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
-    },
-    "TS29.272.py#pua-pua-flags": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.3.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
-    },
-    "TS29.272.py#qos-subscribed-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.77: 'Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated).'"
-    },
-    "TS29.272.py#rand-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.53: 'This AVP shall contain the RAND. See TS 33.401 [5].'"
-    },
-    "TS29.272.py#rat-frequency-selection-priority-id-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.46: 'Values shall be in the range of 1 to 256.'"
-    },
-    "TS29.272.py#rds-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.222: 'The default value when this AVP is not present is DISABLED (0).'"
     },
     "TS29.272.py#re-synchronization-info-case": {
      "kind": "correction",
@@ -4006,114 +4170,6 @@
     "TS29.272.py#re-synchronization-info-utran-geran-case": {
      "kind": "correction",
      "reason": "clause 7.3.15's heading and table 7.3.1/1 both spell it Re-Synchronization-Info; clause 7.3.12's ABNF lower-cases the S"
-    },
-    "TS29.272.py#regional-subscription-zone-code-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.52: 'It shall contain a Zone Code (ZC) as defined in TS 23.003 [3], clause 4.4.'"
-    },
-    "TS29.272.py#relay-node-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.147: 'The default value when this AVP is not present is NOT_RELAY_NODE (0).'"
-    },
-    "TS29.272.py#reporting-trigger-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.140: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
-    },
-    "TS29.272.py#restoration-priority-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.174: 'Values 1 to 16 are defined, with value 1 as the highest level of priority.'"
-    },
-    "TS29.272.py#routing-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.120: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#service-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.122: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#service-selection-apn": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.36: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\"), or as the wild card APN, i.e., consisting of only one ASCII label, \"*\".'"
-    },
-    "TS29.272.py#servicetypeidentity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.95: 'For details on the values of this AVP, see TS 29.002 [24].'"
-    },
-    "TS29.272.py#sgs-mme-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.175: 'This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4.'"
-    },
-    "TS29.272.py#sgsn-number-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#sms-register-request-skip-subscriber-data": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'"
-    },
-    "TS29.272.py#software-version-digits": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.5: 'This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3].'"
-    },
-    "TS29.272.py#sres-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.60: 'This AVP shall contain the SRES. See TS 33.102 [18].'"
-    },
-    "TS29.272.py#ss-code-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.87: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#ss-status-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.88: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#stn-sr-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.39: 'This AVP contains an STN-SR, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#subscribed-vsrvcc-absence": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.150: 'Absence of this AVP in IDR shall be interpreted as the Subscribed-VSRVCC has not been modified.'; 'Absence of this AVP in ULA shall be interpreted as the user is not subscribed to the vSRVCC.'"
-    },
-    "TS29.272.py#subscription-data-ambr-not-both-zero": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.2: 'Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\".'"
-    },
-    "TS29.272.py#time-zone-format": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'"
-    },
-    "TS29.272.py#trace-collection-entity-ip": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.98: 'The Trace-Collection-Entity AVP is of type Address and contains the IPv4 or IPv6 address of the Trace Collection Entity, as defined in TS 32.422 [23], clause 5.9.'"
-    },
-    "TS29.272.py#trace-event-list-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.70: 'Octets are coded according to TS 32.422 [23].'"
-    },
-    "TS29.272.py#trace-interface-list-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.69: 'Octets are coded according to TS 32.422 [23].'"
-    },
-    "TS29.272.py#trace-ne-type-list-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.68: 'Octets are coded according to TS 32.422 [23].'"
-    },
-    "TS29.272.py#trace-reference-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.64: 'This AVP shall contain the concatenation of MCC, MNC and Trace ID, where the Trace ID is a 3 byte Octet String.'; 'The content of this AVP shall be encoded as octet strings according to table 7.3.64/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
-    "TS29.272.py#tracking-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.118: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#ts-code-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.100: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#ue-reachability-configuration-reachability-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.197: 'For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set.'"
     },
     "TS29.272.py#ue-reachability-configuration-s6a-body": {
      "expect": "UE-Reachability-Configuration's body, against TS29.336's definition: missing DL-Buffering-Suggested-Packet-Count, Maximum-Latency",
@@ -4127,65 +4183,9 @@
       ]
      ]
     },
-    "TS29.272.py#ue-usage-type-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.202: 'The allowed values of UE-Usage-Type shall be in the range of 0 to 255.'"
-    },
-    "TS29.272.py#ula-subscription-data": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request.'"
-    },
-    "TS29.272.py#ula-ula-flags": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
-    },
-    "TS29.272.py#ulr-mme-number-for-mt-sms": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME.'"
-    },
-    "TS29.272.py#ulr-sgsn-number": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the message is sent on the S6d interface and the SGSN supports LCS (using MAP based Lg interface) or SMS functionalities or the Gs interface.'"
-    },
-    "TS29.272.py#ulr-sms-register-request": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and requests to be registered for SMS.'; 'It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS.'"
-    },
-    "TS29.272.py#ulr-ue-srvcc-capability": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN.'"
-    },
-    "TS29.272.py#user-id-digits": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.50: 'It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string.'"
-    },
-    "TS29.272.py#user-state-reserved": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
-    },
-    "TS29.272.py#uva-vplmn-csg-subscription-data": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5A.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set.'"
-    },
-    "TS29.272.py#uvr-sgsn-number": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5A.2.1.1.1/1: 'It shall be present when the message is sent on the S7d interface.'"
-    },
-    "TS29.272.py#visited-network-identifier-domain": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.105: 'The AVP shall be encoded as:'; 'mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
-    },
-    "TS29.272.py#visited-plmn-id-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.9: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.9-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
     "TS29.272.py#wlan-offloadability-vendor-id": {
      "kind": "correction",
      "reason": "clause 7.3.181's AVP header omits the vendor-id; table 7.3.1/1 marks the V flag mandatory for it, as for every other AVP the specification defines"
-    },
-    "TS29.272.py#xres-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.54: 'This AVP shall contain the XRES. See TS 33.401 [5].'"
     }
    },
    "reference": "TS29.272",
@@ -4255,101 +4255,637 @@
   },
   "29272-j60": {
    "edits": {
-    "TS29.272.py#3gpp2-meid-element": {
+    "TS29.272.dadx#3gpp2-meid-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.6: 'For further details on the encoding of the AVP data, refer to the encoding of the Mobile Identity (MEID) octets 3 to 10 in 3GPP2 A.S0022 [28] Annex A.'"
     },
-    "TS29.272.py#5qi-element": {
+    "TS29.272.dadx#5qi-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.238: 'See TS 23.501 [69] for allowed values.'"
     },
-    "TS29.272.py#a-msisdn-e164": {
+    "TS29.272.dadx#a-msisdn-e164": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.157: 'This AVP contains an A-MSISDN, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
-    "TS29.272.py#access-restriction-data-bits": {
+    "TS29.272.dadx#access-restriction-data-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 7.3.31/1: 'NOTE 2: Bits 11 and 12 are only used when bit 4 is not set.'"
+    },
+    "TS29.272.dadx#aese-communication-pattern-extended-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.193: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
+    },
+    "TS29.272.dadx#aese-communication-pattern-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
+    },
+    "TS29.272.dadx#aia-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
+    },
+    "TS29.272.dadx#allocation-retention-priority-pre-emption-capability-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1).'"
+    },
+    "TS29.272.dadx#allocation-retention-priority-pre-emption-vulnerability-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0).'"
+    },
+    "TS29.272.dadx#ambr-extended-max-requested-bw-dl": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+    },
+    "TS29.272.dadx#ambr-extended-max-requested-bw-ul": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+    },
+    "TS29.272.dadx#apn-configuration-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero.'; 'Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription.'; 'NOTE: If interworking with MAP is needed, the Context-Identifier will be in the range of 1 and 50.'"
+    },
+    "TS29.272.dadx#apn-configuration-non-ip-delivery": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1).'"
+    },
+    "TS29.272.dadx#apn-configuration-pdn-gw-allocation-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info AVP. Therefore, it shall not be present if MIP6-Agent-Info is not present.'"
+    },
+    "TS29.272.dadx#apn-configuration-profile-additional-context": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.34: 'If present, the Additional-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than one types of APNs'"
+    },
+    "TS29.272.dadx#apn-configuration-profile-default-context": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.34: 'The Context-Identifier AVP shall identify the per subscriber's default APN configuration.'"
+    },
+    "TS29.272.dadx#apn-configuration-profile-third-context": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.34: 'If present, the Third-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than two types of APNs'"
+    },
+    "TS29.272.dadx#apn-configuration-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
+    },
+    "TS29.272.dadx#apn-configuration-scef-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
+    },
+    "TS29.272.dadx#apn-configuration-served-party-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
+    },
+    "TS29.272.dadx#apn-configuration-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.35: 'For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs.'"
+    },
+    "TS29.272.dadx#apn-configuration-specific-apn-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.82: 'It shall only be present in the APN configuration when the APN is a wild card APN.'"
+    },
+    "TS29.272.dadx#apn-oi-replacement-labels": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.32: 'The contents of the APN-OI-Replacement AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
+    },
+    "TS29.272.dadx#autn-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.55: 'This AVP shall contain the AUTN. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#carrier-frequency-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.221: 'it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62]).'"
+    },
+    "TS29.272.dadx#cell-global-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.119: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#client-identity-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.91: 'The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#collection-period-m7-nr-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.249: 'The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes.'"
+    },
+    "TS29.272.dadx#coupled-node-diameter-id-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.177: 'This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6.'"
+    },
+    "TS29.272.dadx#csg-id-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.79: 'Values are coded according to TS 23.003 [3].'; 'Unused bits (least significant) shall be padded with zeros.'"
+    },
+    "TS29.272.dadx#dl-buffering-suggested-packet-count-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.188: '\"Extended DL Data Buffering NOT REQUESTED\" 0'; '\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1'; '\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0'"
+    },
+    "TS29.272.dadx#dsr-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags.'; 'In the \"PDN subscription contexts Withdrawal\" case, the Context-Identifier shall not be associated with the default APN configuration.'; 'For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero.'"
+    },
+    "TS29.272.dadx#dsr-edrx-related-rat": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted.'"
+    },
+    "TS29.272.dadx#dsr-flags-exclusive-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
+    },
+    "TS29.272.dadx#dsr-flags-s7a-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
+    },
+    "TS29.272.dadx#dsr-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present if the \"Delete monitoring events\" bit is set in the DSR-Flags.'"
+    },
+    "TS29.272.dadx#dsr-ss-code": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set or the \"LCS Withdrawal\" bit is set in the DSR-Flags.'"
+    },
+    "TS29.272.dadx#dsr-trace-reference": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"Trace Data Withdrawal\" bit is set in the DSR-Flags.'"
+    },
+    "TS29.272.dadx#dsr-ts-code": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted.'"
+    },
+    "TS29.272.dadx#e-utran-cell-global-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.117: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#eca-equipment-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#edrx-cycle-length-value-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.216: 'The contents of eDRX-Cycle-Length-Value shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\"'; 'the 4 most significant bits of the octet in this AVP shall be set to 0.'"
+    },
+    "TS29.272.dadx#eps-subscribed-qos-profile-non-gbr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.37: 'values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to GBR bearers, cannot be sent over S6a/S6d.'; 'The values allowed for this AVP over the S6a/S6d interface are only those associated to non-GBR bearers, as indicated in TS 23.008 [30]'"
+    },
+    "TS29.272.dadx#error-diagnostic-values": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'"
+    },
+    "TS29.272.dadx#ethernet-pdn-type-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.232: 'The default value when this AVP is not present is FALSE (0).'"
+    },
+    "TS29.272.dadx#event-threshold-event-1f-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.172: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-event-1i-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.173: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-rsrp-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.143: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-rsrq-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.144: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#event-threshold-sinr-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.246: 'See TS 32.422 [23] for allowed values'"
+    },
+    "TS29.272.dadx#ext-pdp-type-value": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.75A: 'Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6.'"
+    },
+    "TS29.272.dadx#geodetic-information-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.124: 'For details and octet encoding, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#geographical-information-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.123: 'For details and octet encoding, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#gmlc-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.109: 'The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of the V-GMLC associated with the serving node.'"
+    },
+    "TS29.272.dadx#gmlc-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.85: 'This AVP shall contain the ISDN number of the GMLC in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#group-plmn-id-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.191: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.191-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#group-service-id-operator-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.190: 'IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so.'"
+    },
+    "TS29.272.dadx#ida-eps-location-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS location information was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-eps-user-state": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS user state was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-ims-voice-over-ps-sessions-supported": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#ida-last-ue-activity-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#ida-local-time-zone": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if the Local Time Zone was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-monitoring-event-config-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'This Information Element shall be present if Monitoring event configuration is included in IDR.'"
+    },
+    "TS29.272.dadx#ida-monitoring-event-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported.'"
+    },
+    "TS29.272.dadx#ida-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#imei-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.4: 'It should consist of 14 digits, including the 8-digit Type Allocation Code (TAC) and the 6-digit Serial Number (SNR). It may also include a 15th digit.'"
+    },
+    "TS29.272.dadx#interworking-5gs-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.231: 'The default value when this AVP is not present is NOT-SUBSCRIBED (0).'"
+    },
+    "TS29.272.dadx#kasme-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.56: 'This AVP shall contain the K_ASME. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#list-of-measurements-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.139: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
+    },
+    "TS29.272.dadx#location-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.121: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#mbsfn-area-id-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.220: 'it shall contain the MBSFN Area ID value, in the range of 0..255 (see TS 36.331 [62]).'"
+    },
+    "TS29.272.dadx#mdt-allowed-plmn-id-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.185: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.185/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#mdt-user-consent-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.148: 'The default value when this AVP is not present in ULA is CONSENT_NOT_GIVEN (0).'; 'Absence of this AVP in IDR shall be interpreted as the MDT-User-Consent has not been modified.'"
+    },
+    "TS29.272.dadx#measurement-quantity-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.171: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Measurement quantity.'"
+    },
+    "TS29.272.dadx#mip-home-agent-host-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.43: 'Destination-Host shall contain the hostname of the PDN-GW, formatted as described in TS 29.303 [38], clause 4.3.2.'"
+    },
+    "TS29.272.dadx#mip-home-agent-host-destination-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.43: 'Destination-Realm shall be formatted as:'; 'epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
+    },
+    "TS29.272.dadx#mip6-agent-info-fqdn-preferred": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.45: 'FQDN shall be used if known to the MME/SGSN/HSS.'"
+    },
+    "TS29.272.dadx#mip6-agent-info-home-link-prefix": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.45: 'The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
+    },
+    "TS29.272.dadx#mme-number-for-mt-sms-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.159: 'This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-extended-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-maximum-number-of-reports": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-monitoring-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'Monitoring-Type AVP shall be ignored for deletion of an event (i.e. when SCEF-Reference-ID-for-Deletion/SCEF-Reference-ID-for-Deletion-Ext AVP is present).'"
+    },
+    "TS29.272.dadx#monitoring-event-configuration-scef-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'"
+    },
+    "TS29.272.dadx#monitoring-event-report-pdn-connectivity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.196: 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
+    },
+    "TS29.272.dadx#monitoring-event-report-reachability-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)'"
+    },
+    "TS29.272.dadx#monitoring-event-report-scef-reference-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.196: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext AVP shall be used instead of SCEF-Reference-ID; in such case, the required AVP \"SCEF-Reference-ID\" shall be included in the grouped AVP by the sender, but its content shall be discarded by the receiver.'"
+    },
+    "TS29.272.dadx#non-ip-data-delivery-mechanism-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.205: 'The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0).'"
+    },
+    "TS29.272.dadx#non-ip-pdn-type-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.204: 'The default value when this AVP is not present is FALSE (0).'"
+    },
+    "TS29.272.dadx#nor-alert-reason": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages.'"
+    },
+    "TS29.272.dadx#nor-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection'"
+    },
+    "TS29.272.dadx#nor-homogeneous-support": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This Information Element shall be present if Homogeneous Support of IMS Voice Over PS Sessions is modified to one of the values \"SUPPORTED\" or \"NOT_SUPPORTED\".'"
+    },
+    "TS29.272.dadx#nor-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'"
+    },
+    "TS29.272.dadx#nor-monitoring-event-config-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'"
+    },
+    "TS29.272.dadx#nor-nor-flags": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'Absence of this information element shall be interpreted as all bits set to 0.'"
+    },
+    "TS29.272.dadx#nor-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'For establishment of non-emergency PDN connections, it shall be present if the selected PDN-GW is present and is particular for one specific APN and not common to all the APNs.'; 'For establishment of emergency PDN connections (i.e., the Emergency-Services AVP is present, with the Emergency-Indication flag set), this AVP shall be left absent.'"
+    },
+    "TS29.272.dadx#nor-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface.'"
+    },
+    "TS29.272.dadx#nor-ue-srvcc-capability": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request.'"
+    },
+    "TS29.272.dadx#nor-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when the PDN GW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.272.dadx#nr-cell-global-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.251: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#omc-id-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.71: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#operation-mode-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.227: 'The allowed values of Operation-Mode shall be in the range of 0 to 255.'"
+    },
+    "TS29.272.dadx#paging-time-window-length-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.228: 'The contents of Paging-Time-Window-Length shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\"'; 'the 4 least significant bits of the octet in this AVP shall be set to 0.'"
+    },
+    "TS29.272.dadx#pdp-context-ext-pdp-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'The Ext-PDP-Address AVP may be present only if the PDP-Address AVP is present.'; 'If the Ext-PDP-Address AVP is present, then it shall not contain the same address type (IPv4 or IPv6) as the PDP-Address AVP.'"
+    },
+    "TS29.272.dadx#pdp-context-ext-pdp-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'When PDP-Type takes the value Non-IP (HEX 02), the Ext-PDP-Type AVP shall be absent.'"
+    },
+    "TS29.272.dadx#pdp-context-non-ip-delivery": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'The Non-IP-Data-Delivery-Mechanism shall only be present when PDP-Type takes the value Non-IP (HEX 02).'"
+    },
+    "TS29.272.dadx#pdp-context-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.74: 'The SCEF-ID shall only be present when Non-IP-Data-Delivery-Mechanism takes the value SCEF-BASED-DATA-DELIVERY (1).'"
+    },
+    "TS29.272.dadx#pdp-type-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.75: 'Octets are coded according to TS 29.002 [24].'; 'The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02).'"
+    },
+    "TS29.272.dadx#plmn-rat-usage-control-restricted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.253/1: 'RAT restricted by the Access-Restriction-Data AVP shall not be set as restricted in PLMN-RAT-Usage-Control AVP.'"
+    },
+    "TS29.272.dadx#positioning-method-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.170: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Positioning Method.'"
+    },
+    "TS29.272.dadx#preferred-data-mode-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.209/1: 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
+    },
+    "TS29.272.dadx#pua-pua-flags": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#qos-subscribed-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.77: 'Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated).'"
+    },
+    "TS29.272.dadx#rand-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.53: 'This AVP shall contain the RAND. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#rat-frequency-selection-priority-id-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.46: 'Values shall be in the range of 1 to 256.'"
+    },
+    "TS29.272.dadx#rds-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.222: 'The default value when this AVP is not present is DISABLED (0).'"
+    },
+    "TS29.272.dadx#regional-subscription-zone-code-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.52: 'It shall contain a Zone Code (ZC) as defined in TS 23.003 [3], clause 4.4.'"
+    },
+    "TS29.272.dadx#relay-node-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.147: 'The default value when this AVP is not present is NOT_RELAY_NODE (0).'"
+    },
+    "TS29.272.dadx#reporting-trigger-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.140: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
+    },
+    "TS29.272.dadx#restoration-priority-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.174: 'Values 1 to 16 are defined, with value 1 as the highest level of priority.'"
+    },
+    "TS29.272.dadx#routing-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.120: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#service-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.122: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#service-selection-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.36: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\"), or as the wild card APN, i.e., consisting of only one ASCII label, \"*\".'"
+    },
+    "TS29.272.dadx#servicetypeidentity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.95: 'For details on the values of this AVP, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#sgs-mme-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.175: 'This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4.'"
+    },
+    "TS29.272.dadx#sgsn-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#sms-register-request-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.162: 'Absence of this AVP in the Update Location Request message shall be interpreted as if the MME or SGSN does not request to HSS any change in its registration status for SMS.'"
+    },
+    "TS29.272.dadx#sms-register-request-skip-subscriber-data": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'"
+    },
+    "TS29.272.dadx#software-version-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.5: 'This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3].'"
+    },
+    "TS29.272.dadx#sres-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.60: 'This AVP shall contain the SRES. See TS 33.102 [18].'"
+    },
+    "TS29.272.dadx#ss-code-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.87: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#ss-status-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.88: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#stn-sr-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.39: 'This AVP contains an STN-SR, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#subscribed-vsrvcc-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.150: 'Absence of this AVP in IDR shall be interpreted as the Subscribed-VSRVCC has not been modified.'; 'Absence of this AVP in ULA shall be interpreted as the user is not subscribed to the vSRVCC.'"
+    },
+    "TS29.272.dadx#subscription-data-ambr-not-both-zero": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.2: 'Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\".'"
+    },
+    "TS29.272.dadx#time-zone-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'"
+    },
+    "TS29.272.dadx#trace-collection-entity-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.98: 'The Trace-Collection-Entity AVP is of type Address and contains the IPv4 or IPv6 address of the Trace Collection Entity, as defined in TS 32.422 [23], clause 5.9.'"
+    },
+    "TS29.272.dadx#trace-event-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.70: 'Octets are coded according to TS 32.422 [23].'"
+    },
+    "TS29.272.dadx#trace-interface-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.69: 'Octets are coded according to TS 32.422 [23].'"
+    },
+    "TS29.272.dadx#trace-ne-type-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.68: 'Octets are coded according to TS 32.422 [23].'"
+    },
+    "TS29.272.dadx#trace-reference-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.64: 'This AVP shall contain the concatenation of MCC, MNC and Trace ID, where the Trace ID is a 3 byte Octet String.'; 'The content of this AVP shall be encoded as octet strings according to table 7.3.64/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#tracking-area-identity-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.118: 'Octets are coded as described in TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#ts-code-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.100: 'Octets are coded according to TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#ue-reachability-configuration-reachability-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.197: 'For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set.'"
+    },
+    "TS29.272.dadx#ue-usage-type-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.202: 'The allowed values of UE-Usage-Type shall be in the range of 0 to 255.'"
+    },
+    "TS29.272.dadx#ula-subscription-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request.'"
+    },
+    "TS29.272.dadx#ula-ula-flags": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#ulr-mme-number-for-mt-sms": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME.'"
+    },
+    "TS29.272.dadx#ulr-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the message is sent on the S6d interface and the SGSN supports LCS (using MAP based Lg interface) or SMS functionalities or the Gs interface.'"
+    },
+    "TS29.272.dadx#ulr-sms-register-request": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and requests to be registered for SMS.'; 'It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS.'"
+    },
+    "TS29.272.dadx#ulr-ue-srvcc-capability": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN.'"
+    },
+    "TS29.272.dadx#user-id-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.50: 'It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string.'"
+    },
+    "TS29.272.dadx#user-state-reserved": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
+    },
+    "TS29.272.dadx#uva-vplmn-csg-subscription-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set.'"
+    },
+    "TS29.272.dadx#uvr-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/1: 'It shall be present when the message is sent on the S7d interface.'"
+    },
+    "TS29.272.dadx#visited-network-identifier-domain": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.105: 'The AVP shall be encoded as:'; 'mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
+    },
+    "TS29.272.dadx#visited-plmn-id-layout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.9: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.9-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#xres-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.54: 'This AVP shall contain the XRES. See TS 33.401 [5].'"
     },
     "TS29.272.py#additional-context-identifier-name": {
      "kind": "correction",
      "reason": "clause 7.3.206's heading and body, and the ABNF reference in clause 7.3.34, all spell it Additional-Context-Identifier; only the table row abbreviates it"
-    },
-    "TS29.272.py#aese-communication-pattern-extended-ids": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.193: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
-    },
-    "TS29.272.py#aese-communication-pattern-reference-ids": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
-    },
-    "TS29.272.py#aia-ue-usage-type": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
-    },
-    "TS29.272.py#allocation-retention-priority-pre-emption-capability-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1).'"
-    },
-    "TS29.272.py#allocation-retention-priority-pre-emption-vulnerability-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.40: 'If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0).'"
-    },
-    "TS29.272.py#ambr-extended-max-requested-bw-dl": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
-    },
-    "TS29.272.py#ambr-extended-max-requested-bw-ul": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
-    },
-    "TS29.272.py#apn-configuration-context-identifier": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero.'; 'Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription.'; 'NOTE: If interworking with MAP is needed, the Context-Identifier will be in the range of 1 and 50.'"
-    },
-    "TS29.272.py#apn-configuration-non-ip-delivery": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1).'"
-    },
-    "TS29.272.py#apn-configuration-pdn-gw-allocation-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info AVP. Therefore, it shall not be present if MIP6-Agent-Info is not present.'"
-    },
-    "TS29.272.py#apn-configuration-profile-additional-context": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.34: 'If present, the Additional-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than one types of APNs'"
-    },
-    "TS29.272.py#apn-configuration-profile-default-context": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.34: 'The Context-Identifier AVP shall identify the per subscriber's default APN configuration.'"
-    },
-    "TS29.272.py#apn-configuration-profile-third-context": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.34: 'If present, the Third-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than two types of APNs'"
-    },
-    "TS29.272.py#apn-configuration-scef-id": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
-    },
-    "TS29.272.py#apn-configuration-scef-realm": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1).'"
-    },
-    "TS29.272.py#apn-configuration-served-party-ip-address": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
-    },
-    "TS29.272.py#apn-configuration-service-selection": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs.'"
-    },
-    "TS29.272.py#apn-configuration-specific-apn-info": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.82: 'It shall only be present in the APN configuration when the APN is a wild card APN.'"
-    },
-    "TS29.272.py#apn-oi-replacement-labels": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.32: 'The contents of the APN-OI-Replacement AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
     },
     "TS29.272.py#application-id-vcsg": {
      "kind": "insert",
@@ -4359,29 +4895,9 @@
      "kind": "correction",
      "reason": "clause 7.3.138's AVP header prints Job-Type's code; table 7.3.1/1 and the TS 29.230 registry both assign Area-Scope 1624"
     },
-    "TS29.272.py#autn-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.55: 'This AVP shall contain the AUTN. See TS 33.401 [5].'"
-    },
-    "TS29.272.py#carrier-frequency-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.221: 'it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62]).'"
-    },
-    "TS29.272.py#cell-global-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.119: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#client-identity-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.91: 'The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
     "TS29.272.py#collection-period-m6-nr-values": {
      "kind": "supply",
      "reason": "clause 7.3.248 takes the values 'defined in TS 32.422 [23] for Collection period M6 in NR'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.34 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
-    },
-    "TS29.272.py#collection-period-m7-nr-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.249: 'The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes.'"
     },
     "TS29.272.py#collection-period-rrm-lte-values": {
      "kind": "supply",
@@ -4395,14 +4911,6 @@
      "kind": "supply",
      "reason": "clause 7.3.169 takes the values 'defined in TS 32.422 [23] for Collection period for RRM measurements UMTS'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.21 lists them with their codes; '100ms' is spelled as printed. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
-    "TS29.272.py#coupled-node-diameter-id-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.177: 'This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6.'"
-    },
-    "TS29.272.py#csg-id-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.79: 'Values are coded according to TS 23.003 [3].'; 'Unused bits (least significant) shall be padded with zeros.'"
-    },
     "TS29.272.py#dia-lcs-autonomous-self-location-feature-spelling": {
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, feature bit 10)"
@@ -4414,54 +4922,6 @@
     "TS29.272.py#dia-lcs-transfer-to-third-party-feature-spelling": {
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/2, feature bit 11)"
-    },
-    "TS29.272.py#dl-buffering-suggested-packet-count-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.188: '\"Extended DL Data Buffering NOT REQUESTED\" 0'; '\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1'; '\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0'"
-    },
-    "TS29.272.py#dsr-context-identifier": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags.'; 'In the \"PDN subscription contexts Withdrawal\" case, the Context-Identifier shall not be associated with the default APN configuration.'; 'For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero.'"
-    },
-    "TS29.272.py#dsr-edrx-related-rat": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted.'"
-    },
-    "TS29.272.py#dsr-flags-exclusive-bits": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
-    },
-    "TS29.272.py#dsr-flags-s7a-bits": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
-    },
-    "TS29.272.py#dsr-scef-id": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present if the \"Delete monitoring events\" bit is set in the DSR-Flags.'"
-    },
-    "TS29.272.py#dsr-ss-code": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set or the \"LCS Withdrawal\" bit is set in the DSR-Flags.'"
-    },
-    "TS29.272.py#dsr-trace-reference": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"Trace Data Withdrawal\" bit is set in the DSR-Flags.'"
-    },
-    "TS29.272.py#dsr-ts-code": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted.'"
-    },
-    "TS29.272.py#e-utran-cell-global-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.117: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#eca-equipment-status": {
-     "kind": "interpret",
-     "reason": "interpreted from table 6.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
-    },
-    "TS29.272.py#edrx-cycle-length-value-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.216: 'The contents of eDRX-Cycle-Length-Value shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\"'; 'the 4 most significant bits of the octet in this AVP shall be set to 0.'"
     },
     "TS29.272.py#edrx-cycle-length-withdrawal-spelling": {
      "kind": "correction",
@@ -4523,42 +4983,6 @@
      "kind": "correction",
      "reason": "the re-used row cites TS 29.217, which defines eNodeB-Id (clause 5.3.10)"
     },
-    "TS29.272.py#eps-subscribed-qos-profile-non-gbr": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.37: 'values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to GBR bearers, cannot be sent over S6a/S6d.'; 'The values allowed for this AVP over the S6a/S6d interface are only those associated to non-GBR bearers, as indicated in TS 23.008 [30]'"
-    },
-    "TS29.272.py#error-diagnostic-values": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'"
-    },
-    "TS29.272.py#ethernet-pdn-type-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.232: 'The default value when this AVP is not present is FALSE (0).'"
-    },
-    "TS29.272.py#event-threshold-event-1f-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.172: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-event-1i-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.173: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-rsrp-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.143: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-rsrq-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.144: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#event-threshold-sinr-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.246: 'See TS 32.422 [23] for allowed values'"
-    },
-    "TS29.272.py#ext-pdp-type-value": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.75A: 'Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6.'"
-    },
     "TS29.272.py#extended-enodeb-id-in-mme-location-information": {
      "kind": "correction",
      "reason": "the MME-Location-Information body (clause 7.3.115) uses the re-used row's spelling; TS 29.217 defines Extended-eNodeB-Id"
@@ -4567,77 +4991,9 @@
      "kind": "correction",
      "reason": "the re-used row cites TS 29.217, which defines Extended-eNodeB-Id (clause 5.3.15)"
     },
-    "TS29.272.py#geodetic-information-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.124: 'For details and octet encoding, see TS 29.002 [24].'"
-    },
-    "TS29.272.py#geographical-information-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.123: 'For details and octet encoding, see TS 29.002 [24].'"
-    },
-    "TS29.272.py#gmlc-address-ip": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.109: 'The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of the V-GMLC associated with the serving node.'"
-    },
-    "TS29.272.py#gmlc-number-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.85: 'This AVP shall contain the ISDN number of the GMLC in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#group-plmn-id-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.191: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.191-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
-    "TS29.272.py#group-service-id-operator-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.190: 'IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so.'"
-    },
-    "TS29.272.py#ida-eps-location-information": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS location information was requested within IDR.'"
-    },
-    "TS29.272.py#ida-eps-user-state": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS user state was requested within IDR.'"
-    },
-    "TS29.272.py#ida-ims-voice-over-ps-sessions-supported": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
-    },
-    "TS29.272.py#ida-last-ue-activity-time": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
-    },
-    "TS29.272.py#ida-local-time-zone": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if the Local Time Zone was requested within IDR.'"
-    },
-    "TS29.272.py#ida-monitoring-event-config-status": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'This Information Element shall be present if Monitoring event configuration is included in IDR.'"
-    },
-    "TS29.272.py#ida-monitoring-event-report": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported.'"
-    },
-    "TS29.272.py#ida-rat-type": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
-    },
-    "TS29.272.py#imei-digits": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.4: 'It should consist of 14 digits, including the 8-digit Type Allocation Code (TAC) and the 6-digit Serial Number (SNR). It may also include a 15th digit.'"
-    },
-    "TS29.272.py#interworking-5gs-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.231: 'The default value when this AVP is not present is NOT-SUBSCRIBED (0).'"
-    },
     "TS29.272.py#job-type-values": {
      "kind": "supply",
      "reason": "clause 7.3.137 takes the values 'defined in TS 32.422 [23] for Job-Type'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.9a lists them with their codes, Release 19 adding the last two; its NOTEs 1 to 5 restrict where some apply, not the list, and it spaces the last name after AND_, which its other names do not. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
-    },
-    "TS29.272.py#kasme-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.56: 'This AVP shall contain the K_ASME. See TS 33.401 [5].'"
     },
     "TS29.272.py#lcs-autonomous-self-location-feature-spelling": {
      "kind": "correction",
@@ -4651,14 +5007,6 @@
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 20)"
     },
-    "TS29.272.py#list-of-measurements-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.139: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
-    },
-    "TS29.272.py#location-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.121: 'Octets are coded as described in TS 29.002 [24].'"
-    },
     "TS29.272.py#logging-duration-values": {
      "kind": "supply",
      "reason": "clause 7.3.146 takes the values 'defined in TS 32.422 [23] for Logging Duration'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.9 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
@@ -4667,18 +5015,6 @@
      "kind": "supply",
      "reason": "clause 7.3.145 takes the values 'defined in TS 32.422 [23] for Logging Interval'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.8 lists them with their codes; UMTS and LTE take 0 to 7, NR the same plus 8 to 10, so the list is NR's. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
-    "TS29.272.py#mbsfn-area-id-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.220: 'it shall contain the MBSFN Area ID value, in the range of 0..255 (see TS 36.331 [62]).'"
-    },
-    "TS29.272.py#mdt-allowed-plmn-id-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.185: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.185/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
-    "TS29.272.py#mdt-user-consent-absence": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.148: 'The default value when this AVP is not present in ULA is CONSENT_NOT_GIVEN (0).'; 'Absence of this AVP in IDR shall be interpreted as the MDT-User-Consent has not been modified.'"
-    },
     "TS29.272.py#measurement-period-lte-values": {
      "kind": "supply",
      "reason": "clause 7.3.166 takes the values 'defined in TS 32.422 [23] for Measurement period LTE'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.23 lists them with their codes; 1 and 3 are unassigned, Release 16 having dropped 1280 ms and 2560 ms. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
@@ -4686,26 +5022,6 @@
     "TS29.272.py#measurement-period-umts-values": {
      "kind": "supply",
      "reason": "clause 7.3.167 takes the values 'defined in TS 32.422 [23] for Measurement period UMTS'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.22 lists them with their codes. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
-    },
-    "TS29.272.py#measurement-quantity-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.171: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Measurement quantity.'"
-    },
-    "TS29.272.py#mip-home-agent-host-destination-host": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.43: 'Destination-Host shall contain the hostname of the PDN-GW, formatted as described in TS 29.303 [38], clause 4.3.2.'"
-    },
-    "TS29.272.py#mip-home-agent-host-destination-realm": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.43: 'Destination-Realm shall be formatted as:'; 'epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
-    },
-    "TS29.272.py#mip6-agent-info-fqdn-preferred": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.45: 'FQDN shall be used if known to the MME/SGSN/HSS.'"
-    },
-    "TS29.272.py#mip6-agent-info-home-link-prefix": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.45: 'The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
     },
     "TS29.272.py#missing-row-communication-duration-time": {
      "kind": "insert",
@@ -4735,22 +5051,6 @@
      "kind": "insert",
      "reason": "the Communication-Pattern-Set body (clause 7.3.194) uses Stationary-Indication but table 7.3.1/2 omits the row; TS29.336 defines the AVP"
     },
-    "TS29.272.py#mme-number-for-mt-sms-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.159: 'This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#monitoring-event-configuration-extended-ids": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
-    },
-    "TS29.272.py#monitoring-event-configuration-maximum-number-of-reports": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
-    },
-    "TS29.272.py#monitoring-event-configuration-monitoring-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'Monitoring-Type AVP shall be ignored for deletion of an event (i.e. when SCEF-Reference-ID-for-Deletion/SCEF-Reference-ID-for-Deletion-Ext AVP is present).'"
-    },
     "TS29.272.py#monitoring-event-configuration-s6a-body": {
      "expect": "Monitoring-Event-Configuration's body, against TS29.336's definition: adds External-Identifier, SCEF-Realm, missing Association-Type, DL-Buffering-Suggested-Packet-Count, Exclude-Identifiers, Include-Identifiers, Maximum-Detection-Time, PLMN-ID-Requested",
      "kind": "accept",
@@ -4762,18 +5062,6 @@
        296
       ]
      ]
-    },
-    "TS29.272.py#monitoring-event-configuration-scef-realm": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'"
-    },
-    "TS29.272.py#monitoring-event-report-pdn-connectivity": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
-    },
-    "TS29.272.py#monitoring-event-report-reachability-information": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)'"
     },
     "TS29.272.py#monitoring-event-report-s6a-body": {
      "expect": "Monitoring-Event-Report's body, against TS29.336's definition: missing Event-Handling, IMEI-Change, Roaming-Information, SCEF-Reference-ID-for-Deletion, SCEF-Reference-ID-for-Deletion-Ext, Service-Report, Terminal-Information, Visited-PLMN-Id",
@@ -4787,129 +5075,9 @@
       ]
      ]
     },
-    "TS29.272.py#monitoring-event-report-scef-reference-id": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext AVP shall be used instead of SCEF-Reference-ID; in such case, the required AVP \"SCEF-Reference-ID\" shall be included in the grouped AVP by the sender, but its content shall be discarded by the receiver.'"
-    },
-    "TS29.272.py#non-ip-data-delivery-mechanism-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.205: 'The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0).'"
-    },
-    "TS29.272.py#non-ip-pdn-type-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.204: 'The default value when this AVP is not present is FALSE (0).'"
-    },
-    "TS29.272.py#nor-alert-reason": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages.'"
-    },
-    "TS29.272.py#nor-emergency-services": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection'"
-    },
-    "TS29.272.py#nor-homogeneous-support": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'This Information Element shall be present if Homogeneous Support of IMS Voice Over PS Sessions is modified to one of the values \"SUPPORTED\" or \"NOT_SUPPORTED\".'"
-    },
-    "TS29.272.py#nor-mip6-agent-info": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'"
-    },
-    "TS29.272.py#nor-monitoring-event-config-status": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'"
-    },
-    "TS29.272.py#nor-nor-flags": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'Absence of this information element shall be interpreted as all bits set to 0.'"
-    },
-    "TS29.272.py#nor-service-selection": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'For establishment of non-emergency PDN connections, it shall be present if the selected PDN-GW is present and is particular for one specific APN and not common to all the APNs.'; 'For establishment of emergency PDN connections (i.e., the Emergency-Services AVP is present, with the Emergency-Indication flag set), this AVP shall be left absent.'"
-    },
-    "TS29.272.py#nor-terminal-information": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface.'"
-    },
-    "TS29.272.py#nor-ue-srvcc-capability": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request.'"
-    },
-    "TS29.272.py#nor-visited-network-identifier": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when the PDN GW Identity is present and does not contain an FQDN.'"
-    },
-    "TS29.272.py#nr-cell-global-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.251: 'Octets are coded as described in TS 29.002 [24].'"
-    },
     "TS29.272.py#odb-all-international-og-feature-spelling": {
      "kind": "correction",
      "reason": "the cell prints a space after the hyphen, where the column wraps the name; the feature's name has no space (clause 7.3.10.1, table 7.3.10/1, feature bit 4)"
-    },
-    "TS29.272.py#omc-id-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.71: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#operation-mode-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.227: 'The allowed values of Operation-Mode shall be in the range of 0 to 255.'"
-    },
-    "TS29.272.py#paging-time-window-length-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.228: 'The contents of Paging-Time-Window-Length shall consist of 1 octet.'; 'The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\"'; 'the 4 least significant bits of the octet in this AVP shall be set to 0.'"
-    },
-    "TS29.272.py#pdp-context-ext-pdp-address": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'The Ext-PDP-Address AVP may be present only if the PDP-Address AVP is present.'; 'If the Ext-PDP-Address AVP is present, then it shall not contain the same address type (IPv4 or IPv6) as the PDP-Address AVP.'"
-    },
-    "TS29.272.py#pdp-context-ext-pdp-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'When PDP-Type takes the value Non-IP (HEX 02), the Ext-PDP-Type AVP shall be absent.'"
-    },
-    "TS29.272.py#pdp-context-non-ip-delivery": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'The Non-IP-Data-Delivery-Mechanism shall only be present when PDP-Type takes the value Non-IP (HEX 02).'"
-    },
-    "TS29.272.py#pdp-context-scef-id": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.74: 'The SCEF-ID shall only be present when Non-IP-Data-Delivery-Mechanism takes the value SCEF-BASED-DATA-DELIVERY (1).'"
-    },
-    "TS29.272.py#pdp-type-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.75: 'Octets are coded according to TS 29.002 [24].'; 'The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02).'"
-    },
-    "TS29.272.py#plmn-rat-usage-control-restricted": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.253/1: 'RAT restricted by the Access-Restriction-Data AVP shall not be set as restricted in PLMN-RAT-Usage-Control AVP.'"
-    },
-    "TS29.272.py#positioning-method-octet": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.170: 'It contains one octet carrying a bit map of 8 bits.'; 'The possible values are those defined in TS 32.422 [23] for Positioning Method.'"
-    },
-    "TS29.272.py#preferred-data-mode-bits": {
-     "kind": "interpret",
-     "reason": "interpreted from table 7.3.209/1: 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
-    },
-    "TS29.272.py#pua-pua-flags": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.3.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
-    },
-    "TS29.272.py#qos-subscribed-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.77: 'Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated).'"
-    },
-    "TS29.272.py#rand-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.53: 'This AVP shall contain the RAND. See TS 33.401 [5].'"
-    },
-    "TS29.272.py#rat-frequency-selection-priority-id-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.46: 'Values shall be in the range of 1 to 256.'"
-    },
-    "TS29.272.py#rds-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.222: 'The default value when this AVP is not present is DISABLED (0).'"
     },
     "TS29.272.py#re-synchronization-info-case": {
      "kind": "correction",
@@ -4919,125 +5087,13 @@
      "kind": "correction",
      "reason": "clause 7.3.15's heading and table 7.3.1/1 both spell it Re-Synchronization-Info; clause 7.3.12's ABNF lower-cases the S"
     },
-    "TS29.272.py#regional-subscription-zone-code-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.52: 'It shall contain a Zone Code (ZC) as defined in TS 23.003 [3], clause 4.4.'"
-    },
-    "TS29.272.py#relay-node-indicator-default": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.147: 'The default value when this AVP is not present is NOT_RELAY_NODE (0).'"
-    },
     "TS29.272.py#report-amount-values": {
      "kind": "supply",
      "reason": "clause 7.3.142 takes the values 'defined in TS 32.422 [23] for Report Amount'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.10.6.2 lists them with their codes; clauses 5.10.6.3 to 5.10.6.12 repeat the list per RAT and measurement, NR's spelling INFINITY. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
     },
-    "TS29.272.py#reporting-trigger-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.140: 'The meaning of the bits is defined in TS 32.422 [23].'; 'The most significant bit is bit 8 of the first octet.'"
-    },
-    "TS29.272.py#restoration-priority-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.174: 'Values 1 to 16 are defined, with value 1 as the highest level of priority.'"
-    },
-    "TS29.272.py#routing-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.120: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#service-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.122: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#service-selection-apn": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.36: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\"), or as the wild card APN, i.e., consisting of only one ASCII label, \"*\".'"
-    },
-    "TS29.272.py#servicetypeidentity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.95: 'For details on the values of this AVP, see TS 29.002 [24].'"
-    },
-    "TS29.272.py#sgs-mme-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.175: 'This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4.'"
-    },
-    "TS29.272.py#sgsn-number-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#sms-register-request-absence": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.162: 'Absence of this AVP in the Update Location Request message shall be interpreted as if the MME or SGSN does not request to HSS any change in its registration status for SMS.'"
-    },
-    "TS29.272.py#sms-register-request-skip-subscriber-data": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.162: 'When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP.'"
-    },
-    "TS29.272.py#software-version-digits": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.5: 'This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3].'"
-    },
-    "TS29.272.py#sres-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.60: 'This AVP shall contain the SRES. See TS 33.102 [18].'"
-    },
-    "TS29.272.py#ss-code-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.87: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#ss-status-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.88: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#stn-sr-e164": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.39: 'This AVP contains an STN-SR, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
-    },
-    "TS29.272.py#subscribed-vsrvcc-absence": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.150: 'Absence of this AVP in IDR shall be interpreted as the Subscribed-VSRVCC has not been modified.'; 'Absence of this AVP in ULA shall be interpreted as the user is not subscribed to the vSRVCC.'"
-    },
-    "TS29.272.py#subscription-data-ambr-not-both-zero": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.2: 'Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\".'"
-    },
-    "TS29.272.py#time-zone-format": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'"
-    },
-    "TS29.272.py#trace-collection-entity-ip": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.98: 'The Trace-Collection-Entity AVP is of type Address and contains the IPv4 or IPv6 address of the Trace Collection Entity, as defined in TS 32.422 [23], clause 5.9.'"
-    },
     "TS29.272.py#trace-depth-values": {
      "kind": "supply",
      "reason": "clause 7.3.67 takes the values 'defined in TS 32.422 [23] for Trace Depth'; TS 32.422 V19.7.0 (2026-06), Release 19's latest, clause 5.3 lists them with their codes, Release 19 adding the last three. The version matters: Release 16 renumbered Report Interval LTE's and Measurement Period UMTS's codes"
-    },
-    "TS29.272.py#trace-event-list-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.70: 'Octets are coded according to TS 32.422 [23].'"
-    },
-    "TS29.272.py#trace-interface-list-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.69: 'Octets are coded according to TS 32.422 [23].'"
-    },
-    "TS29.272.py#trace-ne-type-list-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.68: 'Octets are coded according to TS 32.422 [23].'"
-    },
-    "TS29.272.py#trace-reference-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.64: 'This AVP shall contain the concatenation of MCC, MNC and Trace ID, where the Trace ID is a 3 byte Octet String.'; 'The content of this AVP shall be encoded as octet strings according to table 7.3.64/1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
-    "TS29.272.py#tracking-area-identity-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.118: 'Octets are coded as described in TS 29.002 [24].'"
-    },
-    "TS29.272.py#ts-code-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.100: 'Octets are coded according to TS 29.002 [24].'"
-    },
-    "TS29.272.py#ue-reachability-configuration-reachability-type": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.197: 'For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set.'"
     },
     "TS29.272.py#ue-reachability-configuration-s6a-body": {
      "expect": "UE-Reachability-Configuration's body, against TS29.336's definition: missing DL-Buffering-Suggested-Packet-Count, Maximum-Latency",
@@ -5051,65 +5107,9 @@
       ]
      ]
     },
-    "TS29.272.py#ue-usage-type-range": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.202: 'The allowed values of UE-Usage-Type shall be in the range of 0 to 255.'"
-    },
-    "TS29.272.py#ula-subscription-data": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request.'"
-    },
-    "TS29.272.py#ula-ula-flags": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
-    },
-    "TS29.272.py#ulr-mme-number-for-mt-sms": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME.'"
-    },
-    "TS29.272.py#ulr-sgsn-number": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the message is sent on the S6d interface and the SGSN supports LCS (using MAP based Lg interface) or SMS functionalities or the Gs interface.'"
-    },
-    "TS29.272.py#ulr-sms-register-request": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and requests to be registered for SMS.'; 'It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS.'"
-    },
-    "TS29.272.py#ulr-ue-srvcc-capability": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1.1/1: 'shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN.'"
-    },
-    "TS29.272.py#user-id-digits": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.50: 'It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string.'"
-    },
-    "TS29.272.py#user-state-reserved": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
-    },
-    "TS29.272.py#uva-vplmn-csg-subscription-data": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5A.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set.'"
-    },
-    "TS29.272.py#uvr-sgsn-number": {
-     "kind": "interpret",
-     "reason": "interpreted from table 5A.2.1.1.1/1: 'It shall be present when the message is sent on the S7d interface.'"
-    },
-    "TS29.272.py#visited-network-identifier-domain": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.105: 'The AVP shall be encoded as:'; 'mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
-    },
-    "TS29.272.py#visited-plmn-id-layout": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.9: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.9-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
-    },
     "TS29.272.py#wlan-offloadability-vendor-id": {
      "kind": "correction",
      "reason": "clause 7.3.181's AVP header omits the vendor-id; table 7.3.1/1 marks the V flag mandatory for it, as for every other AVP the specification defines"
-    },
-    "TS29.272.py#xres-element": {
-     "kind": "interpret",
-     "reason": "interpreted from clause 7.3.54: 'This AVP shall contain the XRES. See TS 33.401 [5].'"
     }
    },
    "reference": "TS29.272",
@@ -12023,5 +12023,5 @@
    "version": "1.0"
   }
  },
- "note": "Written by `seanchai corpus regenerate` from edits/corrections; do not edit."
+ "note": "Written by `seanchai corpus regenerate` from edits/corrections and edits/interpretations; do not edit."
 }

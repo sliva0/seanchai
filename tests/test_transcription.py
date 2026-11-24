@@ -29,6 +29,7 @@ def test_every_transcription_rebuilds_the_committed_pair(tmp_path):
         tmp_path / "dad",
         sources_dir=_EDITS / "sources",
         corrections_dir=_EDITS / "corrections",
+        interpretations_dir=_EDITS / "interpretations",
         transcriptions_dir=_EDITS / "transcriptions",
         only=[path.stem for path in _TRANSCRIPTIONS],
     )

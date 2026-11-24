@@ -24,6 +24,8 @@ __all__ = [
     "Placement",
     "avp_rule_line",
     "parse",
+    "parse_interpretations",
+    "parse_interpretations_with_comments",
     "parse_with_comments",
     "parse_with_layout",
 ]
@@ -1272,6 +1274,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Application": ("application",),
     "Within": ("within",),
     "Versions": ("versions",),
+    "Id": ("id",),
 }
 # An application scope and an undefined AVP have no body: a whole-line
 # comment after the last line stands at the block's own path.
@@ -1395,6 +1398,10 @@ def parse_with_comments(text: str) -> tuple[ast.Specification, formatter.Comment
     """
     runs = _runs(text)
     spec, layout = _parse(_blocks(runs))
+    return spec, _comments(runs, layout)
+
+
+def _comments(runs: list[list[_Line]], layout: _Layout) -> formatter.Comments:
     trailing: _NoteMap = {}
     standing: _NoteMap = {}
     detached: _NoteMap = {}
@@ -1421,7 +1428,111 @@ def parse_with_comments(text: str) -> tuple[ast.Specification, formatter.Comment
         if waiting:
             standing.setdefault(layout.ends[blocks], []).extend(waiting)
         blocks += 1
-    return spec, formatter.Comments(trailing, standing, detached)
+    return formatter.Comments(trailing, standing, detached)
+
+
+def parse_interpretations(
+    text: str,
+) -> tuple[ast.Interpretations, Mapping[ast.TreePath, int]]:
+    """Parse a `.dadx` file, one document's interpretations, discarding its
+    `;;` comments. Returns the tree and the 1-based line each path prints
+    on, so a check of a block can name the line it holds against.
+
+    The file is a `; Interprets:` header, the document's title as its
+    `; Specification:` reads, then Interpreted Constraints blocks, each with
+    an `; Id:` and no `; Page:`, in the document's clause order.
+    """
+    tree, layout = _parse_interpretations(_blocks(_runs(text)))
+    return tree, {path: lineno for lineno, path in layout.paths.items()}
+
+
+def parse_interpretations_with_comments(
+    text: str,
+) -> tuple[ast.Interpretations, formatter.Comments]:
+    """Parse a `.dadx` file and return its `;;` comments, as
+    `parse_with_comments` does a `.dad` file's, for
+    `formatter.format_interpretations`."""
+    runs = _runs(text)
+    tree, layout = _parse_interpretations(_blocks(runs))
+    return tree, _comments(runs, layout)
+
+
+def _parse_interpretations(
+    blocks: list[_Block],
+) -> tuple[ast.Interpretations, _Layout]:
+    if not blocks:
+        raise DadParseError(1, "empty file")
+    layout = _Layout({}, [()], [])
+    header = blocks[0]
+    directives, body = _split_directives(header)
+    if "Interprets" in directives:
+        layout.paths[directives["Interprets"].lineno] = ("interprets",)
+    if body:
+        raise DadParseError(body[0][0], "unexpected content in file header")
+    interprets = _pop(directives, "Interprets", header.start)
+    _no_leftovers(directives, header.start)
+    with _validated(interprets.lineno):
+        _INLINE_TEXT.validate_python(interprets.value)
+    try:
+        ast.spec_ref(interprets.value)
+    except ast.SpecRefError as error:
+        raise DadParseError(interprets.lineno, str(error)) from None
+    sections: list[ast.InterpretationBlock] = []
+    seen: dict[str, int] = {}
+    for index, block in enumerate(blocks[1:]):
+        directives, body = _split_directives(block)
+        path: ast.TreePath = ("sections", index)
+        layout.directives.append(
+            {
+                key: (directive.lineno, directive.value)
+                for key, directive in directives.items()
+            }
+        )
+        for key, directive in directives.items():
+            if key in _DIRECTIVE_PATHS:
+                layout.paths[directive.lineno] = (*path, *_DIRECTIVE_PATHS[key])
+        section_type = _pop(directives, "Type", block.start)
+        if section_type.value != "Interpreted Constraints":
+            raise DadParseError(
+                section_type.lineno,
+                "an interpretations file holds Interpreted Constraints blocks"
+                f" only, not {section_type.value!r}",
+            )
+        identifier = _pop(directives, "Id", block.start)
+        if "Page" in directives:
+            raise DadParseError(
+                directives["Page"].lineno,
+                "a page is not written: it is read from each copy's source",
+            )
+        if identifier.value in seen:
+            raise DadParseError(
+                identifier.lineno,
+                f"the id {identifier.value!r} names the block at line"
+                f" {seen[identifier.value]} too",
+            )
+        seen[identifier.value] = block.start
+        with _validated(block.start):
+            read = _parse_interpreted_constraints(directives, body, block.start)
+        with _validated(identifier.lineno):
+            parsed = ast.InterpretationBlock(id=identifier.value, **dict(read))
+        if sections and ast.section_sort_key(
+            parsed.source.section
+        ) < ast.section_sort_key(sections[-1].source.section):
+            raise DadParseError(
+                block.start,
+                f"clause {parsed.source.section} comes before clause"
+                f" {sections[-1].source.section}, the block above it: the"
+                " blocks follow the document's clause order",
+            )
+        sections.append(parsed)
+        for position, (lineno, _) in enumerate(body):
+            layout.paths[lineno] = (*path, "body", position)
+        layout.ends.append((*path, "body", len(body)))
+    with _validated(interprets.lineno):
+        tree = ast.Interpretations(
+            interprets=interprets.value, sections=tuple(sections)
+        )
+    return tree, layout
 
 
 def _references(directive: _Directive | None, key: str) -> tuple[str, ...]:

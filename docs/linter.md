@@ -140,6 +140,15 @@ document read states is not judged.
 Rules in one place are a block's with those of every block for the same AVP,
 scope and those holding wherever the document reads it.
 
+`seanchai lint FILE.dadx` checks a document's interpretations file
+([constraints.md](constraints.md#the-interpretations-file)), and a directory
+named in SOURCES its `.dadx` files too. Reading it checks its syntax, its
+rules, its ids and its clause order. With a corpus, each copy of the document
+the corpus holds is read with the file's blocks whose range spans it in place
+of its own, and these rules run over them; a finding is reported under the
+file and the copy, `TS29.272.dadx (in 29272-j60.dad)`, its message opening
+with the block's line.
+
 ## The record of known holes
 
 With a corpus, a directory holding `holes.toml`
