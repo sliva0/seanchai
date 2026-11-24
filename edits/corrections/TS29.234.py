@@ -7,6 +7,7 @@ from seanchai.dad.corrections import (
     Delete,
     Insert,
     avp_rule,
+    command_result_codes,
     definition,
     header,
     information_elements,
@@ -691,6 +692,16 @@ CORRECTIONS += [
         rule="elements-unattached",
         target=information_elements("11.3.3.2", section="11.3.2.1.1"),
         expect=f"table 11.3.3.2 {_UNATTACHED}",
+        reason=_HELD_FOR_CITATIONS,
+        versions="11.2.0",
+    ),
+]
+CORRECTIONS += [
+    Accept(
+        id="result-codes-unattached-6-3-3-3",
+        rule="elements-unattached",
+        target=command_result_codes("6.3.3.3"),
+        expect=f"table 6.3.3.3 {_UNATTACHED}",
         reason=_HELD_FOR_CITATIONS,
         versions="11.2.0",
     ),

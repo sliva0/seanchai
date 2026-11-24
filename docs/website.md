@@ -173,6 +173,10 @@ and in its raw mirror alike, each describing its own file's lines. Every
   and `described`, the Message blocks the corrected file's table finds its
   command at, empty in the raw view and where none is found. Its `; Command:`
   line's name and its rows' AVP names link where the command reads them.
+- Command Result Codes: `name`, the command its `; Command:` names,
+  `result_codes`, each `name` and the `value` and `vendor_id` the
+  result-code tables give it (null where none does, and in the raw view),
+  and `described`, as an Information Elements block's.
 - Value Table: `value_kind` (`result-codes`, `bits`, `features`, `values`), a
   feature list's `feature_list_id` and `application`, the `avp_target` its
   `; AVP:` line links to, and `value_rows`, each `name`, `value`, a result

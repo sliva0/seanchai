@@ -937,6 +937,56 @@ def _parse_value_table(
         )
 
 
+# A Command Result Codes row: a code's name, bare or quoted as a value's.
+_RESULT_NAME_RE = re.compile(rf"^\s*(?P<name>{_QUOTED}|[A-Za-z0-9][A-Za-z0-9_-]*)$")
+
+
+def _parse_command_result_codes(
+    directives: _Directives, body: list[tuple[int, str]], lineno: int
+) -> ast.CommandResultCodes:
+    # Optional, as an Information Elements block's: a correction names the
+    # command where the extractor reads none.
+    command = directives.pop("Command", None)
+    application_id = directives.pop("Application-ID", None)
+    command_section = directives.pop("Command-Section", None)
+    origin = directives.pop("From", None)
+    table = directives.pop("Table", None)
+    source = _source_ref(directives, lineno)
+    _no_leftovers(directives, lineno)
+    number = None
+    if application_id is not None:
+        number = _number(application_id.value, application_id.lineno, "Application-ID")
+    if table is not None:
+        with _validated(table.lineno):
+            _INLINE_TEXT.validate_python(table.value)
+    if origin is not None:
+        with _validated(origin.lineno):
+            _SPEC_REF.validate_python(origin.value)
+    if command_section is not None:
+        with _validated(command_section.lineno):
+            _SECTION_NUMBER.validate_python(command_section.value)
+    rows = []
+    for row_lineno, line in body:
+        match = _RESULT_NAME_RE.match(line)
+        if match is None:
+            raise DadParseError(row_lineno, f"malformed result code: {line.strip()!r}")
+        name = match["name"]
+        if name.startswith('"'):
+            name = _ESCAPE_RE.sub(r"\1", name[1:-1])
+        with _validated(row_lineno):
+            rows.append(ast.ResultCodeRow(name=name))
+    with _validated(lineno):
+        return ast.CommandResultCodes(
+            command=None if command is None else command.value,
+            application_id=number,
+            command_section=None if command_section is None else command_section.value,
+            origin=None if origin is None else origin.value,
+            table=None if table is None else table.value,
+            source=source,
+            rows=tuple(rows),
+        )
+
+
 def _element_mapping(
     cell: str, lineno: int
 ) -> tuple[tuple[str, ...], bool, str | None]:
@@ -1256,6 +1306,7 @@ _SECTION_PARSERS = {
     "Undefined AVP": _parse_undefined_avp,
     "Value Table": _parse_value_table,
     "Information Elements": _parse_information_elements,
+    "Command Result Codes": _parse_command_result_codes,
     "Interpreted Constraints": _parse_interpreted_constraints,
 }
 
@@ -1313,6 +1364,7 @@ _BODIES = {
     "Undefined AVP": ("", 0),
     "Value Table": ("rows", 0),
     "Information Elements": ("rows", 0),
+    "Command Result Codes": ("rows", 0),
     "Interpreted Constraints": ("body", 0),
 }
 

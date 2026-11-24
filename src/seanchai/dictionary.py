@@ -53,6 +53,7 @@ __all__ = [
     "Member",
     "Path",
     "Reading",
+    "ResultCode",
     "Rule",
     "TwoReadingsError",
     "UndefinedBlock",
@@ -303,12 +304,34 @@ class CommandHeading(_Model):
     section: str
 
 
+class ResultCode(_Model):
+    """A code a table of the command's result codes lists
+    (`model.ResultCode`): its `name` as printed, the `value` and `vendor_id`
+    (0 for a Result-Code value) the result-code tables give it and the
+    document `defined_in` giving them, null where none does. `reference`,
+    `version`, `section`, `table` and `page` locate the row, whose condition
+    the document holds."""
+
+    name: str
+    value: int | None
+    vendor_id: int | None
+    defined_in: str | None
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
+
+
 class Command(CommandHeading):
     """One command with its body. `members` is the body; `walk` is
     `Message.walk`, each AVP at any depth, by `id`. An answer's `answer_message`
     names the `answer_messages` entry it takes with the E bit set, null for a
     request and where no document gives one. `elements` are the rows of the
-    information-element tables describing it, which members index."""
+    information-element tables describing it, which members index.
+    `result_codes` are the codes its document's tables of an answer's result
+    codes list, in no way all it may carry: none lists the protocol errors an
+    agent returns."""
 
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
@@ -316,6 +339,7 @@ class Command(CommandHeading):
     answer_message: str | None
     elements: tuple[Element, ...]
     constraints: tuple[Constraint, ...]
+    result_codes: tuple[ResultCode, ...]
 
 
 class CommandPair(_Model):
@@ -765,6 +789,10 @@ class _Builder:
                     ],
                 )
                 for each in message.constraints
+            ),
+            result_codes=tuple(
+                ResultCode.model_validate(code.to_dict())
+                for code in message.result_codes
             ),
         )
 

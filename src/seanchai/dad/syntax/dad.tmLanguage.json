@@ -9,6 +9,7 @@
     { "include": "#void" },
     { "include": "#vendor-specific" },
     { "include": "#information-elements" },
+    { "include": "#command-result-codes" },
     { "include": "#directive-text" },
     { "include": "#directive" },
     { "include": "#message-rule" },
@@ -103,7 +104,7 @@
           "patterns": [
             {
               "comment": "A block's `; Type:`, a registry's kind: the whole value.",
-              "match": "(?<=: )(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Interpreted Constraints|Application IDs|Command Codes|AVP Codes|Result Codes)(?=\\s*$)",
+              "match": "(?<=: )(Application Scope|Message|Answer Message|Grouped AVP|Enumerated AVP|AVP Table|Reused AVPs|Registry|Undefined AVP|Value Table|Information Elements|Command Result Codes|Interpreted Constraints|Application IDs|Command Codes|AVP Codes|Result Codes)(?=\\s*$)",
               "name": "storage.type.section.dad"
             },
             {
@@ -324,6 +325,23 @@
         { "include": "#element-row" },
         { "include": "#element-avp-row" },
         { "include": "#table-row" }
+      ]
+    },
+    "command-result-codes": {
+      "comment": "A block whose rows are the result codes a command's answer may carry, a name a line, bare or quoted.",
+      "begin": "^(?=; Type: Command Result Codes\\b)",
+      "end": "^(?=; Type: (?!Command Result Codes\\b))",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#directive-text" },
+        { "include": "#directive" },
+        {
+          "match": "^(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|[A-Za-z0-9][A-Za-z0-9_-]*)(\\s*;;.*)?$",
+          "captures": {
+            "1": { "name": "variable.other.enum.dad" },
+            "2": { "patterns": [{ "include": "#comment" }] }
+          }
+        }
       ]
     },
     "element-row": {

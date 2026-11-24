@@ -50,6 +50,7 @@ __all__ = [
     "ClauseWildcard",
     "Codec",
     "CommandFlag",
+    "CommandResultCodes",
     "Condition",
     "ConstraintRule",
     "DataType",
@@ -90,6 +91,7 @@ __all__ = [
     "RegistryRow",
     "RegistryText",
     "ReservedValues",
+    "ResultCodeRow",
     "ReusedAvpRow",
     "ReusedAvps",
     "ReusedColumn",
@@ -1351,6 +1353,37 @@ class InformationElements(Node):
         return found
 
 
+class ResultCodeRow(Node):
+    """One code a `CommandResultCodes` table lists, by the name it prints;
+    the Condition cell is prose."""
+
+    name: EnumValueName
+
+
+class CommandResultCodes(Node):
+    """`; Type: Command Result Codes`: a table of the result codes a
+    command's answer may carry, each under a condition, "Result-Code AVP
+    value | Condition" (TS 29.228 table 6.2.2.1.1, "User information update
+    response valid result codes", Push-Profile-Answer's). The table names
+    each code and gives no number: the number is the defining document's,
+    which may be another's (TS 29.229 defines Cx's
+    DIAMETER_ERROR_TOO_MUCH_DATA), so the block holds no value table's rows.
+
+    `command`, `application_id`, `command_section` and `origin` find the
+    command as an `InformationElements` block's do. The rows are the codes
+    as printed, in their order, Result-Code's and Experimental-Result-Code's
+    alike, as the documents list them under one heading."""
+
+    type: Literal["Command Result Codes"] = "Command Result Codes"
+    command: AvpName | None = None
+    application_id: Unsigned32 | None = None
+    command_section: SectionNumber | None = None
+    origin: SpecRef | None = None
+    table: TableLabel | None = None
+    source: SourceRef
+    rows: Annotated[tuple[ResultCodeRow, ...], Field(min_length=1)]
+
+
 ELEMENT_COLUMNS = ("Name", "AVP", "Cat")
 ELEMENT_AVP_COLUMNS = ("AVP", "Cat")
 
@@ -1862,6 +1895,7 @@ Section = Annotated[
     | UndefinedAvp
     | ValueTable
     | InformationElements
+    | CommandResultCodes
     | InterpretedConstraints,
     Field(discriminator="type"),
 ]

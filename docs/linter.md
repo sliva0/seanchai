@@ -98,9 +98,10 @@ own setting. Its message says which side the model follows
 
 ## Information elements
 
-An `Information Elements` block is held to the command it describes, the
-file's own, else the document its `; From:` names, else a `; Bases:`
-document's, as the model finds it
+An `Information Elements` block, or a `Command Result Codes` block under the
+same `elements-*` rules, is held to the command it describes, the file's
+own, else the document its `; From:` names, else a `; Bases:` document's,
+as the model finds it
 ([grammar.md](grammar.md#information-elements)). Without a corpus a command
 the file does not print is not judged.
 
@@ -115,6 +116,7 @@ the file does not print is not judged.
 | `element-optional-in-abnf` | note | an AVP the body makes optional (`[ ]`) that a row gives category M |
 | `element-unused-in-abnf` | note | an AVP the command's body holds that a TS 32.299 row marks not used (`-`) |
 | `element-misplaced` | error | a row set off more than one level under the row above it |
+| `result-code-undefined` | note | a code a Command Result Codes table lists that neither the file nor, with a corpus, any document's result-code tables define |
 
 A row set off under a grouped AVP's row (TS 32.299's) is held to that AVP's
 body as the file reads it, its own or the one of the document its re-used
@@ -289,4 +291,4 @@ Accepted findings, each cited by `edits/corrections/<SpecRef>.py#<id>`:
 | `reused-row-mismatch` | TS 32.299's `Supported-Features` |
 | `section-mismatch` | misprinted clauses kept as printed (TS 29.214's `PC-Session-Recovery-Status`, TS 29.273's `Trace-Info`); TS 29.273's `MIP6-Agent-Info`; RFC 5778's `MIP6-Auth-Mode` |
 | `section-unknown` | RFC 6942's scope over prose clauses 5.2 and 6; oneM2M TS-0004's clause 6.6.3 |
-| `elements-unattached` | TS 29.234's 45 tables, an old copy held for citations; TS 29.328 table 7.1.1, User-Identity's content, which four commands carry |
+| `elements-unattached` | TS 29.234's 45 element tables and its result codes table 6.3.3.3, an old copy held for citations; TS 29.328 table 7.1.1, User-Identity's content, which four commands carry |

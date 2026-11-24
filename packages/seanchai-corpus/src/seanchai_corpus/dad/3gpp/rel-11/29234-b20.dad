@@ -1437,6 +1437,15 @@ Result            Result-Code/Experimental-Result   M
 Result            Result-Code/Experimental-Result   M
 
 
+; Type: Command Result Codes
+; Section: 6.3.3.2.1
+; Table: 6.3.3.3
+; Page: 45
+DIAMETER_SUCCESS
+DIAMETER_ERROR_USER_UNKNOWN
+DIAMETER_UNABLE_TO_COMPLY
+
+
 ; Type: Information Elements
 ; Section: 8.3.1
 ; Table: 8.3.1.1

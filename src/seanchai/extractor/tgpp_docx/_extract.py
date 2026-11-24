@@ -23,7 +23,7 @@ from ._base import (
 )
 from ._collect import _assemble, _collect, _resolve
 from ._docx import _sections, _spec_and_version, _unwrap_smart_tags
-from ._elements import _element_tables
+from ._elements import _element_tables, _result_code_tables
 from ._quirks import QUIRKS
 from ._values import _value_tables
 
@@ -127,13 +127,14 @@ def extract_with_comments(
         for message in collected.messages:
             printed.setdefault(message.source.section, []).append(message.name)
         elements = _element_tables(read, warnings, ast.spec_ref(specification), printed)
+        results = _result_code_tables(read, elements)
         patcher.finish()
         sections = _assemble(
             _resolve(collected, quirks, warnings),
             collected.reprints,
             value_tables,
             collected.answers,
-            elements,
+            [*elements, *results],
         )
         quirks.finish()
         if unclaimed is not None:

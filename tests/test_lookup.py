@@ -261,6 +261,7 @@ def test_commands_as_json_are_the_dictionarys_without_their_bodies(tmp_path):
         "answer_message",
         "elements",
         "constraints",
+        "result_codes",
     }
     assert listed["applications"] == [
         {

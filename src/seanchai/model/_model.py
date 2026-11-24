@@ -35,6 +35,8 @@ from ._types import (
     Met,
     Placeholder,
     Reached,
+    ResultCode,
+    ResultCodeTable,
     Supplied,
     SupplyKey,
     Undefined,
@@ -369,7 +371,126 @@ class Model(_Resolver):
                 if each.command == message.name
                 and each.application_id in (None, message.application_id)
             ),
+            result_codes=tuple(
+                code
+                for printing, block in self._listed.get(id(message), ())
+                for code in self._codes_of(printing, block, view)
+            ),
         )
+
+    def _codes_of(
+        self, view: _View, block: ast.CommandResultCodes, printing: _View | None
+    ) -> tuple[ResultCode, ...]:
+        """`block`'s codes as `view` prints them, each with the number the
+        result-code tables of `view`, of `printing`, the command's document,
+        or of their bases, in that order, give its name, else the one every
+        document of the corpus defining the name gives it: TS 29.328's Sh
+        tables list TS 29.229's DIAMETER_ERROR_USER_UNKNOWN, which neither
+        TS 29.329 nor its bases define. Where documents of several vendor
+        spaces give the name, those of the table's file's space answer."""
+        known: dict[str, tuple[int, int, str]] = {}
+        seen: set[Path] = set()
+        pending = [view] if printing is None else [view, printing]
+        while pending:
+            each = pending.pop(0)
+            if each.entry.path in seen:
+                continue
+            seen.add(each.entry.path)
+            for table in each.value_tables:
+                if table.kind is ast.ValueKind.RESULT_CODES:
+                    for row in table.rows:
+                        known.setdefault(
+                            row.name,
+                            (row.value, table.vendor_id, row.origin or table.reference),
+                        )
+            for base in each.entry.spec.bases:
+                cited, _ = self._cited(each, base)
+                if cited is not None:
+                    pending.append(cited)
+        own = view.entry.spec.vendor_id
+        for name, defined in self._result_names.items():
+            if name in known:
+                continue
+            # Where documents of several vendor spaces name the code, the
+            # table's own space's: RFC 4740 numbers its
+            # DIAMETER_ERROR_USER_UNKNOWN 5032, 3GPP's documents 5001.
+            ours = [found for found in defined if found[1] == own]
+            for candidates in (defined, ours):
+                if len({found[:2] for found in candidates}) == 1:
+                    known[name] = candidates[0]
+                    break
+        return tuple(
+            ResultCode(
+                name=row.name,
+                value=None if (found := known.get(row.name)) is None else found[0],
+                vendor_id=None if found is None else found[1],
+                defined_in=None if found is None else found[2],
+                reference=view.entry.reference,
+                version=self._older(view),
+                section=block.source.section,
+                table=block.table,
+                page=block.source.page,
+            )
+            for row in block.rows
+        )
+
+    def result_code_tables(
+        self, reference: str | None = None, *, version: str | None = None
+    ) -> tuple[ResultCodeTable, ...]:
+        """Every table of a command's result codes `reference` (or the
+        corpus) prints, in file order, with the commands it describes, found
+        as `element_tables`' are. `version` selects an older held copy."""
+        found = []
+        for view in self._selected_views(reference, version):
+            for block in view.result_codes:
+                commanded = self._commanded(view, block, ())
+                found.append(
+                    ResultCodeTable(
+                        reference=view.entry.reference,
+                        version=self._older(view),
+                        section=block.source.section,
+                        table=block.table,
+                        page=block.source.page,
+                        command=block.command,
+                        application_id=block.application_id,
+                        origin=block.origin,
+                        codes=self._codes_of(
+                            view, block, commanded[0][0] if commanded else None
+                        ),
+                        commands=tuple(
+                            self._message_of(printing, message)
+                            for printing, message in commanded
+                        ),
+                    )
+                )
+        return tuple(found)
+
+    @cached_property
+    def _result_names(self) -> dict[str, list[tuple[int, int, str]]]:
+        """Each result code's number, vendor space and defining document, by
+        name, as every newest copy's result-code tables give it."""
+        found: dict[str, list[tuple[int, int, str]]] = {}
+        for reference in self.references():
+            for table in self._view(reference).value_tables:
+                if table.kind is ast.ValueKind.RESULT_CODES:
+                    for row in table.rows:
+                        found.setdefault(row.name, []).append(
+                            (row.value, table.vendor_id, row.origin or table.reference)
+                        )
+        return found
+
+    @cached_property
+    def _listed(
+        self,
+    ) -> dict[int, list[tuple[_View, ast.CommandResultCodes]]]:
+        """The tables of result codes describing each command block, by the
+        block's identity, with the copy printing each table."""
+        found: dict[int, list[tuple[_View, ast.CommandResultCodes]]] = {}
+        for view in self._copies.values():
+            for block in view.result_codes:
+                for _, message in self._commanded(view, block, ()):
+                    found.setdefault(id(message), []).append((view, block))
+        return found
 
     def _rows_of(
         self, view: _View, block: ast.InformationElements
@@ -436,7 +557,10 @@ class Model(_Resolver):
         return found
 
     def _commanded(
-        self, view: _View, block: ast.InformationElements, seen: tuple[Path, ...]
+        self,
+        view: _View,
+        block: ast.InformationElements | ast.CommandResultCodes,
+        seen: tuple[Path, ...],
     ) -> list[tuple[_View, ast.Message]]:
         """The command blocks an information-element table describes: those
         of its command in `view`, of its application where it states one, or

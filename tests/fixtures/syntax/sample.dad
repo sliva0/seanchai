@@ -129,6 +129,15 @@ ACME-Grouped                  OM
 "ACME Typo"                   -
 AVP                           OC
 
+; Type: Command Result Codes
+; Command: ACME-Answer
+; From: TS29.229
+; Section: 6.2.2.1
+; Table: 6.2.2.1.1
+DIAMETER_SUCCESS
+DIAMETER_ERROR_ACME_UNKNOWN ;; corrected: (Private-ACME-HSS.py#code)
+"ACME odd code"
+
 ; Type: Interpreted Constraints ;; interpreted: (Private-ACME-HSS.dadx#id-length)
 ; AVP: ACME-Id
 ; Within: ACME-Data

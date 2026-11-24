@@ -584,16 +584,6 @@
   ],
   "TS29.228": [
    {
-    "caption": "Table 6.2.2.1.1: User information update response valid result codes",
-    "header": [
-     "Result-Code AVP value",
-     "Condition"
-    ],
-    "kind": "values",
-    "page": 36,
-    "section": "6.2.2.1"
-   },
-   {
     "caption": "Table A.2.1: Cx message to Diameter command mapping",
     "header": [
      "Cx message",
@@ -629,18 +619,6 @@
     "kind": "application-ids",
     "page": 43,
     "section": "7.1.2"
-   }
-  ],
-  "TS29.234": [
-   {
-    "caption": "Table 6.3.3.3: User profile response valid result codes",
-    "header": [
-     "Result-Code AVP value",
-     "Condition"
-    ],
-    "kind": "values",
-    "page": 45,
-    "section": "6.3.3.2.1"
    }
   ],
   "TS29.272": [
@@ -701,28 +679,6 @@
     "section": "8"
    }
   ],
-  "TS29.273": [
-   {
-    "caption": "Table 7.1.2.5.3/1: Re-authorization Answer valid result codes",
-    "header": [
-     "Result-Code AVP value",
-     "Condition"
-    ],
-    "kind": "values",
-    "page": 117,
-    "section": "7.1.2.5.3"
-   },
-   {
-    "caption": "Table 8.1.2.3.3/1: User profile response valid result codes",
-    "header": [
-     "Result-Code AVP value",
-     "Condition"
-    ],
-    "kind": "values",
-    "page": 137,
-    "section": "8.1.2.3.3"
-   }
-  ],
   "TS29.283": [
    {
     "caption": "Table 7.2.2-1: Command-Code values",
@@ -738,16 +694,6 @@
    }
   ],
   "TS29.328": [
-   {
-    "caption": "Table 6.1.4.1.1: Sh-Notif response valid result codes",
-    "header": [
-     "Result-Code AVP value",
-     "Condition"
-    ],
-    "kind": "values",
-    "page": 30,
-    "section": "6.1.4.1"
-   },
    {
     "caption": "Table A.2.1: Sh message to Diameter command mapping",
     "header": [

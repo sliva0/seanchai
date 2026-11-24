@@ -64,6 +64,7 @@ __all__ = [
     "RawDocument",
     "RegistryIdentity",
     "Reservation",
+    "ResultCodeLine",
     "Rule",
     "Scope",
     "Search",
@@ -350,6 +351,17 @@ class ElementRow(_Model):
     depth: int = 0
 
 
+class ResultCodeLine(_Model):
+    """A row of a Command Result Codes block at `line`: the code's `name`
+    unquoted, and the `value` and `vendor_id` (0 for a Result-Code value) the
+    result-code tables give it, null where none does."""
+
+    line: int
+    name: str
+    value: int | None = None
+    vendor_id: int | None = None
+
+
 class ConstraintQuote(_Model):
     """A sentence an Interpreted Constraints block quotes, at `line`,
     unescaped."""
@@ -440,6 +452,10 @@ class Block(_Model):
       block, `name` being the command it describes and `described` where the
       model finds that command, none where the block names none or several
       applications print it;
+    - `result_codes` and `described` for a Command Result Codes block,
+      `name` being the command whose answer it lists codes of and
+      `described` where the model finds that command, as an Information
+      Elements block's;
     - `interpreted`, `avp_target` and `readings` for an Interpreted
       Constraints block, `name` being the AVP it constrains, `avp_target`
       where its `; AVP:` line links, and `fields` its scope (`Command`,
@@ -472,6 +488,7 @@ class Block(_Model):
     avp_target: Target | None = None
     value_rows: tuple[ValueRow, ...] = ()
     element_rows: tuple[ElementRow, ...] = ()
+    result_codes: tuple[ResultCodeLine, ...] = ()
     described: tuple[Target, ...] = ()
     described_by: tuple[ElementTableRef, ...] = ()
     interpreted: bool = False

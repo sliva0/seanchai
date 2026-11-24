@@ -313,3 +313,62 @@ def _element_tables(
                 )
             )
     return found
+
+
+# A procedure's table of the result codes its answer may carry, "Result-Code
+# AVP value | Condition" (TS 29.228 table 6.2.2.1.1), by label.
+_RESULT_CODE_HEADER = ("result-code avp value", "condition")
+
+
+def _parent(section: str) -> str:
+    return section.rpartition(".")[0]
+
+
+def _result_code_tables(
+    sections: list[_Section], elements: list[ast.InformationElements]
+) -> list[ast.CommandResultCodes]:
+    """Each table of the result codes a procedure's answer may carry, in a
+    procedure's "Detailed behaviour" clause (TS 29.228 6.2.2.1, TS 29.273
+    8.1.2.3.3), naming the answer the procedure's information-element
+    tables describe, in the clause above (6.2.2) or beside it (8.1.2.3.1),
+    where exactly one of them describes an answer; else none, and a
+    correction names it."""
+    found = []
+    for section in sections:
+        for table in section.tables:
+            labels = tuple(cell.strip().lower() for cell in table.rows[0].cells)
+            if labels != _RESULT_CODE_HEADER:
+                continue
+            table.claimed = True
+            above = _parent(section.number)
+            answers = [
+                block
+                for block in elements
+                if block.command is not None
+                and block.command.endswith("-Answer")
+                and block.avp is None
+                and (
+                    block.source.section == above
+                    or _parent(block.source.section) == above
+                )
+            ]
+            answer = answers[0] if len(answers) == 1 else None
+            names = [
+                row.cells[0]
+                for row in table.rows[1:]
+                if len(set(row.cells)) > 1 and row.cells[0]
+            ]
+            if not names:
+                continue
+            found.append(
+                ast.CommandResultCodes(
+                    command=None if answer is None else answer.command,
+                    application_id=None if answer is None else answer.application_id,
+                    command_section=None if answer is None else answer.command_section,
+                    origin=None if answer is None else answer.origin,
+                    table=table.caption,
+                    source=ast.SourceRef(section=section.number),
+                    rows=tuple(ast.ResultCodeRow(name=name) for name in names),
+                )
+            )
+    return found

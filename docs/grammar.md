@@ -39,7 +39,7 @@ version       = 1*DIGIT *("." 1*DIGIT)  ; "18.6.0"
 section       = application-scope / message / grouped-avp
               / enumerated-avp / avp-table / reused-avps / registry
               / undefined-avp / value-table / information-elements
-              / interpreted-constraints
+              / command-result-codes / interpreted-constraints
 ```
 
 A `spec-ref` names a document without its version, as one token.
@@ -640,6 +640,52 @@ AVP                              OC
   they are under no AVP.
 - The `AVP` row is the body's `* [ AVP ]`.
 - `; Command:` is the command whose ABNF the table's clause prints.
+
+### Command Result Codes
+
+```abnf
+command-result-codes = "; Type: Command Result Codes" NL
+                       ["; Command: " avp-name NL]
+                       ["; Application-ID: " application-id NL]
+                       ["; Command-Section: " section-number NL]
+                       ["; From: " spec-ref NL]
+                       "; Section: " section-number NL
+                       ["; Table: " inline-text NL]
+                       ["; Page: " 1*DIGIT NL]
+                       1*(enum-name NL)    ; a code's name as printed
+```
+
+A procedure's table of the result codes its answer may carry, each under a
+condition, "Result-Code AVP value | Condition" (TS 29.228 table 6.2.2.1.1,
+"User information update response valid result codes"):
+
+```dad
+; Type: Command Result Codes
+; Command: Push-Profile-Answer
+; From: TS29.229
+; Section: 6.2.2.1
+; Table: 6.2.2.1.1
+; Page: 36
+DIAMETER_SUCCESS
+DIAMETER_ERROR_NOT_SUPPORTED_USER_DATA
+DIAMETER_ERROR_USER_UNKNOWN
+DIAMETER_ERROR_TOO_MUCH_DATA
+DIAMETER_UNABLE_TO_COMPLY
+```
+
+- A row is a code's name as printed, written as an enum value's name. The
+  Condition cell is prose and stays in the document. The table prints no
+  number, which the document defining the code gives, often another (TS
+  29.229 defines Cx's `DIAMETER_ERROR_TOO_MUCH_DATA`), so the block is no
+  Value Table, whose rows name numbers. Result-Code's and
+  Experimental-Result-Code's codes stand together, as the table lists them.
+- `; Command:`, `; Application-ID:`, `; Command-Section:` and `; From:`
+  find the command as an Information Elements block's do
+  ([above](#information-elements)): the answer of the procedure whose
+  information-element tables stand in the clause above or beside the
+  table's.
+- No table says it lists every code an answer may carry, and none lists the
+  protocol errors an agent returns.
 
 ### Interpreted Constraints
 

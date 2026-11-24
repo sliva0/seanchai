@@ -137,10 +137,27 @@ def lint_with_corpus(
         *_duplicate_identities(index, spec.vendor_id, reused_vendor),
         *_unresolved_references(index, bases, missing_bases),
         *_against_registry(spec, index, books),
-        *_elements(spec, index, lambda reference: _cited(books, spec, reference)),
+        *_elements(
+            spec,
+            index,
+            lambda reference: _cited(books, spec, reference),
+            _result_code_names(books),
+        ),
         *_constraints(spec, index, lambda reference: _cited(books, spec, reference)),
     ]
     return accept(spec, _ordered(findings), acceptances)
+
+
+def _result_code_names(books: corpus.Corpus) -> frozenset[str]:
+    """Every result code a newest copy's result-code tables name."""
+    return frozenset(
+        row.name
+        for entry in books.newest()
+        for section in entry.spec.sections
+        if isinstance(section, ast.ValueTable)
+        and section.kind is ast.ValueKind.RESULT_CODES
+        for row in section.rows
+    )
 
 
 def lint_interpretations(

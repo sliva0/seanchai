@@ -284,6 +284,16 @@ _GX = ("; Type: Application Scope", "; Name: Gx", "; Section: 5.1")
             id="element-avp-cell-blank",
         ),
         pytest.param(
+            _dad(
+                "; Type: Command Result Codes",
+                "; Section: 6.2.2.1",
+                "DIAMETER_SUCCESS = 2001",
+            ),
+            7,
+            "malformed result code",
+            id="result-code-numbered",
+        ),
+        pytest.param(
             _grouped(
                 "; Reprints: RFC 6733",
                 "Example ::= < AVP header: 1 >",

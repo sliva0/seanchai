@@ -140,6 +140,20 @@
 "Result (See 7.5)"   Result-Code/Experimental-Result   M
 
 
+; Type: Command Result Codes
+; Command: Push-Notification-Answer
+; From: TS29.329
+; Section: 6.1.4.1
+; Table: 6.1.4.1.1
+; Page: 30
+DIAMETER_SUCCESS
+DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED
+DIAMETER_ERROR_USER_UNKNOWN
+DIAMETER_ERROR_TOO_MUCH_DATA
+DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA
+DIAMETER_UNABLE_TO_COMPLY
+
+
 ; Type: Information Elements
 ; Section: 7.1
 ; Table: 7.1.1

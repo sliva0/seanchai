@@ -84,6 +84,8 @@ type Kind = Literal[
     "element-removed",
     "element-renamed",
     "element-category",
+    "result-code-added",
+    "result-code-removed",
     "constraint-added",
     "constraint-removed",
     "constraint-changed",
@@ -493,6 +495,36 @@ class _Comparison:
                 )
             self.members(old.members, new.members, subject, identity, where, [subject])
             self.elements(old, new, subject, identity, where)
+            self.result_codes(old, new, subject, identity)
+
+    def result_codes(
+        self,
+        old: dictionary.Command,
+        new: dictionary.Command,
+        subject: str,
+        identity: tuple[Any, ...],
+    ) -> None:
+        """The codes the tables of a command's result codes list, by name:
+        a list no table says is all an answer carries, so a change is
+        editorial."""
+        before = {code.name: code for code in old.result_codes}
+        after = {code.name: code for code in new.result_codes}
+        for name in sorted(before.keys() ^ after.keys()):
+            was, now = before.get(name), after.get(name)
+            code = now or was
+            assert code is not None
+            self.add(
+                "result-code-added" if was is None else "result-code-removed",
+                "editorial",
+                f"{subject} result code {name}",
+                (*identity, "result-code", name),
+                before=None if was is None else str(was.value),
+                after=None if now is None else str(now.value),
+                where={
+                    "old": None if was is None else _code_where(was),
+                    "new": None if now is None else _code_where(now),
+                },
+            )
 
     def members(
         self,
@@ -1052,6 +1084,10 @@ def _element_where(element: dictionary.Element) -> Where:
     return Where(
         reference=element.reference, version=element.version, section=element.section
     )
+
+
+def _code_where(code: dictionary.ResultCode) -> Where:
+    return Where(reference=code.reference, version=code.version, section=code.section)
 
 
 def _table_where(table: dictionary.ValueTable) -> Where:

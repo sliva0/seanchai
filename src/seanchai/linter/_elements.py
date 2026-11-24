@@ -23,11 +23,12 @@ ELEMENT_RULES = frozenset(
         "element-optional-in-abnf",
         "element-unused-in-abnf",
         "element-misplaced",
+        "result-code-undefined",
     }
 )
 
 
-def _label(block: ast.InformationElements) -> str:
+def _label(block: ast.InformationElements | ast.CommandResultCodes) -> str:
     return block.table or f"(clause {block.source.section})"
 
 
@@ -89,6 +90,7 @@ def _elements(
     spec: ast.Specification,
     index: _Index,
     cited: Callable[[str], ast.Specification | None] | None,
+    codes: frozenset[str] | None = None,
 ) -> list[Finding]:
     """Check each information-element table against its command, found in
     the file, else in the document its `; From:` names, else in its bases,
@@ -120,13 +122,44 @@ def _elements(
     is compared with that AVP's body, as the file reads it, and not at all
     where the corpus has no such body or the row is misplaced.
 
+    A table of a command's result codes (`Command Result Codes`) finds its
+    command as an information-element table does, under the same rules.
+    `result-code-undefined` (note): it lists a code that neither the file
+    nor, with a corpus, any document's result-code tables name (`codes`).
+
     Without `cited` (a single file), a table whose command the file does not
     print is not judged."""
     findings = []
-    for block in (s for s in spec.sections if isinstance(s, ast.InformationElements)):
+    own_codes = {
+        row.name
+        for section in spec.sections
+        if isinstance(section, ast.ValueTable)
+        and section.kind is ast.ValueKind.RESULT_CODES
+        for row in section.rows
+    }
+    for block in (
+        s
+        for s in spec.sections
+        if isinstance(s, ast.InformationElements | ast.CommandResultCodes)
+    ):
         label = _label(block)
         path = index.path(block)
-        for position, row in enumerate(block.rows):
+        if isinstance(block, ast.CommandResultCodes):
+            for position, code in enumerate(block.rows):
+                if codes is not None and code.name not in codes | own_codes:
+                    findings.append(
+                        Finding(
+                            Severity.NOTE,
+                            "result-code-undefined",
+                            f"table {label} lists {code.name}, which no document"
+                            " defines",
+                            block.source.section,
+                            paths=((*path, "rows", position),),
+                        )
+                    )
+        for position, row in enumerate(
+            block.rows if isinstance(block, ast.InformationElements) else ()
+        ):
             if row.printed is not None:
                 findings.append(
                     Finding(
@@ -229,6 +262,8 @@ def _elements(
             )
             continue
         message = found[0]
+        if isinstance(block, ast.CommandResultCodes):
+            continue
         if block.avp is not None:
             grouped = _grouped(searched, block.avp)
             if grouped is None:
@@ -338,7 +373,7 @@ def _clauses(clauses: str) -> str:
 
 
 def _command(
-    spec: ast.Specification, block: ast.InformationElements
+    spec: ast.Specification, block: ast.InformationElements | ast.CommandResultCodes
 ) -> list[ast.Message]:
     """`spec`'s commands named as `block`'s, of its application where it
     names one."""

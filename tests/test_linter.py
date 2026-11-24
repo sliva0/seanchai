@@ -724,9 +724,19 @@ _TS29_234_TABLES = [
 # documents state, by acceptance (docs/linter.md#standing-findings).
 _ACCEPTED_CORPUS_NOTES = {
     "29234-b20": {
+        # Its element tables, and in file order among them the result codes
+        # table 6.3.3.3 of clause 6.3.3.2.1.
         "elements-unattached": [
-            f"TS29.234.py#elements-unattached-{label.replace('.', '-')}"
+            each
             for label in _TS29_234_TABLES
+            for each in (
+                f"TS29.234.py#elements-unattached-{label.replace('.', '-')}",
+                *(
+                    ["TS29.234.py#result-codes-unattached-6-3-3-3"]
+                    if label == "6.3.3.2"
+                    else []
+                ),
+            )
         ]
     },
     # Table 7.1.1 tabulates User-Identity, which four commands carry.
@@ -1565,6 +1575,36 @@ def test_a_charging_table_is_held_to_its_command_and_grouped_bodies():
         (
             "element-misplaced",
             "table 6.1.1.1 sets 'Language' 2 levels deep, under 1 rows",
+        ),
+    }
+
+
+def test_a_result_code_table_names_codes_some_document_defines():
+    codes = """\
+; Type: Value Table
+; AVP: Result-Code
+; Kind: result-codes
+; Section: 7.1
+DIAMETER_SUCCESS = 2001
+
+; Type: Command Result Codes
+; Command: Credit-Control-Request
+; Section: 6.1.2.1
+; Table: 6.1.2.1/1
+DIAMETER_SUCCESS
+DIAMETER_ACME_TYPO
+"""
+    spec = _dad("3GPP TS 29.900", _ccr("6.1.1"), codes, version="19.0.0")
+    found = {
+        (f.rule, f.message)
+        for f in linter.lint_with_corpus(spec, _books(spec))
+        if f.rule in ELEMENT_RULES
+    }
+
+    assert found == {
+        (
+            "result-code-undefined",
+            "table 6.1.2.1/1 lists DIAMETER_ACME_TYPO, which no document defines",
         ),
     }
 

@@ -67,6 +67,8 @@ class _View:
     answers: list[ast.AnswerMessage] = field(default_factory=list)
     # Information-element tables, in file order.
     elements: list[ast.InformationElements] = field(default_factory=list)
+    # Tables of the result codes a command's answer may carry, in file order.
+    result_codes: list[ast.CommandResultCodes] = field(default_factory=list)
     # Interpreted constraints, in file order.
     constraints: list[Constraint] = field(default_factory=list)
 
@@ -113,6 +115,8 @@ class _View:
                 view.answers.append(section)
             elif isinstance(section, ast.InformationElements):
                 view.elements.append(section)
+            elif isinstance(section, ast.CommandResultCodes):
+                view.result_codes.append(section)
             elif isinstance(section, ast.InterpretedConstraints):
                 view.constraints.append(_constraint(entry, section))
         return view

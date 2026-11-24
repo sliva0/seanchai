@@ -222,6 +222,10 @@ _SCOPED = [
     ('"ACME Typo"', "-", "constant.language.category"),
     ("AVP  ", "AVP", "variable.other.avp"),
     ("AVP  ", "OC", "constant.language.category"),
+    ("; Type: Command Result Codes", "Command Result Codes", "storage.type.section"),
+    ("DIAMETER_SUCCESS", "DIAMETER_SUCCESS", "variable.other.enum"),
+    ("DIAMETER_ERROR_ACME", "corrected", "keyword.other.note"),
+    ('"ACME odd code"', '"ACME odd code"', "variable.other.enum"),
     # A re-used AVP's row has the shape of an element's, outside the block.
     ("Session-Id  ", "MUST", "constant.language"),
     ("Destination-Host  ", "-", "punctuation.definition.empty-cell", "RFC6733 "),

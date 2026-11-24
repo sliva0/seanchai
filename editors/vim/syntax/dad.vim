@@ -122,7 +122,7 @@ syn match dadDirectiveKey "^; \zs[A-Za-z][A-Za-z-]*\ze:" contained
 syn match dadDirectiveValue ": \zs.*$" contained contains=dadTypeValue,dadValueKind,dadSpecRef,dadSection,dadClauseWildcard,dadVersionRange,dadListComma,dadNumber,dadLink,dadComment
 " A block's `; Type:`, a registry's kind: the whole value, a `;;` comment
 " after it.
-syn match dadTypeValue "\%(: \)\@2<=\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\|Interpreted Constraints\|Application IDs\|Command Codes\|AVP Codes\|Result Codes\)\ze\s*\%(;;.*\)\=$" contained
+syn match dadTypeValue "\%(: \)\@2<=\%(Application Scope\|Message\|Answer Message\|Grouped AVP\|Enumerated AVP\|AVP Table\|Reused AVPs\|Registry\|Undefined AVP\|Value Table\|Information Elements\|Command Result Codes\|Interpreted Constraints\|Application IDs\|Command Codes\|AVP Codes\|Result Codes\)\ze\s*\%(;;.*\)\=$" contained
 " `; Kind:` of a value table, whose rows read as enum values do.
 syn match dadValueKind "\%(: \)\@2<=\%(result-codes\|bits\|features\|values\)\ze\s*\%(;;.*\)\=$" contained
 syn match dadLink "https\?://\S\+" contained
@@ -168,8 +168,15 @@ syn match dadElementMap #"\%([^"\\]\|\\["\\]\)*"\|\S\+# contained contains=dadQu
 syn match dadElementAvp "[A-Za-z0-9][A-Za-z0-9_-]*" contained
 syn match dadElementSep "[,/]" contained
 syn match dadElementCat #\%(OM\|OC\|[MCO-]\|""\)\ze\s*\%(;;.*\)\=$# contained
+" A Command Result Codes block, up to the next block of another type: a code's
+" name a line, bare or quoted.
+syn region dadResultCodes start="^\%(; Type: Command Result Codes\>\)\@=" end="^\%(; Type: \%(Command Result Codes\>\)\@!\)\@=" contains=dadComment,dadDirectiveLine,dadDirectiveTextLine,dadResultCodeName
+syn match dadResultCodeName #^\%("\%([^"\\]\|\\["\\]\)*"\|[A-Za-z0-9][A-Za-z0-9_-]*\)\ze\s*\%(;;.*\)\=$# contained
 syn sync match dadElementsSync grouphere dadElements "^; Type: Information Elements\>"
 syn sync match dadElementsSync grouphere NONE "^; Type: \%(Information Elements\>\)\@!"
+" After the elements' sync, which a Command Result Codes line would end.
+syn sync match dadResultCodesSync grouphere dadResultCodes "^; Type: Command Result Codes\>"
+syn sync match dadResultCodesSync grouphere NONE "^; Type: \%(Command Result Codes\>\|Information Elements\>\)\@!"
 
 hi def link dadComment        Comment
 hi def link dadNoteKw         SpecialComment
@@ -208,6 +215,7 @@ hi def link dadOccur          Operator
 hi def link dadBold           SpecialComment
 hi def link dadStrike         SpecialComment
 hi def link dadEnumName       Identifier
+hi def link dadResultCodeName Identifier
 hi def link dadEnumNote       String
 hi def link dadFromKw         Keyword
 hi def link dadAssign         Operator

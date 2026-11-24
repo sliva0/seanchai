@@ -96,6 +96,8 @@ def test_every_model_type_has_a_one_line_repr_and_a_json_dict(built):
         *built.registry(model.RegistryKind.APPLICATION_IDS, 16777216),
         *built.marks("TS29.212", "AN-GW-Address"),
         *built.value_tables("TS29.272"),
+        *(tables := built.result_code_tables("TS29.228")),
+        *tables[0].codes,
         model.Placeholder(undefined),
         model.Alias("TS29.336", "External-Identifier", "source"),
         model.Supplied(1, 2, model.DataType.UTF8_STRING, FlagRules(must=_V), "source"),
@@ -1226,3 +1228,33 @@ def test_flag_rules_are_the_consumers_own_type():
     assert rules.to_dict()["must_not"] == ["V"]
     assert not isinstance(rules, model.Avp)
     assert repr(rules) == "<FlagRules must=M, must_not=V>"
+
+
+def test_an_answer_carries_the_result_codes_its_tables_list(built):
+    """TS 29.228 table 6.2.2.1.1 lists PPA's codes, TS 29.229's command;
+    TS 29.328's Sh table names TS 29.229's DIAMETER_ERROR_USER_UNKNOWN, which
+    neither TS 29.329 nor its bases define, and 3GPP's 5001 answers for it
+    rather than RFC 4740's 5032."""
+    (ppa,) = [
+        message
+        for message in built.messages("TS29.229")
+        if message.name == "Push-Profile-Answer"
+    ]
+    codes = {
+        (code.reference, code.name): (code.value, code.vendor_id, code.defined_in)
+        for code in ppa.result_codes
+    }
+    assert codes[("TS29.228", "DIAMETER_SUCCESS")] == (2001, 0, "RFC6733")
+    assert codes[("TS29.228", "DIAMETER_ERROR_TOO_MUCH_DATA")] == (
+        5008,
+        10415,
+        "TS29.229",
+    )
+    (sh,) = [
+        table
+        for table in built.result_code_tables("TS29.328")
+        if table.table == "6.1.4.1.1"
+    ]
+    assert [command.name for command in sh.commands] == ["Push-Notification-Answer"]
+    (unknown,) = [c for c in sh.codes if c.name == "DIAMETER_ERROR_USER_UNKNOWN"]
+    assert (unknown.value, unknown.vendor_id) == (5001, 10415)

@@ -69,6 +69,7 @@ from .export_schema import (
     RawDocument,
     RegistryIdentity,
     Reservation,
+    ResultCodeLine,
     Rule,
     Search,
     SearchEntry,
@@ -570,10 +571,14 @@ def _blocks(
     links: _Links,
     described: dict[int, tuple[Target, ...]] | None = None,
     described_by: dict[int, tuple[ElementTableRef, ...]] | None = None,
+    codes: dict[tuple[int, int], model.ResultCode] | None = None,
 ) -> tuple[Block, ...]:
     """`spec`'s sections as blocks of `text`'s lines, which `layout` places.
-    `described` gives where each Information Elements block, by position,
-    finds its command, and `described_by` each Message block's tables."""
+    `described` gives where each Information Elements or Command Result
+    Codes block, by position, finds its command, `described_by` each
+    Message block's tables, and `codes` each listed code as the model reads
+    it."""
+    codes = codes or {}
     described = described or {}
     described_by = described_by or {}
     placed = _Placed.of(text, spec, layout, links)
@@ -644,6 +649,19 @@ def _blocks(
                     depth=row.depth,
                 )
                 for item, row in enumerate(section.rows)
+            )
+            fields["described"] = described.get(index, ())
+        if isinstance(section, ast.CommandResultCodes):
+            fields["name"] = section.command
+            fields["result_codes"] = tuple(
+                ResultCodeLine(
+                    line=placed.items[index, "rows", item],
+                    name=row.name,
+                    value=None if code is None else code.value,
+                    vendor_id=None if code is None else code.vendor_id,
+                )
+                for item, row in enumerate(section.rows)
+                for code in (codes.get((index, item)),)
             )
             fields["described"] = described.get(index, ())
         if isinstance(section, ast.AvpTable | ast.ReusedAvps):
@@ -1469,19 +1487,44 @@ def _clause_names(entry: Entry) -> dict[str, Target]:
 
 def _described(
     corpus: _Lookups, entry: Entry
-) -> tuple[dict[int, tuple[Target, ...]], dict[str, Target]]:
-    """Where each Information Elements block of `entry`, by section index,
-    finds the command it describes, and where the names its lines print
-    link: the command, and each AVP its rows map as the command reads it."""
+) -> tuple[
+    dict[int, tuple[Target, ...]],
+    dict[str, Target],
+    dict[tuple[int, int], model.ResultCode],
+]:
+    """Where each Information Elements and Command Result Codes block of
+    `entry`, by section index, finds the command it describes, where the
+    names its lines print link: the command, and each AVP its rows map as
+    the command reads it, and each listed code as the model reads it, by
+    section index and row."""
     positions = [
         index
         for index, section in enumerate(entry.spec.sections)
         if isinstance(section, ast.InformationElements)
     ]
+    listing = [
+        index
+        for index, section in enumerate(entry.spec.sections)
+        if isinstance(section, ast.CommandResultCodes)
+    ]
     built = corpus.model_for(entry)
     tables = built.element_tables(entry.reference, version=entry.spec.version)
+    listed = built.result_code_tables(entry.reference, version=entry.spec.version)
     described: dict[int, tuple[Target, ...]] = {}
     names: dict[str, Target] = {}
+    codes: dict[tuple[int, int], model.ResultCode] = {}
+    for index, table in zip(listing, listed, strict=True):
+        targets = []
+        for message in table.commands:
+            version = message.version or built.version(message.defined_in)
+            printing = corpus.by_copy[message.defined_in, version]
+            target = Target(document=document_id(printing), section=message.section)
+            targets.append(target)
+            if table.command is not None:
+                names.setdefault(table.command, target)
+        described[index] = tuple(targets)
+        for item, code in enumerate(table.codes):
+            codes[index, item] = code
     for index, table in zip(positions, tables, strict=True):
         targets = []
         for message in table.commands:
@@ -1498,7 +1541,7 @@ def _described(
                     if found is not None:
                         names.setdefault(member.name, found)
         described[index] = tuple(targets)
-    return described, names
+    return described, names, codes
 
 
 def _value_table_avps(
@@ -1853,7 +1896,7 @@ def _write_document(
     for name, target in _clause_names(entry).items():
         names.setdefault(name, target)
     names.update(_value_table_avps(corpus, entry, names))
-    described, element_names = _described(corpus, entry)
+    described, element_names, codes = _described(corpus, entry)
     for name, target in element_names.items():
         names.setdefault(name, target)
     links = _Links(entry, names, corpus.references(spec), corpus.row_references(spec))
@@ -1915,6 +1958,7 @@ def _write_document(
                 for index, section in enumerate(spec.sections)
                 if isinstance(section, ast.Message)
             },
+            codes,
         ),
         corrections={
             cited: export_schema.Correction(kind=edit.kind, reason=edit.reason)

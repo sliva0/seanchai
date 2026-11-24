@@ -479,6 +479,54 @@ class Element(_Plain):
 
 
 @dataclass(frozen=True)
+class ResultCode(_Plain):
+    """A code a table of a command's result codes lists (`ast.
+    CommandResultCodes`): its `name` as printed, and the `value` and
+    `vendor_id` (0 for a Result-Code value) the result-code tables give it,
+    where one of the table's document, the command's document or their
+    bases defines it, with `defined_in` that document; None where none
+    does. `reference`, `version`, `section`, `table` and `page` locate the
+    row, whose condition the document holds."""
+
+    name: str
+    value: int | None
+    vendor_id: int | None
+    defined_in: str | None
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
+
+    def __repr__(self) -> str:
+        return f"<ResultCode {self.name} {self.value} in {self.reference}>"
+
+
+@dataclass(frozen=True)
+class ResultCodeTable(_Plain):
+    """A table of the result codes a command's answer may carry as
+    `reference` prints it, with the `commands` it describes
+    (`Model.result_code_tables`), found as an `ElementTable`'s are."""
+
+    reference: str
+    version: str | None
+    section: str
+    table: str | None
+    page: int | None
+    command: str | None
+    application_id: int | None
+    origin: str | None
+    codes: tuple[ResultCode, ...]
+    commands: tuple[Message, ...]
+
+    def __repr__(self) -> str:
+        return (
+            f"<ResultCodeTable {self.reference} table {self.table} for"
+            f" {self.command or '-'}: {len(self.codes)} codes>"
+        )
+
+
+@dataclass(frozen=True)
 class ElementTable(_Plain):
     """An information-element table as `reference` prints it, with the
     commands it describes (`Model.element_tables`): `command`, of
@@ -652,6 +700,11 @@ class Message(_Plain):
     # The document's constraints on the command's members
     # (`Constraint.command`), in file order. Interpreted, not printed.
     constraints: tuple[Constraint, ...] = ()
+    # The codes the tables of the command's result codes list, its own
+    # document's or a citing document's (TS 29.228's for TS 29.229's PPA), in
+    # file order. Not every code the answer may carry: no such table lists
+    # the protocol errors an agent returns.
+    result_codes: tuple[ResultCode, ...] = ()
 
     @property
     def is_request(self) -> bool:

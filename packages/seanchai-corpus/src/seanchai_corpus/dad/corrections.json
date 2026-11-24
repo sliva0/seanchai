@@ -3166,7 +3166,7 @@
      "targets": [
       [
        "sections",
-       93
+       94
       ]
      ]
     },
@@ -3178,7 +3178,7 @@
      "targets": [
       [
        "sections",
-       94
+       95
       ]
      ]
     },
@@ -3190,7 +3190,7 @@
      "targets": [
       [
        "sections",
-       95
+       96
       ]
      ]
     },
@@ -3202,7 +3202,7 @@
      "targets": [
       [
        "sections",
-       96
+       97
       ]
      ]
     },
@@ -3214,7 +3214,7 @@
      "targets": [
       [
        "sections",
-       97
+       98
       ]
      ]
     },
@@ -3226,7 +3226,7 @@
      "targets": [
       [
        "sections",
-       98
+       99
       ]
      ]
     },
@@ -3514,7 +3514,7 @@
      "targets": [
       [
        "sections",
-       65
+       66
       ]
      ]
     },
@@ -3526,7 +3526,7 @@
      "targets": [
       [
        "sections",
-       66
+       67
       ]
      ]
     },
@@ -3538,7 +3538,7 @@
      "targets": [
       [
        "sections",
-       68
+       69
       ]
      ]
     },
@@ -3550,7 +3550,7 @@
      "targets": [
       [
        "sections",
-       69
+       70
       ]
      ]
     },
@@ -3562,7 +3562,7 @@
      "targets": [
       [
        "sections",
-       70
+       71
       ]
      ]
     },
@@ -3574,7 +3574,7 @@
      "targets": [
       [
        "sections",
-       71
+       72
       ]
      ]
     },
@@ -3586,7 +3586,7 @@
      "targets": [
       [
        "sections",
-       72
+       73
       ]
      ]
     },
@@ -3598,7 +3598,7 @@
      "targets": [
       [
        "sections",
-       73
+       74
       ]
      ]
     },
@@ -3610,7 +3610,7 @@
      "targets": [
       [
        "sections",
-       74
+       75
       ]
      ]
     },
@@ -3622,7 +3622,7 @@
      "targets": [
       [
        "sections",
-       75
+       76
       ]
      ]
     },
@@ -3634,7 +3634,7 @@
      "targets": [
       [
        "sections",
-       76
+       77
       ]
      ]
     },
@@ -3646,7 +3646,7 @@
      "targets": [
       [
        "sections",
-       77
+       78
       ]
      ]
     },
@@ -3658,7 +3658,7 @@
      "targets": [
       [
        "sections",
-       78
+       79
       ]
      ]
     },
@@ -3670,7 +3670,7 @@
      "targets": [
       [
        "sections",
-       79
+       80
       ]
      ]
     },
@@ -3682,7 +3682,7 @@
      "targets": [
       [
        "sections",
-       80
+       81
       ]
      ]
     },
@@ -3694,7 +3694,7 @@
      "targets": [
       [
        "sections",
-       67
+       68
       ]
      ]
     },
@@ -3717,6 +3717,18 @@
     "TS29.234.py#redirect-host-cache-time": {
      "kind": "correction",
      "reason": "the RAA follows Redirect-Host and Redirect-Host-Usage with a name RFC 6733 prints Redirect-Max-Cache-Time, as this document's DEA (8.4.1) and STA (8.4.3) do"
+    },
+    "TS29.234.py#result-codes-unattached-6-3-3-3": {
+     "expect": "table 6.3.3.3 names no command; a correction names the one it describes",
+     "kind": "accept",
+     "reason": "old copy held for citations: TS 29.234 V11.2.0 is held for what older copies cite of it, and its commands' tables are left unattached",
+     "rule": "elements-unattached",
+     "targets": [
+      [
+       "sections",
+       65
+      ]
+     ]
     },
     "TS29.234.py#reused-confidentiality-key": {
      "kind": "insert",
@@ -6384,6 +6396,14 @@
      "kind": "correction",
      "reason": "table 7.2.3.1/1 sets M in Must for RAT-Type, which clause 5.2.3.6 says follows TS 29.212 and the re-used tables list from it with no M-bit override; TS 29.212 table 5.3.0.1 puts M in Must not"
     },
+    "TS29.273.py#result-codes-command-7-1-2-5-3": {
+     "kind": "correction",
+     "reason": "table 7.1.2.5.3/1, 'Re-authorization Answer valid result codes', is in the detailed behaviour of the SWm authorization information update procedure, whose clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer'; clause 7.2.2.4 prints Re-Auth-Answer at clause 7.2.2.4.2, as table 7.1.2.5.1/2 is corrected"
+    },
+    "TS29.273.py#result-codes-command-section-7-1-2-5-3": {
+     "kind": "correction",
+     "reason": "table 7.1.2.5.3/1, 'Re-authorization Answer valid result codes', is in the detailed behaviour of the SWm authorization information update procedure, whose clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer'; clause 7.2.2.4 prints Re-Auth-Answer at clause 7.2.2.4.2, as table 7.1.2.5.1/2 is corrected"
+    },
     "TS29.273.py#sip-auth-data-item-swx-body": {
      "expect": "SIP-Auth-Data-Item's body, against TS29.229's definition: missing Framed-IP-Address, Framed-IPv6-Prefix, Framed-Interface-Id, Line-Identifier, SIP-Authentication-Context, SIP-Digest-Authenticate",
      "kind": "accept",
@@ -6392,7 +6412,7 @@
      "targets": [
       [
        "sections",
-       135
+       137
       ]
      ]
     },
@@ -7188,6 +7208,14 @@
      "kind": "correction",
      "reason": "table 7.2.3.1/1 sets M in Must for RAT-Type, which clause 5.2.3.6 says follows TS 29.212 and the re-used tables list from it with no M-bit override; TS 29.212 table 5.3.0.1 puts M in Must not"
     },
+    "TS29.273.py#result-codes-command-7-1-2-5-3": {
+     "kind": "correction",
+     "reason": "table 7.1.2.5.3/1, 'Re-authorization Answer valid result codes', is in the detailed behaviour of the SWm authorization information update procedure, whose clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer'; clause 7.2.2.4 prints Re-Auth-Answer at clause 7.2.2.4.2, as table 7.1.2.5.1/2 is corrected"
+    },
+    "TS29.273.py#result-codes-command-section-7-1-2-5-3": {
+     "kind": "correction",
+     "reason": "table 7.1.2.5.3/1, 'Re-authorization Answer valid result codes', is in the detailed behaviour of the SWm authorization information update procedure, whose clause 7.1.2.5.1 says 'This procedure is based on the Diameter commands Re-Auth-Request and Re-Auth-Answer'; clause 7.2.2.4 prints Re-Auth-Answer at clause 7.2.2.4.2, as table 7.1.2.5.1/2 is corrected"
+    },
     "TS29.273.py#sip-auth-data-item-swx-body": {
      "expect": "SIP-Auth-Data-Item's body, against TS29.229's definition: missing Framed-IP-Address, Framed-IPv6-Prefix, Framed-Interface-Id, Line-Identifier, SIP-Authentication-Context, SIP-Digest-Authenticate",
      "kind": "accept",
@@ -7196,7 +7224,7 @@
      "targets": [
       [
        "sections",
-       135
+       137
       ]
      ]
     },
@@ -7398,7 +7426,7 @@
      "targets": [
       [
        "sections",
-       8
+       9
       ]
      ]
     }
@@ -7417,7 +7445,7 @@
      "targets": [
       [
        "sections",
-       8
+       9
       ]
      ]
     }

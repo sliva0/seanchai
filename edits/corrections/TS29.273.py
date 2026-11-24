@@ -7,6 +7,7 @@ from seanchai.dad.corrections import (
     Delete,
     Insert,
     avp_rule,
+    command_result_codes,
     definition,
     element_row,
     flag_rules,
@@ -1157,4 +1158,29 @@ CORRECTIONS += [
     )
     for printed, name, reason, rows in _ROWS
     for label, element in rows
+]
+
+
+# Table 7.1.2.5.3/1 lists the result codes of the answer of the procedure
+# whose information elements tables 7.1.2.5.1/1 and /2 tabulate, whose
+# commands are corrections above.
+CORRECTIONS += [
+    Correction(
+        id=f"result-codes-{field.replace('_', '-')}-7-1-2-5-3",
+        target=command_result_codes("7.1.2.5.3/1"),
+        field=field,
+        expect=None,
+        replace=value,
+        reason="table 7.1.2.5.3/1, 'Re-authorization Answer valid result codes', is"
+        " in the detailed behaviour of the SWm authorization information update"
+        " procedure, whose clause 7.1.2.5.1 says 'This procedure is based on the"
+        " Diameter commands Re-Auth-Request and Re-Auth-Answer'; clause 7.2.2.4"
+        " prints Re-Auth-Answer at clause 7.2.2.4.2, as table 7.1.2.5.1/2 is"
+        " corrected",
+        versions="18.6.0..19.2.0",
+    )
+    for field, value in (
+        ("command", "Re-Auth-Answer"),
+        ("command_section", "7.2.2.4.2"),
+    )
 ]

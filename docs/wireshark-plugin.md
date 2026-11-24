@@ -78,7 +78,9 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   value some document's `values` table names, a note, since no clause says
   its table holds every value (TS 29.272 leaves Group-Service-Id above 1000
   to the home operator); the E bit set on a protocol error (3xxx) and on no
-  other answer.
+  other answer. A code missing from a command's table of result codes
+  (TS 29.228's, 29.273's, 29.328's) is not checked: no table says it lists
+  every code, and none lists the protocol errors an agent returns.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
 - Interpreted constraints ([constraints.md](constraints.md)), what a person

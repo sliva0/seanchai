@@ -209,6 +209,9 @@ applications[]     id, reference, version, application_id, clause, name,
                    elements
     constraints[]  as constraints[] below: what its document read of its
                    members
+    result_codes[] name, value, vendor_id, defined_in, reference, version,
+                   section, table, page: the codes a table of its result
+                   codes lists
   pairs[]          command_code, requests[], answers[]: indexes into commands
   marks[]          name, avp, table, section, marks: what the application's
                    tables mark about the names it reaches
@@ -370,7 +373,7 @@ they map to. A changed name is a rename. Each change has an impact:
 |---|---|
 | `breaking` | a command, required member, AVP, value or row removed; a required member added; presence, occurrence or the order of fixed members changed; the M or V bit's rule, the basic type, the command flags changed; a value voided; an information element's category to or from M; an interpreted rule replaced by another; a hole reached |
 | `compatible` | a command, optional member, AVP, value or row added; a derived type over the same basic type; another flag's rule; a category changed between any two but M; an interpreted rule read or dropped; a hole closed |
-| `editorial` | a rename; the Encrypt cell; an element added or removed beside the ABNF; a text-only rule or a quote |
+| `editorial` | a rename; the Encrypt cell; an element added or removed beside the ABNF; a result code a table lists added or removed; a text-only rule or a quote |
 
 Every change names the command paths it affects, down from the command
 (`S6a/ULR > Subscription-Data > AMBR`), and where each side states it. Where
@@ -1013,6 +1016,23 @@ applications it does not choose between, or one printed more than once under
 its application at no clause it names; the linter reports those and where
 a category and the ABNF disagree
 ([linter.md](linter.md#information-elements)).
+
+### Result codes per command
+
+TS 29.228, 29.273 and 29.328 print, in a procedure's detailed behaviour, a
+table of the result codes its answer may carry, each under a condition.
+`Message.result_codes` holds each code such a table lists for the command,
+as a `model.ResultCode`: its `name` as printed, the `value` and `vendor_id`
+(0 for a Result-Code value) the result-code tables give it and the document
+`defined_in` giving them, found in the table's document, the command's,
+their bases, or else in every document of the corpus naming the code, those
+of the table's vendor space where spaces disagree (RFC 4740 numbers its
+`DIAMETER_ERROR_USER_UNKNOWN` 5032, 3GPP's documents 5001); None where none
+does. `reference`, `section`, `table` and `page` locate the row, whose
+condition the document holds. `result_code_tables(reference)` returns each
+table as a `model.ResultCodeTable` with the `commands` it describes. No
+table says it lists every code an answer may carry, and none lists the
+protocol errors an agent returns, so nothing holds a message to one.
 
 ### Interpreted constraints
 

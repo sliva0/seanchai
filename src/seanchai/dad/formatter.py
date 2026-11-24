@@ -164,13 +164,13 @@ def _directives(
                     f"; Application: {section.application}", (*path, "application")
                 )
             )
-    if isinstance(section, ast.InformationElements):
+    if isinstance(section, ast.InformationElements | ast.CommandResultCodes):
         for key, field, value in (
             ("Command", "command", section.command),
             ("Application-ID", "application_id", section.application_id),
             ("Command-Section", "command_section", section.command_section),
             ("From", "origin", section.origin),
-            ("AVP", "avp", section.avp),
+            ("AVP", "avp", getattr(section, "avp", None)),
         ):
             if value is not None:
                 lines.extend(notes.line(f"; {key}: {value}", (*path, field)))
@@ -196,6 +196,7 @@ def _directives(
             | ast.Registry
             | ast.ValueTable
             | ast.InformationElements
+            | ast.CommandResultCodes
             | ast.InterpretedConstraints,
         )
         and section.table is not None
@@ -637,6 +638,16 @@ def _format_information_elements(
     ]
 
 
+def _format_command_result_codes(
+    table: ast.CommandResultCodes, path: ast.TreePath, notes: Comments
+) -> list[str]:
+    lines = _directives(table, None, path, notes)
+    for index, row in enumerate(table.rows):
+        lines.extend(notes.line(value_name(row.name), (*path, "rows", index)))
+    lines.extend(notes.standing_at((*path, "rows", len(table.rows))))
+    return lines
+
+
 def _bounds(low: int | None, high: int | None) -> str:
     if low == high:
         return str(low)
@@ -724,6 +735,7 @@ _FORMATTERS: dict[type, Callable[[Any, ast.TreePath, Comments], list[str]]] = {
     ast.UndefinedAvp: _format_undefined_avp,
     ast.ValueTable: _format_value_table,
     ast.InformationElements: _format_information_elements,
+    ast.CommandResultCodes: _format_command_result_codes,
     ast.InterpretedConstraints: _format_interpreted_constraints,
     ast.InterpretationBlock: _format_interpreted_constraints,
 }

@@ -66,6 +66,7 @@ __all__ = [
     "apply_with_comments",
     "avp_rule",
     "avp_table",
+    "command_result_codes",
     "definition",
     "edits",
     "element_row",
@@ -523,6 +524,25 @@ class information_elements(Selector):
         if self.label is None:
             return f"unlabelled information elements table (clause {self.section})"
         return f"information elements table {self.label!r}"
+
+
+@dataclass(frozen=True)
+class command_result_codes(Selector):
+    """A Command Result Codes table, by its printed label."""
+
+    label: str
+
+    def locate(self, spec: ast.Specification) -> _Located:
+        """Each table carrying the label, at `("sections", i)`."""
+        yield from (
+            (("sections", index), section)
+            for index, section in enumerate(spec.sections)
+            if isinstance(section, ast.CommandResultCodes)
+            and section.table == self.label
+        )
+
+    def describe(self) -> str:
+        return f"command result codes table {self.label!r}"
 
 
 @dataclass(frozen=True)
@@ -1962,6 +1982,7 @@ _SECTION_TYPES = (
     ast.UndefinedAvp,
     ast.ValueTable,
     ast.InformationElements,
+    ast.CommandResultCodes,
     ast.InterpretedConstraints,
 )
 
@@ -2054,7 +2075,8 @@ def _cited_line(result: Result, correction: Correction) -> ast.TreePath:
         | application_scope
         | undefined
         | value_table
-        | information_elements,
+        | information_elements
+        | command_result_codes,
     ):
         return result.path
     if result.new is not None and result.new != ():

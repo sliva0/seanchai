@@ -154,6 +154,19 @@
 "Result (See 7.6)"   Result-Code/Experimental-Result   M
 
 
+; Type: Command Result Codes
+; Command: Push-Profile-Answer
+; From: TS29.229
+; Section: 6.2.2.1
+; Table: 6.2.2.1.1
+; Page: 36
+DIAMETER_SUCCESS
+DIAMETER_ERROR_NOT_SUPPORTED_USER_DATA
+DIAMETER_ERROR_USER_UNKNOWN
+DIAMETER_ERROR_TOO_MUCH_DATA
+DIAMETER_UNABLE_TO_COMPLY
+
+
 ; Type: Information Elements
 ; Section: 6.3
 ; Table: 6.3.1

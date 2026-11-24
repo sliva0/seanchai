@@ -296,6 +296,8 @@ one of them finishes the clause. A version upgrade re-reads the exclusions
 | a clause titled "Result-Code AVP values" or similar | `result-codes` `ValueTable` |
 | a sentence stating the application id | `ApplicationScope` |
 | an "Information element name, Mapping to Diameter AVP, Cat., Description" table | `InformationElements` |
+| an "AVP, Category, Description" table under a command's ABNF | `InformationElements` |
+| a "Result-Code AVP value, Condition" table | `CommandResultCodes` |
 
 Bold runs mark the document's own AVPs. A rule name may be bracketed and the
 `::=` spaced. A message heading with no rule is not a definition. Any other
@@ -511,6 +513,20 @@ Clause 5's tables, "Information Element | Category | Description" (5.1.2's
 Charging Data Request and Response, 5.2.3's Debit / Reserve Units Request and
 Response), list the abstract operations' elements, which map to no AVP.
 
+### Result codes per command
+
+A table headed "Result-Code AVP value | Condition" becomes a `Command Result
+Codes` block, one per table, its rows the first cells' names; the Condition
+cell is dropped. The table stands in a procedure's "Detailed behaviour"
+clause (TS 29.228 6.2.2.1, TS 29.273 8.1.2.3.3, TS 29.328 6.1.4.1), and
+describes the answer of the procedure's information-element tables: the one
+table in the clause above (6.2.2) or beside it (8.1.2.3.1) describing a
+command whose name ends in `-Answer`, whose `; Command:`, `; From:`,
+`; Application-ID:` and `; Command-Section:` it takes. Where that table's
+command is a correction's, or no such table names one, a correction names
+it (`command_result_codes(label)`): TS 29.273's table 7.1.2.5.3/1. TS 29.234
+V11.2.0's table 6.3.3.3 stays unattached, as its element tables do.
+
 ### Commands printed as tables
 
 Under `message-tables`, TS 32.299 V11.20.0 clause 6.4.5 prints a command as
@@ -717,7 +733,6 @@ What the baseline lists that holds definitions the corpus does not read:
 | Tables | Documents |
 |---|---|
 | Command-Code values (name, abbreviation, code, clause) | most 3GPP documents and RFCs; the ABNF gives the same codes |
-| a command's valid result codes, "Result-Code AVP value \| Condition" | TS 29.228, 29.234, 29.273, 29.328 |
 | the abstract operations' elements, "Information Element \| Category \| Description", mapped to no AVP | TS 32.299 clause 5 |
 | Gmb's re-used AVPs, "AVP Name \| Reference" | TS 29.061 table 11 |
 | RADIUS attributes per message | TS 29.061, 29.561, RFC 4590 |

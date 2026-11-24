@@ -519,7 +519,7 @@ def _assemble(
     reprints: Sequence[ast.GroupedAvp] = (),
     value_tables: Sequence[ast.ValueTable] = (),
     answers: Sequence[ast.AnswerMessage] = (),
-    elements: Sequence[ast.InformationElements] = (),
+    elements: Sequence[ast.InformationElements | ast.CommandResultCodes] = (),
 ) -> tuple[ast.Section, ...]:
     """File order: applications, messages and answer messages in document
     order, what the document re-prints and registries, then each definition

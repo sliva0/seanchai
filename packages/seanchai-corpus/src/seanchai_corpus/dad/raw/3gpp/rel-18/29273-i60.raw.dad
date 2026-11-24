@@ -2196,6 +2196,15 @@ Result-Code       Result-Code   M
 Result                      Result-Code   M
 
 
+; Type: Command Result Codes
+; Section: 7.1.2.5.3
+; Table: 7.1.2.5.3/1
+; Page: 117
+DIAMETER_SUCCESS
+DIAMETER_UNKNOWN_SESSION_ID
+DIAMETER_UNABLE_TO_COMPLY
+
+
 ; Type: Value Table
 ; AVP: Emergency-Services
 ; Kind: bits
@@ -2345,6 +2354,17 @@ Result                                           Result-Code/Experimental-Result
 "Access Network Information"                     Access-Network-Info               O
 "Local Time Zone"                                Local-Time-Zone                   O
 "Supported Features (See 3GPP TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Command Result Codes
+; Command: Push-Profile-Answer
+; From: TS29.229
+; Section: 8.1.2.3.3
+; Table: 8.1.2.3.3/1
+; Page: 137
+DIAMETER_SUCCESS
+DIAMETER_ERROR_USER_UNKNOWN
+DIAMETER_UNABLE_TO_COMPLY
 
 
 ; Type: Information Elements

@@ -400,8 +400,10 @@ until it exists.
 `corpus.toml` states the format, `format = 2`, and `corpus.FORMATS` lists the
 formats the library reads, `(2,)`. Format 2 opened the mark columns, folded
 `Reprinted AVP` into `Grouped AVP` as `; Reprints:`, and added
-`; Obsoletes:`, private documents, the `Information Elements` block, and
-the `Interpreted Constraints` block with the `interpret` kind of
+`; Obsoletes:`, private documents, the `Information Elements` block (with
+its `AVP Cat` columns, nested rows and TS 32.299's categories), the
+`Command Result Codes` block, the `values` kind of value table, and the
+`Interpreted Constraints` block with the `interpret` kind of
 `corrections.json`.
 Format 1 is not read: nothing depends on a format 1 corpus, so a second
 grammar would serve no one. The library's `corpus` extra names the first
