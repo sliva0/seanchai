@@ -173,8 +173,9 @@ holds of an unsigned integer's payload.
    `ast.Codec`, `seanchai.constraints`, the plugin's `core.lua` and this
    page, with byte vectors in `tests/test_constraints.py`.
 
-Only a 3GPP docx can be checked against its source so far: an `Interpret` for
-an RFC or a transcription is refused.
+A 3GPP docx and an RFC's text are checked against their source, an RFC's
+quote within one paragraph, its lines joined. A transcription has no source
+text to check against, so an `Interpret` for one is refused.
 
 ## TS 29.272
 

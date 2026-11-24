@@ -704,18 +704,23 @@ def _check_interpretations(
     declared: list[corrections.Declaration],
 ) -> None:
     """Hold every interpreted constraint's quotes to the clause they were
-    read from, and its page to the PDF's outline, as a correction's `expect`
-    is held to the raw file (`interpret.check_quotes`)."""
+    read from, and its page to the PDF's outline or the RFC's own page, as a
+    correction's `expect` is held to the raw file (`interpret.check_quotes`)."""
     interpretations = [
         edit for edit in declared if isinstance(edit, corrections.Interpret)
     ]
     if not interpretations:
         return
-    if source.transcribed or source.document.suffix == ".txt":
+    if source.transcribed:
         raise CorrectionError(
             f"{interpretations[0].cited}: interpreted constraints are checked"
-            " against a 3GPP docx only"
+            " against a 3GPP docx or an RFC's text, and a transcription is"
+            " neither"
         )
+    if source.document.suffix == ".txt":
+        texts, pages = rfc_text.clause_texts(source.document, sources_dir)
+        corrections.check_quotes(interpretations, texts, pages)
+        return
     from .extractor import tgpp_docx
 
     corrections.check_quotes(

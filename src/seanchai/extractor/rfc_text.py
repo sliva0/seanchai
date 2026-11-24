@@ -32,6 +32,7 @@ from .unclaimed import Candidate, classify
 __all__ = [
     "IETF_VENDOR",
     "QUIRKS",
+    "clause_texts",
     "extract",
     "extract_with_comments",
     "sources_file_name",
@@ -2527,3 +2528,37 @@ def _unclaimed(
             )
             break
     return found
+
+
+def clause_texts(
+    text_path: Path | str, sources_dir: Path | None = None
+) -> tuple[dict[str, list[str]], dict[str, int]]:
+    """Each numbered section's paragraphs, a paragraph's lines joined and its
+    whitespace collapsed, patched as `extract` reads them, by section number;
+    and the page each section starts on. What an interpreted constraint's
+    quotes and page are checked against (`dad.interpret.check_quotes`)."""
+    with boundary(f"reading {text_path}"):
+        raw = Path(text_path).read_text(encoding="utf-8").splitlines()
+        specification = _specification(raw)
+        declarations_path = (
+            sources_dir / sources_file_name(specification)
+            if sources_dir is not None
+            else None
+        )
+        patcher, _ = sources.load(declarations_path, None, QUIRKS, [])
+        lines, headings = _content_lines(raw, patcher)
+        texts: dict[str, list[str]] = {}
+        pages: dict[str, int] = {}
+        for section in _doc_sections(lines, headings):
+            paragraphs: list[str] = []
+            current: list[str] = []
+            for line in [*section.texts, ""]:
+                if line.strip():
+                    current.append(line.strip())
+                elif current:
+                    paragraphs.append(" ".join(" ".join(current).split()))
+                    current = []
+            texts.setdefault(section.number, []).extend(paragraphs)
+            if section.page is not None:
+                pages.setdefault(section.number, section.page)
+        return texts, pages

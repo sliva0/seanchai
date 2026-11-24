@@ -206,9 +206,10 @@ CORRECTIONS += [
 - `seanchai corpus regenerate` holds every quote to the clause it cites:
   it must be within one paragraph or table cell of the clause once
   whitespace is collapsed, as the extractor reads it, and `page` must be the
-  clause's page in the PDF's outline. A miss fails the document, as an
-  `expect` does. Only a 3GPP docx is checked so far, so a module for an
-  RFC or a transcription is refused.
+  clause's page in the PDF's outline, or for an RFC the page its section
+  starts on. A miss fails the document, as an `expect` does. A
+  transcription has no source text to hold a quote to, so a module for one
+  is refused.
 - `reason` is not declared: the record holds the quotes.
 
 [consumers.md](consumers.md#interpreted-constraints) describes the kinds and
