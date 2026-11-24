@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 import click
 
-from ..downloader.catalog import RELEASE, SOURCES
+from ..downloader.catalog import SOURCES
 from ._base import (
     _DEFAULT_ALIASES,
     _DEFAULT_CORPUS,
@@ -40,7 +40,15 @@ def corpus() -> None:
 
 
 @corpus.command()
-@click.option("--release", type=int, default=RELEASE, help="3GPP release.")
+@click.option(
+    "--pin-release",
+    "pin",
+    type=int,
+    multiple=True,
+    metavar="N",
+    help="Fetch 3GPP Release N at each document's newest version and pin it in"
+    " releases.toml, adding the release or moving it on. Repeatable.",
+)
 @click.option(
     "-o",
     "--output",
@@ -86,7 +94,7 @@ def corpus() -> None:
     help="With --spec: the archived version to fetch (e.g. 18.6.0).",
 )
 def download(
-    release: int,
+    pin: tuple[int, ...],
     output: Path,
     workers: int,
     no_extract: bool,
@@ -100,7 +108,9 @@ def download(
     """Download the source documents: 3GPP, RFC, oneM2M, Wireshark, and the
     PDFs behind the hand transcriptions (`transcribed`).
 
-    The new download replaces the previous one only if every entry succeeds.
+    3GPP documents are fetched in every release releases.toml pins, at the
+    pinned versions. The new download replaces the previous one only if every
+    entry succeeds.
     Legacy `.doc` files and oneM2M documents are converted to `.docx` with
     LibreOffice (`soffice` on PATH); without it the run fails unless
     --no-convert. Cached files are not fetched again.
@@ -112,12 +122,19 @@ def download(
     3GPP, oneM2M and `transcribed` downloads need the `seanchai[extract]`
     extra; `wireshark` and `rfc` do not.
     """
-    from ..downloader import download_corpus, download_version, load_catalog
+    from ..downloader import (
+        RELEASES_PATH,
+        download_corpus,
+        download_version,
+        load_catalog,
+    )
 
     if (spec is None) != (spec_version is None):
         raise click.UsageError("--spec and --version go together")
     if spec is not None and only:
         raise click.UsageError("--only and --spec exclude each other")
+    if spec is not None and pin:
+        raise click.UsageError("--pin-release and --spec exclude each other")
 
     # Catalog loading is inside the boundary too: an unreadable or malformed
     # specs.toml is a user-facing error, not a traceback.
@@ -140,7 +157,8 @@ def download(
             return
         download_corpus(
             output,
-            release=release,
+            pin=pin,
+            pins=RELEASES_PATH,
             workers=workers,
             extract=not no_extract,
             pdfs=pdfs,
@@ -157,7 +175,14 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
         click.echo(f"3GPP specifications ({len(catalog.tgpp)}):")
         for entry in catalog.tgpp:
             click.echo(f"  {entry.document_type} {entry.number}: {entry.title}")
-        click.echo(f"\n3GPP versions pinned beside it ({len(catalog.pinned)}):")
+        for release in catalog.releases:
+            click.echo(
+                f"\nRelease {release.number}, held whole"
+                f" ({len(release.versions)} documents):"
+            )
+            for number, version in release.versions:
+                click.echo(f"  {number} V{version}")
+        click.echo(f"\n3GPP versions pinned beside them ({len(catalog.pinned)}):")
         for pin in catalog.pinned:
             last = (
                 "final version"

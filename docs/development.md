@@ -174,8 +174,13 @@ fails `tests/test_corpus.py`. The export writes the names as each document's
 
 ## Version upgrades
 
-`seanchai corpus download` follows 3GPP's newest version that has a published
-ETSI PDF, so a new version appears as `replaced` on the next `regenerate`.
+`seanchai corpus download` fetches the versions `releases.toml` pins, so the
+corpus rebuilds from what it was built from
+([downloader.md](downloader.md#releases)). To move a release on,
+`uv run seanchai corpus download --pin-release 19` re-reads the archive for
+the release's newest versions with a published ETSI PDF and pins them, and a
+new version appears as `replaced` on the next `regenerate`. Commit
+`releases.toml` with the corpus it built.
 
 1. Diff the old raw file against the new raw file. This shows the
    specification's changes with the corrections held still. `regenerate`'s
@@ -226,8 +231,8 @@ split by comments, or computed) is printed as `not widened, widen it by hand:`.
 
 A new 3GPP release upgrades every document at once.
 
-1. Set `RELEASE` in `src/seanchai/downloader/catalog.py` and run
-   `uv run seanchai corpus download`.
+1. Delete the old release's table from `releases.toml` and run
+   `uv run seanchai corpus download --pin-release 20`.
 2. Run `uv run seanchai corpus regenerate`. Each copy moves into the new tree
    as `replaced`; the old pairs and empty trees are removed. Each document is
    read with the declarations of the release below it

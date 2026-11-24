@@ -34,18 +34,19 @@ from typing import Any
 
 from ..errors import MissingExtraError
 from .catalog import (
-    RELEASE,
     SOURCES,
     Catalog,
     DownloadError,
     OneM2MSpec,
     PinnedThreeGppSpec,
+    Release,
     RfcSpec,
     ThreeGppSpec,
     TranscribedDocument,
     WiresharkDictionary,
     load_catalog,
     parse_version,
+    render_releases,
 )
 
 THREE_GPP_ARCHIVE = "https://www.3gpp.org/ftp/Specs/archive/{series}_series/{number}/"
@@ -155,7 +156,8 @@ class DownloadRecord:
     conversions: list[Conversion] | None = None
     # A pinned version's claim, checked against the archive listing:
     # "document" (no later version in any release) or "release" (none later
-    # in its own). None for the catalog's release.
+    # in its own). None for a full release's version no `[[tgpp_pinned]]`
+    # names.
     final: str | None = None
 
 
@@ -742,6 +744,7 @@ def download_3gpp(
     version: tuple[int, int, int] | None = None,
     link_archive: bool = False,
     convert: bool = True,
+    final: str | None = None,
 ) -> DownloadRecord:
     """Fetch one specification into the cache under `output`, staged in `tree`.
 
@@ -752,6 +755,7 @@ def download_3gpp(
     `link_archive` puts a link to it in `tree` instead, for a tree published
     outside `output`. Without `convert`, a legacy `.doc` is extracted but not
     converted, and the record's `conversions` is empty rather than None.
+    `final` is the record's, a `[[tgpp_pinned]]` claim on the version.
     """
     identifier = f"{spec.document_type} {spec.number}"
     if not archived:
@@ -863,6 +867,7 @@ def download_3gpp(
         pdf_version=pdf_version,
         newer_source_version=newer_source_version,
         conversions=conversions,
+        final=final,
     )
 
 
@@ -877,7 +882,7 @@ def download_pinned(
 ) -> DownloadRecord:
     """Fetch a pinned version into its release's tree, as `download_3gpp`
     fetches an asked-for `version`. `archived` is `check_final`'s answer."""
-    record = download_3gpp(
+    return download_3gpp(
         pin.spec,
         archived,
         pin.release,
@@ -887,9 +892,8 @@ def download_pinned(
         pdfs,
         version=parse_version(pin.version),
         convert=convert,
+        final=pin.final,
     )
-    record.final = pin.final
-    return record
 
 
 def check_onem2m_archive(spec: OneM2MSpec, path: Path) -> str:
@@ -1129,7 +1133,7 @@ def describe(record: DownloadRecord) -> str:
 
 def write_manifest(
     tree: Path,
-    release: int | None,
+    releases: Iterable[int] | None,
     pdfs: bool | None,
     records: list[DownloadRecord],
     sources: Iterable[str] = SOURCES,
@@ -1137,8 +1141,8 @@ def write_manifest(
     """Write `tree`'s manifest.json, with no temporary file since `tree` is
     staged.
 
-    `sources` is what the tree holds; `release` and `pdfs` describe its 3GPP
-    documents, None without any."""
+    `sources` is what the tree holds; `releases`, the full releases, and
+    `pdfs` describe its 3GPP documents, None without any."""
     # A pinned version shares its identifier with the catalog's release of
     # the same document; the version keeps the order stable.
     records = sorted(
@@ -1152,7 +1156,7 @@ def write_manifest(
         ),
     )
     manifest = {
-        "3gpp_release": release,
+        "3gpp_releases": None if releases is None else sorted(releases),
         "generated_at_epoch": int(time.time()),
         "include_pdfs": pdfs,
         "artifact_count": len(records),
@@ -1186,7 +1190,7 @@ class _Kept:
 
     records: list[DownloadRecord]
     sources: frozenset[str]
-    release: int | None
+    releases: tuple[int, ...] | None
     pdfs: bool | None
 
 
@@ -1237,9 +1241,15 @@ def _kept(destination: Path, selected: frozenset[str]) -> _Kept:
     return _Kept(
         records,
         frozenset(held) - selected,
-        manifest.get("3gpp_release") if keeps_3gpp else None,
+        _releases_of(manifest) if keeps_3gpp else None,
         manifest.get("include_pdfs") if keeps_3gpp else None,
     )
+
+
+def _releases_of(manifest: dict) -> tuple[int, ...] | None:
+    """The full releases a manifest holds."""
+    held = manifest.get("3gpp_releases")
+    return None if held is None else tuple(held)
 
 
 def _link_kept(destination: Path, tree: Path, sources: Iterable[str]) -> None:
@@ -1269,7 +1279,6 @@ def staged(directory: Path) -> Generator[Path]:
 
 def download_corpus(
     output: Path,
-    release: int = RELEASE,
     workers: int = 6,
     extract: bool = True,
     pdfs: bool = False,
@@ -1277,6 +1286,8 @@ def download_corpus(
     report: Callable[[str], None] = lambda message: None,
     convert: bool = True,
     only: Iterable[str] | None = None,
+    pin: Iterable[int] = (),
+    pins: Path | None = None,
 ) -> Path:
     """Download the catalog into `output` and publish it with `manifest.json`.
 
@@ -1286,6 +1297,13 @@ def download_corpus(
     goes to `report`; anything that stops the download raises `DownloadError`.
     `convert=False` leaves legacy `.doc` archives unconverted, so LibreOffice is
     not needed.
+
+    The 3GPP documents are fetched in every release `catalog.releases` pins, at
+    the pinned versions, and in each release of `pin` at the newest version of
+    the release (with `pdfs`, the newest whose ETSI PDF is published); a
+    catalogued document with no version archived in such a release is absent
+    from it. Once the run succeeds the versions `pin`'s releases took are
+    written to `pins` beside the others (`catalog.render_releases`), if given.
 
     `only` limits the run to those of `SOURCES`; what the manifest holds of the
     others stays in it and in the tree, and its `sources` says what they hold. A
@@ -1297,22 +1315,40 @@ def download_corpus(
     """
     if workers < 1:
         raise DownloadError("workers must be at least 1")
-    release_marker(release)
+    asked = sorted(set(pin))
+    for release in asked:
+        release_marker(release)
     selected = frozenset(SOURCES if only is None else only)
     if unknown := selected - frozenset(SOURCES):
         raise DownloadError(
             f"no such source: {', '.join(sorted(unknown))};"
             f" the sources are {', '.join(SOURCES)}"
         )
+    if asked and "3gpp" not in selected:
+        raise DownloadError("pinning a release fetches 3gpp; --only leaves it out")
     if selected & {"3gpp", "onem2m", "transcribed"}:
         require_extra()
 
     catalog = catalog if catalog is not None else load_catalog()
-    tgpp_specs = catalog.tgpp if "3gpp" in selected else ()
+    full = {release.number: release for release in catalog.releases}
+    releases = sorted(set(full) | set(asked)) if "3gpp" in selected else []
     pinned_specs = catalog.pinned if "3gpp" in selected else ()
     rfc_specs = catalog.rfc if "rfc" in selected else ()
     onem2m_specs = catalog.onem2m if "onem2m" in selected else ()
     transcribed = catalog.transcribed if "transcribed" in selected else ()
+    # Each document is listed once, in every release: its full releases and
+    # its pinned versions read the one listing.
+    listed = {
+        spec.number: spec
+        for spec in (
+            *(
+                spec
+                for spec in catalog.tgpp
+                if any(r in asked or full[r].version(spec.number) for r in releases)
+            ),
+            *(pin.spec for pin in pinned_specs),
+        )
+    }
     try:
         output = output.resolve()
         output.mkdir(parents=True, exist_ok=True)
@@ -1324,55 +1360,78 @@ def download_corpus(
         staged(output) as tree,
         concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor,
     ):
-        if "3gpp" in selected:
-            report(f"Resolving 3GPP Release {release} artifacts...")
-        # Discovery is inside the boundary too: one archive listing per
-        # specification, all of them before any download starts, so a
-        # release missing several catalogued specifications names them all.
-        listings = [
-            executor.submit(discover_3gpp_archive_urls, spec, release)
-            for spec in tgpp_specs
-        ]
-        # A pinned version's listing covers every release, for its `final`.
-        pinned_listings = [
-            executor.submit(discover_3gpp_archive_urls, pin.spec, None)
-            for pin in pinned_specs
-        ]
-        archived = {
-            spec.number: listing.result()
-            for spec, listing in zip(tgpp_specs, listings, strict=True)
-        }
-        missing = [number for number, versions in archived.items() if not versions]
-        if missing:
-            raise DownloadError(
-                f"No Release {release} artifact found for: {', '.join(missing)}. "
-                "The release may not contain every catalogued specification."
+        if releases:
+            report(
+                f"Resolving 3GPP Release {', '.join(map(str, releases))} artifacts..."
             )
+        # Discovery is inside the boundary too, all of it before any download
+        # starts, so a listing that fails stops the run with nothing fetched.
+        futures = {
+            number: executor.submit(discover_3gpp_archive_urls, spec, None)
+            for number, spec in listed.items()
+        }
+        listings = {number: future.result() for number, future in futures.items()}
+
+        def of_release(number: str, release: int) -> dict[tuple[int, int, int], str]:
+            return {
+                version: url
+                for version, url in listings[number].items()
+                if version[0] == release
+            }
 
         pinned_archived = [
-            check_final(pin, listing.result())
-            for pin, listing in zip(pinned_specs, pinned_listings, strict=True)
+            check_final(pin, listings[pin.number]) for pin in pinned_specs
         ]
-
-        jobs = [
-            executor.submit(
-                download_3gpp,
-                spec,
-                archived[spec.number],
-                release,
-                output,
-                tree,
-                extract,
-                pdfs,
-                convert=convert,
+        # A `[[tgpp_pinned]]` version in a release held whole is that
+        # release's copy: fetched once, with the pin's claim on its record.
+        claims = {
+            (pin.number, pin.release): pin
+            for pin in pinned_specs
+            if pin.release in releases
+        }
+        jobs = []
+        absent: dict[int, list[str]] = {}
+        for release in releases:
+            for spec in catalog.tgpp:
+                claim = claims.get((spec.number, release))
+                if release in asked:
+                    archived = of_release(spec.number, release)
+                    if not archived:
+                        absent.setdefault(release, []).append(spec.number)
+                        continue
+                    wanted = None if claim is None else parse_version(claim.version)
+                else:
+                    version = full[release].version(spec.number)
+                    if version is None:
+                        continue
+                    archived = of_release(spec.number, release)
+                    wanted = parse_version(version)
+                jobs.append(
+                    executor.submit(
+                        download_3gpp,
+                        spec,
+                        archived,
+                        release,
+                        output,
+                        tree,
+                        extract,
+                        pdfs,
+                        version=wanted,
+                        convert=convert,
+                        final=None if claim is None else claim.final,
+                    )
+                )
+        for release, numbers in sorted(absent.items()):
+            report(
+                f"Release {release} holds no version of {', '.join(numbers)};"
+                " they are not in it"
             )
-            for spec in tgpp_specs
-        ]
         jobs.extend(
             executor.submit(
                 download_pinned, pin, archived, output, tree, extract, pdfs, convert
             )
             for pin, archived in zip(pinned_specs, pinned_archived, strict=True)
+            if (pin.number, pin.release) not in claims
         )
         jobs.extend(
             executor.submit(download_rfc, spec, output, tree) for spec in rfc_specs
@@ -1406,7 +1465,7 @@ def download_corpus(
         held = selected | kept.sources
         write_manifest(
             tree,
-            release if fetched_3gpp else kept.release,
+            releases if fetched_3gpp else kept.releases,
             pdfs if fetched_3gpp else kept.pdfs,
             records,
             held,
@@ -1422,6 +1481,29 @@ def download_corpus(
         )
     manifest_path = output / MANIFEST
     report(f"Wrote {len(records)} artifacts and {manifest_path}")
+    if asked and pins is not None:
+        moved = {
+            release: Release(
+                release,
+                tuple(
+                    sorted(
+                        (record.identifier.split(" ", 1)[1], record.source_version)
+                        for record in records
+                        if record.family == "3GPP"
+                        and record.source_version is not None
+                        and parse_version(record.source_version)[0] == release
+                    )
+                ),
+            )
+            for release in asked
+        }
+        try:
+            pins.write_text(
+                render_releases({**full, **moved}.values()), encoding="utf-8"
+            )
+        except OSError as error:
+            raise DownloadError(f"cannot write the release pins: {error}") from error
+        report(f"Pinned Release {', '.join(map(str, asked))} in {pins}")
     return manifest_path
 
 
@@ -1489,7 +1571,7 @@ def download_version(
             convert=convert,
         )
         report(describe(record))
-        write_manifest(tree, release, pdfs, [record], ("3gpp",))
+        write_manifest(tree, (release,), pdfs, [record], ("3gpp",))
         publish(staging, parent, [name])
     manifest_path = parent / name / MANIFEST
     report(f"Wrote {manifest_path}")

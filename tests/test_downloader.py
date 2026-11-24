@@ -14,6 +14,7 @@ import docx
 import pypdf
 import pytest
 
+from seanchai.downloader import catalog as specs
 from seanchai.downloader import core as downloader
 from seanchai.errors import MissingExtraError
 
@@ -190,6 +191,39 @@ def test_a_malformed_catalog_is_a_download_error(tmp_path, text, message):
         downloader.load_catalog(catalog)
 
 
+@pytest.mark.parametrize(
+    ("pins", "message"),
+    [
+        ('[release.18]\n"29.999" = "18.1.0"\n', None),
+        ('[release.18]\n"29.000" = "18.1.0"\n', "does not catalogue"),
+        ('[release.18]\n"29.999" = "17.1.0"\n', "another release's version"),
+        ('[release.7]\n"29.999" = "7.11.0"\n', "which .* holds whole at 7.11.0"),
+        ("[other]\n", "unknown tables"),
+    ],
+    ids=["read", "uncatalogued", "other-release", "pinned-in-full", "unknown"],
+)
+def test_the_release_pins_are_held_to_the_catalog(tmp_path, pins, message):
+    catalog = tmp_path / "specs.toml"
+    catalog.write_text(
+        'rfc = []\n[[tgpp]]\nnumber = "29.999"\ntitle = "T"\n\n'
+        '[[tgpp_pinned]]\nnumber = "29.999"\ntitle = "T"\nversion = "7.12.0"\n'
+        'final = "release"\n\n[wireshark]\ntag = "t"\npath = "p"\n'
+    )
+    releases = tmp_path / "releases.toml"
+    releases.write_text(pins)
+
+    if message is not None:
+        with pytest.raises(downloader.DownloadError, match=message):
+            downloader.load_catalog(catalog, releases)
+        return
+    (release,) = downloader.load_catalog(catalog, releases).releases
+    assert (release.number, release.version("29.999")) == (18, "18.1.0")
+    assert specs.load_releases(tmp_path / "none.toml") == ()
+    assert specs.render_releases([release]).endswith(
+        '\n[release.18]\n"29.999" = "18.1.0"\n'
+    )
+
+
 def test_the_shipped_catalog_names_a_source_for_every_publisher():
     """A later `--only` reads each record's family back to its source."""
     catalog = downloader.load_catalog()
@@ -289,7 +323,7 @@ def test_a_pinned_version_is_published_in_its_releases_tree(
     pin = downloader.PinnedThreeGppSpec("29.999", "Test TS", "7.12.0", "release")
     catalog = downloader.Catalog((TS,), (), SHARK, (), (pin,))
 
-    downloader.download_corpus(output, pdfs=True, catalog=catalog)
+    downloader.download_corpus(output, pdfs=True, catalog=catalog, pin=[19])
 
     tgpp = [a for a in _manifest(output)["artifacts"] if a["family"] == "3GPP"]
     assert [(a["source_version"], a["final"]) for a in tgpp] == [
@@ -314,8 +348,54 @@ def test_a_pinned_version_is_published_in_its_releases_tree(
         },
     )
     with pytest.raises(downloader.DownloadError, match=r"lists 7\.13\.0"):
-        downloader.download_corpus(output, pdfs=True, catalog=catalog)
+        downloader.download_corpus(output, pdfs=True, catalog=catalog, pin=[19])
     assert _snapshot(output) == before
+
+
+def test_a_full_release_is_fetched_at_its_pins_and_pinned_anew_on_request(
+    tmp_path, local_http_server, monkeypatch
+):
+    """Release 18 holds the pinned 18.1.0 though 18.2.0 is archived; pinning
+    Release 17 takes its newest, leaves out a document it holds no version of,
+    and writes both releases' pins."""
+    _serve(local_http_server, monkeypatch)
+    output = tmp_path / "corpus"
+    _archive_listing(
+        local_http_server,
+        "29.999",
+        **{
+            name: _zip_bytes(**{f"{name}.docx": name.encode()})
+            for name in ("29999-h00", "29999-h10", "29999-i10", "29999-i20")
+        },
+    )
+    _archive_listing(
+        local_http_server,
+        "29.998",
+        **{"29998-i00": _zip_bytes(**{"29998-i00.docx": b"new in 18"})},
+    )
+    newer = downloader.ThreeGppSpec("29.998", "New TS")
+    releases = (downloader.Release(18, (("29.998", "18.0.0"), ("29.999", "18.1.0"))),)
+    catalog = downloader.Catalog((TS, newer), (), SHARK, releases=releases)
+    pins = tmp_path / "releases.toml"
+    progress: list[str] = []
+
+    downloader.download_corpus(
+        output, catalog=catalog, pin=[17], pins=pins, report=progress.append
+    )
+
+    tgpp = [a for a in _manifest(output)["artifacts"] if a["family"] == "3GPP"]
+    assert [(a["identifier"], a["source_version"]) for a in tgpp] == [
+        ("TS 29.998", "18.0.0"),
+        ("TS 29.999", "17.1.0"),
+        ("TS 29.999", "18.1.0"),
+    ]
+    assert _manifest(output)["3gpp_releases"] == [17, 18]
+    assert (output / "3gpp/Rel-17/TS_29.999/29999-h10.docx").is_file()
+    assert (output / "3gpp/Rel-18/TS_29.999/29999-i10.docx").is_file()
+    assert "Release 17 holds no version of 29.998; they are not in it" in progress
+    assert [
+        (release.number, release.versions) for release in specs.load_releases(pins)
+    ] == [(17, (("29.999", "17.1.0"),)), *[(r.number, r.versions) for r in releases]]
 
 
 def test_download_version_fetches_one_older_version_into_its_own_tree(
@@ -529,6 +609,7 @@ def test_download_corpus_publishes_a_manifest_of_what_it_fetched(
 
     manifest_path = downloader.download_corpus(
         output,
+        pin=[19],
         workers=2,
         extract=False,
         catalog=downloader.Catalog((TS,), (RFC,), SHARK),
@@ -536,7 +617,7 @@ def test_download_corpus_publishes_a_manifest_of_what_it_fetched(
 
     assert manifest_path == output / "manifest.json"
     manifest = _manifest(output)
-    assert manifest["3gpp_release"] == 19
+    assert manifest["3gpp_releases"] == [19]
     assert manifest["generated_at_epoch"] == 1234
     assert [a["identifier"] for a in manifest["artifacts"]] == [
         "TS 29.999",
@@ -575,7 +656,7 @@ def test_only_fetches_what_it_names_and_keeps_the_rest_of_the_manifest(
 
     manifest = _manifest(output)
     assert manifest["sources"] == ["wireshark"]
-    assert (manifest["3gpp_release"], manifest["include_pdfs"]) == (None, None)
+    assert (manifest["3gpp_releases"], manifest["include_pdfs"]) == (None, None)
     assert not any(
         "archive" in path or "rfc" in path for path, _ in local_http_server.requests
     )
@@ -594,7 +675,7 @@ def test_only_fetches_what_it_names_and_keeps_the_rest_of_the_manifest(
     assert (output / "wireshark/dictionary.xml").is_file()
 
     fetched = dict(local_http_server.counts)
-    downloader.download_corpus(output, catalog=catalog, extract=False)
+    downloader.download_corpus(output, catalog=catalog, extract=False, pin=[19])
 
     assert _manifest(output)["sources"] == list(downloader.SOURCES)
     for path, count in fetched.items():
@@ -651,7 +732,7 @@ def test_a_partial_download_keeps_another_sources_conversions(
     other |= {"files": [onem2m], "conversions": None}
     (output / "manifest.json").write_text(
         json.dumps(
-            {"3gpp_release": 17, "include_pdfs": False, "artifacts": [record, other]}
+            {"3gpp_releases": [17], "include_pdfs": False, "artifacts": [record, other]}
         )
     )
 
@@ -663,7 +744,7 @@ def test_a_partial_download_keeps_another_sources_conversions(
     manifest = _manifest(output)
     assert manifest["sources"] == ["3gpp", "onem2m", "rfc"]
     # What the kept 3GPP documents were fetched under stays what it was.
-    assert (manifest["3gpp_release"], manifest["include_pdfs"]) == (17, False)
+    assert (manifest["3gpp_releases"], manifest["include_pdfs"]) == ([17], False)
     (kept_3gpp,) = (a for a in manifest["artifacts"] if a["family"] == "3GPP")
     assert kept_3gpp["conversions"] == record["conversions"]
 
@@ -706,7 +787,8 @@ def test_a_partial_download_refuses_a_manifest_it_cannot_keep(
     ("options", "message"),
     [
         ({"workers": 0}, "workers must be at least 1"),
-        ({"release": 99}, "release must be between"),
+        ({"pin": [99]}, "release must be between"),
+        ({"pin": [19], "only": ["rfc"]}, "pinning a release fetches 3gpp"),
         ({"only": ["pdfs"]}, "no such source: pdfs"),
     ],
 )
@@ -972,7 +1054,7 @@ def test_a_failed_run_leaves_the_previous_tree_and_manifest_as_they_were(
             f"{stem[:2]}.{stem[2:]}",
             **{f"{stem}-j00": _zip_bytes(old_docx=b"old")},
         )
-    downloader.download_corpus(output, catalog=catalog)
+    downloader.download_corpus(output, catalog=catalog, pin=[19])
     before = _snapshot(output)
 
     _archive_listing(
@@ -980,7 +1062,7 @@ def test_a_failed_run_leaves_the_previous_tree_and_manifest_as_they_were(
     )
     _archive_listing(local_http_server, "29.999", **{"29999-j10": b"PK\x03\x04 cut"})
     with pytest.raises(downloader.DownloadError, match="not a readable ZIP"):
-        downloader.download_corpus(output, catalog=catalog)
+        downloader.download_corpus(output, catalog=catalog, pin=[19])
 
     assert _snapshot(output) == before | {
         "archives/3gpp-rel-19/29998-j10.zip": _zip_bytes(new_docx=b"new")
@@ -1042,6 +1124,7 @@ def test_a_legacy_doc_is_converted_unless_asked_not_to(
 
     downloader.download_corpus(
         output,
+        pin=[19],
         catalog=downloader.Catalog((TS,), (), SHARK),
         report=progress.append,
         convert=convert,
@@ -1112,7 +1195,9 @@ def test_a_failed_conversion_fails_the_run_and_publishes_nothing(
     )
 
     with pytest.raises(downloader.DownloadError, match=message):
-        downloader.download_corpus(output, catalog=downloader.Catalog((TS,), (), SHARK))
+        downloader.download_corpus(
+            output, catalog=downloader.Catalog((TS,), (), SHARK), pin=[19]
+        )
 
     assert (output / "manifest.json").read_text() == '{"artifact_count": 99}'
     assert not list(output.rglob("*.docx"))

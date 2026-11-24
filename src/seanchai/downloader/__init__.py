@@ -6,8 +6,9 @@ version and are converted the same way. RFCs come as plain text from the RFC
 Editor, the ETSI PDF renditions alongside the 3GPP sources, and the PDFs the
 hand transcriptions were copied from from ETSI, 3GPP2 and OMA.
 
-The catalog is `specs.toml` next to this package. The CLI downloads into the
-git-ignored `specifications/` directory by default.
+The catalog is `specs.toml` next to this package, and the versions each
+release the corpus holds whole is fetched at are `releases.toml` beside it.
+The CLI downloads into the git-ignored `specifications/` directory by default.
 
 This package returns records and raises `DownloadError`; `seanchai corpus
 download` prints and sets the exit status. What is re-exported here is the
@@ -18,12 +19,13 @@ validate what it fetched. See docs/downloader.md.
 
 from .catalog import (
     CATALOG_PATH,
-    RELEASE,
+    RELEASES_PATH,
     SOURCES,
     Catalog,
     DownloadError,
     OneM2MSpec,
     PinnedThreeGppSpec,
+    Release,
     RfcSpec,
     ThreeGppSpec,
     TranscribedDocument,
@@ -33,7 +35,7 @@ from .core import Conversion, DownloadRecord, download_corpus, download_version
 
 __all__ = [
     "CATALOG_PATH",
-    "RELEASE",
+    "RELEASES_PATH",
     "SOURCES",
     "Catalog",
     "Conversion",
@@ -41,6 +43,7 @@ __all__ = [
     "DownloadRecord",
     "OneM2MSpec",
     "PinnedThreeGppSpec",
+    "Release",
     "RfcSpec",
     "ThreeGppSpec",
     "TranscribedDocument",

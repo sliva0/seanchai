@@ -3,8 +3,9 @@
 `src/seanchai/downloader/` fetches the catalog in `specs.toml` into the
 git-ignored `specifications/`:
 
-- 3GPP archives with their ETSI PDF renderings, and pinned older 3GPP
-  versions;
+- 3GPP archives with their ETSI PDF renderings, in every release the corpus
+  holds whole at the versions `releases.toml` pins, and the older 3GPP
+  versions citations mean;
 - RFC plain texts;
 - oneM2M's Word original, at a pinned version;
 - the PDFs the hand transcriptions were copied from;
@@ -21,6 +22,8 @@ python-docx to validate) and `soffice` unless `--no-convert`.
 ```sh
 uv run seanchai corpus download --list          # show the catalog
 uv run seanchai corpus download                 # fetch it, ETSI PDFs included
+uv run seanchai corpus download --pin-release 19  # move Release 19's pins on
+uv run seanchai corpus download --pin-release 17  # add Release 17
 uv run seanchai corpus download --no-convert    # without LibreOffice
 uv run seanchai corpus download --spec TS29.272 --version 18.6.0  # one older
 uv run seanchai corpus download --only wireshark --only rfc  # the small ones
@@ -32,9 +35,9 @@ uv run seanchai corpus download --only transcribed  # the transcriptions' PDFs
 `specs.toml` has one table per entry. `title` and `reason` are prose, read
 with whitespace collapsed; every other field is exact.
 
-- `[[tgpp]]`: a 3GPP document in the release `RELEASE` in
-  `downloader/catalog.py` names. An `out_of_scope` entry is fetched for
-  reference and refused by `regenerate --add`
+- `[[tgpp]]`: a 3GPP document, fetched in every release the corpus holds
+  whole that it exists in ([below](#releases)). An `out_of_scope` entry is
+  fetched for reference and refused by `regenerate --add`
   ([extractor.md](extractor.md#out-of-scope)).
 - `[[tgpp_pinned]]`: one older version, with a claim each run checks
   against the archive before downloading: `final = "document"` (its last
@@ -42,7 +45,9 @@ with whitespace collapsed; every other field is exact.
   goes into its own release's tree (`3gpp/Rel-11/TS_32.299/`). Every
   `cited_version` and `final_version` in `corpus.toml` must be such a pin,
   the latter with `final = "document"` (`tests/test_corpus.py`,
-  [consumers.md](consumers.md#resolution-across-releases)).
+  [consumers.md](consumers.md#resolution-across-releases)). A pin in a
+  release held whole must be that release's version, since a tree holds one
+  copy of a document; it is fetched once, carrying the claim.
 - `[[rfc]]`: an RFC.
 - `[[onem2m]]`: a oneM2M document at a pinned `version`, since oneM2M's
   library serves only a document's latest revision. A zip carrying another
@@ -56,6 +61,33 @@ with whitespace collapsed; every other field is exact.
 - `[wireshark]`: the release `tag` and `path` of Wireshark's Diameter
   dictionary directory.
 
+## Releases
+
+`releases.toml`, beside `specs.toml`, lists the releases the corpus holds
+whole and, for each, the version of every catalogued document fetched in it.
+The downloader writes it and nobody edits it:
+
+```toml
+[release.18]
+"29.061" = "18.1.0"
+"29.272" = "18.7.0"
+```
+
+`--pin-release N` reads each `[[tgpp]]` document's archive listing, takes
+the release's newest version with a published ETSI PDF (the rules under
+[Behaviour](#behaviour)), and once the run succeeds writes the versions it
+took as Release N's pins, adding the release or moving it on. A document the
+listing holds no version of in the release did not exist then, or had ended,
+and is left out of it, so no list of a release's documents is written by
+hand: TS 29.330 has no Release 15 or 17 version, and is no part of those
+releases. Every other run fetches exactly the pinned versions, whatever the
+archive has gained since, so a rebuild reads what the corpus was built from.
+Moving the newest release on to its next versions is `--pin-release 19`
+([development.md](development.md#version-upgrades)).
+
+Each document's listing is read once per run, in every release, and serves
+its releases and its `[[tgpp_pinned]]` versions alike.
+
 ## Layout
 
 The published tree, which a run swaps in whole:
@@ -63,7 +95,7 @@ The published tree, which a run swaps in whole:
 | Path | Holds |
 |---|---|
 | `manifest.json` | what the published tree holds |
-| `3gpp/Rel-19/TS_29.272/` | extracted archives |
+| `3gpp/Rel-19/TS_29.272/` | extracted archives, a tree per release |
 | `3gpp/Rel-19/PDF/` | ETSI renderings |
 | `3gpp/Rel-7/TS_29.140/` | a pinned version, in its own release |
 | `converted/` | LibreOffice conversions |
@@ -97,14 +129,16 @@ replaced and a version is downloaded once. An older version fetched with
   file that fails is deleted.
 - `--only` fetches the named sources (`3gpp` with its pins, `onem2m`, `rfc`,
   `transcribed`, `wireshark`) and keeps what the manifest holds of the
-  others. The manifest's `sources` lists what it holds; `3gpp_release` and
-  `include_pdfs` are null without 3GPP documents. A kept record whose files
-  are gone refuses the run. `regenerate` over a partial manifest fails with
-  `not-in-manifest` unless `--spec` names only documents it holds.
+  others. The manifest's `sources` lists what it holds; `3gpp_releases`, the
+  releases held whole, and `include_pdfs` are null without 3GPP documents. A
+  kept record whose files are gone refuses the run. `regenerate` over a
+  partial manifest fails with `not-in-manifest` unless `--spec` names only
+  documents it holds.
 - 3GPP versions come from `Specs/archive/`, which keeps every version; the
   manifest's `url` is the archive's.
-- The downloader takes the highest version with a published ETSI PDF and
-  records a newer, skipped one in `newer_source_version`. If no version of
+- Pinning a release, the downloader takes its highest version with a
+  published ETSI PDF and records a newer, skipped one in
+  `newer_source_version`. If no version of
   the release has a PDF, it takes the newest archive with an earlier
   version's PDF, recorded in `pdf_version`, which `attach_pages` refuses. An
   explicit `--version` is never walked back. Only ETSI's 404 for the exact
