@@ -40,6 +40,8 @@ __all__ = [
     "CrossRelease",
     "Document",
     "DocumentSummary",
+    "ElementIdentity",
+    "ElementTableRef",
     "EnumEntry",
     "Finding",
     "FlagRules",
@@ -89,6 +91,16 @@ class Target(_Model):
     document: str
     section: str | None = None
     name: str | None = None
+
+
+class ElementTableRef(_Model):
+    """An Information Elements block: its document, clause and table label,
+    which tell two tables of one clause apart (a command's request and its
+    answer)."""
+
+    document: str
+    section: str
+    table: str | None = None
 
 
 class Citation(_Model):
@@ -388,7 +400,9 @@ class Block(_Model):
 
     - `rule` for a Message, Answer Message or Grouped AVP, with `command` for
       a Message and `avp` for a Grouped AVP, whose `fields` hold `Reprints`
-      where it reprints another document's rule;
+      where it reprints another document's rule; a Message's `described_by`
+      lists the Information Elements blocks that describe it, in any
+      document (TS 29.228's describe TS 29.229's commands);
     - `avp` and `values` for an Enumerated AVP;
     - `columns` and `rows` for an AVP Table or Reused AVPs block;
     - `columns`, `allocations` and `reservations` for a Registry;
@@ -432,6 +446,7 @@ class Block(_Model):
     value_rows: tuple[ValueRow, ...] = ()
     element_rows: tuple[ElementRow, ...] = ()
     described: tuple[Target, ...] = ()
+    described_by: tuple[ElementTableRef, ...] = ()
     interpreted: bool = False
     readings: tuple[ConstraintReading, ...] = ()
     commands: tuple[CommandSpan, ...] = ()
@@ -531,6 +546,17 @@ class RegistryIdentity(_Model):
     code: int
 
 
+class ElementIdentity(_Model):
+    """An information element of a command's table: its category and the
+    AVPs it maps to. `command` is the command the table describes, null
+    where it names none."""
+
+    kind: Literal["element"]
+    category: ast.Category | None
+    avps: tuple[str, ...]
+    command: str | None
+
+
 class ValueIdentity(_Model):
     """A name a value table gives a number: `value_kind` says of which sort, and
     `avp` of which AVP; a feature's `application` and `feature_list_id` say which
@@ -551,7 +577,7 @@ class SearchEntry(_Model):
     `wireshark_name` Wireshark's name for an AVP."""
 
     name: str
-    kind: Literal["avp", "command", "application", "registry", "value"]
+    kind: Literal["avp", "command", "application", "registry", "value", "element"]
     document: str
     target: Target | None
     identity: (
@@ -560,6 +586,7 @@ class SearchEntry(_Model):
         | ApplicationIdentity
         | RegistryIdentity
         | ValueIdentity
+        | ElementIdentity
         | None
     )
     defined_in: tuple[str, ...]

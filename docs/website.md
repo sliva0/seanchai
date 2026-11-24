@@ -136,9 +136,12 @@ and in its raw mirror alike, each describing its own file's lines. Every
   `application_clause`, the Application Scope clause to cite for it: for a
   bare header the one covering the command's clause, which states the id,
   else the one naming the application. Both are left out where no scope names
-  it. An Answer Message has no `name`, as its `<answer-message>` names no
-  command: its rule's `name`, `answer-message`, is what labels it. A Grouped
-  AVP has `avp`, its header's `code` and `vendor_id`; one reprinting another
+  it. `described_by` lists the Information Elements blocks describing the
+  command, in any document (TS 29.228's for TS 29.229's commands), each its
+  `document`, `section` and `table`: the reverse of their `described`. An
+  Answer Message has no `name`, as its `<answer-message>` names no command:
+  its rule's `name`, `answer-message`, is what labels it. A Grouped AVP has
+  `avp`, its header's `code` and `vendor_id`; one reprinting another
   document's rule has `Reprints` in `fields`, its token targeting that
   document.
 - Enumerated AVP: `avp` and `values`, each a `value` with its `name` or a
@@ -196,12 +199,17 @@ the name the first Application IDs registry row allocating it prints.
 ### `search.json`
 
 A search entry is one name as one document means it: an AVP, command,
-application or registry row. It has its `target`, `defined_in`, and an
-`identity` whose fields depend on the kind (`vendor_id` and `code` for an
-AVP). A command's `application_id` is the effective one, from its header or
-the Application Scope block covering its clause; `header_application_id` is
-what the header prints. `abbreviation` is a command's own. `wireshark_name`
-is Wireshark's name for an AVP, filled with `--wireshark`.
+application, registry row, value or information element. It has its `target`,
+`defined_in`, and an `identity` whose fields depend on the kind (`vendor_id` and
+`code` for an AVP). A command's `application_id` is the effective one, from its
+header or the Application Scope block covering its clause;
+`header_application_id` is what the header prints. `abbreviation` is a command's
+own. `wireshark_name` is Wireshark's name for an AVP, filled with `--wireshark`.
+
+An information element is an entry of `kind` `element`, one per row of an
+Information Elements block. Its target is the block's clause, and its
+`identity` has the `category`, the `avps` it maps to and the `command` its
+table describes.
 
 A value table's row is an entry of `kind` `value`. Its target is its clause,
 and its `identity` has `value_kind` (`result-codes`, `bits`, `features`), the

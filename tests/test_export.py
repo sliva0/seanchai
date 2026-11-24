@@ -296,6 +296,7 @@ def test_search_json_names_each_entry_as_its_document_means_it(exported):
         "application": {"application_id"},
         "registry": {"registry", "code"},
         "value": {"value_kind", "avp", "value", "application", "feature_list_id"},
+        "element": {"category", "avps", "command"},
     }
     for entry in exported.search["entries"]:
         if entry["identity"] is not None:
@@ -581,6 +582,26 @@ def test_a_message_block_holds_its_rule_and_command(exported):
         "User-Data-Request",
     ]
     assert {span["block"] for span in udr["commands"]} == {sh["blocks"].index(udr)}
+
+
+def test_a_message_block_lists_the_tables_describing_it(exported):
+    """TS 29.228 clause 6.1.1's two tables describe TS 29.229's UAR and UAA,
+    and a search entry finds each row."""
+    uar = _block(
+        exported.docs["29229-j10"], "Message", "6.1.1", "User-Authorization-Request"
+    )
+    (table,) = uar["described_by"]
+    assert table["document"].startswith("29228-") and table["section"] == "6.1.1"
+    assert table["table"] == "6.1.1.1"
+    impi = [
+        entry
+        for entry in exported.search["entries"]
+        if entry["kind"] == "element"
+        and entry["document"] == table["document"]
+        and entry["target"]["section"] == "6.1.1"
+        and entry["identity"]["avps"] == ["User-Name"]
+    ]
+    assert impi and impi[0]["identity"]["category"] == "M"
 
 
 def test_a_message_block_names_its_application_as_the_search_entry_does(exported):

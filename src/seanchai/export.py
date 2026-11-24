@@ -57,7 +57,9 @@ from .export_schema import (
     ConstraintRule,
     Document,
     DocumentSummary,
+    ElementIdentity,
     ElementRow,
+    ElementTableRef,
     EnumEntry,
     Finding,
     Index,
@@ -565,11 +567,13 @@ def _blocks(
     layout: parser.Layout,
     links: _Links,
     described: dict[int, tuple[Target, ...]] | None = None,
+    described_by: dict[int, tuple[ElementTableRef, ...]] | None = None,
 ) -> tuple[Block, ...]:
     """`spec`'s sections as blocks of `text`'s lines, which `layout` places.
     `described` gives where each Information Elements block, by position,
-    finds its command."""
+    finds its command, and `described_by` each Message block's tables."""
     described = described or {}
+    described_by = described_by or {}
     placed = _Placed.of(text, spec, layout, links)
     commands = _commands_of(spec)
     # A table's column names one of the file's commands by its abbreviation:
@@ -619,6 +623,7 @@ def _blocks(
         if isinstance(section, ast.Message):
             fields["abbreviation"] = section.abbreviation
             fields["command"] = commands[index]
+            fields["described_by"] = described_by.get(index, ())
             spans += _message_spans(placed, index, placement, section, commands[index])
         if isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
             fields["columns"] = tuple(str(column) for column in section.columns)
@@ -1105,6 +1110,53 @@ class _Lookups:
         self.locations = {
             document_id(entry): _locations(entry.spec) for entry in self.entries
         }
+        self._described_by: (
+            dict[tuple[str, str, str, int | None], list[ElementTableRef]] | None
+        ) = None
+
+    def described_by(
+        self, entry: Entry, message: ast.Message
+    ) -> tuple[ElementTableRef, ...]:
+        """The Information Elements blocks of any document describing
+        `entry`'s `message`, in document order."""
+        if self._described_by is None:
+            found: dict[tuple[str, str, str, int | None], list[ElementTableRef]] = {}
+            for each in self.entries:
+                for table in self.model.element_tables(
+                    each.reference, version=each.spec.version
+                ):
+                    for described in table.commands:
+                        version = described.version or self.model.version(
+                            described.defined_in
+                        )
+                        printing = self.by_copy[described.defined_in, version]
+                        found.setdefault(
+                            (
+                                document_id(printing),
+                                described.section,
+                                described.name,
+                                described.header_application_id,
+                            ),
+                            [],
+                        ).append(
+                            ElementTableRef(
+                                document=document_id(each),
+                                section=table.section,
+                                table=table.table,
+                            )
+                        )
+            self._described_by = found
+        return tuple(
+            self._described_by.get(
+                (
+                    document_id(entry),
+                    message.source.section,
+                    message.name,
+                    message.application_id,
+                ),
+                (),
+            )
+        )
 
     def references(self, spec: ast.Specification) -> dict[str, Target]:
         """Each document `spec` can cite, as `spec`'s release reads it."""
@@ -1225,8 +1277,8 @@ def _avps(
 
 
 def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
-    """`entry`'s commands, applications, registry rows and value names, as search
-    entries."""
+    """`entry`'s commands, applications, registry rows, value names and
+    information elements, as search entries."""
     spec = entry.spec
     identifier = document_id(entry)
     # The header's id is part of the key: TS 29.272 clause 7.2.9 prints
@@ -1246,12 +1298,13 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
 
     def named(
         name: str,
-        kind: Literal["command", "application", "registry", "value"],
+        kind: Literal["command", "application", "registry", "value", "element"],
         section: ast.Section,
         identity: CommandIdentity
         | ApplicationIdentity
         | RegistryIdentity
-        | ValueIdentity,
+        | ValueIdentity
+        | ElementIdentity,
         defined_in: tuple[str, ...] = (entry.reference,),
         abbreviation: str | None = None,
         data_type: ast.DataType | None = None,
@@ -1341,6 +1394,21 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
                     ),
                     defined_in=(row.origin or entry.reference,),
                     clause=row.section,
+                )
+                for row in section.rows
+            )
+        elif isinstance(section, ast.InformationElements):
+            search.extend(
+                named(
+                    row.name,
+                    "element",
+                    section,
+                    ElementIdentity(
+                        kind="element",
+                        category=row.category,
+                        avps=row.avps,
+                        command=section.command,
+                    ),
                 )
                 for row in section.rows
             )
@@ -1781,7 +1849,18 @@ def _write_document(
         source=sources.source(entry),
         sections=_sections(spec, corpus.citations[identifier]),
         lines=lines,
-        blocks=_blocks(text, spec, layout, links, described),
+        blocks=_blocks(
+            text,
+            spec,
+            layout,
+            links,
+            described,
+            {
+                index: corpus.described_by(entry, section)
+                for index, section in enumerate(spec.sections)
+                if isinstance(section, ast.Message)
+            },
+        ),
         corrections={
             cited: export_schema.Correction(kind=edit.kind, reason=edit.reason)
             for cited, edit in edits.items()
