@@ -42,7 +42,13 @@ the `sources` tests, which need `uv run seanchai corpus download`.
   once you have looked over what it lists.
 - The linter's findings over the corpus: `_RAW_ERRORS`, the note counts,
   `_STANDING_CORPUS_NOTES` and `_ACCEPTED_CORPUS_NOTES` in
-  `tests/test_linter.py`. Edit them by hand after reading the failure.
+  `tests/test_linter.py`, keyed by document for the releases the corpus holds
+  whole and by file stem where one release's copy differs
+  ([development.md](docs/development.md#pins-per-release)). Edit them by hand
+  after reading the failure.
+- `src/seanchai/downloader/releases.toml`, the versions each release is
+  fetched at: `uv run seanchai corpus download --pin-release N` rewrites it.
+  Commit it with the corpus it built.
 
 [docs/development.md](docs/development.md) has the procedures.
 

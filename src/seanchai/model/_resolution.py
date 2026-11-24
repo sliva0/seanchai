@@ -60,16 +60,16 @@ class _Resolver:
         self._wireshark = wireshark
         self._policy = undefined
         self._supply: dict[SupplyKey, Supplied | Alias] = dict(supply or {})
-        self._known: dict[tuple[str, str], corpus.KnownHole] = {
-            (entry.document, entry.name): entry
-            for entry in (() if books.record is None else books.record.holes)
-        }
+        self._known: dict[tuple[str, str], corpus.KnownHole] = (
+            {} if books.record is None else books.record.at(books.release)
+        )
         # Supplied readings, by the copy declaring the name, built once.
         self._supplied: dict[tuple[Path, str], Avp] = {}
-        # One view per copy, and per reference the newest, which every
-        # reference-level query answers from: the corpus sorts candidates
-        # newest first. An older copy (TS 32.299 V11.20.0) is read only
-        # where a citation resolves to it (`corpus.Corpus.resolution`).
+        # One view per copy, and per reference the newest in the corpus's
+        # release view, which every reference-level query answers from: the
+        # corpus sorts candidates newest first. Any other copy (TS 32.299
+        # V11.20.0, or Release 19's in a Release 18 view) is read only where
+        # a citation resolves to it (`corpus.Corpus.resolution`).
         self._copies: dict[Path, _View] = {
             entry.path: _View.index(entry) for entry in books
         }
@@ -258,8 +258,8 @@ class _Resolver:
         return found
 
     def _older(self, view: _View) -> str | None:
-        """`view`'s version if it is an older copy, held only for citations;
-        None for the newest copy."""
+        """`view`'s version if it is a copy read only for citations, older or
+        of a release after the one viewed; None for the copy in view."""
         if view is self._views[view.entry.reference]:
             return None
         return view.entry.spec.version

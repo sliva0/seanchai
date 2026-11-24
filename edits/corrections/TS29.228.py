@@ -55,7 +55,7 @@ CORRECTIONS = [
         reason=f"clause 6.3 maps its procedure to Multimedia-Auth-Request/Answer"
         f" 'in the Diameter application specified in TS 29.229 [5]', and table"
         f" {label} is captioned {caption}",
-        versions="19.2.0",
+        versions="18.0.0..19.2.0",
     )
     for label, field, value, caption in _FIELDS
 ]

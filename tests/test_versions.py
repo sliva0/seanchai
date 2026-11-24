@@ -53,9 +53,10 @@ _TS29_214 = [VersionRange("7.12.0", "7.12.0"), VersionRange("18.4.0", "18.4.0")]
         ("18.5.0", 18),
         # A release upgrade reads with the newest earlier release's.
         ("19.0.0", 18),
-        ("11.0.0", 7),
-        # Below every declared release, none.
-        ("6.8.0", -1),
+        # Going back, a release between or below the declared ones reads with
+        # the oldest later release's, its expectations checked as ever.
+        ("11.0.0", 18),
+        ("6.8.0", 7),
         # A version-less document (an RFC) takes every declaration.
         (None, None),
     ],
@@ -63,7 +64,7 @@ _TS29_214 = [VersionRange("7.12.0", "7.12.0"), VersionRange("18.4.0", "18.4.0")]
 def test_declarations_apply_per_release(version, release):
     assert reviewed_release(_TS29_214, version) == release
     applied = [r for r in _TS29_214 if applies(r, release)]
-    assert len(applied) == {7: 1, 18: 1, -1: 0, None: 2}[release]
+    assert len(applied) == {7: 1, 18: 1, None: 2}[release]
 
 
 def test_open_ranges_say_nothing_of_what_was_reviewed():
@@ -72,8 +73,8 @@ def test_open_ranges_say_nothing_of_what_was_reviewed():
     declarations were reviewed for: TS 29.061 declares some quirks with no
     range beside the rest at V18.1.0, TS 29.229 a patch from V18.1.0 on."""
     assert reviewed_release([VersionRange()], "18.4.0") is None
-    assert reviewed_release([VersionRange(), *_TS29_214], "6.8.0") == -1
-    assert applies(VersionRange(), -1)
+    assert reviewed_release([VersionRange(), *_TS29_214], "6.8.0") == 7
+    assert applies(VersionRange(), 7)
     assert reviewed_release([VersionRange(), *_TS29_214], "19.1.0") == 18
     assert reviewed_release([VersionRange("18.1.0"), *_TS29_214], "19.1.0") == 18
     assert reviewed_release([VersionRange("18.1.0")], "18.4.0") == 18

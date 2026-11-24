@@ -323,7 +323,7 @@ CORRECTIONS += [
         replace="ETSI-ES283.034",
         reason=f"the clause {section} table cites [37], 'ETSI TS 283 034 v2.2.0'; ETSI"
         " publishes that title and version as ES 283 034, and has no TS 283 034",
-        versions="19.1.0",
+        versions="18.2.0..19.1.0",
     )
     for section in ("5.4.0", "5b.4.0")
     for name in ("Logical-Access-ID", "Physical-Access-ID")
@@ -357,7 +357,7 @@ CORRECTIONS += [
         reason=f"table 5c.4.1.1 cites 'IETF RFC 7863 [49]' for {name}; clause 2's"
         " [49] is IETF RFC 7683, 'Diameter Overload Indication Conveyance', which"
         " defines it and the other tables cite, and RFC 7863 concerns NFS",
-        versions="19.1.0",
+        versions="18.2.0..19.1.0",
     )
     for name in ("OC-OLR", "OC-Supported-Features")
 ]

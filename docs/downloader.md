@@ -86,7 +86,10 @@ Moving the newest release on to its next versions is `--pin-release 19`
 ([development.md](development.md#version-upgrades)).
 
 Each document's listing is read once per run, in every release, and serves
-its releases and its `[[tgpp_pinned]]` versions alike.
+its releases and its `[[tgpp_pinned]]` versions alike. `tests/test_corpus.py`
+holds the pins to the corpus's trees: each pinned release is one
+`corpus.toml` names under `releases`, and its tree holds each pinned document
+at its pinned version.
 
 ## Layout
 
@@ -97,6 +100,7 @@ The published tree, which a run swaps in whole:
 | `manifest.json` | what the published tree holds |
 | `3gpp/Rel-19/TS_29.272/` | extracted archives, a tree per release |
 | `3gpp/Rel-19/PDF/` | ETSI renderings |
+| `3gpp/Rel-18/TS_29.272/` | another release held whole |
 | `3gpp/Rel-7/TS_29.140/` | a pinned version, in its own release |
 | `converted/` | LibreOffice conversions |
 | `onem2m/Release-2/TS-0004/` | the oneM2M document |

@@ -1027,7 +1027,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.1.1.1
 ; Table: 5.2.1.1.1/2
 ; Page: 18
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS."
     requires Result-Code = DIAMETER_SUCCESS
 
@@ -1038,7 +1038,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.1.1.1
 ; Table: 5.2.1.1.1/2
 ; Page: 18
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request."
     text-only
 
@@ -1049,7 +1049,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.1.1.1
 ; Table: 5.2.1.1.1/1
 ; Page: 18
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present when the message is sent on the S6d interface and the SGSN supports LCS (using MAP based Lg interface) or SMS functionalities or the Gs interface."
     text-only
 
@@ -1060,7 +1060,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.1.1.1
 ; Table: 5.2.1.1.1/1
 ; Page: 18
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN."
     text-only
 
@@ -1071,7 +1071,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.1.1.1
 ; Table: 5.2.1.1.1/1
 ; Page: 18
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME."
     text-only
 
@@ -1082,7 +1082,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.1.1.1
 ; Table: 5.2.1.1.1/1
 ; Page: 18
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present when the MME supports SMS in MME and requests to be registered for SMS."
 "It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS."
     text-only
@@ -1139,7 +1139,7 @@ IMSI                                       User-Name                  M
 ; Section: 5.2.1.3.1
 ; Table: 5.2.1.3.1/2
 ; Page: 33
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS."
     requires Result-Code = DIAMETER_SUCCESS
 
@@ -1186,7 +1186,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If the UE is in detached state, this information element shall not be included in the response."
     text-only
 
@@ -1198,7 +1198,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If the UE is in detached state, this information element shall not be included in the response."
     text-only
 
@@ -1210,7 +1210,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If the UE is in detached state, this information element shall not be included in the response."
     text-only
 
@@ -1222,7 +1222,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if EPS user state was requested within IDR."
     text-only
 
@@ -1234,7 +1234,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if EPS location information was requested within IDR."
     text-only
 
@@ -1246,7 +1246,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if the Local Time Zone was requested within IDR."
     text-only
 
@@ -1258,7 +1258,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported."
     text-only
 
@@ -1270,7 +1270,7 @@ IMSI                                       User-Name            M
 ; Section: 5.2.2.1.1
 ; Table: 5.2.2.1.1/2
 ; Page: 35
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This Information Element shall be present if Monitoring event configuration is included in IDR."
     text-only
 
@@ -1313,7 +1313,7 @@ IMSI                                       User-Name              M
 ; Section: 5.2.2.2.1
 ; Table: 5.2.2.2.1/1
 ; Page: 43
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This element shall be present only if the \"Trace Data Withdrawal\" bit is set in the DSR-Flags."
     requires DSR-Flags bit "Trace Data Withdrawal"
 
@@ -1325,7 +1325,7 @@ IMSI                                       User-Name              M
 ; Section: 5.2.2.2.1
 ; Table: 5.2.2.2.1/1
 ; Page: 43
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This element shall be present only if the \"PDN subscription contexts Withdrawal\" bit or the \"PDP context withdrawal\" bit is set in the DSR-Flags."
     requires DSR-Flags bit "PDN subscription contexts Withdrawal" or DSR-Flags bit "PDP contexts Withdrawal"
 "In the \"PDN subscription contexts Withdrawal\" case, the Context-Identifier shall not be associated with the default APN configuration."
@@ -1341,7 +1341,7 @@ IMSI                                       User-Name              M
 ; Section: 5.2.2.2.1
 ; Table: 5.2.2.2.1/1
 ; Page: 43
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted."
     requires DSR-Flags bit "SMS Withdrawal"
 
@@ -1353,7 +1353,7 @@ IMSI                                       User-Name              M
 ; Section: 5.2.2.2.1
 ; Table: 5.2.2.2.1/1
 ; Page: 43
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This element shall be present only if the \"SMS Withdrawal\" bit is set or the \"LCS Withdrawal\" bit is set in the DSR-Flags."
     requires DSR-Flags bit "SMS Withdrawal" or DSR-Flags bit "LCS Withdrawal"
 
@@ -1365,7 +1365,7 @@ IMSI                                       User-Name              M
 ; Section: 5.2.2.2.1
 ; Table: 5.2.2.2.1/1
 ; Page: 43
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This element shall be present if the \"Delete monitoring events\" bit is set in the DSR-Flags."
     present-if DSR-Flags bit "Delete monitoring events"
 
@@ -1377,7 +1377,7 @@ IMSI                                       User-Name              M
 ; Section: 5.2.2.2.1
 ; Table: 5.2.2.2.1/1
 ; Page: 43
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted."
     requires DSR-Flags bit eDRX-Cycle-Length-Withdrawal
 
@@ -1415,7 +1415,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Section: 5.2.3.1.1
 ; Table: 5.2.3.1.1/2
 ; Page: 47
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription."
     text-only
 
@@ -1483,7 +1483,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface."
     text-only
 
@@ -1494,7 +1494,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled."
     text-only
 
@@ -1505,7 +1505,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present when the PDN GW Identity is present and does not contain an FQDN."
     text-only
 
@@ -1516,7 +1516,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For establishment of non-emergency PDN connections, it shall be present if the selected PDN-GW is present and is particular for one specific APN and not common to all the APNs."
     text-only
 "For establishment of emergency PDN connections (i.e., the Emergency-Services AVP is present, with the Emergency-Indication flag set), this AVP shall be left absent."
@@ -1529,7 +1529,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages."
     text-only
 
@@ -1540,7 +1540,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request."
     text-only
 
@@ -1551,7 +1551,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Absence of this information element shall be interpreted as all bits set to 0."
     default 0
 
@@ -1562,7 +1562,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This Information Element shall be present if Homogeneous Support of IMS Voice Over PS Sessions is modified to one of the values \"SUPPORTED\" or \"NOT_SUPPORTED\"."
     text-only
 
@@ -1573,7 +1573,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF."
     text-only
 
@@ -1584,7 +1584,7 @@ IMSI                                                                User-Name   
 ; Section: 5.2.5.1.1
 ; Table: 5.2.5.1.1/1
 ; Page: 54
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection"
     text-only
 
@@ -1620,7 +1620,7 @@ MSISDN                                     MSISDN               C
 ; Section: 5A.2.1.1.1
 ; Table: 5A.2.1.1.1/1
 ; Page: 61
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present when the message is sent on the S7d interface."
     text-only
 
@@ -1631,7 +1631,7 @@ MSISDN                                     MSISDN               C
 ; Section: 5A.2.1.1.1
 ; Table: 5A.2.1.1.1/2
 ; Page: 61
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set."
     text-only
 
@@ -1750,7 +1750,7 @@ IMSI                                 User-Name              O
 ; Section: 6.2.1.1
 ; Table: 6.2.1.1/2
 ; Page: 69
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS."
     present-if Result-Code = DIAMETER_SUCCESS
 
@@ -1818,7 +1818,7 @@ Subscription-Data ::= < AVP header: 1400 10415 >
 ; Within: Subscription-Data
 ; Section: 7.3.2
 ; Page: 98
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\"."
     text-only
 
@@ -1838,7 +1838,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
 ; AVP: IMEI
 ; Section: 7.3.4
 ; Page: 100
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It should consist of 14 digits, including the 8-digit Type Allocation Code (TAC) and the 6-digit Serial Number (SNR). It may also include a 15th digit."
     encoding digits
     length 14..15 digits
@@ -1848,7 +1848,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
 ; AVP: Software-Version
 ; Section: 7.3.5
 ; Page: 100
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the 2-digit Software Version Number (SVN) of the International Mobile Equipment Identity, as specified in TS 23.003 [3]."
     encoding digits
     length 2 digits
@@ -1858,7 +1858,7 @@ Terminal-Information ::= < AVP header: 1401 10415 >
 ; AVP: 3GPP2-MEID
 ; Section: 7.3.6
 ; Page: 100
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For further details on the encoding of the AVP data, refer to the encoding of the Mobile Identity (MEID) octets 3 to 10 in 3GPP2 A.S0022 [28] Annex A."
     encoding element 3GPP2-A.S0022 A "Mobile Identity (MEID)"
     length 8 octets
@@ -1899,7 +1899,7 @@ Disaster-Roaming-service-in-EPS-Indication   = 12
 ; AVP: Visited-PLMN-Id
 ; Section: 7.3.9
 ; Page: 103
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the concatenation of MCC and MNC."
 "The content of this AVP shall be encoded as an octet string according to table 7.3.9-1."
 "If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
@@ -2142,7 +2142,7 @@ Service-Gap-Time-Withdrawal                      = 31
 ; Section: 7.3.25
 ; Table: 7.3.25/1
 ; Page: 122
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set."
     bits at-most-one 3 6
 "Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared."
@@ -2228,7 +2228,7 @@ Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
 ; Section: 7.3.31
 ; Table: 7.3.31/1
 ; Page: 126
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "NOTE 2: Bits 11 and 12 are only used when bit 4 is not set."
     text-only
 
@@ -2237,7 +2237,7 @@ Subscriber-Status ::= < Enumerated AVP header: 1424 10415 >
 ; AVP: APN-OI-Replacement
 ; Section: 7.3.32
 ; Page: 127
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The contents of the APN-OI-Replacement AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\")."
     encoding labels
 
@@ -2269,7 +2269,7 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
 ; Within: APN-Configuration-Profile
 ; Section: 7.3.34
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Context-Identifier AVP shall identify the per subscriber's default APN configuration."
     text-only
 
@@ -2279,7 +2279,7 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
 ; Within: APN-Configuration-Profile
 ; Section: 7.3.34
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If present, the Additional-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than one types of APNs"
     text-only
 
@@ -2289,7 +2289,7 @@ APN-Configuration-Profile ::= < AVP header: 1429 10415 >
 ; Within: APN-Configuration-Profile
 ; Section: 7.3.34
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If present, the Third-Context-Identifier AVP shall identify another default APN configuration, only for those subscriptions containing more than two types of APNs"
     text-only
 
@@ -2334,7 +2334,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Context-Identifier in the APN-Configuration AVP shall identify that APN configuration, and it shall not have a value of zero."
     exclude 0
 "Furthermore, the Context-Identifier in the APN-Configuration AVP shall uniquely identify the EPS APN configuration per subscription."
@@ -2348,7 +2348,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For a particular EPS user having multiple APN configurations, the Service-Selection AVP values shall be unique across APN-Configuration AVPs."
     text-only
 
@@ -2358,7 +2358,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "These AVPs shall be present if static IP address allocation is used for the UE"
     text-only
 "For the IPv6 prefix, the lower 64 bits of the address shall be set to zero."
@@ -2370,7 +2370,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info AVP. Therefore, it shall not be present if MIP6-Agent-Info is not present."
     requires MIP6-Agent-Info
 
@@ -2380,7 +2380,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Non-IP-Data-Delivery-Mechanism shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1)."
     requires Non-IP-PDN-Type-Indicator = TRUE
 
@@ -2390,7 +2390,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1)."
     requires Non-IP-PDN-Type-Indicator = TRUE
     requires Non-IP-Data-Delivery-Mechanism = 1
@@ -2401,7 +2401,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.35
 ; Page: 128
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The SCEF-ID AVP and the SCEF-Realm AVP shall only be present when Non-IP-PDN-Type-Indicator is set to TRUE (1), and Non-IP-Data-Delivery-Mechanism is set to SCEF-BASED-DATA-DELIVERY (1)."
     requires Non-IP-PDN-Type-Indicator = TRUE
     requires Non-IP-Data-Delivery-Mechanism = 1
@@ -2411,7 +2411,7 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; AVP: Service-Selection
 ; Section: 7.3.36
 ; Page: 130
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\"), or as the wild card APN, i.e., consisting of only one ASCII label, \"*\"."
     encoding apn
 
@@ -2431,7 +2431,7 @@ EPS-Subscribed-QoS-Profile ::= < AVP header: 1431 10415 >
 ; Within: EPS-Subscribed-QoS-Profile
 ; Section: 7.3.37
 ; Page: 130
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to GBR bearers, cannot be sent over S6a/S6d."
     exclude 1, 2, 3, 4
 "The values allowed for this AVP over the S6a/S6d interface are only those associated to non-GBR bearers, as indicated in TS 23.008 [30]"
@@ -2451,7 +2451,7 @@ VPLMN-Dynamic-Address-Allowed ::= < Enumerated AVP header: 1432 10415 >
 ; AVP: STN-SR
 ; Section: 7.3.39
 ; Page: 131
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP contains an STN-SR, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string."
 "This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
     encoding e164-tbcd
@@ -2472,7 +2472,7 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
 ; Within: Allocation-Retention-Priority
 ; Section: 7.3.40
 ; Page: 131
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If the Pre-emption-Capability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_CAPABILITY_DISABLED (1)."
     default PRE-EMPTION_CAPABILITY_DISABLED
 
@@ -2482,7 +2482,7 @@ Allocation-Retention-Priority ::= < AVP header: 1034 10415 >
 ; Within: Allocation-Retention-Priority
 ; Section: 7.3.40
 ; Page: 131
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "If the Pre-emption-Vulnerability AVP is not present in the Allocation-Retention-Priority AVP, the default value shall be PRE-EMPTION_VULNERABILITY_ENABLED (0)."
     default PRE-EMPTION_VULNERABILITY_ENABLED
 
@@ -2504,7 +2504,7 @@ AMBR ::= < AVP header: 1435 10415 >
 ; Within: AMBR
 ; Section: 7.3.41
 ; Page: 131
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent."
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295"
     requires Max-Requested-Bandwidth-UL = 4294967295
@@ -2515,7 +2515,7 @@ AMBR ::= < AVP header: 1435 10415 >
 ; Within: AMBR
 ; Section: 7.3.41
 ; Page: 131
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent."
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295"
     requires Max-Requested-Bandwidth-DL = 4294967295
@@ -2526,7 +2526,7 @@ AMBR ::= < AVP header: 1435 10415 >
 ; Within: MIP-Home-Agent-Host
 ; Section: 7.3.43
 ; Page: 132
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Destination-Host shall contain the hostname of the PDN-GW, formatted as described in TS 29.303 [38], clause 4.3.2."
     encoding element TS29.303 4.3.2
 
@@ -2536,7 +2536,7 @@ AMBR ::= < AVP header: 1435 10415 >
 ; Within: MIP-Home-Agent-Host
 ; Section: 7.3.43
 ; Page: 132
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Destination-Realm shall be formatted as:"
 "epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org"
     encoding epc-plmn-domain
@@ -2567,7 +2567,7 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 ; Within: MIP6-Agent-Info
 ; Section: 7.3.45
 ; Page: 132
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "FQDN shall be used if known to the MME/SGSN/HSS."
     text-only
 
@@ -2577,7 +2577,7 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 ; Within: MIP6-Agent-Info
 ; Section: 7.3.45
 ; Page: 132
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP."
     text-only
 
@@ -2586,7 +2586,7 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 ; AVP: RAT-Frequency-Selection-Priority-ID
 ; Section: 7.3.46
 ; Page: 133
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Values shall be in the range of 1 to 256."
     range 1..256
 
@@ -2632,7 +2632,7 @@ Reserved                                            = 4
 ; AVP: User-Id
 ; Section: 7.3.50
 ; Page: 134
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string."
     encoding digits
 
@@ -2651,7 +2651,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; AVP: Regional-Subscription-Zone-Code
 ; Section: 7.3.52
 ; Page: 135
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall contain a Zone Code (ZC) as defined in TS 23.003 [3], clause 4.4."
     encoding element TS23.003 4.4 "Zone Code"
 
@@ -2660,7 +2660,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; AVP: RAND
 ; Section: 7.3.53
 ; Page: 135
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the RAND. See TS 33.401 [5]."
     encoding element TS33.401 "RAND"
 
@@ -2669,7 +2669,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; AVP: XRES
 ; Section: 7.3.54
 ; Page: 135
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the XRES. See TS 33.401 [5]."
     encoding element TS33.401 "XRES"
 
@@ -2678,7 +2678,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; AVP: AUTN
 ; Section: 7.3.55
 ; Page: 135
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the AUTN. See TS 33.401 [5]."
     encoding element TS33.401 "AUTN"
 
@@ -2687,7 +2687,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; AVP: KASME
 ; Section: 7.3.56
 ; Page: 135
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the K_ASME. See TS 33.401 [5]."
     encoding element TS33.401 "K_ASME"
 
@@ -2696,7 +2696,7 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; AVP: SRES
 ; Section: 7.3.60
 ; Page: 135
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the SRES. See TS 33.102 [18]."
     encoding element TS33.102 "SRES"
 
@@ -2734,7 +2734,7 @@ Trace-Data ::= < AVP header: 1458 10415 >
 ; AVP: Trace-Reference
 ; Section: 7.3.64
 ; Page: 136
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the concatenation of MCC, MNC and Trace ID, where the Trace ID is a 3 byte Octet String."
 "The content of this AVP shall be encoded as octet strings according to table 7.3.64/1."
 "If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
@@ -2763,7 +2763,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
 ; AVP: Trace-NE-Type-List
 ; Section: 7.3.68
 ; Page: 137
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 32.422 [23]."
     encoding element TS32.422
 
@@ -2772,7 +2772,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
 ; AVP: Trace-Interface-List
 ; Section: 7.3.69
 ; Page: 137
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 32.422 [23]."
     encoding element TS32.422
 
@@ -2781,7 +2781,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
 ; AVP: Trace-Event-List
 ; Section: 7.3.70
 ; Page: 137
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 32.422 [23]."
     encoding element TS32.422
 
@@ -2790,7 +2790,7 @@ Trace-Depth ::= < Enumerated AVP header: 1462 10415 >
 ; AVP: OMC-Id
 ; Section: 7.3.71
 ; Page: 137
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
     encoding element TS29.002
 
@@ -2844,7 +2844,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; Within: PDP-Context
 ; Section: 7.3.74
 ; Page: 138
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Ext-PDP-Address AVP may be present only if the PDP-Address AVP is present."
     requires PDP-Address
 "If the Ext-PDP-Address AVP is present, then it shall not contain the same address type (IPv4 or IPv6) as the PDP-Address AVP."
@@ -2856,7 +2856,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; Within: PDP-Context
 ; Section: 7.3.74
 ; Page: 138
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "When PDP-Type takes the value Non-IP (HEX 02), the Ext-PDP-Type AVP shall be absent."
     text-only
 
@@ -2866,7 +2866,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; Within: PDP-Context
 ; Section: 7.3.74
 ; Page: 138
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Non-IP-Data-Delivery-Mechanism shall only be present when PDP-Type takes the value Non-IP (HEX 02)."
     text-only
 
@@ -2876,7 +2876,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; Within: PDP-Context
 ; Section: 7.3.74
 ; Page: 138
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The SCEF-ID shall only be present when Non-IP-Data-Delivery-Mechanism takes the value SCEF-BASED-DATA-DELIVERY (1)."
     requires Non-IP-Data-Delivery-Mechanism = 1
 
@@ -2885,7 +2885,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; AVP: PDP-Type
 ; Section: 7.3.75
 ; Page: 139
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
     encoding element TS29.002
 "The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02)."
@@ -2896,7 +2896,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; AVP: Ext-PDP-Type
 ; Section: 7.3.75A
 ; Page: 139
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6."
     text-only
 
@@ -2905,7 +2905,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; AVP: QoS-Subscribed
 ; Section: 7.3.77
 ; Page: 139
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24] (octets of QoS-Subscribed, Ext-QoS-Subscribed, Ext2-QoS-Subscribed, Ext3-QoS-Subscribed and Ext4-QoS-Subscribed values are concatenated)."
     encoding element TS29.002
 
@@ -2926,7 +2926,7 @@ CSG-Subscription-Data ::= < AVP header: 1436 10415 >
 ; AVP: CSG-Id
 ; Section: 7.3.79
 ; Page: 139
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Values are coded according to TS 23.003 [3]."
     encoding element TS23.003
 "Unused bits (least significant) shall be padded with zeros."
@@ -2957,7 +2957,7 @@ Specific-APN-Info ::= < AVP header: 1472 10415 >
 ; Within: APN-Configuration
 ; Section: 7.3.82
 ; Page: 140
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It shall only be present in the APN configuration when the APN is a wild card APN."
     text-only
 
@@ -2986,7 +2986,7 @@ LCS-Info ::= < AVP header: 1473 10415 >
 ; AVP: GMLC-Number
 ; Section: 7.3.85
 ; Page: 140
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the ISDN number of the GMLC in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
 "This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
     encoding e164-tbcd
@@ -3010,7 +3010,7 @@ LCS-PrivacyException ::= < AVP header: 1475 10415 >
 ; AVP: SS-Code
 ; Section: 7.3.87
 ; Page: 141
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3019,7 +3019,7 @@ LCS-PrivacyException ::= < AVP header: 1475 10415 >
 ; AVP: SS-Status
 ; Section: 7.3.88
 ; Page: 141
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3050,7 +3050,7 @@ External-Client ::= < AVP header: 1479 10415 >
 ; AVP: Client-Identity
 ; Section: 7.3.91
 ; Page: 141
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
 "This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
     encoding e164-tbcd
@@ -3092,7 +3092,7 @@ Service-Type ::= < AVP header: 1483 10415 >
 ; AVP: ServiceTypeIdentity
 ; Section: 7.3.95
 ; Page: 142
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For details on the values of this AVP, see TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3111,7 +3111,7 @@ MO-LR ::= < AVP header: 1485 10415 >
 ; AVP: Trace-Collection-Entity
 ; Section: 7.3.98
 ; Page: 143
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The Trace-Collection-Entity AVP is of type Address and contains the IPv4 or IPv6 address of the Trace Collection Entity, as defined in TS 32.422 [23], clause 5.9."
     encoding ip-address
 
@@ -3129,7 +3129,7 @@ Teleservice-List ::= < AVP header: 1486 10415 >
 ; AVP: TS-Code
 ; Section: 7.3.100
 ; Page: 143
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3148,7 +3148,7 @@ Call-Barring-Info ::= < AVP header: 1488 10415 >
 ; AVP: SGSN-Number
 ; Section: 7.3.102
 ; Page: 143
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
 "This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
     encoding e164-tbcd
@@ -3184,7 +3184,7 @@ ICS-Indicator ::= < Enumerated AVP header: 1491 10415 >
 ; AVP: Visited-Network-Identifier
 ; Section: 7.3.105
 ; Page: 144
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The AVP shall be encoded as:"
 "mnc<MNC>.mcc<MCC>.3gppnetwork.org"
     encoding plmn-domain
@@ -3212,7 +3212,7 @@ Homogeneous-Support-of-IMS-Voice-Over-PS-Sessions ::= < Enumerated AVP header: 1
 ; AVP: GMLC-Address
 ; Section: 7.3.109
 ; Page: 145
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of the V-GMLC associated with the serving node."
     encoding ip-address
 
@@ -3272,7 +3272,7 @@ User-State ::= < Enumerated AVP header: 1499 10415 >
 ; AVP: User-State
 ; Section: 7.3.114
 ; Page: 146
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This value should not be used by MME or SGSN over S6a/S6d."
     text-only
 
@@ -3315,7 +3315,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: E-UTRAN-Cell-Global-Identity
 ; Section: 7.3.117
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3324,7 +3324,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Tracking-Area-Identity
 ; Section: 7.3.118
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3333,7 +3333,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Cell-Global-Identity
 ; Section: 7.3.119
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3342,7 +3342,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Routing-Area-Identity
 ; Section: 7.3.120
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3351,7 +3351,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Location-Area-Identity
 ; Section: 7.3.121
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3360,7 +3360,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Service-Area-Identity
 ; Section: 7.3.122
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3369,7 +3369,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Geographical-Information
 ; Section: 7.3.123
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For details and octet encoding, see TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3378,7 +3378,7 @@ SGSN-Location-Information ::= < AVP header: 1601 10415 >
 ; AVP: Geodetic-Information
 ; Section: 7.3.124
 ; Page: 148
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For details and octet encoding, see TS 29.002 [24]."
     encoding element TS29.002
 
@@ -3420,7 +3420,7 @@ Error-Diagnostic ::= < Enumerated AVP header: 1614 10415 >
 ; AVP: Error-Diagnostic
 ; Section: 7.3.128
 ; Page: 149
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user."
 "This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30)."
     text-only
@@ -3541,7 +3541,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 ; AVP: List-Of-Measurements
 ; Section: 7.3.139
 ; Page: 152
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The meaning of the bits is defined in TS 32.422 [23]."
 "The most significant bit is bit 8 of the first octet."
     encoding element TS32.422
@@ -3551,7 +3551,7 @@ Area-Scope ::= < AVP header: 1624 10415 > ;; corrected: (TS29.272.py#area-scope-
 ; AVP: Reporting-Trigger
 ; Section: 7.3.140
 ; Page: 152
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The meaning of the bits is defined in TS 32.422 [23]."
 "The most significant bit is bit 8 of the first octet."
     encoding element TS32.422
@@ -3585,7 +3585,7 @@ Report-Amount ::= < Enumerated AVP header: 1628 10415 >
 ; AVP: Event-Threshold-RSRP
 ; Section: 7.3.143
 ; Page: 152
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
     encoding element TS32.422
 
@@ -3594,7 +3594,7 @@ Report-Amount ::= < Enumerated AVP header: 1628 10415 >
 ; AVP: Event-Threshold-RSRQ
 ; Section: 7.3.144
 ; Page: 152
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
     encoding element TS32.422
 
@@ -3645,7 +3645,7 @@ Relay-Node-Indicator ::= < Enumerated AVP header: 1633 10415 >
 ; AVP: Relay-Node-Indicator
 ; Section: 7.3.147
 ; Page: 153
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is NOT_RELAY_NODE (0)."
     default NOT_RELAY_NODE
 
@@ -3663,7 +3663,7 @@ MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
 ; AVP: MDT-User-Consent
 ; Section: 7.3.148
 ; Page: 153
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present in ULA is CONSENT_NOT_GIVEN (0)."
 "Absence of this AVP in IDR shall be interpreted as the MDT-User-Consent has not been modified."
     text-only
@@ -3691,7 +3691,7 @@ Subscribed-VSRVCC ::= < Enumerated AVP header: 1636 10415 >
 ; AVP: Subscribed-VSRVCC
 ; Section: 7.3.150
 ; Page: 153
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Absence of this AVP in IDR shall be interpreted as the Subscribed-VSRVCC has not been modified."
 "Absence of this AVP in ULA shall be interpreted as the user is not subscribed to the vSRVCC."
     text-only
@@ -3758,7 +3758,7 @@ Local-Time-Zone ::= < AVP header: 1649 10415 >
 ; AVP: A-MSISDN
 ; Section: 7.3.157
 ; Page: 155
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP contains an A-MSISDN, in international number format as described in ITU-T Rec E.164 [41], encoded as a TBCD-string."
 "This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
     encoding e164-tbcd
@@ -3768,7 +3768,7 @@ Local-Time-Zone ::= < AVP header: 1649 10415 >
 ; AVP: MME-Number-for-MT-SMS
 ; Section: 7.3.159
 ; Page: 156
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string."
 "This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
     encoding e164-tbcd
@@ -3799,7 +3799,7 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
 ; AVP: Time-Zone
 ; Section: 7.3.163
 ; Page: 156
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The contents of the Time-Zone AVP shall be formatted as a character string with the following format:"
 "Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC."
     encoding time-zone
@@ -3902,7 +3902,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: Positioning-Method
 ; Section: 7.3.170
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It contains one octet carrying a bit map of 8 bits."
     length 1 octets
 "The possible values are those defined in TS 32.422 [23] for Positioning Method."
@@ -3913,7 +3913,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: Measurement-Quantity
 ; Section: 7.3.171
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "It contains one octet carrying a bit map of 8 bits."
     length 1 octets
 "The possible values are those defined in TS 32.422 [23] for Measurement quantity."
@@ -3924,7 +3924,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: Event-Threshold-Event-1F
 ; Section: 7.3.172
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
     encoding element TS32.422
 
@@ -3933,7 +3933,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: Event-Threshold-Event-1I
 ; Section: 7.3.173
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
     encoding element TS32.422
 
@@ -3942,7 +3942,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: Restoration-Priority
 ; Section: 7.3.174
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Values 1 to 16 are defined, with value 1 as the highest level of priority."
     range 1..16
 
@@ -3951,7 +3951,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: SGs-MME-Identity
 ; Section: 7.3.175
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the MME identity used over the SGs interface and specified in TS 23.003 [3] clause 19.4.2.4."
     encoding element TS23.003 19.4.2.4 "MME identity"
 
@@ -3960,7 +3960,7 @@ Collection-Period-RRM-UMTS ::= < Enumerated AVP header: 1658 10415 >
 ; AVP: Coupled-Node-Diameter-ID
 ; Section: 7.3.177
 ; Page: 158
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the S6a or S6d Diameter identity of the coupled node as specified in TS 23.003 [3] clause 19.4.2.4 and clause 19.4.2.6."
     encoding element TS23.003
 
@@ -4006,7 +4006,7 @@ WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py#wl
 ; AVP: MDT-Allowed-PLMN-Id
 ; Section: 7.3.185
 ; Page: 160
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the concatenation of MCC and MNC."
 "The content of this AVP shall be encoded as an octet string according to table 7.3.185/1."
 "If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
@@ -4036,7 +4036,7 @@ Adjacent-Access-Restriction-Data ::= < AVP header: 1673 10415 >
 ; AVP: DL-Buffering-Suggested-Packet-Count
 ; Section: 7.3.188
 ; Page: 161
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "\"Extended DL Data Buffering NOT REQUESTED\" 0"
 "\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1"
 "\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0"
@@ -4058,7 +4058,7 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
 ; AVP: Group-Service-Id
 ; Section: 7.3.190
 ; Page: 161
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so."
     text-only
 
@@ -4067,7 +4067,7 @@ IMSI-Group-Id ::= < AVP header: 1675 10415 >
 ; AVP: Group-PLMN-Id
 ; Section: 7.3.191
 ; Page: 161
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "This AVP shall contain the concatenation of MCC and MNC."
 "The content of this AVP shall be encoded as an octet string according to table 7.3.191-1."
 "If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\"."
@@ -4153,7 +4153,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 ; Within: Monitoring-Event-Configuration
 ; Section: 7.3.195
 ; Page: 163
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present"
     text-only
 
@@ -4163,7 +4163,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 ; Within: Monitoring-Event-Configuration
 ; Section: 7.3.195
 ; Page: 163
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Monitoring-Type AVP shall be ignored for deletion of an event (i.e. when SCEF-Reference-ID-for-Deletion/SCEF-Reference-ID-for-Deletion-Ext AVP is present)."
     text-only
 
@@ -4173,7 +4173,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 ; Within: Monitoring-Event-Configuration
 ; Section: 7.3.195
 ; Page: 163
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6)."
     absent-if Monitoring-Type = 6
 "Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1)."
@@ -4204,7 +4204,7 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
 ; Within: Monitoring-Event-Report
 ; Section: 7.3.196
 ; Page: 164
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)"
     text-only
 
@@ -4214,7 +4214,7 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
 ; Within: Monitoring-Event-Report
 ; Section: 7.3.196
 ; Page: 164
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\"."
     text-only
 
@@ -4244,7 +4244,7 @@ UE-Reachability-Configuration ::= < AVP header: 3129 10415 >
 ; Within: UE-Reachability-Configuration
 ; Section: 7.3.197
 ; Page: 165
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "For S6a/S6d interface, the Reachability-Type AVP shall have bit 0 (\"Reachability for SMS\") cleared, and it shall have bit 1 (\"Reachability for Data\") set."
     text-only
 
@@ -4290,7 +4290,7 @@ Disaster-Roaming-service-in-EPS-Indication = 1
 ; AVP: UE-Usage-Type
 ; Section: 7.3.202
 ; Page: 166
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The allowed values of UE-Usage-Type shall be in the range of 0 to 255."
     range 0..255
 
@@ -4308,7 +4308,7 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
 ; AVP: Non-IP-PDN-Type-Indicator
 ; Section: 7.3.204
 ; Page: 167
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is FALSE (0)."
     default FALSE
 
@@ -4317,7 +4317,7 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
 ; AVP: Non-IP-Data-Delivery-Mechanism
 ; Section: 7.3.205
 ; Page: 167
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is SGi-BASED-DATA-DELIVERY (0)."
     default SGi-BASED-DATA-DELIVERY
 
@@ -4351,7 +4351,7 @@ Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
 ; Section: 7.3.209
 ; Table: 7.3.209/1
 ; Page: 168
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "NOTE 2: At least one of the bits 0 and 1 shall be set to 1."
     bits at-least-one 0 1
 
@@ -4399,7 +4399,7 @@ eDRX-Cycle-Length ::= < AVP header: 1691 10415 >
 ; AVP: eDRX-Cycle-Length-Value
 ; Section: 7.3.216
 ; Page: 169
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The contents of eDRX-Cycle-Length-Value shall consist of 1 octet."
     length 1 octets
 "The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"eDRX value\""
@@ -4422,7 +4422,7 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
 ; AVP: MBSFN-Area-ID
 ; Section: 7.3.220
 ; Page: 170
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "it shall contain the MBSFN Area ID value, in the range of 0..255 (see TS 36.331 [62])."
     range 0..255
 
@@ -4431,7 +4431,7 @@ MBSFN-Area ::= < AVP header: 1694 10415 >
 ; AVP: Carrier-Frequency
 ; Section: 7.3.221
 ; Page: 170
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62])."
     range 0..262143
 
@@ -4449,7 +4449,7 @@ RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
 ; AVP: RDS-Indicator
 ; Section: 7.3.222
 ; Page: 170
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is DISABLED (0)."
     default DISABLED
 
@@ -4521,7 +4521,7 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
 ; AVP: Operation-Mode
 ; Section: 7.3.227
 ; Page: 174
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The allowed values of Operation-Mode shall be in the range of 0 to 255."
     range 0..255
 
@@ -4530,7 +4530,7 @@ Paging-Time-Window ::= < AVP header: 1701 10415 >
 ; AVP: Paging-Time-Window-Length
 ; Section: 7.3.228
 ; Page: 175
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The contents of Paging-Time-Window-Length shall consist of 1 octet."
     length 1 octets
 "The encoding shall be as defined in TS 24.008 [31], clause 10.5.5.32, and it shall only contain the value of the field \"Paging Time Window length\""
@@ -4571,7 +4571,7 @@ Interworking-5GS-Indicator ::= < Enumerated AVP header: 1706 10415 >
 ; AVP: Interworking-5GS-Indicator
 ; Section: 7.3.231
 ; Page: 175
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is NOT-SUBSCRIBED (0)."
     default NOT-SUBSCRIBED
 
@@ -4589,7 +4589,7 @@ Ethernet-PDN-Type-Indicator ::= < Enumerated AVP header: 1707 10415 >
 ; AVP: Ethernet-PDN-Type-Indicator
 ; Section: 7.3.232
 ; Page: 175
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is FALSE (0)."
     default FALSE
 
@@ -4639,7 +4639,7 @@ PC5-QoS-Flow ::= < AVP header: 1712 10415 >
 ; AVP: 5QI
 ; Section: 7.3.238
 ; Page: 177
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "See TS 23.501 [69] for allowed values."
     encoding element TS23.501 "5QI"
 
@@ -4680,7 +4680,7 @@ MDT-Configuration-NR ::= < AVP header: 1720 10415 >
 ; AVP: Event-Threshold-SINR
 ; Section: 7.3.246
 ; Page: 178
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "See TS 32.422 [23] for allowed values"
     encoding element TS32.422
 
@@ -4724,7 +4724,7 @@ Collection-Period-M6-NR ::= < Enumerated AVP header: 1723 10415 >
 ; AVP: Collection-Period-M7-NR
 ; Section: 7.3.249
 ; Page: 178
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes."
     encoding element TS32.422 "Collection period M7 in NR"
 
@@ -4743,7 +4743,7 @@ Sensor-Measurement ::= < Enumerated AVP header: 1725 10415 >
 ; AVP: NR-Cell-Global-Identity
 ; Section: 7.3.251
 ; Page: 179
-; Versions: 19.6.0
+; Versions: 18.7.0..19.6.0
 "Octets are coded as described in TS 29.002 [24]."
     encoding element TS29.002
 

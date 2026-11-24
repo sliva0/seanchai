@@ -24,6 +24,7 @@ seanchai commands --application 16777251        # S6a's commands, TS 29.272
 seanchai dictionary --application 16777251 --strict -o s6a.json
 seanchai show Emergency-Services --document TS29.272
 seanchai dictionary --application 16777358 --strict -o nta.json   # refused
+seanchai dictionary --application 16777251 --release 18 -o s6a-18.json
 ```
 
 `s6a.json` holds S6a's commands with their bodies, request and answer paired,
@@ -40,6 +41,11 @@ member allowed only beside another), as
 [interpreted constraints][constraints], each pinned to the sentences read.
 Where two documents read one AVP differently, the file lists the conflict and
 where each reading is met.
+
+The corpus holds 3GPP Releases 18 and 19 whole, each document at its
+release's last version. Every command reads the newest unless `--release`
+names the other ([releases][releases]); `seanchai diff --release 18 --release
+19` says what a stack gains between them.
 
 `--strict` refuses a selection reaching what the corpus cannot complete. TS
 29.154's Nta names `External-Group-Identifier`, which no document defines;
@@ -76,7 +82,8 @@ model.resolve("TS29.229", "Public-Identity")
 
 Read the installed corpus, with no checkout and no downloads; `show`,
 `commands` and `dictionary` read another with `--corpus DIR` and your own
-`.dad` files beside it with `--with FILE`:
+`.dad` files beside it with `--with FILE`, and the readers of the model
+another release it holds with `--release N`:
 
 ```sh
 seanchai show NAME_OR_IDENTITY [--json] # one AVP and its other readings
@@ -86,6 +93,7 @@ seanchai export -o DIR                  # the corpus as JSON for the static site
 seanchai export -o DIR --include-pdfs --specifications specifications
 seanchai wireshark-plugin -o FILE.lua   # a Wireshark plugin checking traffic
 seanchai diff OLD.dad NEW.dad [--json]  # what changed for a stack, and where from
+seanchai diff --release 18 --release 19 # between the releases the corpus holds
 seanchai vectors -o OUT.json [--pcap F] # test messages, valid and breaking one rule
 ```
 
@@ -142,6 +150,7 @@ OMA, oneM2M and IETF documents, which stay under their publishers' terms.
 [linter]: https://github.com/sliva0/seanchai/blob/main/docs/linter.md
 [oracle]: https://github.com/sliva0/seanchai/blob/main/docs/oracle.md
 [python-diameter]: https://github.com/sliva0/seanchai/blob/main/integrations/python_diameter/README.md
+[releases]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md#releases
 [validator]: https://github.com/sliva0/seanchai/blob/main/docs/wireshark-plugin.md
 [versions]: https://github.com/sliva0/seanchai/blob/main/docs/consumers.md#what-the-version-covers
 [website]: https://github.com/sliva0/seanchai/blob/main/docs/website.md

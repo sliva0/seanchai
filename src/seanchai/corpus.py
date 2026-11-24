@@ -19,6 +19,7 @@ specifies (`InterfaceNames`). See docs/consumers.md and docs/linter.md.
 
 from __future__ import annotations
 
+import copy
 import enum
 import os
 import re
@@ -232,10 +233,14 @@ class Rules:
       release's copy answering for the version a citation means;
       `release_fills`, keyed the same, one stating fields of named AVPs the
       meant version leaves unstated.
+    - `releases`: the 3GPP releases the corpus holds whole, oldest first,
+      each a `3gpp/rel-N/` tree holding every document of the release; the
+      other release trees hold only copies citations mean.
     """
 
     path: Path | None = None
     format: int | None = None
+    releases: tuple[int, ...] = ()
     cited_as: Mapping[str, str] = field(default_factory=dict)
     cited_versions: Mapping[Citation, str] = field(default_factory=dict)
     latest_editions: Mapping[Citation, str] = field(default_factory=dict)
@@ -259,11 +264,25 @@ class Rules:
             )
         if found not in FORMATS:
             raise CorpusFormatError(path, found)
-        unknown = set(data) - {"format", *_TABLES}
+        unknown = set(data) - {"format", "releases", *_TABLES}
         if unknown:
             raise CorpusError(
                 f"{path}: {', '.join(sorted(unknown))}: not a table of a corpus"
-                f" file, which holds format and [[{']], [['.join(_TABLES)}]]"
+                f" file, which holds format, releases and"
+                f" [[{']], [['.join(_TABLES)}]]"
+            )
+        releases = data.get("releases", [])
+        if (
+            not isinstance(releases, list)
+            or not all(
+                isinstance(each, int) and not isinstance(each, bool) and each > 0
+                for each in releases
+            )
+            or len(set(releases)) != len(releases)
+        ):
+            raise CorpusError(
+                f"{path}: releases is a list of distinct release numbers,"
+                f" not {releases!r}"
             )
         tables = {name: _entries(path, data, name) for name in _TABLES}
 
@@ -287,6 +306,7 @@ class Rules:
         rules = cls(
             path=path,
             format=found,
+            releases=tuple(sorted(releases)),
             cited_as=keyed("cited_as", lambda e: e["cited"], lambda e: e["document"]),
             cited_versions=keyed("cited_version", triple, lambda e: e["version"]),
             latest_editions=keyed("latest_edition", triple, lambda e: e["evidence"]),
@@ -340,10 +360,18 @@ class Rules:
             )
 
         def lacks(table: str, what: str) -> CorpusError:
+            named = table if table == "releases" else f"[[{table}]]"
             return CorpusError(
-                f"{self.path}: [[{table}]] names {what}, which the corpus lacks"
+                f"{self.path}: {named} names {what}, which the corpus lacks"
             )
 
+        for release in self.releases:
+            if not any(
+                _release_of(entry) == release
+                for candidates in books._by_reference.values()
+                for entry in candidates
+            ):
+                raise lacks("releases", f"Release {release}")
         for cited, document in self.cited_as.items():
             if books._by_reference.get(cited):
                 raise CorpusError(
@@ -593,6 +621,12 @@ class KnownHole:
     # The evidence, as a correction's reason states it: spec version and
     # clause, and what was searched.
     reason: str
+    # The full releases whose reading holds it, or () for every one.
+    releases: tuple[int, ...] = ()
+
+    def holds_in(self, release: int | None) -> bool:
+        """Whether the entry speaks for the corpus viewed at `release`."""
+        return not self.releases or release is None or release in self.releases
 
 
 @dataclass(frozen=True)
@@ -612,23 +646,54 @@ class HoleRecord:
         if set(data) - {"hole"} or not isinstance(tables, list):
             raise CorpusError(f"{path}: only [[hole]] tables belong in a hole record")
         holes = tuple(cls._entry(path, entry) for entry in tables)
-        seen: set[tuple[str, str]] = set()
+        seen: dict[tuple[str, str], list[KnownHole]] = {}
         for hole in holes:
             key = (hole.document, hole.name)
-            if key in seen:
+            if any(
+                not hole.releases
+                or not other.releases
+                or set(hole.releases) & set(other.releases)
+                for other in seen.get(key, [])
+            ):
                 raise CorpusError(
                     f"{path}: {hole.document} {hole.name} is listed twice"
+                    " for one release"
                 )
-            seen.add(key)
+            seen.setdefault(key, []).append(hole)
         return cls(path, holes)
+
+    def at(self, release: int | None) -> dict[tuple[str, str], KnownHole]:
+        """The entries speaking for the corpus viewed at `release`, by
+        document and name."""
+        return {
+            (hole.document, hole.name): hole
+            for hole in self.holes
+            if hole.holds_in(release)
+        }
 
     @staticmethod
     def _entry(path: Path, entry: Any) -> KnownHole:
         fields = {"document", "name", "missing", "reason"}
-        if not isinstance(entry, dict) or set(entry) != fields:
+        if not isinstance(entry, dict) or not fields <= set(entry) <= {
+            *fields,
+            "releases",
+        }:
             raise CorpusError(
-                f"{path}: a [[hole]] states exactly {', '.join(sorted(fields))};"
-                f" this one is {entry!r}"
+                f"{path}: a [[hole]] states {', '.join(sorted(fields))} and"
+                f" optionally releases; this one is {entry!r}"
+            )
+        releases = entry.get("releases", [])
+        if (
+            not isinstance(releases, list)
+            or (not releases and "releases" in entry)
+            or not all(
+                isinstance(each, int) and not isinstance(each, bool)
+                for each in releases
+            )
+        ):
+            raise CorpusError(
+                f"{path}: {entry['document']} {entry['name']}: releases is a"
+                f" non-empty list of release numbers, not {releases!r}"
             )
         document, name, missing, reason = (
             entry["document"],
@@ -657,7 +722,13 @@ class HoleRecord:
                 f"{path}: {document} {name}: missing holds {', '.join(unknown)},"
                 f" which is not one of {', '.join(Missing)}"
             )
-        return KnownHole(document, name, tuple(map(Missing, missing)), collapse(reason))
+        return KnownHole(
+            document,
+            name,
+            tuple(map(Missing, missing)),
+            collapse(reason),
+            tuple(sorted(releases)),
+        )
 
 
 # A corpus directory's record of the interfaces each document specifies. It is
@@ -786,6 +857,11 @@ class Corpus:
     loaded by `installed`, else None. `rules` defaults to `Rules()` and
     `interfaces` to `InterfaceNames()`.
 
+    A corpus is viewed at one of the releases it holds whole
+    (`Rules.releases`), its newest unless `at` says another: `newest` and
+    every citation meaning a document's latest copy read no 3GPP copy of a
+    later release. A corpus stating no releases has no such bound.
+
     Use `load` or `installed`. Constructed directly, a corpus checks only
     its copies, not `rules` or `record`; a `model.Model` built over it still
     checks `record`.
@@ -822,6 +898,49 @@ class Corpus:
                 )
         for candidates in self._by_reference.values():
             candidates.sort(key=lambda e: _version_key(e.spec.version), reverse=True)
+        self._release: int | None = None
+
+    @property
+    def releases(self) -> tuple[int, ...]:
+        """The 3GPP releases the corpus holds whole, oldest first."""
+        return self.rules.releases
+
+    @property
+    def release(self) -> int | None:
+        """The full release the corpus is viewed at: `at`'s, else the newest
+        it holds whole; None for a corpus stating none."""
+        if self._release is not None:
+            return self._release
+        return self.releases[-1] if self.releases else None
+
+    def at(self, release: int | None) -> Corpus:
+        """The corpus viewed at full release `release`, sharing its copies;
+        None gives the default view, the newest. A release the corpus does
+        not hold whole raises `CorpusError`."""
+        if release is None:
+            release = self.releases[-1] if self.releases else None
+            if release is None:
+                return self
+        if release not in self.releases:
+            held = ", ".join(map(str, self.releases)) or "none"
+            raise CorpusError(
+                f"the corpus holds Release {release} only in part, as copies"
+                f" citations mean; the releases it holds whole are {held}"
+            )
+        viewed = copy.copy(self)
+        viewed._release = release
+        return viewed
+
+    def in_view(self, entry: Entry) -> bool:
+        """Whether `entry` may answer as its document's latest copy in this
+        view: any copy outside 3GPP, and a 3GPP copy of the viewed release
+        or an earlier one."""
+        found = _release_of(entry)
+        return found is None or self.release is None or found <= self.release
+
+    def _latest(self, candidates: list[Entry]) -> Entry | None:
+        """The newest of `candidates` in view."""
+        return next((entry for entry in candidates if self.in_view(entry)), None)
 
     @classmethod
     def load(
@@ -898,6 +1017,15 @@ class Corpus:
         )
         rules.check(books)
         interfaces.check(books)
+        record = books.record
+        for hole in () if record is None else record.holes:
+            if unheld := sorted(set(hole.releases) - set(rules.releases)):
+                assert record is not None
+                raise CorpusError(
+                    f"{record.path}: {hole.document} {hole.name} names"
+                    f" Release {', '.join(map(str, unheld))}, which the corpus"
+                    " does not hold whole"
+                )
         return books
 
     @classmethod
@@ -934,10 +1062,13 @@ class Corpus:
             yield from candidates
 
     def newest(self) -> Iterator[Entry]:
-        """The newest copy of each reference. Older copies are reached only
-        through `resolve`."""
+        """The newest copy of each reference in view (`in_view`): of a 3GPP
+        document, its copy in the viewed release, or its final one if it
+        ended before. A document begun after the viewed release has none.
+        Other copies are reached only through `resolve`."""
         for candidates in self._by_reference.values():
-            yield candidates[0]
+            if (latest := self._latest(candidates)) is not None:
+                yield latest
 
     def __len__(self) -> int:
         return sum(len(c) for c in self._by_reference.values())
@@ -1014,8 +1145,9 @@ class Corpus:
             )
         if not external and version is None:
             # A version-less document (an RFC) citing a versioned one has no
-            # release of its own to match, so the newest copy is the answer.
-            return (candidates[0] if candidates else None), None
+            # release of its own to match, so the newest copy in view is the
+            # answer.
+            return self._latest(candidates), None
         if not external:
             assert version is not None
             wanted = _major(version)
@@ -1030,8 +1162,11 @@ class Corpus:
                     return entry, None
         if key in rules.release_stand_ins:
             return self._release_stand_in(key, candidates)
-        if external and key in rules.latest_editions and candidates:
-            newest = candidates[0]
+        if (
+            external
+            and key in rules.latest_editions
+            and (newest := self._latest(candidates)) is not None
+        ):
             return newest, CrossRelease(
                 citing,
                 reference,
@@ -1142,6 +1277,19 @@ def _as_paths(paths: Any) -> list[Path]:
         raise CorpusError(
             f"Corpus.load takes a path or a list of paths, not {paths!r}"
         ) from error
+
+
+def _release_of(entry: Entry) -> int | None:
+    """The 3GPP release `entry` is a copy of, its version's major; None for
+    a document of another publisher, an RFC or a private one."""
+    reference = entry.reference
+    if (
+        entry.spec.version is None
+        or reference.startswith("RFC")
+        or ast.is_external(reference)
+    ):
+        return None
+    return _major(entry.spec.version)
 
 
 def _reference(spec: ast.Specification) -> str:

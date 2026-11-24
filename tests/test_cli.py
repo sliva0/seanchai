@@ -23,8 +23,10 @@ def _invoke(*arguments: object):
     return CliRunner().invoke(main, [str(each) for each in arguments])
 
 
-def _dad_with(*lines: str) -> str:
-    header = "; Specification: 3GPP TS 29.329\n; Version: 18.0.0\n; Vendor-ID: 10415"
+def _dad_with(*lines: str, version: str = "18.0.0") -> str:
+    header = (
+        f"; Specification: 3GPP TS 29.329\n; Version: {version}\n; Vendor-ID: 10415"
+    )
     return header + "\n\n" + "\n".join(lines) + "\n"
 
 
@@ -47,6 +49,8 @@ _BORROWING = _dad_with(
     "; Table: 6.3/2",
     "; Columns: Name From",
     "No-Such-Avp TS29.229",
+    # Release 17, which the corpus does not hold.
+    version="17.0.0",
 )
 
 

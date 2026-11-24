@@ -96,7 +96,22 @@ CORRECTIONS += [
         reason="clause 6.4.3: 'It is originally defined in 3GPP TS 29.336 [5]. For the "
         "T6a/T6b interface, the Monitoring-Event-Report AVP format is specified as "
         "following'",
-        versions="18.0.0..19.2.0",
+        versions="19.2.0",
+    ),
+    Accept(
+        id="monitoring-event-report-t6a-body-release-18",
+        rule="reused-body-differs",
+        target=definition("Monitoring-Event-Report"),
+        expect="Monitoring-Event-Report's body, against TS29.336's definition: adds "
+        "Communication-Failure-Information, Number-Of-UE-Per-Location-Report, "
+        "Reporting-Time-Stamp, missing Event-Handling, IMEI-Change, "
+        "Roaming-Information, SCEF-Reference-ID-for-Deletion, "
+        "SCEF-Reference-ID-for-Deletion-Ext, Service-Report, Terminal-Information",
+        reason="clause 6.4.3 of the Release 18 copy, whose body lacks Release 19's "
+        "SAT-SF-Operation-Info: 'It is originally defined in 3GPP TS 29.336 [5]. For "
+        "the T6a/T6b interface, the Monitoring-Event-Report AVP format is specified "
+        "as following'",
+        versions="18.0.0",
     ),
     Correction(
         id="configuration-event-storage-result-spelling",

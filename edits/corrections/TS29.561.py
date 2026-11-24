@@ -12,7 +12,7 @@ CORRECTIONS = [
         replace=("RFC6733", "RFC7155", "RFC4072"),
         reason="clause 12.6.1 names the bodies' other AVPs 'as defined in IETF RFC"
         " 4072 [25] and IETF RFC 7155 [23]', and table 12.4-1 lists none of them",
-        versions="19.6.0",
+        versions="18.5.0..19.6.0",
     ),
     Insert(
         id="application-id-eap",
@@ -28,7 +28,7 @@ CORRECTIONS = [
         " (1 and 5) of the application identifier', and clauses 12.6.2 and 12.6.3"
         " say DER and DEA are 'defined in IETF RFC 4072 [25]', whose section 2.1"
         " gives five. The command headers print none",
-        versions="19.6.0",
+        versions="18.5.0..19.6.0",
     ),
     Insert(
         id="application-id-nasreq",
@@ -44,7 +44,7 @@ CORRECTIONS = [
         " (1 and 5) of the application identifier', and clauses 12.6.4 and 12.6.5"
         " say RAR and RAA are 'defined in IETF RFC 7155 [23]', whose section 1.5"
         " gives one. The command headers print none",
-        versions="19.6.0",
+        versions="18.5.0..19.6.0",
     ),
     Insert(
         id="reused-delegated-ipv6-prefix",
@@ -55,6 +55,6 @@ CORRECTIONS = [
         " table of this document; clause 2 cites RFC 4818 [10], 'RADIUS"
         " Delegated-IPv6-Prefix Attribute', whose clause 5 gives the attribute as"
         " an AVP its code, 123, its type and flag rules",
-        versions="19.6.0",
+        versions="18.5.0..19.6.0",
     ),
 ]

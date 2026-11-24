@@ -151,37 +151,40 @@ def _cited(
 
 
 def lint_record(books: corpus.Corpus) -> list[Finding]:
-    """Check the corpus's hole record as a default `model.Model.build` does.
+    """Check the corpus's hole record as a default `model.Model.build` does,
+    at every release the corpus holds whole.
 
-    Reports each hole no entry lists as it is, and each entry naming no hole.
-    The findings are per corpus, not per file. A corpus with no record gives
-    no findings."""
+    Reports each hole no entry lists as it is, and each entry naming no hole,
+    naming the release where the corpus holds more than one. The findings are
+    per corpus, not per file. A corpus with no record gives no findings."""
     if books.record is None:
         return []
-    built = model.Model.build(books, holes=model.HolePolicy.ANY)
-    known = {(entry.document, entry.name): entry for entry in books.record.holes}
     findings = []
-    for hole in built.unrecorded_holes():
-        entry = known.get((hole.document, hole.name))
-        findings.append(
+    for release in books.releases or (None,):
+        built = model.Model.build(books.at(release), holes=model.HolePolicy.ANY)
+        known = books.record.at(release)
+        at = f"Release {release}: " if len(books.releases) > 1 else ""
+        for hole in built.unrecorded_holes():
+            entry = known.get((hole.document, hole.name))
+            findings.append(
+                Finding(
+                    Severity.ERROR,
+                    "unrecorded-hole",
+                    f"{at}{hole}, which the record does not list"
+                    if entry is None
+                    else f"{at}{hole}, which the record lists missing"
+                    f" {', '.join(entry.missing)}",
+                    section=hole.section,
+                )
+            )
+        findings += [
             Finding(
                 Severity.ERROR,
-                "unrecorded-hole",
-                f"{hole}, which the record does not list"
-                if entry is None
-                else f"{hole}, which the record lists missing"
-                f" {', '.join(entry.missing)}",
-                section=hole.section,
+                "stale-hole-record",
+                f"{at}{entry.document} {entry.name} is recorded missing"
+                f" {', '.join(entry.missing)}, but the corpus has no such hole:"
+                " its entry belongs out of the record",
             )
-        )
-    findings += [
-        Finding(
-            Severity.ERROR,
-            "stale-hole-record",
-            f"{entry.document} {entry.name} is recorded missing"
-            f" {', '.join(entry.missing)}, but the corpus has no such hole: its"
-            " entry belongs out of the record",
-        )
-        for entry in built.stale_record_entries()
-    ]
+            for entry in built.stale_record_entries()
+        ]
     return findings

@@ -205,7 +205,7 @@ reason = """
     two hyphens out of Insert-Subscriber-Data-Request, the command clause 7.2.9
     prints
     """
-first_version = "19.6.0"
+first_version = "18.7.0"
 last_version = "19.6.0"
 
 [[patch]]
@@ -217,5 +217,5 @@ reason = """
     hyphen out of Insert-Subscriber-Data-Request, the command clause 7.2.9
     prints
     """
-first_version = "19.6.0"
+first_version = "18.7.0"
 last_version = "19.6.0"

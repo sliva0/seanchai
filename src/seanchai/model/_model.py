@@ -133,8 +133,15 @@ class Model(_Resolver):
         wireshark: str | os.PathLike[str] | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
+        release: int | None = None,
     ) -> Model:
         """Build the model over `books`.
+
+        `release` is the 3GPP release the corpus holds whole to read
+        (`corpus.Corpus.at`): its copy of each document answers every
+        reference-level query. None reads the release `books` is viewed at,
+        by default its newest. A release held only in part raises
+        `corpus.CorpusError`.
 
         `holes` (`HolePolicy`) sets which holes are allowed. `RECORDED`, the
         default, checks the corpus's record of known holes
@@ -173,6 +180,8 @@ class Model(_Resolver):
             raise ModelError(
                 f"cannot read the Wireshark dictionary at {wireshark}: {error!r}"
             ) from error
+        if release is not None:
+            books = books.at(release)
         built = cls._unchecked(books, loaded, policy, supply)
         built._check_supply()
         if allowed is HolePolicy.RECORDED:
@@ -192,6 +201,7 @@ class Model(_Resolver):
         wireshark: str | os.PathLike[str] | None = None,
         undefined: UndefinedPolicy = UndefinedPolicy.HOLE,
         supply: Mapping[SupplyKey, Supplied | Alias] | None = None,
+        release: int | None = None,
     ) -> Model:
         """`build` over the installed corpus (`corpus.Corpus.installed`)."""
         return cls.build(
@@ -200,7 +210,14 @@ class Model(_Resolver):
             wireshark=wireshark,
             undefined=undefined,
             supply=supply,
+            release=release,
         )
+
+    @property
+    def release(self) -> int | None:
+        """The 3GPP release the model reads, the one its corpus holds whole
+        and is viewed at; None for a corpus stating none."""
+        return self._books.release
 
     @property
     def undefined_policy(self) -> UndefinedPolicy:

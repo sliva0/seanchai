@@ -11,7 +11,7 @@ reason = """
     commands User-Authorization-Request/Answer in the Diameter application
     specified in TS 29.229 [5]' (clause 6.1.1)
     """
-first_version = "19.2.0"
+first_version = "18.0.0"
 last_version = "19.2.0"
 
 [[patch]]
@@ -23,5 +23,5 @@ reason = """
     hyphens out of Location-Info-Request, the command TS 29.229 clause 6.1.5
     prints
     """
-first_version = "19.2.0"
+first_version = "18.0.0"
 last_version = "19.2.0"

@@ -1101,9 +1101,11 @@ def _check_citations(
 class _Lookups:
     """What every document's page and search entries look things up in."""
 
-    def __init__(self, books: Corpus, built: model.Model) -> None:
+    def __init__(self, books: Corpus, built: dict[int | None, model.Model]) -> None:
         self.books = books
-        self.model = built
+        # A model per release the corpus holds whole, None's being the
+        # corpus's own view: each copy is read in the view holding it.
+        self.models = built
         self.entries = sorted(books, key=document_id)
         self.by_copy = {
             (entry.reference, entry.spec.version): entry for entry in self.entries
@@ -1118,6 +1120,13 @@ class _Lookups:
             dict[tuple[str, str, str, int | None], list[ElementTableRef]] | None
         ) = None
 
+    def model_for(self, entry: Entry) -> model.Model:
+        """The model reading `entry` as its document's copy in view: its
+        release's, for a copy of a release the corpus holds whole, else the
+        corpus's newest."""
+        found = self.models.get(_full_release(self.books, entry))
+        return self.models[None] if found is None else found
+
     def described_by(
         self, entry: Entry, message: ast.Message
     ) -> tuple[ElementTableRef, ...]:
@@ -1126,11 +1135,12 @@ class _Lookups:
         if self._described_by is None:
             found: dict[tuple[str, str, str, int | None], list[ElementTableRef]] = {}
             for each in self.entries:
-                for table in self.model.element_tables(
+                built = self.model_for(each)
+                for table in built.element_tables(
                     each.reference, version=each.spec.version
                 ):
                     for described in table.commands:
-                        version = described.version or self.model.version(
+                        version = described.version or built.version(
                             described.defined_in
                         )
                         printing = self.by_copy[described.defined_in, version]
@@ -1248,9 +1258,10 @@ def _avps(
     names: dict[str, Target | None] = {}
     holes = []
     search = []
+    built = corpus.model_for(entry)
     for name in sorted(_avp_names(spec)):
-        avp = corpus.model.resolve(entry.reference, name, version=spec.version)
-        hole = corpus.model.hole(entry.reference, name, version=spec.version)
+        avp = built.resolve(entry.reference, name, version=spec.version)
+        hole = built.hole(entry.reference, name, version=spec.version)
         target = corpus.avp_target(entry, avp) if avp is not None else None
         if hole is not None:
             holes.append(_json.hole(hole))
@@ -1294,7 +1305,7 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
             message.command_code,
             message.header_application_id,
         ): (message, application)
-        for application in corpus.model.applications(
+        for application in corpus.model_for(entry).applications(
             entry.reference, version=spec.version
         )
         for message in application.messages
@@ -1445,13 +1456,14 @@ def _described(
         for index, section in enumerate(entry.spec.sections)
         if isinstance(section, ast.InformationElements)
     ]
-    tables = corpus.model.element_tables(entry.reference, version=entry.spec.version)
+    built = corpus.model_for(entry)
+    tables = built.element_tables(entry.reference, version=entry.spec.version)
     described: dict[int, tuple[Target, ...]] = {}
     names: dict[str, Target] = {}
     for index, table in zip(positions, tables, strict=True):
         targets = []
         for message in table.commands:
-            version = message.version or corpus.model.version(message.defined_in)
+            version = message.version or built.version(message.defined_in)
             printing = corpus.by_copy[message.defined_in, version]
             target = Target(document=document_id(printing), section=message.section)
             targets.append(target)
@@ -1473,20 +1485,29 @@ def _value_table_avps(
     """Return where a value table's `; AVP:` line links: the AVP as `entry`
     reads it, or else as its defining document does."""
     found: dict[str, Target | None] = {}
+    built = corpus.model_for(entry)
     for section in entry.spec.sections:
         if not isinstance(section, ast.ValueTable) or names.get(section.avp):
             continue
-        avp = corpus.model.resolve(
-            entry.reference, section.avp, version=entry.spec.version
-        )
+        avp = built.resolve(entry.reference, section.avp, version=entry.spec.version)
         if avp is None:
             try:
-                avp = corpus.model.definition(section.avp)
+                avp = built.definition(section.avp)
             except model.ModelError:
                 avp = None
         if avp is not None:
             found[section.avp] = corpus.avp_target(entry, avp)
     return found
+
+
+def _full_release(books: Corpus, entry: Entry) -> int | None:
+    """The release `entry` is a 3GPP copy of, if the corpus holds it whole;
+    else None."""
+    spec = entry.spec
+    if not spec.specification.startswith("3GPP ") or spec.version is None:
+        return None
+    release = int(spec.version.split(".")[0])
+    return release if release in books.releases else None
 
 
 def _titles(catalog: Catalog) -> dict[str, str]:
@@ -1727,7 +1748,12 @@ def _write_export(
 ) -> Index:
     corpus = _Lookups(
         books,
-        model.Model.build(books, holes=model.HolePolicy.ANY, wireshark=wireshark),
+        {
+            release: model.Model.build(
+                books.at(release), holes=model.HolePolicy.ANY, wireshark=wireshark
+            )
+            for release in (None, *books.releases[:-1])
+        },
     )
     ids = [document_id(entry) for entry in corpus.entries]
     if len(set(ids)) != len(ids):
@@ -1777,6 +1803,7 @@ def _write_export(
         seanchai_version=_distribution_version("seanchai"),
         corpus_version=_corpus_version(books),
         mode="self-hosted" if include_pdfs else "public",
+        releases=books.releases,
         documents=tuple(summaries),
     )
     _write(output / "index.json", index)

@@ -393,11 +393,14 @@ def test_a_corrections_record_that_cannot_be_built_fails_the_run(
     assert failed.reference == _correction_record.RECORD_NAME
 
 
-def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_docx):
-    """A document read at a release no declaration spans, with none for an
-    earlier release either, gets none: TS 32.299's Release 18 quirks say
-    nothing about its Release 11 template. The dotted flag cell then fails
-    as undeclared, and the Release 2 correction is not applied."""
+@pytest.mark.parametrize("held", [True, False], ids=["held", "absent"])
+def test_an_older_release_is_read_with_the_next_release_s_declarations(
+    tmp_path, synthetic_spec_docx, held
+):
+    """A document read at a release no declaration spans, below the one they
+    were written for, is read with that release's, each checked as ever: the
+    dotted flag cell takes the Release 2 quirk, with a range warning, and a
+    Release 2 patch the older copy does not print fails it."""
     import docx
 
     manifest, document = _manifest(tmp_path / "specifications", "29999-123")
@@ -407,8 +410,14 @@ def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_
     declarations = tmp_path / "edits"
     declarations.mkdir()
     (declarations / "TS29.999.toml").write_text(
-        '[[quirk]]\nname = "dotted-flags"\nreason = "Release 2 only"\n'
+        '[[quirk]]\nname = "dotted-flags"\nreason = "Release 2"\n'
         'first_version = "2.0.0"\nlast_version = "2.0.0"\n'
+        + (
+            ""
+            if held
+            else '\n[[patch]]\nfind = "Not printed in 1.2.3"\nreplace = "x"\n'
+            'reason = "Release 2"\nfirst_version = "2.0.0"\n'
+        )
     )
     corpus = tmp_path / "dad"
     corpus.mkdir()
@@ -422,8 +431,12 @@ def test_declarations_for_another_release_do_not_apply(tmp_path, synthetic_spec_
         add=["TS29.999"],
     ).outcomes
 
-    assert outcome.status == "failed"
-    assert outcome.error is not None and "`dotted-flags` quirk" in outcome.error
+    if held:
+        assert outcome.status == "new"
+        assert any("does not cover parsed version 1.2.3" in w for w in outcome.warnings)
+    else:
+        assert outcome.status == "failed"
+        assert outcome.error is not None and "Not printed in 1.2.3" in outcome.error
 
 
 def test_expanding_ranges_rewrites_the_edit_files_and_retires_the_warnings(

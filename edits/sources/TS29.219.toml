@@ -35,3 +35,13 @@ reason = """
     """
 first_version = "18.0.0"
 last_version = "19.0.0"
+
+[[quirk]]
+name = "physical-reused-columns"
+reason = """
+    in the Release 18 copy, a legacy .doc, table 5.3.1 of re-used AVPs spans
+    its header's Reference cell over two grid columns and each row's Attribute
+    Name over the same two, so its columns are read by physical cell
+    """
+first_version = "18.0.0"
+last_version = "18.0.0"

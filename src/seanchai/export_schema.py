@@ -506,13 +506,17 @@ class RawDocument(_Model):
 class Index(_Model):
     """`index.json`: what the export is and which documents it holds. `generator`
     marks the directory as an export, which a later export may replace.
-    `corpus_version` is null for a corpus other than the installed one."""
+    `corpus_version` is null for a corpus other than the installed one.
+    `releases` are the 3GPP releases the corpus holds whole, oldest first: a
+    document of one of them that `pinned` gives no reason for is that
+    release's copy, read as the release reads it."""
 
     schema_version: _Version
     generator: Literal["seanchai"]
     seanchai_version: str | None
     corpus_version: str | None
     mode: Literal["public", "self-hosted"]
+    releases: tuple[int, ...]
     documents: tuple[DocumentSummary, ...]
 
 

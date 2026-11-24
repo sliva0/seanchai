@@ -131,10 +131,11 @@ class Change(_Model):
 
 
 class Side(_Model):
-    """What one side was built from: the corpus version where installed, and
-    each selected document's copy."""
+    """What one side was built from: the corpus version where installed, the
+    3GPP release the corpus was read at, and each selected document's copy."""
 
     corpus_version: str | None
+    release: int | None
     documents: tuple[dictionary.Document, ...]
 
 
@@ -250,6 +251,54 @@ def _command_name(
     application: dictionary.Application, command: dictionary.Command
 ) -> str:
     return f"{_application_name(application)}/{command.abbreviation}"
+
+
+def _by_document(
+    olds: dict[str, dictionary.Avp],
+    news: dict[str, dictionary.Avp],
+    pairs: list[tuple[dictionary.Avp, dictionary.Avp]],
+) -> list[tuple[dictionary.Avp, dictionary.Avp]]:
+    """The readings `pairs` leaves unpaired, each paired with the other side's
+    reading through a copy of the same document. Two readings of a corpus at
+    different releases read one copy under two spellings: Release 18's reads
+    TS 29.061 V19.1.0, which a citation reaches outside it, as
+    `TS29.061 V19.1.0` and Release 19's as `TS29.061`, beside Release 18's own
+    copy, `TS29.061`, which also stands against it."""
+
+    def document(through: str) -> str:
+        return through.partition(" V")[0]
+
+    paired_old = {old.id for old, _ in pairs}
+    paired_new = {new.id for _, new in pairs}
+    found = []
+    for through, old in sorted(olds.items()):
+        if old.id in paired_old:
+            continue
+        match = news.get(document(through)) or next(
+            (
+                new
+                for key, new in sorted(news.items())
+                if document(key) == document(through)
+            ),
+            None,
+        )
+        if match is not None:
+            found.append((old, match))
+    matched = {new.id for _, new in found}
+    for through, new in sorted(news.items()):
+        if new.id in paired_new or new.id in matched:
+            continue
+        match = olds.get(document(through)) or next(
+            (
+                old
+                for key, old in sorted(olds.items())
+                if document(key) == document(through)
+            ),
+            None,
+        )
+        if match is not None:
+            found.append((match, new))
+    return found
 
 
 def _paths(built: dictionary.Dictionary) -> dict[_Identity, list[str]]:
@@ -642,6 +691,7 @@ class _Comparison:
             pairs = [(olds[k], news[k]) for k in sorted(olds.keys() & news.keys())]
             if not pairs and len(olds) == 1 and len(news) == 1:
                 pairs = [(next(iter(olds.values())), next(iter(news.values())))]
+            pairs += _by_document(olds, news, pairs)
             paired_old = {old.id for old, _ in pairs}
             paired_new = {new.id for _, new in pairs}
             for old in olds.values():
@@ -1145,6 +1195,7 @@ def _side(built: dictionary.Dictionary, corpus_version: str | None) -> Side:
     }
     return Side(
         corpus_version=corpus_version,
+        release=built.release,
         documents=tuple(
             document for document in built.resolved if document.reference in selected
         ),

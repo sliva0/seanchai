@@ -194,3 +194,22 @@ def test_two_corpora_or_two_files_but_not_one_of_each(tmp_path):
     result = CliRunner().invoke(main, ["diff", str(path), str(tmp_path)])
     assert result.exit_code == 2
     assert "two .dad files or two corpus directories" in result.output
+
+
+def test_two_releases_of_the_corpus_compare_as_one_stack_sees_them():
+    """oneM2M TS-0004 reaches TS 32.299 V11.20.0, whose citations Release 19's
+    copies answer in either release, spelled `TS29.229 V19.1.0` in Release
+    18's reading and `TS29.229` in Release 19's: one copy, so no change. TS
+    29.329 gains a Data-Reference value in Release 19."""
+    books = Corpus.installed()
+    older, newer = (
+        Model.build(books, release=release, holes=HolePolicy.ANY)
+        for release in (18, 19)
+    )
+
+    unchanged = diff.diff(older, newer, documents=["oneM2M-TS-0004"])
+    gained = diff.diff(older, newer, documents=["TS29.329"])
+
+    assert (unchanged.old.release, unchanged.new.release) == (18, 19)
+    assert unchanged.changes == ()
+    assert gained.counts == {"breaking": 0, "compatible": 1, "editorial": 0}

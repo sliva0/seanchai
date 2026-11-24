@@ -11,7 +11,7 @@ reason = """
     to the commands User-Data-Request/Answer in the Diameter application
     specified in 3GPP TS 29.329 [5]' (clause 6.1.1)
     """
-first_version = "19.2.0"
+first_version = "18.2.0"
 last_version = "19.2.0"
 
 [[exclude]]

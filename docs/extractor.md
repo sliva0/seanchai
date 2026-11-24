@@ -83,12 +83,28 @@ quirk and typo. So each release's copy of a document gets its own
 declarations. For a version, the extractor uses:
 
 1. the declarations of the version's own release, if any range spans it;
-2. otherwise those of the newest declared release below it;
-3. otherwise none.
+2. otherwise those of the oldest declared release above it, which is how a
+   corpus going back reads an older release;
+3. otherwise, for a version newer than every declared release, those of the
+   newest declared release below it, which is how a new release is read.
 
 Within the chosen release a range is advisory. A version outside it still
 applies the declaration, with a warning, and `seanchai corpus regenerate
---expand-ranges` widens the range.
+--expand-ranges` widens the range. Whichever release lends its declarations,
+each is checked as it always is: a patch's count, a quirk that must fire, an
+exclusion that must leave something out, a correction's `expect`. So nothing
+is applied to another release's copy on faith, and one that does not hold
+fails the copy for a person to read the source: the defect may be absent
+there (TS 29.328's Sh-ee clause 6.6, new in Release 19, which its exclusion
+cannot find in V18.2.0), or printed otherwise (TS 29.273 V18.6.0's table
+8.2.3.0/1 numbers Access-Network-Info 1524, a typo Release 19 fixed).
+
+Once a release spans a range, only the declarations whose ranges span it
+apply there. So a declaration that does not hold on an older copy is kept
+out of it by widening the others' ranges to that copy, and one added for a
+later release alone (TS 29.219's Release 19 corrections of its
+information-element tables) is not tried on an older release that is
+already reviewed: widen it by hand where its defect is printed there too.
 
 When choosing the release, a range with no upper bound counts only for its
 lower bound's release, and a range with no bounds does not count. Both still
@@ -97,6 +113,10 @@ takes the older release's declarations out of that release's reading, so write
 it unranged until `--expand-ranges` has run.
 
 Corrections and acceptances are scoped the same way, per module.
+Interpretations are not: one applies only in the releases its own range
+spans, and is carried to another release only by `--expand-ranges` once its
+quotes are found there
+([corrections.md](corrections.md#interpreted-constraints)).
 
 ### Quirks
 

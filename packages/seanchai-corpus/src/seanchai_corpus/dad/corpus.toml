@@ -14,6 +14,13 @@
 # (docs/development.md).
 format = 2
 
+# The 3GPP releases the corpus holds whole, each a `3gpp/rel-N/` tree holding
+# every catalogued document the release has, at the versions the downloader's
+# `releases.toml` pins. A consumer reads one of them (`Model.build(corpus,
+# release=18)`, `--release 18`), the newest by default. Any other release tree
+# holds only the copies citations mean.
+releases = [18, 19]
+
 # A document its citers number otherwise than its publisher does, by the
 # reference a From cell carries. Corrections name the publisher's document in
 # each corrected file, so this answers a raw file's From cell, which keeps what
@@ -132,6 +139,16 @@ evidence = """
 
 [[cited_revision]]
 citing = "TS29.212"
+citing_version = "18.2.0"
+cited = "3GPP2-X.S0057"
+revision = "B"
+evidence = """
+    TS 29.212 V18.2.0 clause 2, [24] 3GPP2 X.S0057-B: 'E-UTRAN - eHRPD
+    Connectivity and Interworking: Core Network Aspects'
+    """
+
+[[cited_revision]]
+citing = "TS29.212"
 citing_version = "19.1.0"
 cited = "3GPP2-X.S0057"
 revision = "B"
@@ -148,6 +165,17 @@ evidence = """
 [[stand_in]]
 citing = "TS29.212"
 citing_version = "11.19.0"
+cited = "3GPP2-X.S0057"
+revision = "0"
+version = "2.0"
+evidence = """
+    3GPP2's library publishes X.S0057-0 v1.0 and v2.0 only (checked 2026-10-30
+    at http://www.3gpp2.org/Public_html/Specs/index.cfm, X series)
+    """
+
+[[stand_in]]
+citing = "TS29.212"
+citing_version = "18.2.0"
 cited = "3GPP2-X.S0057"
 revision = "0"
 version = "2.0"

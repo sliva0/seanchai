@@ -594,7 +594,7 @@ CORRECTIONS += [
             f" {interface}, {name}; clauses 7.2.9, 7.2.11 and 7.2.15 print"
             f" {command}-Request/Answer once for S6a/S6d (16777251) and once"
             " for S7a/S7d (16777308)",
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for interface, name, application_id in (
             ("5", "the MME and SGSN to HSS interfaces S6a and S6d", 16777251),
@@ -635,7 +635,6 @@ CORRECTIONS += [
         avp="AMBR",
         within="Subscription-Data",
         section="7.3.2",
-        page=98,
         readings=(
             reading(
                 "Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL"
@@ -643,13 +642,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="imei-digits",
         avp="IMEI",
         section="7.3.4",
-        page=100,
         readings=(
             reading(
                 "It should consist of 14 digits, including the 8-digit Type"
@@ -659,13 +657,12 @@ CORRECTIONS += [
                 digits(14, 15),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="software-version-digits",
         avp="Software-Version",
         section="7.3.5",
-        page=100,
         readings=(
             reading(
                 "This AVP shall contain the 2-digit Software Version Number"
@@ -675,13 +672,12 @@ CORRECTIONS += [
                 digits(2),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="3gpp2-meid-element",
         avp="3GPP2-MEID",
         section="7.3.6",
-        page=100,
         readings=(
             reading(
                 "For further details on the encoding of the AVP data, refer to"
@@ -691,13 +687,12 @@ CORRECTIONS += [
                 octets(8),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="visited-plmn-id-layout",
         avp="Visited-PLMN-Id",
         section="7.3.9",
-        page=103,
         readings=(
             reading(
                 (
@@ -709,14 +704,13 @@ CORRECTIONS += [
                 encoding(Codec.PLMN_ID),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-flags-exclusive-bits",
         avp="DSR-Flags",
         section="7.3.25",
         table="7.3.25/1",
-        page=122,
         readings=(
             reading(
                 "Note 4: Bits 3 and 6 are excluding alternatives and shall not"
@@ -730,27 +724,25 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="access-restriction-data-bits",
         avp="Access-Restriction-Data",
         section="7.3.31",
         table="7.3.31/1",
-        page=126,
         readings=(
             reading(
                 "NOTE 2: Bits 11 and 12 are only used when bit 4 is not set.",
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-oi-replacement-labels",
         avp="APN-OI-Replacement",
         section="7.3.32",
-        page=127,
         readings=(
             reading(
                 "The contents of the APN-OI-Replacement AVP shall be formatted"
@@ -759,14 +751,13 @@ CORRECTIONS += [
                 encoding(Codec.LABELS),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-profile-default-context",
         avp="Context-Identifier",
         within="APN-Configuration-Profile",
         section="7.3.34",
-        page=128,
         readings=(
             reading(
                 "The Context-Identifier AVP shall identify the per subscriber's"
@@ -774,14 +765,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-profile-additional-context",
         avp="Additional-Context-Identifier",
         within="APN-Configuration-Profile",
         section="7.3.34",
-        page=128,
         readings=(
             reading(
                 "If present, the Additional-Context-Identifier AVP shall"
@@ -790,14 +780,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-profile-third-context",
         avp="Third-Context-Identifier",
         within="APN-Configuration-Profile",
         section="7.3.34",
-        page=128,
         readings=(
             reading(
                 "If present, the Third-Context-Identifier AVP shall identify"
@@ -806,14 +795,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-context-identifier",
         avp="Context-Identifier",
         within="APN-Configuration",
         section="7.3.35",
-        page=128,
         readings=(
             reading(
                 "The Context-Identifier in the APN-Configuration AVP shall"
@@ -833,14 +821,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-service-selection",
         avp="Service-Selection",
         within="APN-Configuration",
         section="7.3.35",
-        page=128,
         readings=(
             reading(
                 "For a particular EPS user having multiple APN configurations,"
@@ -849,14 +836,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-served-party-ip-address",
         avp="Served-Party-IP-Address",
         within="APN-Configuration",
         section="7.3.35",
-        page=128,
         readings=(
             reading(
                 "These AVPs shall be present if static IP address allocation is"
@@ -869,14 +855,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-pdn-gw-allocation-type",
         avp="PDN-GW-Allocation-Type",
         within="APN-Configuration",
         section="7.3.35",
-        page=128,
         readings=(
             reading(
                 "The PDN-GW-Allocation-Type AVP applies to the MIP6-Agent-Info"
@@ -885,14 +870,13 @@ CORRECTIONS += [
                 requires("MIP6-Agent-Info"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-non-ip-delivery",
         avp="Non-IP-Data-Delivery-Mechanism",
         within="APN-Configuration",
         section="7.3.35",
-        page=128,
         readings=(
             reading(
                 "The Non-IP-Data-Delivery-Mechanism shall only be present when"
@@ -900,7 +884,7 @@ CORRECTIONS += [
                 requires(equals("Non-IP-PDN-Type-Indicator", "TRUE")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
@@ -908,7 +892,6 @@ CORRECTIONS += [
             avp=name,
             within="APN-Configuration",
             section="7.3.35",
-            page=128,
             readings=(
                 reading(
                     "The SCEF-ID AVP and the SCEF-Realm AVP shall only be present"
@@ -919,7 +902,7 @@ CORRECTIONS += [
                     requires(equals("Non-IP-Data-Delivery-Mechanism", 1)),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for name in ("SCEF-ID", "SCEF-Realm")
     ),
@@ -927,7 +910,6 @@ CORRECTIONS += [
         id="service-selection-apn",
         avp="Service-Selection",
         section="7.3.36",
-        page=130,
         readings=(
             reading(
                 "The contents of the Service-Selection AVP shall be formatted as"
@@ -937,14 +919,13 @@ CORRECTIONS += [
                 encoding(Codec.APN),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="eps-subscribed-qos-profile-non-gbr",
         avp="QoS-Class-Identifier",
         within="EPS-Subscribed-QoS-Profile",
         section="7.3.37",
-        page=130,
         readings=(
             reading(
                 "values QCI_1, QCI_2, QCI_3 and QCI_4, which are associated to"
@@ -958,13 +939,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="stn-sr-e164",
         avp="STN-SR",
         section="7.3.39",
-        page=131,
         readings=(
             reading(
                 (
@@ -976,7 +956,7 @@ CORRECTIONS += [
                 encoding(Codec.E164_TBCD),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
@@ -984,7 +964,6 @@ CORRECTIONS += [
             avp=name,
             within="Allocation-Retention-Priority",
             section="7.3.40",
-            page=131,
             readings=(
                 reading(
                     f"If the {name} AVP is not present in the"
@@ -993,7 +972,7 @@ CORRECTIONS += [
                     default(value),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for name, value, number in (
             ("Pre-emption-Capability", "PRE-EMPTION_CAPABILITY_DISABLED", 1),
@@ -1006,7 +985,6 @@ CORRECTIONS += [
             avp=f"Extended-Max-Requested-BW-{direction}",
             within="AMBR",
             section="7.3.41",
-            page=131,
             readings=(
                 reading(
                     (
@@ -1028,7 +1006,7 @@ CORRECTIONS += [
                     ),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for direction in ("UL", "DL")
     ),
@@ -1037,7 +1015,6 @@ CORRECTIONS += [
         avp="Destination-Host",
         within="MIP-Home-Agent-Host",
         section="7.3.43",
-        page=132,
         readings=(
             reading(
                 "Destination-Host shall contain the hostname of the PDN-GW,"
@@ -1045,14 +1022,13 @@ CORRECTIONS += [
                 element("TS29.303", "4.3.2"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="mip-home-agent-host-destination-realm",
         avp="Destination-Realm",
         within="MIP-Home-Agent-Host",
         section="7.3.43",
-        page=132,
         readings=(
             reading(
                 (
@@ -1062,25 +1038,23 @@ CORRECTIONS += [
                 encoding(Codec.EPC_PLMN_DOMAIN),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="mip6-agent-info-fqdn-preferred",
         avp="MIP-Home-Agent-Host",
         within="MIP6-Agent-Info",
         section="7.3.45",
-        page=132,
         readings=(
             reading("FQDN shall be used if known to the MME/SGSN/HSS.", text_only()),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="mip6-agent-info-home-link-prefix",
         avp="MIP6-Home-Link-Prefix",
         within="MIP6-Agent-Info",
         section="7.3.45",
-        page=132,
         readings=(
             reading(
                 "The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it"
@@ -1089,23 +1063,21 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="rat-frequency-selection-priority-id-range",
         avp="RAT-Frequency-Selection-Priority-ID",
         section="7.3.46",
-        page=133,
         readings=(
             reading("Values shall be in the range of 1 to 256.", range_of(1, 256)),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="user-id-digits",
         avp="User-Id",
         section="7.3.50",
-        page=134,
         readings=(
             reading(
                 "It shall contain the leading digits of an IMSI (i.e. MCC, MNC,"
@@ -1114,13 +1086,12 @@ CORRECTIONS += [
                 encoding(Codec.DIGITS),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="regional-subscription-zone-code-element",
         avp="Regional-Subscription-Zone-Code",
         section="7.3.52",
-        page=135,
         readings=(
             reading(
                 "It shall contain a Zone Code (ZC) as defined in TS 23.003 [3],"
@@ -1128,21 +1099,20 @@ CORRECTIONS += [
                 element("TS23.003", "4.4", "Zone Code"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower().replace('_', '-')}-element",
             avp=avp,
             section=section,
-            page=135,
             readings=(
                 reading(
                     f"This AVP shall contain the {name}. See {cited}.",
                     element(document, name=name),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for avp, section, name, cited, document in (
             ("RAND", "7.3.53", "RAND", "TS 33.401 [5]", "TS33.401"),
@@ -1156,7 +1126,6 @@ CORRECTIONS += [
         id="trace-reference-layout",
         avp="Trace-Reference",
         section="7.3.64",
-        page=136,
         readings=(
             reading(
                 (
@@ -1170,16 +1139,15 @@ CORRECTIONS += [
                 octets(6),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-element",
             avp=avp,
             section=section,
-            page=137,
             readings=(reading(_TS32422, element("TS32.422")),),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for avp, section in (
             ("Trace-NE-Type-List", "7.3.68"),
@@ -1191,16 +1159,14 @@ CORRECTIONS += [
         id="omc-id-element",
         avp="OMC-Id",
         section="7.3.71",
-        page=137,
         readings=(reading(_TS29002, element("TS29.002")),),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="pdp-context-ext-pdp-address",
         avp="Ext-PDP-Address",
         within="PDP-Context",
         section="7.3.74",
-        page=138,
         readings=(
             reading(
                 "The Ext-PDP-Address AVP may be present only if the PDP-Address"
@@ -1214,7 +1180,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     # PDP-Type's value is a TS 29.002 PDP-Type, whose octets the clauses do
     # not spell out (7.3.75), so a condition on it stays text.
@@ -1223,7 +1189,6 @@ CORRECTIONS += [
         avp="Ext-PDP-Type",
         within="PDP-Context",
         section="7.3.74",
-        page=138,
         readings=(
             reading(
                 "When PDP-Type takes the value Non-IP (HEX 02), the"
@@ -1231,14 +1196,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="pdp-context-non-ip-delivery",
         avp="Non-IP-Data-Delivery-Mechanism",
         within="PDP-Context",
         section="7.3.74",
-        page=138,
         readings=(
             reading(
                 "The Non-IP-Data-Delivery-Mechanism shall only be present when"
@@ -1246,14 +1210,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="pdp-context-scef-id",
         avp="SCEF-ID",
         within="PDP-Context",
         section="7.3.74",
-        page=138,
         readings=(
             reading(
                 "The SCEF-ID shall only be present when"
@@ -1262,13 +1225,12 @@ CORRECTIONS += [
                 requires(equals("Non-IP-Data-Delivery-Mechanism", 1)),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="pdp-type-element",
         avp="PDP-Type",
         section="7.3.75",
-        page=139,
         readings=(
             reading(_TS29002, element("TS29.002")),
             reading(
@@ -1277,13 +1239,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ext-pdp-type-value",
         avp="Ext-PDP-Type",
         section="7.3.75A",
-        page=139,
         readings=(
             reading(
                 "Octets are coded according to TS 29.002 [24] and TS 29.060"
@@ -1291,13 +1252,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="qos-subscribed-element",
         avp="QoS-Subscribed",
         section="7.3.77",
-        page=139,
         readings=(
             reading(
                 "Octets are coded according to TS 29.002 [24] (octets of"
@@ -1307,13 +1267,12 @@ CORRECTIONS += [
                 element("TS29.002"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="csg-id-element",
         avp="CSG-Id",
         section="7.3.79",
-        page=139,
         readings=(
             reading(
                 "Values are coded according to TS 23.003 [3].", element("TS23.003")
@@ -1323,14 +1282,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="apn-configuration-specific-apn-info",
         avp="Specific-APN-Info",
         within="APN-Configuration",
         section="7.3.82",
-        page=140,
         readings=(
             reading(
                 "It shall only be present in the APN configuration when the APN"
@@ -1338,13 +1296,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="gmlc-number-e164",
         avp="GMLC-Number",
         section="7.3.85",
-        page=140,
         readings=(
             reading(
                 (
@@ -1356,28 +1313,26 @@ CORRECTIONS += [
                 encoding(Codec.E164_TBCD),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-element",
             avp=avp,
             section=section,
-            page=page,
             readings=(reading(_TS29002, element("TS29.002")),),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page in (
-            ("SS-Code", "7.3.87", 141),
-            ("SS-Status", "7.3.88", 141),
-            ("TS-Code", "7.3.100", 143),
+        for avp, section in (
+            ("SS-Code", "7.3.87"),
+            ("SS-Status", "7.3.88"),
+            ("TS-Code", "7.3.100"),
         )
     ),
     Interpret(
         id="client-identity-e164",
         avp="Client-Identity",
         section="7.3.91",
-        page=141,
         readings=(
             reading(
                 (
@@ -1390,26 +1345,24 @@ CORRECTIONS += [
                 encoding(Codec.E164_TBCD),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="servicetypeidentity-element",
         avp="ServiceTypeIdentity",
         section="7.3.95",
-        page=142,
         readings=(
             reading(
                 "For details on the values of this AVP, see TS 29.002 [24].",
                 element("TS29.002"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="trace-collection-entity-ip",
         avp="Trace-Collection-Entity",
         section="7.3.98",
-        page=143,
         readings=(
             reading(
                 "The Trace-Collection-Entity AVP is of type Address and contains"
@@ -1418,13 +1371,12 @@ CORRECTIONS += [
                 encoding(Codec.IP_ADDRESS),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="sgsn-number-e164",
         avp="SGSN-Number",
         section="7.3.102",
-        page=143,
         readings=(
             reading(
                 (
@@ -1436,26 +1388,24 @@ CORRECTIONS += [
                 encoding(Codec.E164_TBCD),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="visited-network-identifier-domain",
         avp="Visited-Network-Identifier",
         section="7.3.105",
-        page=144,
         readings=(
             reading(
                 ("The AVP shall be encoded as:", "mnc<MNC>.mcc<MCC>.3gppnetwork.org"),
                 encoding(Codec.PLMN_DOMAIN),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="gmlc-address-ip",
         avp="GMLC-Address",
         section="7.3.109",
-        page=145,
         readings=(
             reading(
                 "The GMLC-Address AVP is of type Address and shall contain the"
@@ -1464,57 +1414,52 @@ CORRECTIONS += [
                 encoding(Codec.IP_ADDRESS),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="user-state-reserved",
         avp="User-State",
         section="7.3.114",
-        page=146,
         readings=(
             reading(
                 "This value should not be used by MME or SGSN over S6a/S6d.",
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-element",
             avp=avp,
             section=section,
-            page=page,
             readings=(reading(quote, element("TS29.002")),),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page, quote in (
-            ("E-UTRAN-Cell-Global-Identity", "7.3.117", 148, _TS29002_DESCRIBED),
-            ("Tracking-Area-Identity", "7.3.118", 148, _TS29002_DESCRIBED),
-            ("Cell-Global-Identity", "7.3.119", 148, _TS29002_DESCRIBED),
-            ("Routing-Area-Identity", "7.3.120", 148, _TS29002_DESCRIBED),
-            ("Location-Area-Identity", "7.3.121", 148, _TS29002_DESCRIBED),
-            ("Service-Area-Identity", "7.3.122", 148, _TS29002_DESCRIBED),
+        for avp, section, quote in (
+            ("E-UTRAN-Cell-Global-Identity", "7.3.117", _TS29002_DESCRIBED),
+            ("Tracking-Area-Identity", "7.3.118", _TS29002_DESCRIBED),
+            ("Cell-Global-Identity", "7.3.119", _TS29002_DESCRIBED),
+            ("Routing-Area-Identity", "7.3.120", _TS29002_DESCRIBED),
+            ("Location-Area-Identity", "7.3.121", _TS29002_DESCRIBED),
+            ("Service-Area-Identity", "7.3.122", _TS29002_DESCRIBED),
             (
                 "Geographical-Information",
                 "7.3.123",
-                148,
                 "For details and octet encoding, see TS 29.002 [24].",
             ),
             (
                 "Geodetic-Information",
                 "7.3.124",
-                148,
                 "For details and octet encoding, see TS 29.002 [24].",
             ),
-            ("NR-Cell-Global-Identity", "7.3.251", 179, _TS29002_DESCRIBED),
+            ("NR-Cell-Global-Identity", "7.3.251", _TS29002_DESCRIBED),
         )
     ),
     Interpret(
         id="error-diagnostic-values",
         avp="Error-Diagnostic",
         section="7.3.128",
-        page=149,
         readings=(
             reading(
                 (
@@ -1529,14 +1474,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-element",
             avp=avp,
             section=section,
-            page=152,
             readings=(
                 reading(
                     (
@@ -1546,7 +1490,7 @@ CORRECTIONS += [
                     element("TS32.422"),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for avp, section in (
             ("List-Of-Measurements", "7.3.139"),
@@ -1558,38 +1502,35 @@ CORRECTIONS += [
             id=f"{avp.lower()}-element",
             avp=avp,
             section=section,
-            page=page,
             readings=(
                 reading("See TS 32.422 [23] for allowed values", element("TS32.422")),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page in (
-            ("Event-Threshold-RSRP", "7.3.143", 152),
-            ("Event-Threshold-RSRQ", "7.3.144", 152),
-            ("Event-Threshold-Event-1F", "7.3.172", 158),
-            ("Event-Threshold-Event-1I", "7.3.173", 158),
-            ("Event-Threshold-SINR", "7.3.246", 178),
+        for avp, section in (
+            ("Event-Threshold-RSRP", "7.3.143"),
+            ("Event-Threshold-RSRQ", "7.3.144"),
+            ("Event-Threshold-Event-1F", "7.3.172"),
+            ("Event-Threshold-Event-1I", "7.3.173"),
+            ("Event-Threshold-SINR", "7.3.246"),
         )
     ),
     Interpret(
         id="relay-node-indicator-default",
         avp="Relay-Node-Indicator",
         section="7.3.147",
-        page=153,
         readings=(
             reading(
                 "The default value when this AVP is not present is NOT_RELAY_NODE (0).",
                 default("NOT_RELAY_NODE"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="mdt-user-consent-absence",
         avp="MDT-User-Consent",
         section="7.3.148",
-        page=153,
         readings=(
             reading(
                 (
@@ -1601,13 +1542,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="subscribed-vsrvcc-absence",
         avp="Subscribed-VSRVCC",
         section="7.3.150",
-        page=153,
         readings=(
             reading(
                 (
@@ -1619,13 +1559,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="a-msisdn-e164",
         avp="A-MSISDN",
         section="7.3.157",
-        page=155,
         readings=(
             reading(
                 (
@@ -1637,13 +1576,12 @@ CORRECTIONS += [
                 encoding(Codec.E164_TBCD),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="mme-number-for-mt-sms-e164",
         avp="MME-Number-for-MT-SMS",
         section="7.3.159",
-        page=156,
         readings=(
             reading(
                 (
@@ -1655,13 +1593,12 @@ CORRECTIONS += [
                 encoding(Codec.E164_TBCD),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="sms-register-request-skip-subscriber-data",
         avp="SMS-Register-Request",
         section="7.3.162",
-        page=156,
         readings=(
             reading(
                 "When the MME/SGSN includes the SMS-Register-Request AVP in ULR"
@@ -1683,7 +1620,6 @@ CORRECTIONS += [
         id="time-zone-format",
         avp="Time-Zone",
         section="7.3.163",
-        page=156,
         readings=(
             reading(
                 (
@@ -1695,14 +1631,13 @@ CORRECTIONS += [
                 encoding(Codec.TIME_ZONE),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-octet",
             avp=avp,
             section=section,
-            page=158,
             readings=(
                 reading(
                     "It contains one octet carrying a bit map of 8 bits.",
@@ -1714,7 +1649,7 @@ CORRECTIONS += [
                     element("TS32.422", name=name),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
         for avp, section, name in (
             ("Positioning-Method", "7.3.170", "Positioning Method"),
@@ -1725,7 +1660,6 @@ CORRECTIONS += [
         id="restoration-priority-range",
         avp="Restoration-Priority",
         section="7.3.174",
-        page=158,
         readings=(
             reading(
                 "Values 1 to 16 are defined, with value 1 as the highest level"
@@ -1733,13 +1667,12 @@ CORRECTIONS += [
                 range_of(1, 16),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="sgs-mme-identity-element",
         avp="SGs-MME-Identity",
         section="7.3.175",
-        page=158,
         readings=(
             reading(
                 "This AVP shall contain the MME identity used over the SGs"
@@ -1747,13 +1680,12 @@ CORRECTIONS += [
                 element("TS23.003", "19.4.2.4", "MME identity"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="coupled-node-diameter-id-element",
         avp="Coupled-Node-Diameter-ID",
         section="7.3.177",
-        page=158,
         readings=(
             reading(
                 "This AVP shall contain the S6a or S6d Diameter identity of the"
@@ -1762,14 +1694,13 @@ CORRECTIONS += [
                 element("TS23.003"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-layout",
             avp=avp,
             section=section,
-            page=page,
             readings=(
                 reading(
                     (
@@ -1781,18 +1712,17 @@ CORRECTIONS += [
                     encoding(Codec.PLMN_ID),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page, table in (
-            ("MDT-Allowed-PLMN-Id", "7.3.185", 160, "7.3.185/1"),
-            ("Group-PLMN-Id", "7.3.191", 161, "7.3.191-1"),
+        for avp, section, table in (
+            ("MDT-Allowed-PLMN-Id", "7.3.185", "7.3.185/1"),
+            ("Group-PLMN-Id", "7.3.191", "7.3.191-1"),
         )
     ),
     Interpret(
         id="dl-buffering-suggested-packet-count-range",
         avp="DL-Buffering-Suggested-Packet-Count",
         section="7.3.188",
-        page=161,
         readings=(
             reading(
                 (
@@ -1805,13 +1735,12 @@ CORRECTIONS += [
                 range_of(-1, None),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="group-service-id-operator-range",
         avp="Group-Service-Id",
         section="7.3.190",
-        page=161,
         readings=(
             reading(
                 "IMSI-Group-IDs with a Group-Service-Id in this range shall not"
@@ -1819,13 +1748,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="aese-communication-pattern-reference-ids",
         avp="AESE-Communication-Pattern",
         section="7.3.193",
-        page=162,
         readings=(
             reading(
                 "At least one reference ID (either in SCEF-Reference-ID or in"
@@ -1849,7 +1777,6 @@ CORRECTIONS += [
         id="monitoring-event-configuration-extended-ids",
         avp="Monitoring-Event-Configuration",
         section="7.3.195",
-        page=163,
         readings=(
             reading(
                 'When the "Extended Reference IDs" feature is supported and used'
@@ -1867,7 +1794,6 @@ CORRECTIONS += [
         avp="SCEF-Realm",
         within="Monitoring-Event-Configuration",
         section="7.3.195",
-        page=163,
         readings=(
             reading(
                 "When the Monitoring-Event-Configuration AVP is used over the"
@@ -1875,14 +1801,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="monitoring-event-configuration-monitoring-type",
         avp="Monitoring-Type",
         within="Monitoring-Event-Configuration",
         section="7.3.195",
-        page=163,
         readings=(
             reading(
                 "Monitoring-Type AVP shall be ignored for deletion of an event"
@@ -1891,14 +1816,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="monitoring-event-configuration-maximum-number-of-reports",
         avp="Maximum-Number-of-Reports",
         within="Monitoring-Event-Configuration",
         section="7.3.195",
-        page=163,
         readings=(
             reading(
                 "Maximum-Number-of-Reports shall not be present over S6a/S6d"
@@ -1913,14 +1837,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="monitoring-event-report-reachability-information",
         avp="Reachability-Information",
         within="Monitoring-Event-Report",
         section="7.3.196",
-        page=164,
         readings=(
             reading(
                 "For S6a/S6d interface, when the Monitoring-Type AVP takes the"
@@ -1929,14 +1852,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="monitoring-event-report-pdn-connectivity",
         avp="PDN-Connectivity-Status-Report",
         within="Monitoring-Event-Report",
         section="7.3.196",
-        page=164,
         readings=(
             reading(
                 "each PDN-Connectivity-Status-Report shall have the"
@@ -1944,14 +1866,13 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="monitoring-event-report-scef-reference-id",
         avp="SCEF-Reference-ID",
         within="Monitoring-Event-Report",
         section="7.3.196",
-        page=164,
         readings=(
             reading(
                 'When the "Extended Reference IDs" feature is supported and used'
@@ -1971,7 +1892,6 @@ CORRECTIONS += [
         avp="Reachability-Type",
         within="UE-Reachability-Configuration",
         section="7.3.197",
-        page=165,
         readings=(
             reading(
                 "For S6a/S6d interface, the Reachability-Type AVP shall have bit"
@@ -1980,13 +1900,12 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ue-usage-type-range",
         avp="UE-Usage-Type",
         section="7.3.202",
-        page=166,
         readings=(
             reading(
                 "The allowed values of UE-Usage-Type shall be in the range of 0"
@@ -1994,33 +1913,31 @@ CORRECTIONS += [
                 range_of(0, 255),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-default",
             avp=avp,
             section=section,
-            page=page,
             readings=(
                 reading(
                     f"The default value when this AVP is not present is {value} (0).",
                     default(value),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page, value in (
-            ("Non-IP-PDN-Type-Indicator", "7.3.204", 167, "FALSE"),
+        for avp, section, value in (
+            ("Non-IP-PDN-Type-Indicator", "7.3.204", "FALSE"),
             (
                 "Non-IP-Data-Delivery-Mechanism",
                 "7.3.205",
-                167,
                 "SGi-BASED-DATA-DELIVERY",
             ),
-            ("RDS-Indicator", "7.3.222", 170, "DISABLED"),
-            ("Interworking-5GS-Indicator", "7.3.231", 175, "NOT-SUBSCRIBED"),
-            ("Ethernet-PDN-Type-Indicator", "7.3.232", 175, "FALSE"),
+            ("RDS-Indicator", "7.3.222", "DISABLED"),
+            ("Interworking-5GS-Indicator", "7.3.231", "NOT-SUBSCRIBED"),
+            ("Ethernet-PDN-Type-Indicator", "7.3.232", "FALSE"),
         )
     ),
     Interpret(
@@ -2028,21 +1945,19 @@ CORRECTIONS += [
         avp="Preferred-Data-Mode",
         section="7.3.209",
         table="7.3.209/1",
-        page=168,
         readings=(
             reading(
                 "NOTE 2: At least one of the bits 0 and 1 shall be set to 1.",
                 bits_at_least_one(0, 1),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     *(
         Interpret(
             id=f"{avp.lower()}-octet",
             avp=avp,
             section=section,
-            page=page,
             readings=(
                 reading(
                     f"The contents of {avp} shall consist of 1 octet.",
@@ -2060,14 +1975,13 @@ CORRECTIONS += [
                     text_only(),
                 ),
             ),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page, field, zeroed in (
-            ("eDRX-Cycle-Length-Value", "7.3.216", 169, "eDRX value", "most"),
+        for avp, section, field, zeroed in (
+            ("eDRX-Cycle-Length-Value", "7.3.216", "eDRX value", "most"),
             (
                 "Paging-Time-Window-Length",
                 "7.3.228",
-                175,
                 "Paging Time Window length",
                 "least",
             ),
@@ -2078,15 +1992,13 @@ CORRECTIONS += [
             id=f"{avp.lower()}-range",
             avp=avp,
             section=section,
-            page=page,
             readings=(reading(quote, range_of(0, high)),),
-            versions="19.6.0",
+            versions="18.7.0..19.6.0",
         )
-        for avp, section, page, high, quote in (
+        for avp, section, high, quote in (
             (
                 "MBSFN-Area-ID",
                 "7.3.220",
-                170,
                 255,
                 "it shall contain the MBSFN Area ID value, in the range of"
                 " 0..255 (see TS 36.331 [62]).",
@@ -2094,7 +2006,6 @@ CORRECTIONS += [
             (
                 "Carrier-Frequency",
                 "7.3.221",
-                170,
                 262143,
                 "it shall contain the Carrier Frequency value, in the range of"
                 " 0..262143 (see TS 36.331 [62]).",
@@ -2102,7 +2013,6 @@ CORRECTIONS += [
             (
                 "Operation-Mode",
                 "7.3.227",
-                174,
                 255,
                 "The allowed values of Operation-Mode shall be in the range of 0"
                 " to 255.",
@@ -2113,20 +2023,18 @@ CORRECTIONS += [
         id="5qi-element",
         avp="5QI",
         section="7.3.238",
-        page=177,
         readings=(
             reading(
                 "See TS 23.501 [69] for allowed values.",
                 element("TS23.501", name="5QI"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="collection-period-m7-nr-element",
         avp="Collection-Period-M7-NR",
         section="7.3.249",
-        page=178,
         readings=(
             reading(
                 "The possible values are those defined in TS 32.422 [23] for"
@@ -2134,14 +2042,13 @@ CORRECTIONS += [
                 element("TS32.422", name="Collection period M7 in NR"),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="plmn-rat-usage-control-restricted",
         avp="PLMN-RAT-Usage-Control",
         section="7.3.253",
         table="7.3.253/1",
-        page=179,
         readings=(
             reading(
                 "RAT restricted by the Access-Restriction-Data AVP shall not be"
@@ -2166,7 +2073,6 @@ CORRECTIONS += [
         command="Update-Location-Answer",
         section="5.2.1.1.1",
         table="5.2.1.1.1/2",
-        page=18,
         readings=(
             reading(
                 "It shall be present only when the Result-Code AVP is"
@@ -2174,7 +2080,7 @@ CORRECTIONS += [
                 requires(equals("Result-Code", "DIAMETER_SUCCESS")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ula-subscription-data",
@@ -2182,7 +2088,6 @@ CORRECTIONS += [
         command="Update-Location-Answer",
         section="5.2.1.1.1",
         table="5.2.1.1.1/2",
-        page=18,
         readings=(
             reading(
                 "It shall be present if success is reported, unless an explicit"
@@ -2190,7 +2095,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ulr-sgsn-number",
@@ -2198,7 +2103,6 @@ CORRECTIONS += [
         command="Update-Location-Request",
         section="5.2.1.1.1",
         table="5.2.1.1.1/1",
-        page=18,
         readings=(
             reading(
                 "It shall be present when the message is sent on the S6d interface"
@@ -2207,7 +2111,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ulr-ue-srvcc-capability",
@@ -2215,7 +2119,6 @@ CORRECTIONS += [
         command="Update-Location-Request",
         section="5.2.1.1.1",
         table="5.2.1.1.1/1",
-        page=18,
         readings=(
             reading(
                 "shall be present if the MME or the SGSN supports SRVCC and this"
@@ -2223,7 +2126,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ulr-mme-number-for-mt-sms",
@@ -2231,7 +2134,6 @@ CORRECTIONS += [
         command="Update-Location-Request",
         section="5.2.1.1.1",
         table="5.2.1.1.1/1",
-        page=18,
         readings=(
             reading(
                 "It shall be present when the MME supports SMS in MME and wishes to"
@@ -2239,7 +2141,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ulr-sms-register-request",
@@ -2247,7 +2149,6 @@ CORRECTIONS += [
         command="Update-Location-Request",
         section="5.2.1.1.1",
         table="5.2.1.1.1/1",
-        page=18,
         readings=(
             reading(
                 (
@@ -2260,7 +2161,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="pua-pua-flags",
@@ -2268,7 +2169,6 @@ CORRECTIONS += [
         command="Purge-UE-Answer",
         section="5.2.1.3.1",
         table="5.2.1.3.1/2",
-        page=33,
         readings=(
             reading(
                 "It shall be present only when the Result-Code AVP is"
@@ -2276,7 +2176,7 @@ CORRECTIONS += [
                 requires(equals("Result-Code", "DIAMETER_SUCCESS")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-ims-voice-over-ps-sessions-supported",
@@ -2285,7 +2185,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "If the UE is in detached state, this information element shall not"
@@ -2293,7 +2192,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-last-ue-activity-time",
@@ -2302,7 +2201,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "If the UE is in detached state, this information element shall not"
@@ -2310,7 +2208,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-rat-type",
@@ -2319,7 +2217,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "If the UE is in detached state, this information element shall not"
@@ -2327,7 +2224,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-eps-user-state",
@@ -2336,14 +2233,13 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "It shall be present if EPS user state was requested within IDR.",
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-eps-location-information",
@@ -2352,7 +2248,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "It shall be present if EPS location information was requested"
@@ -2360,7 +2255,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-local-time-zone",
@@ -2369,14 +2264,13 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "It shall be present if the Local Time Zone was requested within IDR.",
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-monitoring-event-report",
@@ -2385,7 +2279,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "It shall be present if Monitoring event configuration is included"
@@ -2394,7 +2287,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="ida-monitoring-event-config-status",
@@ -2403,7 +2296,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.1.1",
         table="5.2.2.1.1/2",
-        page=35,
         readings=(
             reading(
                 "This Information Element shall be present if Monitoring event"
@@ -2411,7 +2303,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-trace-reference",
@@ -2420,7 +2312,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.2.1",
         table="5.2.2.2.1/1",
-        page=43,
         readings=(
             reading(
                 'This element shall be present only if the "Trace Data Withdrawal"'
@@ -2428,7 +2319,7 @@ CORRECTIONS += [
                 requires(bit("DSR-Flags", "Trace Data Withdrawal")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-context-identifier",
@@ -2437,7 +2328,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.2.1",
         table="5.2.2.2.1/1",
-        page=43,
         readings=(
             reading(
                 'This element shall be present only if the "PDN subscription'
@@ -2460,7 +2350,7 @@ CORRECTIONS += [
                 exclude(0),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-ts-code",
@@ -2469,7 +2359,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.2.1",
         table="5.2.2.2.1/1",
-        page=43,
         readings=(
             reading(
                 'This element shall be present only if the "SMS Withdrawal" bit is'
@@ -2478,7 +2367,7 @@ CORRECTIONS += [
                 requires(bit("DSR-Flags", "SMS Withdrawal")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-ss-code",
@@ -2487,7 +2376,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.2.1",
         table="5.2.2.2.1/1",
-        page=43,
         readings=(
             reading(
                 'This element shall be present only if the "SMS Withdrawal" bit is'
@@ -2498,7 +2386,7 @@ CORRECTIONS += [
                 ),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-scef-id",
@@ -2507,7 +2395,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.2.1",
         table="5.2.2.2.1/1",
-        page=43,
         readings=(
             reading(
                 'This element shall be present if the "Delete monitoring events"'
@@ -2515,7 +2402,7 @@ CORRECTIONS += [
                 present_if(bit("DSR-Flags", "Delete monitoring events")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="dsr-edrx-related-rat",
@@ -2524,7 +2411,6 @@ CORRECTIONS += [
         application_id=_S6A,
         section="5.2.2.2.1",
         table="5.2.2.2.1/1",
-        page=43,
         readings=(
             reading(
                 "This element shall be present only if the"
@@ -2533,7 +2419,7 @@ CORRECTIONS += [
                 requires(bit("DSR-Flags", "eDRX-Cycle-Length-Withdrawal")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="aia-ue-usage-type",
@@ -2541,7 +2427,6 @@ CORRECTIONS += [
         command="Authentication-Information-Answer",
         section="5.2.3.1.1",
         table="5.2.3.1.1/2",
-        page=47,
         readings=(
             reading(
                 "This IE shall be present if the HSS supports the Dedicated Core"
@@ -2551,7 +2436,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-terminal-information",
@@ -2559,7 +2444,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "Within this Information Element, only the IMEI and the"
@@ -2567,7 +2451,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-mip6-agent-info",
@@ -2575,7 +2459,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "It shall be present if a new PDN-GW has been selected and the"
@@ -2584,7 +2467,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-visited-network-identifier",
@@ -2592,7 +2475,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "It shall be present when the PDN GW Identity is present and does"
@@ -2600,7 +2482,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-service-selection",
@@ -2608,7 +2490,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "For establishment of non-emergency PDN connections, it shall be"
@@ -2623,7 +2504,7 @@ CORRECTIONS += [
                 absent_if(bit("Emergency-Services", "Emergency-Indication")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-alert-reason",
@@ -2631,7 +2512,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "It shall be present when notifying the HSS about the presence of"
@@ -2640,7 +2520,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-ue-srvcc-capability",
@@ -2648,7 +2528,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "If the MME/SGSN supports SRVCC and the UE SRVCC Capability has"
@@ -2657,7 +2536,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-nor-flags",
@@ -2665,7 +2544,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "Absence of this information element shall be interpreted as all"
@@ -2673,7 +2551,7 @@ CORRECTIONS += [
                 default(0),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-homogeneous-support",
@@ -2681,7 +2559,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "This Information Element shall be present if Homogeneous Support"
@@ -2690,7 +2567,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-monitoring-event-config-status",
@@ -2698,7 +2575,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "This information element shall be present if the MME/SGSN sends"
@@ -2707,7 +2583,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="nor-emergency-services",
@@ -2715,7 +2591,6 @@ CORRECTIONS += [
         command="Notify-Request",
         section="5.2.5.1.1",
         table="5.2.5.1.1/1",
-        page=54,
         readings=(
             reading(
                 "The MME shall include this information element, and set the"
@@ -2725,7 +2600,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="uvr-sgsn-number",
@@ -2733,14 +2608,13 @@ CORRECTIONS += [
         command="Update-VCSG-Location-Request",
         section="5A.2.1.1.1",
         table="5A.2.1.1.1/1",
-        page=61,
         readings=(
             reading(
                 "It shall be present when the message is sent on the S7d interface.",
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="uva-vplmn-csg-subscription-data",
@@ -2748,7 +2622,6 @@ CORRECTIONS += [
         command="Update-VCSG-Location-Answer",
         section="5A.2.1.1.1",
         table="5A.2.1.1.1/2",
-        page=61,
         readings=(
             reading(
                 "It shall be present if success is reported, unless an explicit"
@@ -2757,7 +2630,7 @@ CORRECTIONS += [
                 text_only(),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
     Interpret(
         id="eca-equipment-status",
@@ -2765,7 +2638,6 @@ CORRECTIONS += [
         command="ME-Identity-Check-Answer",
         section="6.2.1.1",
         table="6.2.1.1/2",
-        page=69,
         readings=(
             reading(
                 "It shall be present if the result of the ME Identity Check is"
@@ -2773,6 +2645,6 @@ CORRECTIONS += [
                 present_if(equals("Result-Code", "DIAMETER_SUCCESS")),
             ),
         ),
-        versions="19.6.0",
+        versions="18.7.0..19.6.0",
     ),
 ]

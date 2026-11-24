@@ -1,6 +1,8 @@
 """Interpreted constraints: the block's grammar, the `Interpret` declaration
 that writes it, and the quote check against the source document."""
 
+import dataclasses
+
 import pytest
 from conftest import _ROOT
 
@@ -308,6 +310,35 @@ def _interpret(
     )
 
 
+def test_an_interpretation_applies_only_in_a_release_its_range_spans():
+    """Release 18, which the correction's range spans, takes no Release 19
+    interpretation; they are offered to it, and to Release 17 too, until one
+    of the module's ranges spans the release."""
+    reviewed = dataclasses.replace(_interpret(), id="reviewed")
+    correction = corrections.Correction(
+        id="spelling",
+        target=corrections.definition("Example-Number"),
+        field="name",
+        expect="Example-Numbr",
+        replace="Example-Number",
+        reason="typo",
+        versions="18.0.0..19.0.0",
+    )
+    module = [correction, _interpret()]
+
+    assert corrections.in_release(module, "19.0.0") == module
+    assert corrections.in_release(module, "18.1.0") == [correction]
+    assert corrections.offered(module, "18.1.0") == [_interpret()]
+    assert corrections.offered(module, "17.0.0") == [_interpret()]
+    assert corrections.offered(module, "19.0.0") == []
+    widened = dataclasses.replace(reviewed, versions="18.1.0..19.0.0")
+    assert corrections.offered([*module, widened], "18.1.0") == []
+    assert corrections.in_release([*module, widened], "18.1.0") == [
+        correction,
+        widened,
+    ]
+
+
 def test_an_interpretation_stands_beside_the_clause_it_reads():
     spec, comments = parser.parse_with_comments(_RAW)
     declared = [
@@ -400,10 +431,9 @@ def test_an_interpretation_declared_wrongly_is_refused(fields, message):
         _interpret(**fields)
 
 
-def test_a_quote_is_held_to_its_clause_and_page():
+def test_a_quote_is_held_to_its_clause_and_its_page_read_from_the_copy():
     declared = [
         _interpret(
-            page=12,
             readings=(
                 reading(
                     ("It is  a\u00a0number.", "Encoded as TBCD."),
@@ -416,13 +446,15 @@ def test_a_quote_is_held_to_its_clause_and_page():
         "6.3.2": ["The AVP is of type OctetString. It is a number.", "Encoded as TBCD."]
     }
 
-    corrections.check_quotes(declared, clauses, {"6.3.2": 12})
+    corrections.check_quotes(declared, clauses)
     with pytest.raises(CorrectionError, match=r"does not print 'Encoded as TBCD\.'"):
         corrections.check_quotes(declared, {"6.3.2": ["It is a number."]})
-    with pytest.raises(CorrectionError, match=r"is on page 13, not 12"):
-        corrections.check_quotes(declared, clauses, {"6.3.2": 13})
     with pytest.raises(CorrectionError, match=r"has no clause 6\.3\.2"):
         corrections.check_quotes(declared, {})
+    (item,) = declared
+    assert corrections.paged(item, {"6.3.2": 13}).node.source.page == 13
+    assert corrections.paged(item, {}).page is None
+    assert corrections.paged(item, None) is item
 
 
 @pytest.mark.sources

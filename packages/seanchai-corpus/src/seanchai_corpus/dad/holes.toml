@@ -3,9 +3,11 @@
 # dad` refuse a hole not listed here and an entry naming no hole, so remove an
 # entry when its hole is fixed (docs/consumers.md).
 #
-# `document` is `Hole.document` (with a version only for an older copy).
-# `missing` is `Hole.missing`, compared exactly. `reason` is written like a
-# correction's: spec version, clause, and what was searched.
+# `document` is `Hole.document` (with a version only for a copy outside the
+# release read). `missing` is `Hole.missing`, compared exactly. `reason` is
+# written like a correction's: spec version, clause, and what was searched.
+# `releases`, where given, names the releases the corpus holds whole whose
+# reading has the hole; an entry without holds in every one.
 
 [[hole]]
 document = "RFC4004"
@@ -60,6 +62,18 @@ reason = """
     flags, and table 9a skips it (TS29.061.py#session-stop-indicator-row);
     V11.12.0 tabulates it in no table either (corpus.toml, release_stand_in),
     and TS 32.299 table 7.2.0.1 re-uses it from here
+    """
+
+[[hole]]
+document = "TS29.061 V19.1.0"
+name = "3GPP-Session-Stop-Indicator"
+missing = ["data_type", "flag_rules"]
+releases = [18]
+reason = """
+    the hole above, in the copy TS 32.299 V11.20.0's citation reaches through
+    corpus.toml's release_stand_in, which in a Release 18 reading is no longer
+    the copy in view and so is named with its version; V18.1.0 clause 16.4.7.2
+    codes the sub-attribute as V19.1.0 does, with no Diameter type or flags
     """
 
 [[hole]]

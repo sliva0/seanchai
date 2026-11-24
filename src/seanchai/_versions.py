@@ -101,13 +101,17 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
 
     Declarations are reviewed per 3GPP release, since a release may change
     the template. Within a release a range is advisory: a new version gets
-    every declaration plus a warning (docs/development.md).
+    every declaration plus a warning (docs/extractor.md#releases).
 
-    The release is `version`'s own if some range spans it, else the newest
-    declared release below it; below every declared release, nothing
-    applies. An open upper bound does not mark later releases as reviewed,
-    and a fully open range takes no part in the choice. Returns None for a
-    version-less document (an RFC) or when every range is open.
+    The release is `version`'s own if some range spans it. Otherwise it is
+    the oldest declared release above it, the release a corpus going back
+    reads an older copy with; only a version newer than every declared
+    release takes the newest below it, as a new release does. Either way
+    each declaration is checked as it always is, so nothing is applied that
+    the copy does not bear out. An open upper bound does not mark later
+    releases as reviewed, and a fully open range takes no part in the
+    choice. Returns None for a version-less document (an RFC) or when every
+    range is open.
     """
     if version is None:
         return None
@@ -124,8 +128,17 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
         for first, last in spans
     ):
         return wanted
-    below = [last for first, last in spans if last is not None and last < wanted]
+    above = [first for first, _ in spans if first is not None and first > wanted]
+    if above:
+        return min(above)
+    below = [last for _, last in spans if last is not None and last < wanted]
     return max(below) if below else -1
+
+
+def spans(versions: VersionRange, version: str | None) -> bool:
+    """Whether `versions` reaches `version`'s release: an interpretation's
+    test, which no other release's declarations stand in for."""
+    return version is None or applies(versions, _major(version))
 
 
 def applies(versions: VersionRange, release: int | None) -> bool:

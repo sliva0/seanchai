@@ -397,7 +397,9 @@ def test_a_grouped_rule_reprinting_another_documents_defines_nothing(built):
     each `; Reprints: RFC6733`: the identity stays RFC 6733's, and TS 29.109
     lists no AVP of its own for it."""
     (entry,) = [
-        each for each in corpus.Corpus.installed() if each.reference == "TS29.109"
+        each
+        for each in corpus.Corpus.installed().newest()
+        if each.reference == "TS29.109"
     ]
     reprints = [
         section

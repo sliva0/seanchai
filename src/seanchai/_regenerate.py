@@ -73,6 +73,10 @@ class Outcome:
     # For a copy that replaced another: what changed for a stack
     # (`seanchai.diff`), or why it could not be told.
     diff: Diff | None = None
+    # With `expand_ranges`: the interpretations another release reviewed
+    # whose quotes this copy prints, applied and to be widened to it, by
+    # citation (`corrections.offered`).
+    adopted: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -421,7 +425,12 @@ def _one(
     outcome = Outcome(reference, "unchanged")
     try:
         raw_text, corrected_text, spec = _produce(
-            source, sources_dir, corrections_dir, outcome.warnings, outcome.unclaimed
+            source,
+            sources_dir,
+            corrections_dir,
+            outcome.warnings,
+            outcome.unclaimed,
+            adopted=outcome.adopted if books is not None else None,
         )
     except (ExtractionError, CorrectionError, DadParseError, OSError) as error:
         outcome.status = "failed"
@@ -651,7 +660,11 @@ def _expand(
         )
         expansions.append(
             _ranges.expand_corrections(
-                corrections_dir, spec.specification, spec.version, accepted
+                corrections_dir,
+                spec.specification,
+                spec.version,
+                accepted,
+                adopted=outcome.adopted,
             )
         )
     outcome.expanded = [line for e in expansions for line in e.widened]
@@ -676,9 +689,16 @@ def _produce(
     corrections_dir: Path | None,
     warnings: list[str],
     unclaimed: list[Candidate] | None = None,
+    adopted: list[str] | None = None,
 ) -> tuple[str, str, ast.Specification]:
     """The raw and corrected texts for one source, and the corrected tree;
-    `unclaimed` receives the tables no reading claimed."""
+    `unclaimed` receives the tables no reading claimed.
+
+    With `adopted`, the interpretations another release reviewed are offered
+    to a copy of a release none of them spans (`corrections.offered`): each
+    whose quotes the copy prints is applied and its citation added to
+    `adopted`, for its range to be widened, and each it does not print is
+    reported as not carried. Without it they are only counted."""
     comments = formatter.Comments()
     found: list[Candidate] = []
     if source.transcribed:
@@ -709,37 +729,77 @@ def _produce(
     if unclaimed is not None:
         unclaimed.extend(found)
     raw_text = formatter.format_spec(spec, comments)
-    declared = corrections.in_release(
-        corrections.load(corrections_dir, spec.specification), spec.version
-    )
+    module = corrections.load(corrections_dir, spec.specification)
+    declared = corrections.in_release(module, spec.version)
     for edit in declared:
         # `__post_init__` parsed the declared string; the annotation still
         # admits it, so parse again (a no-op) to satisfy the type.
         versions = VersionRange.parse(edit.versions)
         if warning := versions.warning(spec.version, f"correction {edit.cited}"):
             warnings.append(warning)
-    if declared:
-        spec, _, comments = corrections.apply_with_comments(spec, comments, declared)
-        corrected_text = formatter.format_spec(spec, comments)
-        _check_interpretations(source, sources_dir, declared)
-    else:
-        corrected_text = raw_text
-    return raw_text, corrected_text, spec
-
-
-def _check_interpretations(
-    source: _Source,
-    sources_dir: Path | None,
-    declared: list[corrections.Declaration],
-) -> None:
-    """Hold every interpreted constraint's quotes to the clause they were
-    read from, and its page to the PDF's outline or the RFC's own page, as a
-    correction's `expect` is held to the raw file (`interpret.check_quotes`)."""
+    offered = corrections.offered(module, spec.version)
+    if offered and adopted is None:
+        warnings.append(
+            f"{len(offered)} interpretation(s) another release reviewed are not"
+            " applied to this copy; --expand-ranges tries their quotes on it"
+        )
+        offered = []
     interpretations = [
         edit for edit in declared if isinstance(edit, corrections.Interpret)
     ]
-    if not interpretations:
-        return
+    if interpretations or offered:
+        texts, pages = _clauses(source, sources_dir, [*interpretations, *offered])
+        corrections.check_quotes(interpretations, texts)
+        trying = {id(edit) for edit in _held(offered, texts, warnings)}
+        chosen = {id(edit) for edit in declared} | trying
+        # In module order, each interpretation on its clause's page here.
+        placed = [
+            (
+                corrections.paged(edit, pages)
+                if isinstance(edit, corrections.Interpret)
+                else edit,
+                id(edit) in trying,
+            )
+            for edit in module
+            if id(edit) in chosen
+        ]
+        declared = [edit for edit, _ in placed]
+        held = [
+            edit
+            for edit, tried in placed
+            if tried and isinstance(edit, corrections.Interpret)
+        ]
+    else:
+        held: list[corrections.Interpret] = []
+    if declared:
+        try:
+            spec, _, comments = corrections.apply_with_comments(
+                spec, comments, declared
+            )
+        except CorrectionError:
+            if not held:
+                raise
+            declared = _applicable(spec, comments, declared, held, warnings)
+            spec, _, comments = corrections.apply_with_comments(
+                spec, comments, declared
+            )
+        corrected_text = formatter.format_spec(spec, comments)
+    else:
+        corrected_text = raw_text
+    if adopted is not None:
+        adopted.extend(
+            edit.cited for edit in declared if any(edit is each for each in held)
+        )
+    return raw_text, corrected_text, spec
+
+
+def _clauses(
+    source: _Source,
+    sources_dir: Path | None,
+    interpretations: Sequence[corrections.Interpret],
+) -> tuple[dict[str, list[str]], dict[str, int] | None]:
+    """The text of each clause interpreted constraints are held to, and each
+    clause's page in this copy, from the PDF's outline or the RFC's pages."""
     if source.transcribed:
         raise CorrectionError(
             f"{interpretations[0].cited}: interpreted constraints are checked"
@@ -748,15 +808,52 @@ def _check_interpretations(
         )
     if source.document.suffix == ".txt":
         texts, pages = rfc_text.clause_texts(source.document, sources_dir)
-        corrections.check_quotes(interpretations, texts, pages)
-        return
+        return {key: list(value) for key, value in texts.items()}, dict(pages)
     from .extractor import tgpp_docx
 
-    corrections.check_quotes(
-        interpretations,
-        tgpp_docx.clause_texts(source.document, sources_dir),
-        None if source.pdf is None else tgpp_docx.clause_pages(source.pdf),
-    )
+    texts = tgpp_docx.clause_texts(source.document, sources_dir)
+    pages = None if source.pdf is None else dict(tgpp_docx.clause_pages(source.pdf))
+    return {key: list(value) for key, value in texts.items()}, pages
+
+
+def _held(
+    offered: Sequence[corrections.Interpret],
+    texts: dict[str, list[str]],
+    warnings: list[str],
+) -> list[corrections.Interpret]:
+    """Of the interpretations `offered`, those whose every quote the copy
+    prints in its clause (`interpret.check_quotes`); the rest are reported as
+    not carried, with what the clause lacks."""
+    held = []
+    for edit in offered:
+        try:
+            corrections.check_quotes([edit], texts)
+        except CorrectionError as error:
+            warnings.append(f"not carried: {error}")
+            continue
+        held.append(edit)
+    return held
+
+
+def _applicable(
+    spec: ast.Specification,
+    comments: formatter.Comments,
+    declared: list[corrections.Declaration],
+    held: list[corrections.Interpret],
+    warnings: list[str],
+) -> list[corrections.Declaration]:
+    """`declared` without the offered interpretations the copy's corrected
+    file cannot take, each tried alone with the copy's own declarations,
+    reported as not carried."""
+    own = [edit for edit in declared if not any(edit is each for each in held)]
+    refused = []
+    for edit in held:
+        try:
+            corrections.apply_with_comments(spec, comments, [*own, edit])
+        except CorrectionError as error:
+            warnings.append(f"not carried: {edit.cited}: {error}")
+            refused.append(edit)
+    return [edit for edit in declared if not any(edit is each for each in refused)]
 
 
 def _sources(manifest_path: Path) -> dict[_Key, _Source]:

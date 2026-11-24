@@ -40,7 +40,7 @@ CORRECTIONS += [
         replace="ETSI-ES283.034",
         reason="table 5.4 cites [17], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that"
         " title and version as ES 283 034, and has no TS 283 034",
-        versions="19.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name in ("Logical-Access-ID", "Physical-Access-ID")
 ]
@@ -65,7 +65,7 @@ CORRECTIONS += [
         reason=f"clause {clause} heads the command '{printed} ({abbreviation})"
         f" command' and prints its rule <{rule}>, the name the corpus gives it;"
         " the procedure's sentence names the heading's",
-        versions="19.0.0",
+        versions="18.0.0..19.0.0",
     )
     for label, printed, rule, clause, abbreviation in _RULES
 ]

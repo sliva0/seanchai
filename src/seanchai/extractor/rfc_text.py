@@ -2548,7 +2548,8 @@ def clause_texts(
     """Each numbered section's paragraphs, a paragraph's lines joined and its
     whitespace collapsed, patched as `extract` reads them, by section number;
     and the page each section starts on. What an interpreted constraint's
-    quotes and page are checked against (`dad.interpret.check_quotes`)."""
+    quotes are checked against (`dad.interpret.check_quotes`), and its
+    page read from (`dad.interpret.paged`)."""
     with boundary(f"reading {text_path}"):
         raw = Path(text_path).read_text(encoding="utf-8").splitlines()
         specification = _specification(raw)

@@ -471,11 +471,10 @@ CORRECTIONS += [
         id="erp-realm-names-the-er-server",
         avp="ERP-Realm",
         section="8.2",
-        page={page},
         readings=(
             reading(
                 "It contains the name of the realm in which the ER server is"
-                " located.",
+                " {where}.",
                 text_only(),
             ),
         ),
@@ -485,18 +484,21 @@ CORRECTIONS += [
 
 
 @pytest.mark.parametrize(
-    ("page", "error"), [(13, None), (14, "clause 8.2 is on page 13, not 14")]
+    ("where", "error"),
+    [("located", None), ("found", "clause 8.2 does not print")],
 )
-def test_an_rfc_interpretation_is_held_to_its_clause_and_page(tmp_path, page, error):
+def test_an_rfc_interpretation_is_held_to_its_clause_on_its_page(
+    tmp_path, where, error
+):
     """RFC 6942 section 8.2's sentence, wrapped over two lines of the text,
-    is one paragraph's; the page is where the section starts."""
+    is one paragraph's; the block's page is where the section starts."""
     corrections = tmp_path / "corrections"
     corrections.mkdir()
     module = (_ROOT / "edits" / "corrections" / "RFC6942.py").read_text("utf-8")
     (corrections / "RFC6942.py").write_text(
         "from seanchai.dad.interpret import Interpret, reading, text_only\n"
         + module
-        + _KEY_LIFETIME.format(page=page),
+        + _KEY_LIFETIME.format(where=where),
         encoding="utf-8",
     )
     manifest = tmp_path / "manifest.json"

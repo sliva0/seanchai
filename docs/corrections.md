@@ -56,11 +56,14 @@ The node is rebuilt through pydantic, so a wrong `field` or value fails.
   filter.
 - `versions` is `"18.6.0"` or `"18.0.0..18.2.0"`, inclusive, with `*` for an
   open bound; patches and quirks use the same type. A declaration applies to
-  the releases its range spans and to a newer undeclared release
-  ([extractor.md](extractor.md#releases)). Within a release the range only
-  warns: `regenerate` reports a parsed version outside it but still applies
-  the declaration. Write it as a string literal so `--expand-ranges` can
-  rewrite it ([development.md](development.md#version-upgrades)).
+  the releases its range spans, to an older undeclared release below them
+  and to a newer one past them, checked as ever
+  ([extractor.md](extractor.md#releases)); an interpretation only to the
+  releases its range spans ([below](#interpreted-constraints)). Within a
+  release the range only warns: `regenerate` reports a parsed version
+  outside it but still applies the declaration. Write it as a string literal
+  so `--expand-ranges` can rewrite it
+  ([development.md](development.md#version-upgrades)).
 - Corrections apply to raw files only, transcriptions included. Correcting a
   corrected file fails every `expect`, which keeps "already corrected"
   distinct from "fixed upstream".
@@ -156,7 +159,6 @@ CORRECTIONS += [
         id="visited-plmn-id-layout",
         avp="Visited-PLMN-Id",
         section="7.3.9",
-        page=103,
         readings=(
             reading(
                 (
@@ -174,7 +176,6 @@ CORRECTIONS += [
         avp="Context-Identifier",
         within="APN-Configuration",
         section="7.3.35",
-        page=128,
         readings=(
             reading(
                 "The Context-Identifier in the APN-Configuration AVP shall"
@@ -205,12 +206,27 @@ CORRECTIONS += [
   clause.
 - `seanchai corpus regenerate` holds every quote to the clause it cites:
   it must be within one paragraph or table cell of the clause once
-  whitespace is collapsed, as the extractor reads it, and `page` must be the
-  clause's page in the PDF's outline, or for an RFC the page its section
-  starts on. A miss fails the document, as an `expect` does. A
-  transcription has no source text to hold a quote to, so a module for one
-  is refused.
+  whitespace is collapsed, as the extractor reads it. A miss fails the
+  document, as an `expect` does. A transcription has no source text to hold
+  a quote to, so a module for one is refused.
+- The block's `; Page:` is not declared: it is the clause's page in the copy
+  corrected, from the PDF's outline, or for an RFC the page its section
+  starts on, which `regenerate` reads from the source, so that one
+  declaration serves the copies of several releases. Applied without the
+  source (`seanchai corpus correct`), a block carries no page.
 - `reason` is not declared: the record holds the quotes.
+- An interpretation applies only to copies of the releases its range spans,
+  since whether a clause prints a sentence is a fact of each copy. Another
+  release's are not applied to a copy, but offered: `regenerate` counts them
+  in a warning, and with `--expand-ranges`, on a copy of a release no
+  interpretation of the module spans, it holds the quotes of each of the
+  nearest reviewed release's (the oldest above, else the newest below) to
+  the copy's text. Each it finds is applied and its range widened to the
+  copy; each it does not is reported as `not carried:` with the sentence the
+  clause lacks, and stays out. Going back to Release 18, 149 of TS 29.272's
+  154 carried; the five that did not read sentences Release 19 added. A
+  declaration built in a comprehension, whose id is not a literal, is widened
+  by hand.
 
 [consumers.md](consumers.md#interpreted-constraints) describes the kinds and
 codecs and how far to trust them.
@@ -251,7 +267,9 @@ The corpus's `holes.toml` records names the corpus cannot complete
 `reason` cites the version, clause and what was searched, naming the
 correction involved as `module#id` where one inserted the block or row.
 `missing` is checked like `expect`: an entry that no longer matches fails the
-default build.
+default build. `releases = [18]` holds an entry to those releases the corpus
+holds whole, for a hole one release reads and another does not; without it
+an entry holds in all of them, and must name a hole in each.
 
 ## The corrections record
 

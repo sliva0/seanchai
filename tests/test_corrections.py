@@ -32,10 +32,24 @@ from seanchai.dad.corrections import (
 _CORRECTIONS = _ROOT / "edits" / "corrections"
 
 
-def _declared(spec: ast.Specification) -> list[corrections.Declaration]:
-    return corrections.in_release(
-        corrections.load(_CORRECTIONS, spec.specification), spec.version
-    )
+def _declared(
+    spec: ast.Specification, corrected: ast.Specification | None = None
+) -> list[corrections.Declaration]:
+    """`spec`'s declarations, each interpretation on the page its block
+    carries in the `corrected` file, `spec` itself if None: regenerating
+    reads the page from the source, which these tests do without."""
+    pages = {
+        block.source.section: block.source.page
+        for block in (spec if corrected is None else corrected).sections
+        if isinstance(block, ast.InterpretedConstraints)
+        and block.source.page is not None
+    }
+    return [
+        corrections.paged(item, pages) if isinstance(item, Interpret) else item
+        for item in corrections.in_release(
+            corrections.load(_CORRECTIONS, spec.specification), spec.version
+        )
+    ]
 
 
 # --- the committed corrections -----------------------------------------------
@@ -49,14 +63,14 @@ def test_committed_corrections_reproduce_the_committed_corrected_file(raw):
     back from the corrected file, formats with them to the same file. The raw
     file's own comments, TS 32.299's struck members, move with their lines."""
     spec, comments = parser.parse_with_comments(raw.read_text(encoding="utf-8"))
-    declared = _declared(spec)
-    corrected, results, notes = corrections.apply_with_comments(
-        spec, comments, declared
-    )
     committed = (_CORPUS_DIR / raw.relative_to(_CORPUS_DIR / "raw")).with_name(
         raw.name.removesuffix(".raw.dad") + ".dad"
     )
     text = committed.read_text(encoding="utf-8")
+    declared = _declared(spec, parser.parse(text))
+    corrected, results, notes = corrections.apply_with_comments(
+        spec, comments, declared
+    )
 
     assert len(results) == len(corrections.edits(declared))
     assert formatter.format_spec(corrected, notes) == text

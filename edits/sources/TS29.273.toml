@@ -138,5 +138,18 @@ reason = """
     clauses 10.3.2 to 10.3.5 end their one sentence '(see TS 29.229 [24]).' for
     the four codes TS 29.229 defines and this document re-uses for SWx
     """
-first_version = "19.2.0"
+first_version = "18.6.0"
 last_version = "19.2.0"
+
+[[patch]]
+find = "1524"
+replace = "1526"
+exact = true
+section = "8.2.3.0"
+reason = """
+    table 8.2.3.0/1 of the Release 18 copy prints SSID's code, 1524, for
+    Access-Network-Info, which clause 5.2.3.24 defines and tables 5.2.3.1/1 and
+    7.2.3.1/1 number 1526, as Release 19's table 8.2.3.0/1 does
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"

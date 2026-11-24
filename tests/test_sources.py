@@ -159,15 +159,24 @@ def test_an_exclusion_holds_its_clause_and_what_is_under_it(tmp_path):
 
 
 def test_an_exclusion_stays_with_the_release_of_its_lower_bound(tmp_path):
+    """An open upper bound reviews no later release, and Release 18, which
+    another range spans, is not read with Release 19's exclusion."""
     path = tmp_path / "TS29.999.toml"
     path.write_text(
         '[[exclude]]\nsection = "8"\nname = "A"\nreason = "x"\n'
-        'first_version = "19.1.0"\n'
+        'first_version = "19.1.0"\n\n'
+        '[[exclude]]\nsection = "9"\nname = "B"\nreason = "x"\n'
+        'first_version = "18.0.0"\nlast_version = "18.0.0"\n'
     )
 
-    assert Patcher.load(path, "18.0.0").exclusions == []
-    assert len(Patcher.load(path, "19.2.0").exclusions) == 1
-    assert len(Patcher.load(path, "20.0.0").exclusions) == 1
+    def names(version: str) -> list[str]:
+        return [each.name for each in Patcher.load(path, version).exclusions]
+
+    assert names("18.0.0") == ["B"]
+    assert names("19.2.0") == ["A"]
+    assert names("20.0.0") == ["A"]
+    # A release no range spans and none below: read with the oldest above.
+    assert names("17.0.0") == ["B"]
 
 
 def test_an_exclusion_that_left_nothing_out_fails(tmp_path):

@@ -452,11 +452,14 @@ class Document(_Model):
 
 
 class _Versions(_Model):
-    """What produced a document: this format, the library and the corpus."""
+    """What produced a document: this format, the library and the corpus, and
+    the 3GPP release of the corpus read, null for a corpus stating none
+    (`model.Model.release`)."""
 
     format_version: Annotated[int, pydantic.Field(ge=FORMAT_VERSION, le=FORMAT_VERSION)]
     seanchai_version: str
     corpus_version: str | None
+    release: int | None
 
 
 class Dictionary(_Versions):
@@ -1259,6 +1262,7 @@ def build(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
         corpus_version=corpus_version,
+        release=built.release,
         undefined_policy=built.undefined_policy,
         strict=strict,
         documents=references,
@@ -1328,6 +1332,7 @@ def lookup(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
         corpus_version=corpus_version,
+        release=built.release,
         undefined_policy=built.undefined_policy,
         avp=builder.ids[avp],
         avps=tuple(builder.avp(each) for each in (*readings, *named)),
@@ -1338,13 +1343,17 @@ def lookup(
 
 
 def listing(
-    applications: Iterable[model.Application], *, corpus_version: str | None = None
+    applications: Iterable[model.Application],
+    *,
+    corpus_version: str | None = None,
+    release: int | None = None,
 ) -> Listing:
-    """`applications`, each command a heading."""
+    """`applications`, each command a heading, read at `release`."""
     return Listing(
         format_version=FORMAT_VERSION,
         seanchai_version=__version__,
         corpus_version=corpus_version,
+        release=release,
         applications=tuple(
             ListedApplication(
                 **_application_fields(application),

@@ -252,7 +252,9 @@ def _inside_each_release(entries) -> list[str]:
     version every range of that release covers."""
     releases: dict[str, list] = {}
     for entry in entries:
-        bound = entry.get("first_version") or entry.get("last_version") or "1"
+        bound = entry.get("first_version") or entry.get("last_version")
+        if bound is None:
+            continue  # unranged, so covering every version
         releases.setdefault(bound.split(".")[0], []).append(entry)
     return [_inside_every_range(group) for group in releases.values()]
 

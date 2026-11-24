@@ -40,10 +40,10 @@ from typing import Any
 
 import pydantic
 
-from .._versions import VersionRange, applies, reviewed_release
+from .._versions import VersionRange, applies, reviewed_release, spans
 from . import ast, formatter
 from ._errors import CorrectionError
-from .interpret import Interpret, check_quotes
+from .interpret import Interpret, check_quotes, paged
 
 __all__ = [
     "UNSPECIFIED",
@@ -77,6 +77,8 @@ __all__ = [
     "load",
     "module_path",
     "notes",
+    "offered",
+    "paged",
     "registry_reservation",
     "registry_row",
     "reused_avps",
@@ -1527,14 +1529,53 @@ def edits(declarations: Sequence[Declaration]) -> list[Edit]:
 def in_release(
     declarations: Sequence[Declaration], version: str | None
 ) -> list[Declaration]:
-    """Return the declarations for `version`'s release
-    (`_versions.reviewed_release`); version ranges within it are advisory."""
+    """Return the declarations for `version`'s release, in declaration order.
+
+    A correction, deletion, insertion, supply or acceptance applies in the
+    release `_versions.reviewed_release` chooses among them, its range
+    advisory within it. An interpretation applies only in a release its own
+    range spans (`_versions.spans`): whether a clause prints a sentence is a
+    fact of each copy, which `seanchai corpus regenerate --expand-ranges`
+    checks before widening a range to another release (`offered`).
+    """
     release = reviewed_release(
-        [VersionRange.parse(item.versions) for item in declarations], version
+        [
+            VersionRange.parse(item.versions)
+            for item in declarations
+            if not isinstance(item, Interpret)
+        ],
+        version,
     )
     return [
         item
         for item in declarations
+        if (
+            spans(VersionRange.parse(item.versions), version)
+            if isinstance(item, Interpret)
+            else applies(VersionRange.parse(item.versions), release)
+        )
+    ]
+
+
+def offered(
+    declarations: Sequence[Declaration], version: str | None
+) -> list[Interpret]:
+    """The interpretations another release reviewed that `version`'s copy may
+    take: none if one spans its release already, else those of the release
+    `_versions.reviewed_release` chooses among the interpretations, the
+    oldest above or the newest below. Each is a candidate only, to be held to
+    the copy's text (`check_quotes`) before its range is widened."""
+    interpretations = [item for item in declarations if isinstance(item, Interpret)]
+    if version is None or any(
+        spans(VersionRange.parse(item.versions), version) for item in interpretations
+    ):
+        return []
+    release = reviewed_release(
+        [VersionRange.parse(item.versions) for item in interpretations], version
+    )
+    return [
+        item
+        for item in interpretations
         if applies(VersionRange.parse(item.versions), release)
     ]
 

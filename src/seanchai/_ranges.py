@@ -12,7 +12,10 @@ lambdas, conditionals and filtered comprehensions. Anything else is
 reported for a person to widen.
 
 An `Accept`'s range is widened only if the caller found it still matching
-on the rebuilt file (`accepted`); otherwise it is reported stale.
+on the rebuilt file (`accepted`); otherwise it is reported stale. An
+`Interpret` is widened as another declaration is within a release its range
+spans, and to another release only if the caller found its quotes in that
+copy (`adopted`), since no other release's interpretations stand in for it.
 """
 
 import ast
@@ -26,7 +29,7 @@ from collections.abc import Collection, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from ._versions import VersionRange, applies, reviewed_release
+from ._versions import VersionRange, applies, reviewed_release, spans
 from .dad import corrections
 
 
@@ -199,13 +202,15 @@ def expand_corrections(
     specification: str,
     version: str,
     accepted: Collection[str] = (),
+    adopted: Collection[str] = (),
 ) -> Expansion:
     """Widen the applied `versions=` literals in `specification`'s
     corrections module that do not cover `version`.
 
     An `Accept` is widened only if `<module>#<id>` is in `accepted`;
-    otherwise it is reported in `stale`. One whose id is not a string
-    literal is left for a person."""
+    otherwise it is reported in `stale`. An `Interpret` whose range does not
+    reach `version`'s release is widened only if `<module>#<id>` is in
+    `adopted`. One whose id is not a string literal is left for a person."""
     path = corrections.module_path(directory, specification)
     if not path.is_file():
         return Expansion([], [])
@@ -232,11 +237,22 @@ def expand_corrections(
     explained: set[str] = set()
     declared_edits = corrections.load(directory, specification)
     release = reviewed_release(
-        [VersionRange.parse(edit.versions) for edit in declared_edits], version
+        [
+            VersionRange.parse(edit.versions)
+            for edit in declared_edits
+            if not isinstance(edit, corrections.Interpret)
+        ],
+        version,
     )
-    for literal, value, acceptance in _range_literals(tree):
+    for literal, value, kind, identifier in _range_literals(tree):
         declared = VersionRange.parse(value)
-        if not applies(declared, release):
+        if kind == "Interpret":
+            if not spans(declared, version) and (
+                not identifier or f"{path.name}#{identifier}" not in adopted
+            ):
+                # Not applied here: its quotes were not found, or not tried.
+                continue
+        elif not applies(declared, release):
             # Another release's declaration: not applied, so not widened.
             continue
         expanded = declared.expanded(version)
@@ -247,7 +263,8 @@ def expand_corrections(
             manual.append(f"{where}: outside the CORRECTIONS the loader applies")
             explained.add(str(declared))
             continue
-        if acceptance is not None:
+        if kind == "Accept":
+            acceptance = identifier
             cited = f"{path.name}#{acceptance}" if acceptance else None
             if cited is None:
                 manual.append(f"{where}: an acceptance whose id is not a literal")
@@ -278,7 +295,11 @@ def expand_corrections(
     remaining = manual + [
         f"correction {edit.cited} {edit.versions}: not a string literal"
         for edit in edits
-        if applies(VersionRange.parse(edit.versions), release)
+        if (
+            (spans(VersionRange.parse(edit.versions), version) or edit.cited in adopted)
+            if isinstance(edit, corrections.Interpret)
+            else applies(VersionRange.parse(edit.versions), release)
+        )
         and not VersionRange.parse(edit.versions).covers(version)
         and str(edit.versions) not in explained
     ]
@@ -316,9 +337,10 @@ def _line_starts(text: str) -> list[int]:
 
 def _range_literals(
     tree: ast.Module,
-) -> Iterator[tuple[ast.Constant, str, str | None]]:
-    """Every declaration's `versions=` literal, in source order, with its
-    `Accept` id: None for an edit, "" if the id is not a string literal."""
+) -> Iterator[tuple[ast.Constant, str, str, str]]:
+    """Every declaration's `versions=` literal, in source order, with the
+    declaration's kind (`Accept`, `Interpret`, ...) and its `id`, "" if the
+    id is not a string literal."""
     calls = sorted(
         (node for node in ast.walk(tree) if isinstance(node, ast.Call)),
         key=lambda node: (node.lineno, node.col_offset),
@@ -330,16 +352,13 @@ def _range_literals(
             name = called.id
         if name not in _DECLARATIONS:
             continue
-        acceptance = None
-        if name == "Accept":
-            ids = [
-                keyword.value.value
-                for keyword in node.keywords
-                if keyword.arg == "id"
-                and isinstance(keyword.value, ast.Constant)
-                and isinstance(keyword.value.value, str)
-            ]
-            acceptance = ids[0] if ids else ""
+        ids = [
+            keyword.value.value
+            for keyword in node.keywords
+            if keyword.arg == "id"
+            and isinstance(keyword.value, ast.Constant)
+            and isinstance(keyword.value.value, str)
+        ]
         for keyword in node.keywords:
             value = keyword.value
             if (
@@ -347,7 +366,7 @@ def _range_literals(
                 and isinstance(value, ast.Constant)
                 and isinstance(value.value, str)
             ):
-                yield value, value.value, acceptance
+                yield value, value.value, str(name), ids[0] if ids else ""
 
 
 def _applied_literals(tree: ast.Module) -> set[int]:

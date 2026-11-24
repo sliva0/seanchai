@@ -82,6 +82,20 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
 Support for a new source-document shape is covered by the `sources` tests.
 Add a synthetic test only for a rejection path.
 
+### Pins per release
+
+The linter's pins in `tests/test_linter.py` (`_RAW_ERRORS`, `_NOTE_COUNTS`,
+`_STANDING_CORPUS_NOTES`, `_ACCEPTED_CORPUS_NOTES`, `_ELEMENT_NOTES`) key a
+copy of a release the corpus holds whole by its document, `TS29.272` or
+`TS29.272.raw`, which stands for that document's copy in every such release.
+A copy that reads otherwise gets an entry under its own file stem,
+`29214-i40`, which wins, with a comment saying what its release prints
+differently; a copy held only for citations is keyed by its stem. So a
+release adds entries only where its copies differ: Release 18 added six.
+`tests/test_corpus.py` holds `releases.toml` to the trees, and the oracle,
+the export and the model's tests read the newest release unless they name
+another.
+
 ## Rebuilding the corpus
 
 The corpus in `packages/seanchai-corpus/src/seanchai_corpus/dad/` is derived
@@ -229,11 +243,14 @@ split by comments, or computed) is printed as `not widened, widen it by hand:`.
 
 ### A new release
 
-A new 3GPP release upgrades every document at once.
+A new 3GPP release upgrades every document at once. The newest release the
+corpus holds whole moves on to it, or the new release is added beside it.
 
-1. Delete the old release's table from `releases.toml` and run
-   `uv run seanchai corpus download --pin-release 20`.
-2. Run `uv run seanchai corpus regenerate`. Each copy moves into the new tree
+1. Run `uv run seanchai corpus download --pin-release 20`. To move on rather
+   than add, delete the old release's table from `releases.toml` first.
+2. Name the release under `releases` in `corpus.toml` (in place of the old
+   one when moving on), and run `uv run seanchai corpus regenerate` with
+   `--add` for each document. Moving on, each copy moves into the new tree
    as `replaced`; the old pairs and empty trees are removed. Each document is
    read with the declarations of the release below it
    ([extractor.md](extractor.md#releases)).
@@ -253,6 +270,39 @@ A new 3GPP release upgrades every document at once.
 
 Moving a document's version this way is a corpus release only; the library
 does not change.
+
+### An older release
+
+Going back adds a release the corpus holds whole beside the others, as
+Release 18 was added beside 19.
+
+1. Run `uv run seanchai corpus download --pin-release 18`. A catalogued
+   document with no version in the release is left out of it and named.
+2. Run `uv run seanchai corpus regenerate --expand-ranges` with `--add` for
+   each document the release holds. Each copy is read with its own release's
+   declarations where some range spans it, else with those of the oldest
+   release above, each checked as ever; interpretations are offered and
+   carried only where their quotes are found
+   ([extractor.md](extractor.md#releases),
+   [corrections.md](corrections.md#interpreted-constraints)).
+3. Read the source wherever a declaration fails: the defect may be absent
+   in the older copy, or printed otherwise. Declare what the older copy
+   needs ranged to its version alone, and keep a declaration out of a copy it
+   does not hold on by giving the release a reviewed range (widening the
+   others to it). Widen by hand the declarations added after the move to
+   the newer release whose defect the older copy prints too: `seanchai lint`
+   reports them as the older raw copy's errors left uncorrected.
+4. Name the release under `releases` in `corpus.toml` once its tree is
+   committed: `Rules.check` refuses a release with no copy. Add the
+   `corpus.toml` entries its copies' references clauses need, keyed by their
+   versions.
+5. Build it: `Model.build(corpus, release=18)` must find every hole in the
+   record. A hole only the older release reads gets an entry with
+   `releases = [18]`; one in a copy a citation reaches outside the view is
+   named with that copy's version (holes.toml's `TS29.061 V19.1.0`).
+6. Update the pins the tests hold for the new copies where they differ from
+   the newer release's ([Pins per release](#pins-per-release)), and the export
+   pin.
 
 ## Releases
 

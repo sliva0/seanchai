@@ -135,12 +135,12 @@ The corpus is the data of the `seanchai-corpus` package, at
 
 | Path | Holds |
 |---|---|
-| `3gpp/rel-19/` | one directory per 3GPP release; `rel-6`, `rel-7` and `rel-11` hold older versions that citing documents mean |
+| `3gpp/rel-19/`, `3gpp/rel-18/` | one directory per 3GPP release; `corpus.toml`'s `releases` names those held whole, here 18 and 19, each holding every catalogued document of the release; `rel-6`, `rel-7` and `rel-11` hold only older versions that citing documents mean |
 | `rfc/` | RFCs, which have no release |
 | `etsi/`, `3gpp2/`, `oma/` | documents transcribed by hand |
 | `onem2m/` | oneM2M documents |
 | `raw/` | unedited output, mirroring the trees above |
-| `corpus.toml` | the format and resolution rules, edited by hand |
+| `corpus.toml` | the format, the releases held whole and the resolution rules, edited by hand |
 | `holes.toml` | the record of known holes, edited by hand |
 | `interfaces.toml` | the interfaces each document specifies, edited by hand |
 | `corrections.json` | the corrections record, written by `seanchai corpus regenerate` |
@@ -167,6 +167,16 @@ Files are named as their publishers name them:
 | `xs0013-014-0_v1.0` | part 014 of 3GPP2 X.S0013 |
 | `ts-0004-v2_35_0` | oneM2M TS-0004 V2.35.0 |
 | `dds-charging_data-v1_0-20110201-a` | OMA-DDS-Charging_Data V1.0, approved 1 February 2011 |
+
+Every release the corpus holds whole ships in `seanchai-corpus`: Release 18
+added 2.6 MB to the installed data and 0.39 MB to the wheel, which a release a
+year keeps small, and its copies share the records, `corpus.toml`,
+`holes.toml` and `corrections.json`, whose entries are keyed by a copy's
+version or file stem, and the copies other releases' citations reach. A
+release is its two trees, `3gpp/rel-N/` and `raw/3gpp/rel-N/`, and the
+records' entries naming its versions, so moving older releases into a
+distribution of their own takes those and a `Corpus.installed` that reads
+the records of several directories as one.
 
 Nothing here is edited by hand except the three TOML files;
 `seanchai corpus regenerate` rebuilds the rest

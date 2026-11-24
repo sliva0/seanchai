@@ -57,6 +57,7 @@ __all__ = [
     "exclude",
     "excludes",
     "octets",
+    "paged",
     "present",
     "present_if",
     "range_of",
@@ -216,8 +217,12 @@ class Interpret:
 
     `command` (with `application_id`) or `within` scopes the rules to where
     the AVP appears in that command or grouped AVP. `table` names the table
-    printing the quotes, an information element's description. `page` is
-    the clause's page in the PDF, as the file's other blocks give it.
+    printing the quotes, an information element's description.
+
+    `page` is not declared: it is the clause's page in the copy being
+    corrected, which one declaration serves in several releases, and
+    regenerating reads it from the source, the PDF's outline or the RFC's
+    page (`paged`). A declaration applied without the source carries none.
 
     Applying it expects the corrected file to hold the AVP and the scope,
     and no other block for the same AVP, scope and clause. Regenerating
@@ -228,8 +233,8 @@ class Interpret:
     id: str
     avp: str
     section: str
-    page: int | None
     readings: tuple[ast.Reading, ...]
+    page: int | None = None
     command: str | None = None
     application_id: int | None = None
     within: str | None = None
@@ -298,15 +303,11 @@ def _normalize(text: str) -> str:
 
 
 def check_quotes(
-    declared: Sequence[Interpret],
-    clauses: Mapping[str, Sequence[str]],
-    pages: Mapping[str, int] | None = None,
+    declared: Sequence[Interpret], clauses: Mapping[str, Sequence[str]]
 ) -> None:
     """Check every quote of `declared` against the text of its clause:
     `clauses` maps a clause number to its paragraphs and table cells, as the
     extractor read and normalized them. A quote must be within one of them.
-    With `pages`, the clause's page from the PDF outline, a declared page
-    must match it.
 
     Raises `CorrectionError` naming every miss, as a correction's `expect`
     fails once upstream changes.
@@ -323,13 +324,16 @@ def check_quotes(
                     misses.append(
                         f"{each.cited}: clause {each.section} does not print {quote!r}"
                     )
-        if pages is not None and each.page != pages.get(each.section):
-            misses.append(
-                f"{each.cited}: clause {each.section} is on page"
-                f" {pages.get(each.section)}, not {each.page}"
-            )
     if misses:
         raise CorrectionError("; ".join(misses))
+
+
+def paged(item: Interpret, pages: Mapping[str, int] | None) -> Interpret:
+    """`item` placed on its clause's page in `pages`, a clause number's page
+    in the copy corrected; unchanged without `pages`."""
+    if pages is None:
+        return item
+    return dataclasses.replace(item, page=pages.get(item.section))
 
 
 def with_origin(item: Interpret, origin: str) -> Interpret:

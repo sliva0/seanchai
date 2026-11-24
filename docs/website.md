@@ -66,7 +66,13 @@ with no documents.
 ### `index.json`
 
 `generator` (always `"seanchai"`), `seanchai_version`, `corpus_version`,
-`mode` (`public` or `self-hosted`), and a summary of every document.
+`mode` (`public` or `self-hosted`), `releases`, the 3GPP releases the corpus
+holds whole, and a summary of every document. The export holds every copy of
+every release: a summary's `release` says which a 3GPP copy is of, and
+`pinned` gives the reason the catalog holds a copy only for citations, null
+for a copy of a release held whole. Each copy's page is read as its own
+release reads it ([consumers.md](consumers.md#releases)): its holes, targets
+and the commands its tables describe come from that release's model.
 `corpus_version` is null when `--corpus PATH` exported a corpus other than
 the installed one. A summary's `interfaces` lists the Diameter interfaces or
 reference points the document specifies, or an RFC's application, from the

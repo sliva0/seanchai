@@ -17,7 +17,7 @@ CORRECTIONS = [
         reason="table 7.1's note reserves 1324 to 1399 'for TS 32.229', which clause"
         " 2 does not list; [5] is TS 32.299, every row before the range cites it and"
         " it defines PSCell-Info and Nr-Cgi inside the range",
-        versions="19.3.0",
+        versions="18.6.0..19.3.0",
     ),
     Correction(
         id="reserved-1324-purpose",
@@ -27,7 +27,7 @@ CORRECTIONS = [
         replace="TS 32.299",
         reason="the same note's words: 'reserved for TS 32.229' transposes clause"
         " 2's [5], TS 32.299",
-        versions="19.3.0",
+        versions="18.6.0..19.3.0",
     ),
 ]
 

@@ -561,7 +561,7 @@ def test_an_unreadable_corpus_file_or_record_fails_the_load(tmp_path, name):
         ("[[hole]\n", "holes.toml"),
         ('[[gap]]\nname = "Thing"\n', "only .*hole.* tables"),
         ('[hole]\nname = "Thing"\n', "only .*hole.* tables"),
-        (_RECORDED + 'extra = "no"\n', "states exactly"),
+        (_RECORDED + 'extra = "no"\n', "optionally releases"),
         (_RECORDED.replace("clause 6.3.1 states no type", " "), "non-empty"),
         (_RECORDED.replace('["data_type", "flag_rules"]', "[]"), "non-empty"),
         (
@@ -569,6 +569,15 @@ def test_an_unreadable_corpus_file_or_record_fails_the_load(tmp_path, name):
             "missing holds type, which is not",
         ),
         (_RECORDED + _RECORDED, "TS29.900 Thing is listed twice"),
+        (
+            _RECORDED + _RECORDED.replace("reason", "releases = [18]\nreason"),
+            "listed twice for one release",
+        ),
+        (_RECORDED.replace("reason", "releases = []\nreason"), "non-empty list"),
+        (
+            _RECORDED.replace("reason", "releases = [17]\nreason"),
+            "names Release 17, which the corpus does not hold whole",
+        ),
     ],
     ids=[
         "toml",
@@ -579,6 +588,9 @@ def test_an_unreadable_corpus_file_or_record_fails_the_load(tmp_path, name):
         "nothing-missing",
         "no-such-field",
         "twice",
+        "twice-in-one-release",
+        "no-releases",
+        "release-not-held",
     ],
 )
 def test_a_malformed_record_fails_the_load(tmp_path, record, message):
@@ -638,6 +650,9 @@ _FILL = (
             'evidence = "x"\n',
             r"no \[\[cited_revision\]\] of that citing copy names the revision",
         ),
+        ("format = 2\nreleases = [18, 18]\n", "distinct release numbers"),
+        ('format = 2\nreleases = "18"\n', "distinct release numbers"),
+        ("format = 2\nreleases = [17]\n", "releases names Release 17, which"),
     ],
     ids=[
         "toml",
@@ -652,6 +667,9 @@ _FILL = (
         "not-a-flag",
         "twice",
         "stand-in-for-nothing",
+        "release-twice",
+        "releases-text",
+        "release-not-held",
     ],
 )
 def test_a_malformed_corpus_file_fails_the_load(tmp_path, text, message):
@@ -884,3 +902,68 @@ def test_a_malformed_interface_record_fails_the_load(tmp_path, text, message):
 
     with pytest.raises(corpus.CorpusError, match=message):
         corpus.Corpus.load([directory])
+
+
+# --- releases held whole -----------------------------------------------------
+
+
+def test_the_corpus_is_read_at_a_release_it_holds_whole():
+    """Release 18's view holds each document's Release 18 copy, a document
+    that ended before it at its final copy, and the RFCs; a release held only
+    for citations is refused."""
+    books = corpus.Corpus.load([_CORPUS_DIR])
+    assert (books.releases, books.release) == ((18, 19), 19)
+
+    older = books.at(18)
+    viewed = {entry.reference: entry.spec.version for entry in older.newest()}
+
+    assert older.release == 18 and books.release == 19
+    assert viewed["TS29.272"] == "18.7.0"
+    assert viewed["TS29.140"] == "7.0.0"
+    assert viewed["RFC6733"] is None
+    assert {e.reference: e.spec.version for e in books.newest()}["TS29.272"] == (
+        "19.6.0"
+    )
+    assert len(list(older)) == len(list(books))
+    with pytest.raises(corpus.CorpusError, match="Release 11 only in part"):
+        books.at(11)
+
+
+def test_a_hole_entry_holds_in_the_releases_it_names(tmp_path):
+    directory = _corpus_directory(
+        tmp_path,
+        _RECORDED.replace("reason", "releases = [18]\nreason"),
+        rules="format = 2\nreleases = [18]\n",
+    )
+    record = corpus.Corpus.load([directory]).record
+
+    assert record is not None
+    (hole,) = record.holes
+    assert hole.releases == (18,)
+    assert record.at(18) == {("TS29.900", "Thing"): hole}
+    assert record.at(19) == {}
+
+
+def test_the_release_pins_are_the_corpus_s_trees():
+    """`releases.toml` pins what each release the corpus holds whole holds:
+    the same releases, and in each tree a copy of every pinned document,
+    out of scope ones aside, at its pinned version."""
+    from seanchai.downloader.catalog import load_catalog
+
+    catalog = load_catalog()
+    out_of_scope = catalog.out_of_scope()
+    books = corpus.Corpus.load([_CORPUS_DIR])
+
+    assert tuple(release.number for release in catalog.releases) == books.releases
+    for release in catalog.releases:
+        held = {
+            entry.reference: entry.spec.version
+            for entry in books
+            if entry.path.parent.name == f"rel-{release.number}"
+        }
+        pinned = {
+            f"TS{number}": version
+            for number, version in release.versions
+            if f"TS{number}" not in out_of_scope
+        }
+        assert held == pinned, release.number

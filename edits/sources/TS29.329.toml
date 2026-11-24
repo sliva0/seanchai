@@ -66,5 +66,5 @@ reason = """
     DIAMETER_ERROR_FEATURE_UNSUPPORTED and DIAMETER_ERROR_IDENTITIES_DONT_MATCH,
     which TS 29.229 defines
     """
-first_version = "19.1.0"
+first_version = "18.0.0"
 last_version = "19.1.0"

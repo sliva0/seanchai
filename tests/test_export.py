@@ -799,7 +799,8 @@ def test_the_commands_index_lists_every_command_and_registry_row(exported):
     )
     assert len(ccrs) == 4
     rows = [r for r in index["registry"] if r["code"] == 316]
-    assert rows and all(r["document"] == "29230-j30" for r in rows)
+    # Release 18's registry and Release 19's, each a document of the index.
+    assert {r["document"] for r in rows} == {"29230-i60", "29230-j30"}
     assert index["applications"]["16777251"] == "3GPP S6a"
 
 

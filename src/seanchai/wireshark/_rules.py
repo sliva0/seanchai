@@ -109,17 +109,20 @@ class Places:
         self._copies: dict[str, list[corpus.Entry]] = {}
         for entry in books:  # each reference's copies, newest first
             self._copies.setdefault(entry.reference, []).append(entry)
+        # The copy a spelling without a version names, the one in view.
+        self._viewed = {entry.reference: entry for entry in books.newest()}
         self._pages: dict[Path, dict[str, int | None]] = {}
         self.documents: dict[Path, tuple[corpus.Entry, int]] = {}
         self.citations: dict[tuple[int, str, int | None, str | None, bool], int] = {}
 
     def entry(self, document: str) -> corpus.Entry | None:
-        """The copy a spelling names: "TS29.061" its newest, "TS32.299
-        V11.20.0" that version."""
+        """The copy a spelling names: "TS29.061" the one in the corpus's
+        release view, "TS32.299 V11.20.0" that version."""
         reference, _, version = document.partition(" V")
+        if not version:
+            return self._viewed.get(reference)
         copies = self._copies.get(reference, [])
-        if version:
-            copies = [each for each in copies if each.spec.version == version]
+        copies = [each for each in copies if each.spec.version == version]
         return copies[0] if copies else None
 
     def _copies_of(self, document: str) -> list[corpus.Entry]:

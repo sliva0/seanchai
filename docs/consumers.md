@@ -166,7 +166,8 @@ ULR-Flags         TS29.272
 ```
 
 Another of your files cites it as `Private-ACME-HSS`. A private document
-follows no release, so `TS29.272` means the newest copy the corpus holds.
+follows no release, so `TS29.272` means the copy of the release read, the
+newest by default.
 `seanchai dictionary --with acme.dad --application 4242` then holds
 ACME-Probe-Request, `ACME-Token` as `99999:1` and TS 29.272's `ULR-Flags`.
 Over another corpus, or with `--with`, holes the corpus's record does not
@@ -464,6 +465,46 @@ corpus, `seanchai-corpus` for an older one. `corpus.toml` also holds the
 [resolution rules](#resolution-across-releases). A directory without it, a
 subdirectory or a list of files loads with no format check and no rules.
 
+### Releases
+
+The corpus holds Release 18 and Release 19 whole: every catalogued 3GPP
+document each release has, at its last version, beside the RFCs and the
+other publishers' documents, which have no releases and take part in both.
+`Corpus.releases` lists them, `(18, 19)`. A corpus is read at one, its
+newest by default:
+
+```python
+from seanchai.corpus import Corpus
+from seanchai.model import Model
+
+model = Model.build(Corpus.installed(), release=18)  # or Model.installed(release=18)
+model.release  # 18
+model.version("TS29.272")  # "18.7.0"
+```
+
+```sh
+seanchai dictionary --application 16777251 --release 18 -o s6a-18.json
+seanchai diff --release 18 --release 19 --application 16777251
+```
+
+`--release N` takes the same meaning in `show`, `commands`, `dictionary`,
+`vectors` and `wireshark-plugin`, and `seanchai diff --release 18 --release
+19` compares the two readings of the corpus. The dictionary, `show --json`,
+`commands --json` and each side of a diff name the release read as
+`release`. `Corpus.at(18)` is the corpus viewed at Release 18, sharing its
+copies; asking for a release the corpus holds only in part (Release 6, 7 or
+11, whose trees hold the copies older documents cite) raises
+`corpus.CorpusError`. The export holds every copy and reads each in its own
+release ([website.md](website.md)).
+
+Read at Release 18, each document's Release 18 copy answers every
+reference-level query, a document that ended before it answers with its
+final copy, and one begun after it is not held. A citation resolves by its
+citing copy as ever ([below](#resolution-across-releases)), so a Release 18
+document's references mean Release 18 copies; where a citation reaches a
+copy outside the release read, as TS 32.299 V11.20.0's reach Release 19
+copies through `release_stand_in`, that copy is named with its version.
+
 `Corpus.interfaces`, read from the directory's `interfaces.toml`, names the
 Diameter interfaces or reference points each document specifies, or an RFC's
 application: `books.interfaces.of(entry)` gives `("Gx", "Gxx", "Sd", "St",
@@ -632,6 +673,15 @@ allows:
 A recorded hole is still a hole: `holes()` lists it and `resolve` returns
 None. Use `ANY` for a partial or foreign corpus. `unrecorded_holes()` and
 `stale_record_entries()` return what the default would refuse.
+
+The record speaks for every release the corpus holds whole: an entry holds
+in each of them unless its `releases` names some, and a build at a release
+reads only the entries holding there, so an entry naming no hole in one
+release is stale there. `KnownHole.releases` and `HoleRecord.at(release)`
+give them. `seanchai lint` checks the record at every release. Release 18
+reads the same fourteen, and one more name for one of them: TS 29.061's
+`3GPP-Session-Stop-Indicator` in V19.1.0 too, the copy TS 32.299 V11.20.0's
+citation reaches, which a Release 18 reading names with its version.
 
 The fourteen, by cause:
 
@@ -813,6 +863,17 @@ Its tables:
 | `release_stand_in` | a later release's copy answering for a release version the corpus lacks |
 | `release_fill` | named fields of named AVPs that a later release states and the meant copy leaves unstated |
 
+With more than one release held whole the tables keep their meaning, since
+each is keyed by the citing copy's version, or names a version outright: a
+`cited_version` or `cited_revision` read from Release 19's references clause
+says nothing of Release 18's copy, which has an entry of its own where its
+clause says the same (TS 29.212 V18.2.0's and V19.1.0's X.S0057-B). A
+`final_version` is one version in every release; a `release_stand_in` or
+`release_fill` names the later copy that answers, which stays the answer in
+a reading of an earlier release. `releases` names the releases held whole,
+and the record of holes scopes an entry to some of them with `releases`
+([Known holes](#known-holes)).
+
 Maintaining entries is covered in [development.md](development.md). `load`
 raises `corpus.CorpusError` for a malformed entry or one naming a copy the
 corpus does not hold. Without `corpus.toml`, only the drafting rules apply.
@@ -828,8 +889,9 @@ What you get back:
   note reports them per file.
 - For a `release_fill`, `Avp.completed_by` names the copy per field
   (`TS29.061 V19.1.0`) and the rule is `CitationRule.LATER_RELEASE`.
-- Reference-level queries (`avps`, `holes`, `references`) read the newest
-  copy of each document. An older copy answers only through a citation.
+- Reference-level queries (`avps`, `holes`, `references`) read each
+  document's copy in the release read ([Releases](#releases)). Any other
+  copy answers only through a citation.
 - Corpus-wide lookups (`readings`, `definition`, `avps()`) also find an
   identity only an older copy holds, where a citation reaches it, such as TS
   32.299 V11.20.0's `WLAN-Information`.

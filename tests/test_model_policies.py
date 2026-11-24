@@ -63,6 +63,24 @@ def _keys(holes) -> set[tuple[str, str]]:
 # --- the committed corpus ----------------------------------------------------
 
 
+def test_release_18_builds_from_its_own_record():
+    """Release 18 reads its own copies, and its holes are the record's for
+    it: Release 19's fourteen and TS 29.061 V19.1.0's, the copy TS 32.299
+    V11.20.0's citation reaches outside the release."""
+    older = model.Model.installed(release=18)
+    newer = _installed()
+
+    assert (older.release, newer.release) == (18, 19)
+    assert older.version("TS29.272") == "18.7.0"
+    assert newer.version("TS29.272") == "19.6.0"
+    assert _keys(older.holes()) == _keys(newer.holes()) | {
+        ("TS29.061 V19.1.0", "3GPP-Session-Stop-Indicator")
+    }
+    assert older.unrecorded_holes() == older.stale_record_entries() == ()
+    with pytest.raises(corpus.CorpusError, match="only in part"):
+        model.Model.installed(release=7)
+
+
 def test_the_fourteen_known_holes_are_the_record_and_say_why():
     built = _installed()
     record = corpus.Corpus.installed().record
@@ -75,7 +93,7 @@ def test_the_fourteen_known_holes_are_the_record_and_say_why():
         assert holes[key].missing == missing, key
     for key in _UNDEFINED:
         assert holes[key].missing == (model.Missing.UNDEFINED,), key
-    reasons = {(each.document, each.name): each.reason for each in record.holes}
+    reasons = {key: each.reason for key, each in record.at(built.release).items()}
     assert {key: hole.recorded for key, hole in holes.items()} == reasons
     assert built.unrecorded_holes() == built.stale_record_entries() == ()
     # RFC 4675 and RFC 4818, RADIUS documents, complete what they define.

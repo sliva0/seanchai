@@ -37,3 +37,15 @@ reason = """
     """
 first_version = "18.2.0"
 last_version = "19.1.0"
+
+[[patch]]
+find = "<AVP header: xxxx 10415>"
+replace = "<AVP header: 3189 10415>"
+section = "8.4.85"
+reason = """
+    the Release 18 copy's clause 8.4.85 prints Include-Identifiers' header with
+    the code left a placeholder, 'xxxx'; table 8.4.1-1 gives it 3189, the code
+    Release 19's header prints
+    """
+first_version = "18.2.0"
+last_version = "18.2.0"

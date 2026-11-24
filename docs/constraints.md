@@ -19,11 +19,14 @@ from the printed facts, so a consumer can weigh it:
   the raw file is what the extractor read. A note on its `; Type:` line cites
   the declaration (`;; interpreted: (TS29.272.py#imei-digits)`).
 - Each rule stands after the sentences it was read from, verbatim. Rebuilding
-  the corpus from the documents checks every sentence against its clause and
-  every page against the PDF, and fails when the document no longer prints
-  it, as a correction does when the document is fixed.
+  the corpus from the documents checks every sentence against its clause, and
+  fails when the document no longer prints it, as a correction does when the
+  document is fixed. The block's page is the clause's in that copy's PDF.
 - `; Versions:` is the range of the document's versions the reading was
-  checked against.
+  checked against. A reading is carried to another release's copy only once
+  its sentences are found there, and is otherwise left out of that copy: of
+  TS 29.272's 154, Release 18's copy holds 149
+  ([corrections.md](corrections.md#interpreted-constraints)).
 - The model's `Constraint`, the dictionary's and the export's say
   `interpreted`; the Wireshark plugin reports a breach as a warning that names
   the rule interpreted.
@@ -154,21 +157,20 @@ holds of an unsigned integer's payload.
 1. Read every AVP clause of the document, and the descriptions of its
    information-element tables' C rows. Keep the source text at hand:
    `seanchai.extractor.tgpp_docx.clause_texts(docx, Path("edits/sources"))`
-   gives each clause's paragraphs and cells as the quote check reads them,
-   and `clause_pages(pdf)` each clause's page.
+   gives each clause's paragraphs and cells as the quote check reads them.
 2. For each rule a clause states, declare an `Interpret` in the document's
    corrections module
    ([corrections.md](corrections.md#interpreted-constraints)), in clause
    order: the AVP, its scope where the clause speaks of the AVP in a
-   command or grouped AVP, the clause, page and table, and readings of the
-   shortest quotes that state the rule.
+   command or grouped AVP, the clause and table, and readings of the
+   shortest quotes that state the rule. The page is read from the PDF.
 3. Prefer `text_only` to a rule the quote does not settle. A rule depending on
    an earlier message, a feature, the node, the interface or the subscriber
    is `text_only`; so is a NOTE outside a table, which states no requirement.
    A clause pointing at another document for a layout is an `element`.
 4. Run `uv run seanchai corpus regenerate --spec <SpecRef>`. A quote the
-   clause does not print, or a page the PDF does not give it, fails the
-   document. Then `uv run seanchai lint` on the corrected file.
+   clause does not print fails the document. Then `uv run seanchai lint` on
+   the corrected file.
 5. A layout no codec describes needs a codec, defined with its clause in
    `ast.Codec`, `seanchai.constraints`, the plugin's `core.lua` and this
    page, with byte vectors in `tests/test_constraints.py`.

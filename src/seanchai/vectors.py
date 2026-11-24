@@ -1521,10 +1521,18 @@ def build(
     return _Generator(built, pages or {}).run()
 
 
-def pages_of(books: Iterable[Any]) -> dict[tuple[str, str | None, str], int]:
+def pages_of(books: Any) -> dict[tuple[str, str | None, str], int]:
     """Each clause's page in a corpus's files, by reference, version and
-    clause: what `build` cites pages from."""
+    clause, a version of None for the copy in the corpus's release view, as
+    the model names it: what `build` cites pages from."""
     found: dict[tuple[str, str | None, str], int] = {}
+    for entry in books.newest():
+        for section in entry.spec.sections:
+            if section.source.page is not None:
+                found.setdefault(
+                    (entry.reference, None, section.source.section),
+                    section.source.page,
+                )
     for entry in books:
         for section in entry.spec.sections:
             if section.source.page is not None:

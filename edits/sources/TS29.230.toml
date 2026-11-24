@@ -502,6 +502,18 @@ last_version = "19.3.0"
 # case: the defining document is the primary source for its AVP's name.
 
 [[patch]]
+find = "from 723 to799"
+replace = "from 723 to 799"
+count = 1
+section = "7.1"
+reason = """
+    the Release 18 copy's table 7.1 note reserving TS 29.329's range runs the
+    range's last number into 'to', as Release 19's does with its range from 748
+    """
+first_version = "18.6.0"
+last_version = "18.6.0"
+
+[[patch]]
 find = "from 748 to799"
 replace = "from 748 to 799"
 count = 1

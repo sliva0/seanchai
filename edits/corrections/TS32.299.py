@@ -650,7 +650,7 @@ CORRECTIONS += [
         replace="ETSI-ES283.034",
         reason="table 7.4.1 cites [300], 'ETSI TS 283 034 v2.2.0'; ETSI publishes that"
         " title and version as ES 283 034, and has no TS 283 034",
-        versions="19.0.0",
+        versions="18.0.0..19.0.0",
     )
     for name in ("Logical-Access-ID", "Physical-Access-ID")
 ]

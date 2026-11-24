@@ -159,8 +159,20 @@ def _echo_avp(avp, others) -> None:
             click.echo(f"    {other.read_through}: {_difference(avp, other)}")
 
 
+def _release_option(command):
+    """`--release`, the 3GPP release of the corpus a command reads."""
+    return click.option(
+        "--release",
+        type=int,
+        metavar="N",
+        help="Read 3GPP Release N, one the corpus holds whole, instead of its newest.",
+    )(command)
+
+
 def _corpus_options(command):
-    """`--corpus` and `--with`, which choose the corpus a command reads."""
+    """`--corpus`, `--with` and `--release`, which choose the corpus a
+    command reads."""
+    command = _release_option(command)
     command = click.option(
         "--with",
         "layers",
@@ -178,18 +190,23 @@ def _corpus_options(command):
     )(command)
 
 
-def _corpus(corpus_paths: tuple[Path, ...], layers: tuple[Path, ...]):
-    """The corpus a consumer command reads, and the holes its model allows:
-    the installed corpus's recorded ones, or for another corpus or one with
-    your own files beside it, any, which the output then lists."""
+def _corpus(
+    corpus_paths: tuple[Path, ...],
+    layers: tuple[Path, ...],
+    release: int | None = None,
+):
+    """The corpus a consumer command reads, viewed at `release`, and the holes
+    its model allows: the installed corpus's recorded ones, or for another
+    corpus or one with your own files beside it, any, which the output then
+    lists."""
     from ..corpus import Corpus
     from ..model import HolePolicy
 
     if corpus_paths:
-        return Corpus.load([*corpus_paths, *layers]), HolePolicy.ANY
+        return Corpus.load([*corpus_paths, *layers]).at(release), HolePolicy.ANY
     if layers:
-        return Corpus.installed(extra=layers), HolePolicy.ANY
-    return Corpus.installed(), HolePolicy.RECORDED
+        return Corpus.installed(extra=layers).at(release), HolePolicy.ANY
+    return Corpus.installed().at(release), HolePolicy.RECORDED
 
 
 @main.command()
@@ -219,6 +236,7 @@ def show(
     as_json: bool,
     corpus_paths: tuple[Path, ...],
     layers: tuple[Path, ...],
+    release: int | None,
 ) -> None:
     """Show one AVP of the installed corpus.
 
@@ -237,7 +255,7 @@ def show(
     if version is not None and document is None:
         raise click.UsageError("--version needs --document")
     with reported():
-        books, holes = _corpus(corpus_paths, layers)
+        books, holes = _corpus(corpus_paths, layers, release)
         built = Model.build(books, holes=holes)
         avp = _reading(built, name_or_identity, document, version)
         found = lookup(built, avp, corpus_version=books.version) if as_json else None
@@ -269,6 +287,7 @@ def commands(
     as_json: bool,
     corpus_paths: tuple[Path, ...],
     layers: tuple[Path, ...],
+    release: int | None,
 ) -> None:
     """List the installed corpus's commands.
 
@@ -283,7 +302,7 @@ def commands(
     from ..model import Model, ModelError
 
     with reported():
-        books, holes = _corpus(corpus_paths, layers)
+        books, holes = _corpus(corpus_paths, layers, release)
         applications = Model.build(books, holes=holes).applications(
             reference, application_id=application
         )
@@ -294,7 +313,9 @@ def commands(
                 " `seanchai commands` lists them"
             )
     if as_json:
-        found = listing(applications, corpus_version=books.version)
+        found = listing(
+            applications, corpus_version=books.version, release=books.release
+        )
         _as_json(found.model_dump(mode="json"))
         return
     table = [("CODE", "KIND", "APPLICATION", "NAME", "DOCUMENT", "SECTION")] + [
@@ -406,6 +427,7 @@ def dictionary_command(
     schema: Path | None,
     corpus_paths: tuple[Path, ...],
     layers: tuple[Path, ...],
+    release: int | None,
 ) -> None:
     """Write the installed corpus as one JSON dictionary.
 
@@ -419,6 +441,8 @@ def dictionary_command(
         seanchai dictionary --application 16777251 --strict -o s6a.json
     Your own AVPs beside the corpus:
         seanchai dictionary --document TS29.272 --with acme.dad -o out.json
+    S6a as Release 18 specifies it:
+        seanchai dictionary --application 16777251 --release 18 -o s6a-18.json
     """
     import json
 
@@ -453,7 +477,7 @@ def dictionary_command(
     if output is None:
         return
     with reported():
-        books, holes = _corpus(corpus_paths, layers)
+        books, holes = _corpus(corpus_paths, layers, release)
         answers: dict[SupplyKey, Supplied | Alias] = {
             name: answer for name, answer in supplied_from(*supply).items()
         }
@@ -625,6 +649,7 @@ def export_command(
     help="Write the rules alone, as a Lua chunk returning them, for running"
     " core.lua outside Wireshark.",
 )
+@_release_option
 def wireshark_plugin_command(
     output: Path,
     application_ids: tuple[int, ...],
@@ -632,6 +657,7 @@ def wireshark_plugin_command(
     corpus_paths: tuple[Path, ...],
     explorer: str,
     rules_only: bool,
+    release: int | None,
 ) -> None:
     """Write a Wireshark plugin that checks Diameter traffic against the corpus.
 
@@ -647,12 +673,16 @@ def wireshark_plugin_command(
     Cx and Rx only:
         seanchai wireshark-plugin --application 16777216 \\
             --application 16777236 -o seanchai_diameter.lua
+    A network on Release 18:
+        seanchai wireshark-plugin --release 18 -o seanchai_diameter.lua
     """
     from ..corpus import Corpus
     from ..wireshark import PluginError, generate
 
     with reported():
-        books = Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()
+        books = (Corpus.load(corpus_paths) if corpus_paths else Corpus.installed()).at(
+            release
+        )
         try:
             plugin = generate(
                 books,
@@ -675,8 +705,8 @@ def wireshark_plugin_command(
 
 
 @main.command("diff")
-@click.argument("old", type=click.Path(exists=True, path_type=Path))
-@click.argument("new", type=click.Path(exists=True, path_type=Path))
+@click.argument("old", type=click.Path(exists=True, path_type=Path), required=False)
+@click.argument("new", type=click.Path(exists=True, path_type=Path), required=False)
 @click.option(
     "--document",
     "documents",
@@ -698,8 +728,17 @@ def wireshark_plugin_command(
     "corpus_paths",
     multiple=True,
     type=click.Path(exists=True, file_okay=False, path_type=Path),
-    help="With two files: the corpus they are read in, instead of the installed"
-    " one. Repeatable.",
+    help="With two files or two releases: the corpus they are read in, instead"
+    " of the installed one. Repeatable.",
+)
+@click.option(
+    "--release",
+    "releases",
+    multiple=True,
+    type=int,
+    metavar="N",
+    help="Given twice, in place of OLD and NEW: compare the corpus at the first"
+    " release with it at the second, both held whole.",
 )
 @click.option("--json", "as_json", is_flag=True, help="Print the diff as JSON.")
 @click.option(
@@ -708,11 +747,12 @@ def wireshark_plugin_command(
     help="Write the JSON Schema of `--json`'s output here, and exit.",
 )
 def diff_command(
-    old: Path,
-    new: Path,
+    old: Path | None,
+    new: Path | None,
     documents: tuple[str, ...],
     application_ids: tuple[int, ...],
     corpus_paths: tuple[Path, ...],
+    releases: tuple[int, ...],
     as_json: bool,
     schema: Path | None,
 ) -> None:
@@ -720,18 +760,21 @@ def diff_command(
 
     OLD and NEW are two `.dad` files of one document, each read in the
     installed corpus (or --corpus) in place of its copy, or two corpus
-    directories. Commands match by application id, code and direction, AVPs
-    by vendor-id and code; each change is breaking, compatible or editorial,
-    with the command paths it affects. Where the raw mirror of both sides is
-    found (a `raw/` tree beside the file, as `corpus regenerate -o` writes
-    it), each change also says whether it comes from the document, our
-    corrections or our extraction.
+    directories; or, with --release twice, the corpus (or --corpus) at two of
+    the releases it holds whole. Commands match by application id, code and
+    direction, AVPs by vendor-id and code; each change is breaking,
+    compatible or editorial, with the command paths it affects. Where the raw
+    mirror of both sides is found (a `raw/` tree beside the file, as `corpus
+    regenerate -o` writes it), each change also says whether it comes from
+    the document, our corrections or our extraction.
 
     \b
     Two versions of TS 29.272, the older extracted into a scratch directory:
         seanchai corpus regenerate --spec TS29.272 -o old \\
             --manifest specifications/versions/TS29.272/18.6.0/manifest.json
         seanchai diff old/3gpp/rel-18/29272-i60.dad NEW.dad
+    What S6a gained from Release 18 to Release 19:
+        seanchai diff --release 18 --release 19 --application 16777251
     """
     import json
 
@@ -747,12 +790,22 @@ def diff_command(
         )
         click.echo(f"wrote {click.style(str(schema), bold=True)}", err=True)
         return
-    if old.is_dir() != new.is_dir():
+    if releases:
+        if len(releases) != 2 or old is not None or new is not None:
+            raise click.UsageError("give --release twice, in place of OLD and NEW")
+        with reported():
+            found = _release_diff(
+                library, releases, documents, application_ids, corpus_paths
+            )
+    elif old is None or new is None:
+        raise click.UsageError("give OLD and NEW, or --release twice")
+    elif old.is_dir() != new.is_dir():
         raise click.UsageError("give two .dad files or two corpus directories")
-    if corpus_paths and old.is_dir():
+    elif corpus_paths and old.is_dir():
         raise click.UsageError("--corpus goes with two files")
-    with reported():
-        found = _diff(library, old, new, documents, application_ids, corpus_paths)
+    else:
+        with reported():
+            found = _diff(library, old, new, documents, application_ids, corpus_paths)
     if as_json:
         click.echo(library.dumps(found), nl=False)
     else:
@@ -808,6 +861,47 @@ def _diff(library, old, new, documents, application_ids, corpus_paths):
         raw=None if raws is None else (raws[0], raws[1]),
         corpus_versions=(sides[0].version, sides[1].version),
     )
+
+
+def _release_diff(library, releases, documents, application_ids, corpus_paths):
+    """Compare the corpus, and its raw mirror where it has one, at two of the
+    releases it holds whole."""
+    from ..corpus import Corpus
+    from ..model import HolePolicy, Model, ModelError
+
+    def load(raw: bool = False):
+        if corpus_paths:
+            return Corpus.load(list(corpus_paths), raw=raw)
+        return Corpus.installed(raw=raw)
+
+    books = load()
+    models = [
+        Model.build(books.at(release), holes=HolePolicy.ANY) for release in releases
+    ]
+    raw = load(raw=True)
+    raws = [raw.at(release) for release in releases] if len(raw) else None
+
+    def compared(mirrors):
+        return library.diff(
+            *models,
+            documents=documents,
+            application_ids=application_ids,
+            raw=mirrors,
+            corpus_versions=(books.version, books.version),
+        )
+
+    if raws is None:
+        return compared(None)
+    try:
+        return compared((raws[0], raws[1]))
+    except ModelError as error:
+        # A raw file may print two AVPs one identity (TS 29.345's copied
+        # headers), which no dictionary holds; the corrected corpus is read
+        # all the same, without origins.
+        click.echo(
+            f"origins left out: the raw mirror is no dictionary: {error}", err=True
+        )
+        return compared(None)
 
 
 def _raw_mirror(path: Path) -> Path | None:
@@ -872,6 +966,7 @@ def vectors_command(
     schema: Path | None,
     corpus_paths: tuple[Path, ...],
     layers: tuple[Path, ...],
+    release: int | None,
 ) -> None:
     """Write test messages for a stack's own tests.
 
@@ -905,7 +1000,7 @@ def vectors_command(
     if output is None:
         return
     with reported():
-        books, holes = _corpus(corpus_paths, layers)
+        books, holes = _corpus(corpus_paths, layers, release)
         built = Model.build(books, holes=holes, undefined=UndefinedPolicy(policy))
         written = vectors.build(
             build(

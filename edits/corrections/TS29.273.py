@@ -477,7 +477,7 @@ CORRECTIONS += [
         reason="the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its"
         " interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so"
         " the file holds only clause 9.2.3.2.2's",
-        versions="19.2.0",
+        versions="18.6.0..19.2.0",
     ),
     Accept(
         id="trace-info-clause",
@@ -502,7 +502,7 @@ CORRECTIONS += [
         reason="table 5.2.3.1/2 cites 'ETSI TS 283 034 [48]', as clause 2's [48] does;"
         " the document's own prose cites 'ETSI ES 283 034 [48]', which is how ETSI"
         " publishes that title, and it has no TS 283 034",
-        versions="19.2.0",
+        versions="18.6.0..19.2.0",
     ),
     *(
         Correction(
@@ -515,7 +515,7 @@ CORRECTIONS += [
             " 'The Diameter application for the SWm reference point shall use"
             " the Diameter Application Id with value 16777264'; the document"
             " prints AA-Request/Answer for STa, SWm and S6b",
-            versions="19.2.0",
+            versions="18.6.0..19.2.0",
         )
         for label in ("7.1.2.2.1/1", "7.1.2.2.1/2")
     ),

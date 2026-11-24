@@ -51,6 +51,31 @@ def _only(findings: list[linter.Finding], rule: str) -> linter.Finding:
 
 # --- the committed corpus ------------------------------------------------------
 
+# The pins below are keyed by document for the copies of the releases the corpus
+# holds whole, `TS29.272` standing for each release's copy, so a release adds
+# entries only where its copy differs, keyed by the copy's own file stem
+# (`29272-i70`), which wins. Any other copy is keyed by its stem.
+_FULL_RELEASES = {f"rel-{release}" for release in _RULES.releases}
+
+
+def _keys(path: Path) -> list[str]:
+    """What a pin of `path`'s findings is looked up by, the most specific
+    first: its stem (`29272-j60.raw`), then for a copy of a release the corpus
+    holds whole its document's reference (`TS29.272.raw`)."""
+    stem = path.name.removesuffix(".dad")
+    keys = [stem]
+    if path.parent.name in _FULL_RELEASES:
+        spec = parser.parse(path.read_text(encoding="utf-8"))
+        keys.append(
+            ast.spec_ref(spec.specification) + (".raw" if stem.endswith(".raw") else "")
+        )
+    return keys
+
+
+def _pinned[T, D](pins: dict[str, T], path: Path, default: D) -> T | D:
+    """`path`'s entry in `pins` (`_keys`), or `default`."""
+    return next((pins[key] for key in _keys(path) if key in pins), default)
+
 
 @pytest.mark.parametrize("path", _corpus(raw=False), ids=lambda path: path.name)
 def test_the_corrected_corpus_has_no_errors(path):
@@ -68,60 +93,60 @@ def test_the_corrected_corpus_has_no_errors(path):
 _RAW_ERRORS = {
     # And clause 7.1.2.2.1's tables, for the AA-Request/Answer the document
     # prints for three applications.
-    "29273-j20.raw.dad": ["duplicate-definition", "duplicate-identity"]
+    "TS29.273.raw": ["duplicate-definition", "duplicate-identity"]
     + ["elements-command-ambiguous"] * 2,
-    "29172-j00.raw.dad": ["duplicate-identity"],
+    "TS29.172.raw": ["duplicate-identity"],
     # And twelve tables of clauses 5 and 5A, for commands it prints for S6a
     # and for S7a.
-    "29272-j60.raw.dad": ["duplicate-identity"]
+    "TS29.272.raw": ["duplicate-identity"]
     + ["elements-command-ambiguous"] * 12
     + ["table-definition-mismatch", "vendor-id-mismatch"],
-    "29344-j10.raw.dad": ["one-name-two-commands", "one-name-two-commands"],
-    "29388-j10.raw.dad": [
+    "TS29.344.raw": ["one-name-two-commands", "one-name-two-commands"],
+    "TS29.388.raw": [
         "duplicate-definition",
         "duplicate-identity",
         "table-definition-mismatch",
     ],
-    "29212-j10.raw.dad": ["vendor-id-mismatch"] * 39,
-    "29214-j30.raw.dad": ["vendor-id-mismatch"] * 11,
+    "TS29.212.raw": ["vendor-id-mismatch"] * 39,
+    "TS29.214.raw": ["vendor-id-mismatch"] * 11,
     # Release 7 and TS 29.209, its Release 6 predecessor: grouped headers
     # printing no vendor where clause 5.3 (6.5) sets 3GPP's for every AVP.
-    "29214-7c0.raw.dad": ["vendor-id-mismatch"] * 5,
-    "29209-680.raw.dad": ["vendor-id-mismatch"] * 5,
+    "29214-7c0.raw": ["vendor-id-mismatch"] * 5,
+    "29209-680.raw": ["vendor-id-mismatch"] * 5,
     # TS 29.210's four and TS 29.234's four grouped headers printing no vendor
     # where clauses 5.2 and 10.1 set 3GPP's.
-    "29210-670.raw.dad": ["vendor-id-mismatch"] * 4,
-    "29234-b20.raw.dad": ["vendor-id-mismatch"] * 4,
+    "29210-670.raw": ["vendor-id-mismatch"] * 4,
+    "29234-b20.raw": ["vendor-id-mismatch"] * 4,
     # Release 11, the copies TS 32.299 V11.20.0 cites: thirty-one and six
     # vendorless grouped headers, as their Release 19 successors print.
-    "29212-bj0.raw.dad": ["vendor-id-mismatch"] * 31,
-    "29214-bg0.raw.dad": ["vendor-id-mismatch"] * 6,
-    "29336-j10.raw.dad": [
+    "29212-bj0.raw": ["vendor-id-mismatch"] * 31,
+    "29214-bg0.raw": ["vendor-id-mismatch"] * 6,
+    "TS29.336.raw": [
         "duplicate-definition",
         "duplicate-identity",
         "duplicate-identity",
     ],
-    "29338-j30.raw.dad": ["duplicate-identity"],
+    "TS29.338.raw": ["duplicate-identity"],
     # Grouped headers printing no vendor while the AVP tables set V (all
     # eight; 29.154's sixth, Time-window, misspells its own rule name, so no
     # row matches it); 29.468's clauses 6.4.28 and 6.4.31 print FEC-Request's
     # code, and table 6.4.1-1 types clause 6.4.35's Enumerated AVP
     # Unsigned32.
-    "29153-j00.raw.dad": ["vendor-id-mismatch"],
-    "29154-j00.raw.dad": ["vendor-id-mismatch"] * 5,
-    "29215-j00.raw.dad": ["vendor-id-mismatch"] * 2,
-    "29217-j00.raw.dad": ["vendor-id-mismatch"] * 4,
-    "29219-j00.raw.dad": ["vendor-id-mismatch"] * 2,
-    "29343-j00.raw.dad": ["vendor-id-mismatch"] * 3,
-    "29368-j00.raw.dad": ["vendor-id-mismatch"] * 3,
-    "29468-j00.raw.dad": ["duplicate-identity"]
+    "TS29.153.raw": ["vendor-id-mismatch"],
+    "TS29.154.raw": ["vendor-id-mismatch"] * 5,
+    "TS29.215.raw": ["vendor-id-mismatch"] * 2,
+    "TS29.217.raw": ["vendor-id-mismatch"] * 4,
+    "TS29.219.raw": ["vendor-id-mismatch"] * 2,
+    "TS29.343.raw": ["vendor-id-mismatch"] * 3,
+    "TS29.368.raw": ["vendor-id-mismatch"] * 3,
+    "TS29.468.raw": ["duplicate-identity"]
     + ["table-definition-mismatch"] * 3
     + ["vendor-id-mismatch"] * 12,
     # Both tabulate RFC 8583's Load among their own AVPs, with no code —
     # their Load clauses define it only by reference to RFC 8583.
-    "29229-j10.raw.dad": ["row-without-code"],
-    "29329-j10.raw.dad": ["row-without-code"],
-    "29345-j00.raw.dad": [
+    "TS29.229.raw": ["row-without-code"],
+    "TS29.329.raw": ["row-without-code"],
+    "TS29.345.raw": [
         "duplicate-identity",
         "table-definition-mismatch",
         "table-definition-mismatch",
@@ -137,7 +162,7 @@ _RAW_ERRORS = {
     # 3GPP vendor-id reads as the document's own.
     # Clauses 6.3.13 and ZA.2 each print SIP-Auth-Data-Item as TS 29.229
     # modified, in 3GPP's vendor space.
-    "ts183033-010200.raw.dad": [
+    "ts183033-010200.raw": [
         "duplicate-definition",
         "duplicate-identity",
         "vendor-id-mismatch",
@@ -145,30 +170,29 @@ _RAW_ERRORS = {
     ],
     # Table 5.1-1's AVPs are 3GPP's in a file of 3GPP2's vendor, which clause
     # 5.5 says in prose, and grouped formats print no vendor-id at all.
-    "xs0013-013-0_v1.0.raw.dad": ["vendor-id-mismatch"] * 11,
+    "xs0013-013-0_v1.0.raw": ["vendor-id-mismatch"] * 11,
     # The same, in clause 5.2.2.
-    "xs0013-014-0_v1.0.raw.dad": ["vendor-id-mismatch"] * 16,
-    "ts183017-030201.raw.dad": [
+    "xs0013-014-0_v1.0.raw": ["vendor-id-mismatch"] * 16,
+    "ts183017-030201.raw": [
         "duplicate-definition",
         "duplicate-enum-value",
     ]
     + ["duplicate-identity"] * 6
     + ["vendor-id-mismatch"] * 2,
-    "rfc4004.raw.dad": ["table-definition-mismatch"],
+    "rfc4004.raw": ["table-definition-mismatch"],
     # Two Integer32 rows clauses 7.2.111AaA and 7.2.111AaB define as
     # Enumerated, and every grouped header in clause 7.2 printing no vendor
     # while table 7.2.0.1 sets V.
-    "32299-j00.raw.dad": ["table-definition-mismatch"] * 2
-    + ["vendor-id-mismatch"] * 96,
+    "TS32.299.raw": ["table-definition-mismatch"] * 2 + ["vendor-id-mismatch"] * 96,
     # Release 11: the grouped headers of clause 7.2 printing no vendor while
     # table 7.2 sets V.
-    "32299-bk0.raw.dad": ["vendor-id-mismatch"] * 66,
+    "32299-bk0.raw": ["vendor-id-mismatch"] * 66,
     # Table A.4-1 puts V under Must not for its 45687 rows and 3GPP's
     # Service-Information, and clause A.5.14 prints M2M-Information's
     # header with no vendor-id.
-    "ts-0004-v2_35_0.raw.dad": ["vendor-flag-mismatch"] * 24 + ["vendor-id-mismatch"],
+    "ts-0004-v2_35_0.raw": ["vendor-flag-mismatch"] * 24 + ["vendor-id-mismatch"],
     # Clauses 8.5.5 and 8.5.6 print only the code; table 11 gives vendor 10415.
-    "dds-charging_data-v1_0-20110201-a.raw.dad": ["vendor-id-mismatch"] * 2,
+    "dds-charging_data-v1_0-20110201-a.raw": ["vendor-id-mismatch"] * 2,
 }
 
 
@@ -180,7 +204,7 @@ def test_the_raw_corpus_reports_exactly_what_the_documents_say(path):
     findings = linter.lint(parser.parse(path.read_text(encoding="utf-8")))
     errors = [f for f in findings if f.severity is linter.Severity.ERROR]
 
-    assert [f.rule for f in errors] == _RAW_ERRORS.get(path.name, [])
+    assert [f.rule for f in errors] == _pinned(_RAW_ERRORS, path, [])
 
 
 # Notes per file stem. A raw stem without an entry takes its corrected file's
@@ -189,27 +213,32 @@ def test_the_raw_corpus_reports_exactly_what_the_documents_say(path):
 # tables print differently (29.061's tables 9a and 10, see
 # `_STANDING_CORPUS_NOTES`; 29.273's two).
 _NOTE_COUNTS = {
-    "29061-j10": 7,
-    "29128-j20": 3,
+    "TS29.061": 7,
+    "TS29.128": 3,
     # OC-OLR, which clause 6.3.61 prints as well as re-uses, and, corrected,
     # the row clause 6.3.43's Wildcarded-IMPU is corrected into.
-    "29229-j10.raw": 1,
-    "29229-j10": 2,
-    "29272-j60": 9,
+    "TS29.229.raw": 1,
+    "TS29.229": 2,
+    # Release 18's copy prints no clause 6.3.61.
+    "29229-i10.raw": 0,
+    "29229-i10": 1,
+    "TS29.272": 9,
     # Rows citing another clause than the block's: table 7.2.3.1/1's
     # Trace-Info, a misprint accepted, and raw, table 9.2.3.2.1/1's
     # Emergency-Services, a misprint corrected; corrected, MIP6-Agent-Info,
     # whose second block a correction deletes.
-    "29273-j20": 7,
-    "29283-j00": 1,
-    "29336-j10": 5,
-    "29337-j00": 2,
-    "29338-j30": 2,
-    "29388-j10": 1,
+    "TS29.273": 7,
+    "TS29.283": 1,
+    "TS29.336": 5,
+    "TS29.337": 2,
+    "TS29.338": 2,
+    "TS29.388": 1,
     # Table 5.3.0.1 cites 5.3.142 for clause 5.3.81's AVP; and in each copy,
     # Media-Type's OTHER (4294967295), past what an Integer32 holds, as in
     # 3GPP2 X.S0013-013's and the ETSI transcriptions' copies of it.
-    "29214-j30": 2,
+    "TS29.214": 2,
+    # Release 18's copy, without Release 19's PC-Session-Recovery-Status.
+    "29214-i40": 1,
     "29214-bg0": 1,
     "29214-7c0": 1,
     # Clause 6.20 defines MIP6-Auth-Mode, clause 9.5 prints its values.
@@ -226,14 +255,14 @@ _NOTE_COUNTS = {
     "ts-0004-v2_35_0": 1,
     # TS 29.230's registry: 318 allocated twice, four reservations
     # covering allocated codes, and 4703-4799 inside 4605-4799.
-    "29230-j30": 6,
+    "TS29.230": 6,
     # Table 7.1.0.1 marks ACA's Error-Message and Failed-AVP unused; the
     # corrections cite RFC origins for it, whose clauses 7.1.9, 7.1.14,
     # 7.1.17 and B.2.4 print bodies of their own.
     # Plus, corrected, the Undefined AVP blocks the corrections insert:
     # Submission-Timestamp and Network-Element.
-    "32299-j00.raw": 2,
-    "32299-j00": 8,
+    "TS32.299.raw": 2,
+    "TS32.299": 8,
     # Only the Undefined AVP blocks, one note each: RFC 4004's three
     # SPIs, TS 29.345's ProSe-Query-Code and ProSe-Response-Code, TS
     # 29.154's External-Group-Identifier.
@@ -243,10 +272,10 @@ _NOTE_COUNTS = {
     "rfc5866": 1,
     # Clause 5.1 extends RFC 5447's MIP6-Agent-Info.
     "rfc5779": 1,
-    "29345-j00.raw": 0,
-    "29345-j00": 2,
-    "29154-j00.raw": 0,
-    "29154-j00": 1,
+    "TS29.345.raw": 0,
+    "TS29.345": 2,
+    "TS29.154.raw": 0,
+    "TS29.154": 1,
     # TS 29.234 prints no re-used table; the corrections give it one, in
     # which clause 10.1.4's SIP-Auth-Data-Item is defined here too, and
     # declare Error-Cause.
@@ -300,10 +329,12 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
         if f.severity is linter.Severity.NOTE and f.rule not in ELEMENT_RULES
     ]
 
-    stem = path.name.removesuffix(".dad")
+    keys = _keys(path)
+    # A raw file without an entry takes its corrected file's count.
+    keys += [key.removesuffix(".raw") for key in keys]
 
-    assert len(notes) == _NOTE_COUNTS.get(
-        stem, _NOTE_COUNTS.get(stem.removesuffix(".raw"), 0)
+    assert len(notes) == next(
+        (_NOTE_COUNTS[key] for key in keys if key in _NOTE_COUNTS), 0
     )
     assert {f.rule for f in notes} <= _SINGLE_FILE_NOTE_RULES
 
@@ -311,7 +342,7 @@ def test_the_committed_corpus_reports_only_its_known_notes(path):
 # Standing findings from docs/linter.md, plus the additional reprints,
 # body differences and indirect origins present in the committed corpus.
 _STANDING_CORPUS_NOTES = {
-    "29061-j10.dad": {
+    "TS29.061": {
         "table-row-mismatch": [
             "3GPP-IMSI",
             "3GPP-SGSN-Address",
@@ -322,24 +353,24 @@ _STANDING_CORPUS_NOTES = {
             "3GPP-MS-TimeZone",
         ],
     },
-    "29128-j20.dad": {
+    "TS29.128": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN",
         ],
         "reused-body-differs": ["Terminal-Information"],
     },
-    "29172-j00.dad": {
+    "TS29.172": {
         "reused-origin-indirect": ["Service-Selection"],
     },
-    "29154-j00.dad": {
+    "TS29.154": {
         "undefined-avp": ["External-Group-Identifier"],
     },
     # Clause 2 [24] cites 3GPP2 X.S0057-B, which 3GPP2's library does not
     # publish; revision 0 V2.0 stands in (corpus.toml, stand_in).
-    "29212-j10.dad": {"cross-release-origin": ["3GPP2-X.S0057"]},
+    "TS29.212": {"cross-release-origin": ["3GPP2-X.S0057"]},
     # Table 6.3.0.1 sets M in Must for the four Digest AVPs it re-uses; RFC
     # 4590's stand-in flags, Wireshark's, put it in May; the model follows the table.
-    "29229-j10.dad": {
+    "TS29.229": {
         "reused-row-mismatch": [
             "Digest-Algorithm",
             "Digest-HA1",
@@ -349,7 +380,18 @@ _STANDING_CORPUS_NOTES = {
         "reused-extension": ["OC-OLR"],
         "row-without-code": ["Wildcarded-IMPU"],
     },
-    "29230-j30.dad": {
+    # Release 18's copy prints no clause 6.3.61, Release 19's OC-OLR extended
+    # with OC-Reg-Timer-Ext.
+    "29229-i10": {
+        "reused-row-mismatch": [
+            "Digest-Algorithm",
+            "Digest-HA1",
+            "Digest-Qop",
+            "Digest-Realm",
+        ],
+        "row-without-code": ["Wildcarded-IMPU"],
+    },
+    "TS29.230": {
         "registry-range-overlap": [
             "318",
             "1..255",
@@ -359,7 +401,7 @@ _STANDING_CORPUS_NOTES = {
             "5455..5469",
         ],
     },
-    "29272-j60.dad": {
+    "TS29.272": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
             "DIAMETER_ERROR_ROAMING_NOT_ALLOWED",
@@ -377,7 +419,7 @@ _STANDING_CORPUS_NOTES = {
             "MIP6-Agent-Info",
         ],
     },
-    "29273-j20.dad": {
+    "TS29.273": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_ILLEGAL_EQUIPMENT",
         ],
@@ -385,7 +427,7 @@ _STANDING_CORPUS_NOTES = {
         "reused-reprint": ["MIP6-Agent-Info", "Subscription-Id"],
         "table-row-mismatch": ["AN-Trusted", "Mobile-Node-Identifier"],
     },
-    "29283-j00.dad": {
+    "TS29.283": {
         "registry-result-code-name": [
             "DIAMETER_ERROR_DATA",
         ],
@@ -393,12 +435,12 @@ _STANDING_CORPUS_NOTES = {
         "registry-avp-name": ["Data", "MCVideo-ID"],
         "reused-body-differs": ["User-Identifier"],
     },
-    "29140-700.dad": {
+    "29140-700": {
         "cross-release-origin": ["TS29.061", "TS29.329"],
         "reused-row-mismatch": ["3GPP-IMSI"],
     },
-    "29330-j00.dad": {"reused-origin-indirect": ["Load"]},
-    "29336-j10.dad": {
+    "TS29.330": {"reused-origin-indirect": ["Load"]},
+    "TS29.336": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION",
         ],
@@ -410,26 +452,26 @@ _STANDING_CORPUS_NOTES = {
         "reused-origin-indirect": ["User-CSG-Information"],
         "reused-reprint": ["EPS-Location-Information"],
     },
-    "29338-j30.dad": {
+    "TS29.338": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
         ],
         "registry-avp-name": ["SGSN-Absent-User-Diagnostic-SM"],
         "reused-body-differs": ["Serving-Node"],
     },
-    "29345-j00.dad": {
+    "TS29.345": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
             "DIAMETER_ERROR_UNAUTHORIZED_SERVICE",
         ],
         "undefined-avp": ["ProSe-Query-Code", "ProSe-Response-Code"],
     },
-    "29561-j60.dad": {
+    "TS29.561": {
         # Table 12.4-1 cites TS 29.061 for code 28, sub-attribute 28 of its
         # RADIUS VSA; TS 29.061's table 9b re-uses the AVP from TS 29.336, 3111.
         "reused-origin-indirect": ["External-Identifier"],
     },
-    "32299-j00.dad": {
+    "TS32.299": {
         # Table 7.1.0.1 marks them "-" under ACA, clause 6.2.3's ABNF lists them.
         "member-marked-unused": ["Error-Message", "Failed-AVP"],
         # Clause 2 [213] cites TS 29.140 non-specifically for VAS-ID and
@@ -456,7 +498,7 @@ _STANDING_CORPUS_NOTES = {
     # The transcriptions cite TS 29.209, which ends at V6.8.0, ES 283 034
     # non-specifically and TS 183 017 as "Release 6", and TS 183 017 cites
     # TS 29.214 "Release 7", V7.12.0.
-    "es283034-020200.dad": {
+    "es283034-020200": {
         "cross-release-origin": ["TS29.209"],
         # Clause 7.3.11 prints values PRIORITY 0-7 and table 13 types the AVP
         # Unsigned32, re-used from TS 183 017, whose clause 7.3.9 enumerates
@@ -469,7 +511,7 @@ _STANDING_CORPUS_NOTES = {
     # Reservation-Priority at PRIORITY-SEVEN where TS 183 017 goes on to
     # FIFTEEN; clause 6.4.16 adds three members to Media-Component-Description
     # without saying so; and Media-Type adds OTHER, as TS 183 017 does.
-    "es283026-010600.dad": {
+    "es283026-010600": {
         "enum-value-out-of-range": ["Media-Type"],
         "cross-release-origin": ["TS29.209"],
         "reused-body-differs": ["Reservation-Priority"],
@@ -486,13 +528,13 @@ _STANDING_CORPUS_NOTES = {
     },
     # ES 283 035 cites TS 29.209, which ends at V6.8.0, and TS 29.329, whose
     # latest edition its clause 2.1 says it means.
-    "es283035-020501.dad": {"cross-release-origin": ["TS29.209", "TS29.329"]},
+    "es283035-020501": {"cross-release-origin": ["TS29.209", "TS29.329"]},
     # TS 183 033 names TS 29.229 V6.6.0, which V18.1.0 stands in for.
-    "ts183033-010200.dad": {"cross-release-origin": ["TS29.229"]},
+    "ts183033-010200": {"cross-release-origin": ["TS29.229"]},
     # oneM2M cites TS 32.299 [31], "Release 11", for Node-Id and
     # Service-Information: V11.20.0.
-    "ts-0004-v2_35_0.dad": {"cross-release-origin": ["TS32.299"]},
-    "dds-charging_data-v1_0-20110201-a.dad": {
+    "ts-0004-v2_35_0": {"cross-release-origin": ["TS32.299"]},
+    "dds-charging_data-v1_0-20110201-a": {
         # Clause 2's [TS29.140], non-specific; V7.0.0 is its final version.
         "cross-release-origin": ["TS29.140"],
         # Clauses 6.2.43 and 6.2.74 print values table 11 cites TS 32.299 for.
@@ -515,13 +557,13 @@ _STANDING_CORPUS_NOTES = {
         # Clause 2's [TS32.299] and [TS29.214] name no version and clause 2
         # says nothing of what such a reference means.
         "origin-not-in-corpus": [
-            "TS29.214 (corpus has 19.3.0, 11.16.0, 7.12.0), TS32.299"
-            " (corpus has 19.0.0, 11.20.0)"
+            "TS29.214 (corpus has 19.3.0, 18.4.0, 11.16.0, 7.12.0), TS32.299"
+            " (corpus has 19.0.0, 18.0.0, 11.20.0)"
         ],
         # Table 11 May Encrypt Y where TS 29.140 table 6.3.1 reads No.
         "reused-row-mismatch": ["Billing-Information", "Service-Key"],
     },
-    "ts183017-030201.dad": {
+    "ts183017-030201": {
         "enum-value-out-of-range": ["Media-Type"],
         "cross-release-origin": ["TS29.209", "TS29.214"],
         # Clauses 7.3.14-7.3.32 re-print the Gq AVPs table 7.3.3 imports
@@ -556,33 +598,34 @@ _STANDING_CORPUS_NOTES = {
     # clause 10.1.4 prints SIP-Auth-Data-Item's body with three members more and
     # five fewer than TS 29.229's. TS 29.210's TS 29.061 is the pinned V6.15.0,
     # V19.1.0 typing the two AVPs it leaves untyped (corpus.toml, release_fill).
-    "29210-670.dad": {"cross-release-origin": ["TS29.061", "TS29.229"]},
-    "29234-b20.dad": {
+    "29210-670": {"cross-release-origin": ["TS29.061", "TS29.229"]},
+    "29234-b20": {
         "cross-release-origin": ["TS29.229"],
         "reused-body-differs": ["SIP-Auth-Data-Item"],
         "undefined-avp": ["Error-Cause"],
     },
-    "29214-7c0.dad": {
+    "29214-7c0": {
         "enum-value-out-of-range": ["Media-Type"],
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 19.1.0, 6.15.0),"
-            " TS29.212 (corpus has 19.1.0, 11.19.0)"
+            "TS29.061 (corpus has 19.1.0, 18.1.0, 6.15.0),"
+            " TS29.212 (corpus has 19.1.0, 18.2.0, 11.19.0)"
         ],
     },
-    "29212-bj0.dad": {
+    "29212-bj0": {
         "cross-release-origin": ["3GPP2-X.S0057"],
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 19.1.0, 6.15.0), TS29.229 (corpus has 19.1.0),"
-            " TS29.272 (corpus has 19.6.0)"
+            "TS29.061 (corpus has 19.1.0, 18.1.0, 6.15.0), TS29.229 (corpus has"
+            " 19.1.0, 18.1.0), TS29.272 (corpus has 19.6.0, 18.7.0)"
         ],
     },
-    "29214-bg0.dad": {
+    "29214-bg0": {
         "enum-value-out-of-range": ["Media-Type"],
         "origin-not-in-corpus": [
-            "TS29.061 (corpus has 19.1.0, 6.15.0), TS29.229 (corpus has 19.1.0)"
+            "TS29.061 (corpus has 19.1.0, 18.1.0, 6.15.0), TS29.229 (corpus has"
+            " 19.1.0, 18.1.0)"
         ],
     },
-    "32299-bk0.dad": {
+    "32299-bk0": {
         "cross-release-origin": [
             "TS29.061",
             "TS29.140",
@@ -594,96 +637,103 @@ _STANDING_CORPUS_NOTES = {
         ],
         "reused-origin-indirect": ["3GPP2-BSID"],
     },
-    "rfc4004.dad": {
+    "rfc4004": {
         "undefined-avp": [
             "MIP-HA-to-MN-SPI",
             "MIP-MN-to-FA-SPI",
             "MIP-MN-to-HA-SPI",
         ],
     },
-    "rfc5779.dad": {"reused-extension": ["MIP6-Agent-Info"]},
-    "rfc5866.dad": {"undefined-avp": ["Authorization-Session-Volume"]},
-    "rfc6738.dad": {"reused-row-mismatch": ["Key-Lifetime"]},
-    "29109-j00.dad": {
+    "rfc5779": {"reused-extension": ["MIP6-Agent-Info"]},
+    "rfc5866": {"undefined-avp": ["Authorization-Session-Volume"]},
+    "rfc6738": {"reused-row-mismatch": ["Key-Lifetime"]},
+    "TS29.109": {
         "registry-result-code-name": [
             "DIAMETER_ERROR_IDENTITY_UNKNOWN",
         ],
     },
-    "29337-j00.dad": {
+    "TS29.337": {
         "registry-result-code-document": [
             "DIAMETER_ERROR_USER_UNKNOWN",
         ],
     },
     # An Enumerated value only an Unsigned32 holds: Media-Type's OTHER.
-    "29214-j30.dad": {"enum-value-out-of-range": ["Media-Type"]},
-    "xs0013-013-0_v1.0.dad": {"enum-value-out-of-range": ["Media-Type"]},
+    "TS29.214": {"enum-value-out-of-range": ["Media-Type"]},
+    "xs0013-013-0_v1.0": {"enum-value-out-of-range": ["Media-Type"]},
 }
 
 
 # Notes the specifications' corrections modules accept as overrides their
 # documents state, by acceptance (docs/linter.md#standing-findings).
 _ACCEPTED_CORPUS_NOTES = {
-    "29214-j30.dad": {
-        "section-mismatch": ["TS29.214.py#pc-session-recovery-status-clause"]
-    },
-    "rfc5778.dad": {"section-mismatch": ["RFC5778.py#mip6-auth-mode-clause"]},
-    "rfc6942.dad": {
+    "TS29.214": {"section-mismatch": ["TS29.214.py#pc-session-recovery-status-clause"]},
+    # Release 18's copy has no PC-Session-Recovery-Status, a Release 19 AVP.
+    "29214-i40": {},
+    "rfc5778": {"section-mismatch": ["RFC5778.py#mip6-auth-mode-clause"]},
+    "rfc6942": {
         "section-unknown": [
             "RFC6942.py#application-scope-clause-5-2",
             "RFC6942.py#application-scope-clause-6",
         ]
     },
-    "ts-0004-v2_35_0.dad": {
+    "ts-0004-v2_35_0": {
         "section-unknown": ["oneM2M-TS-0004.py#response-status-code-values-clause"]
     },
-    "es283026-010600.dad": {
+    "es283026-010600": {
         "reused-body-differs": ["ETSI-ES283.026.py#specific-action-rq-events"]
     },
-    "ts183033-010200.dad": {
+    "ts183033-010200": {
         "reused-body-differs": ["ETSI-TS183.033.py#sip-auth-data-item-endorsed-change"]
     },
-    "ts183017-030201.dad": {
+    "ts183017-030201": {
         "reused-extension": ["ETSI-TS183.017.py#media-component-description-extension"],
     },
-    "29128-j20.dad": {
+    "TS29.128": {
         "reused-body-differs": [
             "TS29.128.py#monitoring-event-configuration-t6a-body",
             "TS29.128.py#monitoring-event-report-t6a-body",
         ],
     },
-    "29272-j60.dad": {
+    # Release 18's Monitoring-Event-Report body, without SAT-SF-Operation-Info.
+    "29128-i00": {
+        "reused-body-differs": [
+            "TS29.128.py#monitoring-event-configuration-t6a-body",
+            "TS29.128.py#monitoring-event-report-t6a-body-release-18",
+        ],
+    },
+    "TS29.272": {
         "reused-body-differs": [
             "TS29.272.py#monitoring-event-configuration-s6a-body",
             "TS29.272.py#monitoring-event-report-s6a-body",
             "TS29.272.py#ue-reachability-configuration-s6a-body",
         ],
     },
-    "29273-j20.dad": {
+    "TS29.273": {
         "section-mismatch": [
             "TS29.273.py#trace-info-clause",
             "TS29.273.py#mip6-agent-info-row-clause",
         ],
         "reused-body-differs": ["TS29.273.py#sip-auth-data-item-swx-body"],
     },
-    "29336-j10.dad": {
+    "TS29.336": {
         "reused-body-differs": [
             "TS29.336.py#additional-serving-node-t4-body",
             "TS29.336.py#serving-node-t4-body",
         ],
     },
-    "29337-j00.dad": {
+    "TS29.337": {
         "reused-body-differs": [
             "TS29.337.py#additional-serving-node-t4-body",
             "TS29.337.py#serving-node-t4-body",
         ],
     },
-    "29338-j30.dad": {
+    "TS29.338": {
         "reused-body-differs": ["TS29.338.py#additional-serving-node-body"],
     },
-    "29388-j10.dad": {
+    "TS29.388": {
         "reused-body-differs": ["TS29.388.py#v2x-subscription-data-v4-body"],
     },
-    "32299-j00.dad": {
+    "TS32.299": {
         "reused-body-differs": [
             "TS32.299.py#multiple-services-credit-control-charging-body",
             "TS32.299.py#used-service-unit-charging-body",
@@ -700,6 +750,8 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
     actual = {}
     accepted = {}
     for entry in books:
+        actual[entry.path] = {}
+        accepted[entry.path] = {}
         declared = corrections.in_release(
             corrections.load(
                 _ROOT / "edits" / "corrections",
@@ -713,7 +765,7 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
         ):
             assert finding.severity is not linter.Severity.ERROR, (entry.path, finding)
             if finding.severity is linter.Severity.ACCEPTED:
-                by_rule = accepted.setdefault(entry.path.name, {})
+                by_rule = accepted[entry.path]
                 by_rule.setdefault(finding.rule, []).append(finding.accepted_by)
                 continue
             if finding.rule in ELEMENT_RULES:
@@ -727,10 +779,24 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
                 else finding.message.split()[0].removesuffix("'s")
             )
             notes.setdefault(finding.rule, []).append(subject)
-        if notes:
-            actual[entry.path.name] = notes
-    assert actual == _STANDING_CORPUS_NOTES
-    assert accepted == _ACCEPTED_CORPUS_NOTES
+        actual[entry.path] = notes
+    assert _named(actual) == _expected(_STANDING_CORPUS_NOTES, actual)
+    assert _named(accepted) == _expected(_ACCEPTED_CORPUS_NOTES, accepted)
+
+
+def _named[T](found: dict[Path, T]) -> dict[str, T]:
+    """`found`'s non-empty entries by file name."""
+    return {path.name: value for path, value in found.items() if value}
+
+
+def _expected[T](pins: dict[str, T], found: dict[Path, T]) -> dict[str, T]:
+    """What `pins` says of each file of `found`, by file name, where it says
+    anything."""
+    return {
+        path.name: value
+        for path in found
+        if (value := _pinned(pins, path, None)) is not None and value
+    }
 
 
 # The information-element notes per corrected file and rule: tables no
@@ -739,52 +805,52 @@ def test_the_corrected_corpus_has_only_its_standing_cross_file_notes():
 # misprinted name, rows mapping an AVP the command's body lacks, and rows whose
 # category the ABNF disagrees with (docs/linter.md#information-elements).
 _ELEMENT_NOTES = {
-    "29128-j20.dad": {"element-not-in-command": 1, "element-optional-in-abnf": 2},
-    "29140-700.dad": {"element-unmapped": 3, "elements-unattached": 2},
-    "29172-j00.dad": {"element-not-in-command": 4},
-    "29219-j00.dad": {"element-optional-in-abnf": 1},
-    "29228-j20.dad": {
+    "TS29.128": {"element-not-in-command": 1, "element-optional-in-abnf": 2},
+    "29140-700": {"element-unmapped": 3, "elements-unattached": 2},
+    "TS29.172": {"element-not-in-command": 4},
+    "TS29.219": {"element-optional-in-abnf": 1},
+    "TS29.228": {
         "element-not-in-command": 2,
         "element-optional-in-abnf": 2,
         "element-required-in-abnf": 2,
     },
-    "29234-b20.dad": {"element-unmapped": 36, "elements-unattached": 45},
-    "29272-j60.dad": {
+    "29234-b20": {"element-unmapped": 36, "elements-unattached": 45},
+    "TS29.272": {
         "element-not-in-command": 2,
         "element-optional-in-abnf": 1,
         "element-unmapped": 2,
     },
-    "29273-j20.dad": {
+    "TS29.273": {
         "element-not-in-command": 2,
         "element-optional-in-abnf": 4,
         "element-unmapped": 25,
         "elements-unattached": 59,
     },
-    "29283-j00.dad": {"element-optional-in-abnf": 6},
-    "29328-j20.dad": {
+    "TS29.283": {"element-optional-in-abnf": 6},
+    "TS29.328": {
         "element-optional-in-abnf": 3,
         "element-unmapped": 1,
         "elements-unattached": 1,
     },
-    "29330-j00.dad": {"element-not-in-command": 1, "element-optional-in-abnf": 3},
-    "29336-j10.dad": {"element-not-in-command": 1},
-    "29337-j00.dad": {"element-not-in-command": 3},
-    "29338-j30.dad": {"element-optional-in-abnf": 2, "element-unmapped": 1},
-    "29345-j00.dad": {"element-not-in-command": 2, "element-required-in-abnf": 1},
+    "TS29.330": {"element-not-in-command": 1, "element-optional-in-abnf": 3},
+    "TS29.336": {"element-not-in-command": 1},
+    "TS29.337": {"element-not-in-command": 3},
+    "TS29.338": {"element-optional-in-abnf": 2, "element-unmapped": 1},
+    "TS29.345": {"element-not-in-command": 2, "element-required-in-abnf": 1},
 }
 
 
 def test_the_corrected_corpus_has_only_its_counted_element_notes():
     books = corpus.Corpus.load([_CORPUS_DIR])
-    counted: dict[str, dict[str, int]] = {}
+    counted: dict[Path, dict[str, int]] = {}
     for entry in books:
+        by_rule = counted.setdefault(entry.path, {})
         for finding in linter.lint_with_corpus(entry.spec, books):
             if finding.rule in ELEMENT_RULES:
                 assert finding.severity is linter.Severity.NOTE, finding
-                by_rule = counted.setdefault(entry.path.name, {})
                 by_rule[finding.rule] = by_rule.get(finding.rule, 0) + 1
 
-    assert counted == _ELEMENT_NOTES
+    assert _named(counted) == _expected(_ELEMENT_NOTES, counted)
 
 
 def test_the_committed_record_matches_the_corpus():
