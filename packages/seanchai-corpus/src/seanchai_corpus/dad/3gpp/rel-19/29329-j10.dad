@@ -98,6 +98,16 @@
       * [ Route-Record ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pur-data-reference-update-eff-enhance)
+; AVP: Data-Reference
+; Command: Profile-Update-Request
+; Section: 6.1.3
+; Page: 12
+; Versions: 18.0.0..19.1.0
+"NOTE: More than one Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature."
+    text-only
+
+
 ; Type: Message
 ; Name: Profile-Update-Answer, PUA
 ; Section: 6.1.4
@@ -123,6 +133,16 @@
         [ Failed-AVP ]
       * [ Proxy-Info ]
       * [ Route-Record ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pua-data-reference-update-eff-enhance)
+; AVP: Data-Reference
+; Command: Profile-Update-Answer
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.1.0
+"NOTE: The Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature."
+    text-only
 
 
 ; Type: Message
@@ -323,6 +343,33 @@ User-Identity ::= < AVP header: 700 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#user-identity-one-identity)
+; AVP: User-Identity
+; Section: 6.3.1
+; Page: 19
+; Versions: 18.0.0..19.1.0
+"This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
+    members at-least-one Public-Identity MSISDN External-Identifier
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#msisdn-e164)
+; AVP: MSISDN
+; Section: 6.3.2
+; Page: 19
+; Versions: 18.0.0..19.1.0
+"This AVP contains an MSISDN, in international number format as described in ITU-T Rec E.164 [8], encoded as a TBCD-string, i.e. digits from 0 through 9 are encoded 0000 to 1001; 1111 is used as a filler when there is an odd number of digits; bits 8 to 5 of octet n encode digit 2n; bits 4 to 1 of octet n encode digit 2(n-1)+1."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#user-data-element)
+; AVP: User-Data
+; Section: 6.3.3
+; Page: 19
+; Versions: 18.0.0..19.1.0
+"The exact content and format of this AVP is described in 3GPP TS 29.328 [1] Annex C as Sh-Data."
+    encoding element TS29.328 C "Sh-Data"
+
+
 ; Type: Enumerated AVP
 ; Name: Data-Reference
 ; Section: 6.3.4
@@ -466,6 +513,15 @@ Send-Data-Indication ::= < Enumerated AVP header: 710 10415 >
 Wildcarded-Public-Identity   TS29.229
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#wildcarded-public-identity-psi)
+; AVP: Wildcarded-Public-Identity
+; Section: 6.3.19
+; Page: 22
+; Versions: 18.0.0..19.1.0
+"This AVP only contains a Wildcarded PSI over Sh interface."
+    text-only
+
+
 ; Type: Reused AVPs
 ; Section: 6.3.20
 ; Page: 22
@@ -486,6 +542,16 @@ Session-Priority   TS29.229
 ; Page: 22
 One-Time-Notification ::= < Enumerated AVP header: 712 10415 >
         ONE_TIME_NOTIFICATION_REQUESTED = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#snr-one-time-notification)
+; AVP: One-Time-Notification
+; Command: Subscribe-Notifications-Request
+; Section: 6.3.22
+; Page: 22
+; Versions: 18.0.0..19.1.0
+"This AVP is only applicable to UE reachability for IP (25)"
+    requires Data-Reference = 25
 
 
 ; Type: Enumerated AVP
@@ -515,6 +581,15 @@ Pre-paging-Supported ::= < Enumerated AVP header: 717 10415 >
         PREPAGING_SUPPORTED     = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pre-paging-supported-default)
+; AVP: Pre-paging-Supported
+; Section: 6.3.26
+; Page: 23
+; Versions: 18.0.0..19.1.0
+"If this AVP is not present in the command, the default value is PREPAGING_NOT_SUPPORTED (0)."
+    default PREPAGING_NOT_SUPPORTED
+
+
 ; Type: Enumerated AVP
 ; Name: Local-Time-Zone-Indication
 ; Section: 6.3.27
@@ -534,6 +609,16 @@ Location-Information-EPS-Supported = 0
 RAT-Type-Requested                 = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#udr-flags-undefined-bits)
+; AVP: UDR-Flags
+; Section: 6.3.28
+; Table: 6.3.28/1
+; Page: 23
+; Versions: 18.0.0..19.1.0
+"NOTE: Bits not defined in this table shall be cleared by the sender of the request and discarded by the receiver of the request."
+    bits only 0 1
+
+
 ; Type: Grouped AVP
 ; Name: Call-Reference-Info
 ; Section: 6.3.29
@@ -542,6 +627,24 @@ Call-Reference-Info ::= < AVP header: 720 10415 >
         { Call-Reference-Number }
         { AS-Number }
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#call-reference-number-element)
+; AVP: Call-Reference-Number
+; Section: 6.3.30
+; Page: 24
+; Versions: 18.0.0..19.1.0
+"The exact content and format of this AVP is described in 3GPP TS 29.002 [11]."
+    encoding element TS29.002 17.7.3 "CallReferenceNumber"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#as-number-element)
+; AVP: AS-Number
+; Section: 6.3.31
+; Page: 24
+; Versions: 18.0.0..19.1.0
+"The exact content and format of this AVP corresponds to the gmsc-address parameter described in 3GPP TS 29.002 [11]."
+    encoding element TS29.002 17.7.8 "ISDN-AddressString"
 
 
 ; Type: Value Table

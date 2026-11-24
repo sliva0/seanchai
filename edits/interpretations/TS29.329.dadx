@@ -1,0 +1,120 @@
+; Interprets: 3GPP TS 29.329
+;; What TS 29.329's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order: the notes under the commands of clause 6.1, then the AVP
+;; clauses of 6.3. The information-element tables of the commands, and the
+;; procedures, are TS 29.328's. A clause pointing at another document for a
+;; layout is an `element`; a rule depending on a feature is `text-only`.
+
+
+;; The notes under the commands of clause 6.1. Neither node is told how the
+;; other's support of the feature is known.
+; Type: Interpreted Constraints
+; Id: pur-data-reference-update-eff-enhance
+; AVP: Data-Reference
+; Command: Profile-Update-Request
+; Section: 6.1.3
+; Versions: 18.0.0..19.1.0
+"NOTE: More than one Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: pua-data-reference-update-eff-enhance
+; AVP: Data-Reference
+; Command: Profile-Update-Answer
+; Section: 6.1.4
+; Versions: 18.0.0..19.1.0
+"NOTE: The Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature."
+    text-only
+
+
+;; The AVP clauses of 6.3.
+;; "Either ... or" is one of the three: that no two are present has no
+;; members form.
+; Type: Interpreted Constraints
+; Id: user-identity-one-identity
+; AVP: User-Identity
+; Section: 6.3.1
+; Versions: 18.0.0..19.1.0
+"This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
+    members at-least-one Public-Identity MSISDN External-Identifier
+
+
+; Type: Interpreted Constraints
+; Id: msisdn-e164
+; AVP: MSISDN
+; Section: 6.3.2
+; Versions: 18.0.0..19.1.0
+"This AVP contains an MSISDN, in international number format as described in ITU-T Rec E.164 [8], encoded as a TBCD-string, i.e. digits from 0 through 9 are encoded 0000 to 1001; 1111 is used as a filler when there is an odd number of digits; bits 8 to 5 of octet n encode digit 2n; bits 4 to 1 of octet n encode digit 2(n-1)+1."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints
+; Id: user-data-element
+; AVP: User-Data
+; Section: 6.3.3
+; Versions: 18.0.0..19.1.0
+"The exact content and format of this AVP is described in 3GPP TS 29.328 [1] Annex C as Sh-Data."
+    encoding element TS29.328 C "Sh-Data"
+
+
+;; A Wildcarded PSI and a Wildcarded IMPU are both text a single message
+;; does not tell apart.
+; Type: Interpreted Constraints
+; Id: wildcarded-public-identity-psi
+; AVP: Wildcarded-Public-Identity
+; Section: 6.3.19
+; Versions: 18.0.0..19.1.0
+"This AVP only contains a Wildcarded PSI over Sh interface."
+    text-only
+
+
+;; The sentence follows ONE_TIME_NOTIFICATION_REQUESTED (0); the AVP is
+;; carried in SNR alone, beside the Data-Reference values UEReachabilityForIP
+;; (25) names.
+; Type: Interpreted Constraints
+; Id: snr-one-time-notification
+; AVP: One-Time-Notification
+; Command: Subscribe-Notifications-Request
+; Section: 6.3.22
+; Versions: 18.0.0..19.1.0
+"This AVP is only applicable to UE reachability for IP (25)"
+    requires Data-Reference = 25
+
+
+; Type: Interpreted Constraints
+; Id: pre-paging-supported-default
+; AVP: Pre-paging-Supported
+; Section: 6.3.26
+; Versions: 18.0.0..19.1.0
+"If this AVP is not present in the command, the default value is PREPAGING_NOT_SUPPORTED (0)."
+    default PREPAGING_NOT_SUPPORTED
+
+
+; Type: Interpreted Constraints
+; Id: udr-flags-undefined-bits
+; AVP: UDR-Flags
+; Section: 6.3.28
+; Table: 6.3.28/1
+; Versions: 18.0.0..19.1.0
+"NOTE: Bits not defined in this table shall be cleared by the sender of the request and discarded by the receiver of the request."
+    bits only 0 1
+
+
+; Type: Interpreted Constraints
+; Id: call-reference-number-element
+; AVP: Call-Reference-Number
+; Section: 6.3.30
+; Versions: 18.0.0..19.1.0
+"The exact content and format of this AVP is described in 3GPP TS 29.002 [11]."
+    encoding element TS29.002 17.7.3 "CallReferenceNumber"
+
+
+; Type: Interpreted Constraints
+; Id: as-number-element
+; AVP: AS-Number
+; Section: 6.3.31
+; Versions: 18.0.0..19.1.0
+"The exact content and format of this AVP corresponds to the gmsc-address parameter described in 3GPP TS 29.002 [11]."
+    encoding element TS29.002 17.7.8 "ISDN-AddressString"

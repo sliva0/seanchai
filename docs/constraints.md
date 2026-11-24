@@ -115,12 +115,12 @@ other, its quote saying how far to trust it.
 
 ## Codecs
 
-The set is closed, and holds the layouts TS 29.272's clauses name. A layout
-no clause states is not here.
+The set is closed, and holds the layouts the interpreted documents' clauses
+name. A layout no clause states is not here.
 
 | Codec | Layout | Defined in |
 |---|---|---|
-| `e164-tbcd` | an international number, ITU-T E.164 (1 to 15 decimal digits), as a TBCD-string: two digits an octet, the first in bits 1-4, "1111" filling bits 5-8 of the last octet after an odd count; no octet for the nature of address and numbering plan | TS 29.002 clause 17.7.8, as TS 29.272 clauses 7.3.39, 7.3.85, 7.3.91, 7.3.102, 7.3.157 and 7.3.159 say |
+| `e164-tbcd` | an international number, ITU-T E.164 (1 to 15 decimal digits), as a TBCD-string: two digits an octet, the first in bits 1-4, "1111" filling bits 5-8 of the last octet after an odd count; no octet for the nature of address and numbering plan | TS 29.002 clause 17.7.8, as TS 29.272 clauses 7.3.39, 7.3.85, 7.3.91, 7.3.102, 7.3.157 and 7.3.159 and TS 29.329 clause 6.3.2 say |
 | `plmn-id` | MCC and MNC in 3 octets: MCC digits 2 and 1, then MNC digit 3 (or "1111" for a 2-digit MNC) and MCC digit 3, then MNC digits 2 and 1 | TS 29.272 table 7.3.9/1, after TS 24.008 clause 10.5.1.13 |
 | `plmn-id-prefix` | a `plmn-id` in the first 3 octets, more octets after it | TS 29.272 table 7.3.64/1 (Trace-Reference) |
 | `digits` | decimal digits as text, a character each | TS 29.272 clauses 7.3.4, 7.3.5, 7.3.50 |
@@ -169,10 +169,10 @@ Each entry cites every clause its layout was read from, with the edition read
 (`Source`: TS 29.002 V19.1.0 clause 17.7.8, `E-UTRAN-CGI ::= OCTET STRING
 (SIZE (7))`), following the references as far as they are concrete: MAP's
 E-UTRAN-CGI to TS 29.118 clause 9.4.3a and on to TS 29.274's ECGI field. The
-editions are Release 19's latest of each document TS 29.272 cites
-non-specifically, as its references clause means; 3GPP2 publishes A.S0022-0
-v2.0 as its newest. Release 18's copy of TS 29.272 is held to the same
-entries, though its references mean Release 18's editions, which were not
+editions are Release 19's latest of each document the interpreted documents
+cite non-specifically, as their references clauses mean; 3GPP2 publishes
+A.S0022-0 v2.0 as its newest. Release 18's copies are held to the same
+entries, though their references mean Release 18's editions, which were not
 read: where an element differs between the releases (a trace bitmap of TS
 32.422 with fewer octets), a Release 18 sender draws a note it does not
 deserve. Each says how deep its check goes, its `depth`:
@@ -253,6 +253,14 @@ something:
 | Event-Threshold-SINR | TS 32.422 5.10.7 Event Threshold for Event A2 | TS 32.422 V19.7.0 5.10.7 | an integer 0 to 127 | partial | an LTE threshold's narrower range (RSRP 0-97, RSRQ 0-34) is not checked: the AVP does not say which RAT it is for |
 | Collection-Period-M7-NR | TS 32.422 5.10.35 Collection Period M7 in NR | TS 32.422 V19.7.0 5.10.35 | an integer 1 to 60 | full |  |
 | NR-Cell-Global-Identity | TS 29.002 17.7.8 NR-CGI | TS 29.002 V19.1.0 17.7.8; TS 38.413 V19.4.0 9.3.1.7 | 8 octets; a PLMN identity in octets 1 to 3 | partial | where the 36 bits of the NR cell identity sit in the last five octets, and what the other four are, neither document says |
+
+TS 29.329's 3 name 3 entries, of which 2 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| User-Data | TS 29.328 C Sh-Data | TS 29.328 V19.2.0 Annex C; TS 29.328 V19.2.0 Annex D | nothing | none | an XML document the schema of Annex D defines: no shape of the registry reads XML |
+| Call-Reference-Number | TS 29.002 17.7.3 CallReferenceNumber | TS 29.002 V19.1.0 17.7.3 | 1 to 8 octets | full | the octets take any value: the type says nothing more of them |
+| AS-Number | TS 29.002 17.7.8 ISDN-AddressString | TS 29.002 V19.1.0 17.7.3; TS 29.002 V19.1.0 17.7.8 | 1 to 9 octets; octet 1 bit 8 (extension, 1 for no extension) 1; octets 2 on TBCD digits (0-9, *, #, a, b, c), '1111' filling only the last octet's bits 8-5 | full | the nature of address and numbering plan values the type marks reserved are not refused, since it does not say they are not sent |
 
 
 ## Reading them
@@ -436,3 +444,42 @@ Maximum-Number-of-Reports bounded by MONTE-Location-Type inside
 Location-Information-Configuration, PLMN-RAT-Usage-Control's bits against
 Access-Restriction-Data's. Access-Restriction-Data's "Bits 11 and 12 are only
 used when bit 4 is not set" says what they mean, not that they are clear.
+
+## TS 29.329
+
+TS 29.329 V19.1.0 is read completely: every AVP clause of clause 6.3 and the
+notes under the commands of clause 6.1. Its commands' information-element
+tables and its procedures are TS 29.328's, whose clauses are not read here.
+Release 18's copy, V18.0.0, prints every sentence read and holds all 11
+blocks.
+
+| | |
+|---|---|
+| AVP clauses (clause 6.3, not its overview) | 36 |
+| with something to declare | 9, in 9 blocks |
+| with nothing to declare | 27 |
+| notes under the commands | 2, both on a feature |
+| blocks | 11: 8 on an AVP wherever read, 3 within a command |
+| readings | 11 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 1: `e164-tbcd` (MSISDN) |
+| `encoding element` | 3, naming 3 entries of the registry; 2 rules checked, 1 not ([above](#elements)) |
+| `requires` | 1: One-Time-Notification in SNR, on Data-Reference |
+| `default` | 1: Pre-paging-Supported |
+| `bits` | 1: `only` (UDR-Flags) |
+| `members` | 1: `at-least-one` (User-Identity) |
+| `text-only` | 3 |
+
+The text-only rules are the two notes making a second Data-Reference in PUR,
+and any in PUA, depend on both nodes supporting Update-Eff-Enhance, and
+Wildcarded-Public-Identity's "only contains a Wildcarded PSI", which a
+Wildcarded IMPU's text does not differ from. User-Identity's "either ... or"
+is read as at least one of its three members: that no two are present has no
+`members` form. Left unread: clause 6.2's "Result-Code AVP shall be absent"
+beside one of its result codes, a condition on a member of
+Experimental-Result as TS 29.272's clause 7.4 states it and its file does
+not read; Data-Reference's value 20, which the clause marks reserved without
+saying it is not sent; and Server-Name's "SIP-URL", for which no codec
+exists.

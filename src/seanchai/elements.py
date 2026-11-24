@@ -516,8 +516,8 @@ def breaking(element: Element, good: bytes, data_type: ast.DataType) -> list[byt
 
 # --- the registry -----------------------------------------------------------
 
-# The versions read: Release 19's latest of each document TS 29.272 cites
-# non-specifically, as its references clause means.
+# The versions read: Release 19's latest of each document the interpreted
+# documents cite non-specifically, as their references clauses mean.
 _MAP = ("TS29.002", "19.1.0")
 _TRACE = ("TS32.422", "19.7.0")
 _NUMBERING = ("TS23.003", "19.8.0")
@@ -529,6 +529,7 @@ _GTPV2 = ("TS29.274", "19.6.0")
 _GTPV1 = ("TS29.060", "19.0.0")
 _NGAP = ("TS38.413", "19.4.0")
 _GAD = ("TS23.032", "19.0.0")
+_SH = ("TS29.328", "19.2.0")
 
 
 def _source(document: tuple[str, str], clause: str, where: str) -> Source:
@@ -1436,6 +1437,72 @@ REGISTRY: tuple[Element, ...] = (
         "where the 36 bits of the NR cell identity sit in the last five octets,"
         " and what the other four are, neither document says",
         example=b"\x21\xf3\x54\x00\x00\x00\x00\x10",
+    ),
+    # TS 29.329's.
+    Element(
+        "TS29.328",
+        "C",
+        "Sh-Data",
+        "the user data an AS reads, is notified of or updates over Sh, an XML document",
+        (
+            _source(_SH, "Annex C", "Figure C.1.1: Sh-Data, the UML model"),
+            _source(
+                _SH,
+                "Annex D",
+                "the XML schema for the Sh interface user profile, ShDataType.xsd",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "an XML document the schema of Annex D defines: no shape of the"
+        " registry reads XML",
+    ),
+    Element(
+        "TS29.002",
+        "17.7.3",
+        "CallReferenceNumber",
+        "a call reference number (the callReferenceNumber of SendRoutingInfoArg"
+        " and ProvideRoamingNumberArg)",
+        (
+            _source(
+                _MAP, "17.7.3", "CallReferenceNumber ::= OCTET STRING (SIZE (1..8))"
+            ),
+        ),
+        (Octets(1, 8),),
+        Depth.FULL,
+        "the octets take any value: the type says nothing more of them",
+        example=b"\x01\x02\x03\x04",
+    ),
+    Element(
+        "TS29.002",
+        "17.7.8",
+        "ISDN-AddressString",
+        "an ISDN number as an AddressString: a nature of address and numbering"
+        " plan octet, then TBCD digits (the gmsc-Address of"
+        " ProvideRoamingNumberArg, clause 17.7.3)",
+        (
+            _source(
+                _MAP,
+                "17.7.3",
+                "ProvideRoamingNumberArg: gmsc-Address [8] ISDN-AddressString",
+            ),
+            _source(
+                _MAP,
+                "17.7.8",
+                "ISDN-AddressString ::= AddressString (SIZE"
+                " (1..maxISDN-AddressLength)), maxISDN-AddressLength 9;"
+                " AddressString's TBCD-STRING",
+            ),
+        ),
+        (
+            Octets(1, 9),
+            Field("extension, 1 for no extension", 1, 8, 8, _codes(1)),
+            Tbcd(2),
+        ),
+        Depth.FULL,
+        "the nature of address and numbering plan values the type marks"
+        " reserved are not refused, since it does not say they are not sent",
+        example=b"\x91\x21\x43\x65",
     ),
 )
 
