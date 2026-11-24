@@ -314,7 +314,7 @@
       }
     },
     "information-elements": {
-      "comment": "A block whose rows end in a category, M, C or O, and no flag.",
+      "comment": "A block whose rows end in a category, M, C, O, TS 32.299's OM and OC, a dash or a blank, and no flag.",
       "begin": "^(?=; Type: Information Elements\\b)",
       "end": "^(?=; Type: (?!Information Elements\\b))",
       "patterns": [
@@ -322,12 +322,13 @@
         { "include": "#directive-text" },
         { "include": "#directive" },
         { "include": "#element-row" },
+        { "include": "#element-avp-row" },
         { "include": "#table-row" }
       ]
     },
     "element-row": {
-      "comment": "The element's name as printed, the AVPs it maps to (`A,B` carried together, `A/B` one of them, a quoted cell naming none) and its category.",
-      "match": "^(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|[^;\\s\"]\\S*)\\s+(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|\\S+)\\s+([MCO]|-)(\\s*;;.*)?$",
+      "comment": "The element's name as printed, the AVPs it maps to (`A,B` carried together, `A/B` one of them, a quoted cell naming none) and its category, set off four spaces a level under a grouped AVP's row.",
+      "match": "^\\s*(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|[^;\\s\"]\\S*)\\s+(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|\\S+)\\s+(OM|OC|[MCO]|-|\"\")(\\s*;;.*)?$",
       "captures": {
         "1": { "patterns": [{ "include": "#quoted-cell" }] },
         "2": {
@@ -349,6 +350,31 @@
         },
         "3": { "name": "constant.language.category.dad" },
         "4": { "patterns": [{ "include": "#comment" }] }
+      }
+    },
+    "element-avp-row": {
+      "comment": "A row of a table naming its elements by their AVPs alone (`; Columns: AVP Cat`, TS 32.299's): the AVP cell and its category, set off four spaces a level under a grouped AVP's row.",
+      "match": "^\\s*(\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|[^;\\s\"]\\S*)\\s+(OM|OC|[MCO]|-|\"\")(\\s*;;.*)?$",
+      "captures": {
+        "1": {
+          "patterns": [
+            { "include": "#quoted-cell" },
+            {
+              "match": "^-$|(?<=\\s)-$",
+              "name": "punctuation.definition.empty-cell.dad"
+            },
+            {
+              "match": "[,/]",
+              "name": "punctuation.separator.avp.dad"
+            },
+            {
+              "match": "[A-Za-z0-9][A-Za-z0-9_-]*",
+              "name": "variable.other.avp.dad"
+            }
+          ]
+        },
+        "2": { "name": "constant.language.category.dad" },
+        "3": { "patterns": [{ "include": "#comment" }] }
       }
     },
     "quoted-cell": {

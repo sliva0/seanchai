@@ -600,15 +600,26 @@ def _format_value_table(
 
 
 def _element_cells(row: ast.ElementRow) -> list[str]:
-    """A row's Name, AVP and Cat cells: the name quoted as a mark is, the
-    AVPs joined by `/` where the row chooses one, by `,` otherwise, a
-    printed mapping always quoted."""
+    """A row's Name, AVP and Cat cells, the first set off four spaces a
+    level: the name quoted as a mark is, the AVPs joined by `/` where the
+    row chooses one, by `,` otherwise, a printed mapping always quoted, and
+    a blank category `""`. A row naming no element has no Name cell."""
     if row.printed is not None:
         mapping = _quoted(row.printed)
     else:
         mapping = ("/" if row.either else ",").join(row.avps) or "-"
-    category = "-" if row.category is None else row.category.value
-    return [_mark(row.name), mapping, category]
+    category = '""' if row.category is None else row.category.value
+    cells = (
+        [mapping, category]
+        if row.name is None
+        else [_mark(row.name), mapping, category]
+    )
+    cells[0] = " " * (_ELEMENT_INDENT * row.depth) + cells[0]
+    return cells
+
+
+# The spaces setting an element row off under the row above, per level.
+_ELEMENT_INDENT = 4
 
 
 def _format_information_elements(
@@ -617,7 +628,7 @@ def _format_information_elements(
     return [
         *_directives(table, None, path, notes),
         *_table(
-            list(ast.ELEMENT_COLUMNS),
+            list(table.columns),
             [_element_cells(row) for row in table.rows],
             "; Columns:",
             path,

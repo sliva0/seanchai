@@ -111,8 +111,18 @@ the file does not print is not judged.
 | `elements-command-ambiguous` | error | a command the file prints for several applications, the table naming none, or more than once under the one application, the table naming no clause |
 | `element-unmapped` | note | a row whose mapping cell names no AVP, kept as printed |
 | `element-not-in-command` | note | a row mapping an AVP the command's body, or the grouped AVP's the table describes, does not hold |
-| `element-required-in-abnf` | note | an AVP the body requires (`{ }` or `< >`) that a row gives category O or C |
+| `element-required-in-abnf` | note | an AVP the body requires (`{ }` or `< >`) that a row gives category O or C, or TS 32.299's OM or OC |
 | `element-optional-in-abnf` | note | an AVP the body makes optional (`[ ]`) that a row gives category M |
+| `element-unused-in-abnf` | note | an AVP the command's body holds that a TS 32.299 row marks not used (`-`) |
+| `element-misplaced` | error | a row set off more than one level under the row above it |
+
+A row set off under a grouped AVP's row (TS 32.299's) is held to that AVP's
+body as the file reads it, its own or the one of the document its re-used
+rows name or a base's, and not judged where the corpus has none. A row
+marked not used, and every row under it, is compared with nothing else: its
+member is struck from the command's body, and a grouped AVP's body serving
+request and answer alike holds members one of them does not use ("Not used
+in CCR").
 
 A row offering one of several AVPs ("Result-Code / Experimental-Result") is
 not compared, since its category is the choice's. The category notes stay
@@ -266,7 +276,7 @@ correcting them would invent something the documents do not say.
 | `registry-result-code-name` | TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN`; TS 29.283's `DIAMETER_ERROR_DATA OUT_OF_SYNC` | no clause settles the name |
 | `registry-application-name` | TS 29.272's `S7a/S7d` for 16777308, "3GPP S7a" in table 4.1 | names differ |
 | `undefined-avp` | the names defined nowhere ([consumers.md](consumers.md#undefined-names)) | each block's reason lists what was searched |
-| `element-optional-in-abnf`, `element-required-in-abnf` | 80 and 3 rows, TS 29.273's 58 the most, most a `User-Name` its tables give M where the ABNF has `[ User-Name ]` | the table and the ABNF say different things |
+| `element-optional-in-abnf`, `element-required-in-abnf` | 82 and 5 rows, TS 29.273's 58 the most, most a `User-Name` its tables give M where the ABNF has `[ User-Name ]`; TS 32.299's CCR profiling TS 29.212's QoS-Information members | the table and the ABNF say different things |
 | `element-not-in-command` | 36 rows, as TS 29.172's `Age-of-Location-Estimate` in PLA and TS 29.273's `Transport-Access-Type` in STa's DER | the table lists what the body does not |
 | `element-unmapped` | 68 cells, 36 of them TS 29.234's | most print a name with a space or another's spelling; a correction may name the AVP |
 

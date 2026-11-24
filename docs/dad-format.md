@@ -42,7 +42,7 @@ blank lines. Each section starts with `; Type:`.
 | `Registry`          | codes a registry allocates, each to the documents defining it    |
 | `Undefined AVP`     | a name the document uses that the corpus finds defined nowhere   |
 | `Value Table`       | the names a document gives a numeric AVP's numbers: result codes, bits of a bit mask, features of a feature list |
-| `Information Elements` | a command's information elements, the AVPs each maps to and its category, M, C or O |
+| `Information Elements` | a command's information elements, the AVPs each maps to and its category, M, C or O, or TS 32.299's per-command AVPs, nested, with TS 32.240's categories |
 | `Interpreted Constraints` | what a clause's prose says of an AVP's value or presence, as a person read it, with the sentences read; corrected files only |
 
 ## Design

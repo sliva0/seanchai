@@ -164,9 +164,12 @@ and in its raw mirror alike, each describing its own file's lines. Every
   `abbreviation`, a data `type` as a row's, `documents` its Defined-In cell
   resolves to, and an AVP Codes row's `vendor`) and `reservations`.
 - Information Elements: `name`, the command its `; Command:` names,
-  `columns` (`Name`, `AVP`, `Cat`), `element_rows`, each `name`, `cells` as
+  `columns` (`Name`, `AVP`, `Cat`, or `AVP`, `Cat` for TS 32.299's tables),
+  `element_rows`, each `name` (null with no Name column), `cells` as
   printed, the `avps` its mapping cell names with `either` where it offers
-  one of them, the cell as `printed` where it names none, and `category`;
+  one of them, the cell as `printed` where it names none, `category` (`M`,
+  `C`, `O`, `OM`, `OC`, `-` not used, null blank) and `depth`, the levels it
+  is set off under a grouped AVP's row;
   and `described`, the Message blocks the corrected file's table finds its
   command at, empty in the raw view and where none is found. Its `; Command:`
   line's name and its rows' AVP names link where the command reads them.

@@ -107,6 +107,14 @@ def test_every_corrected_file_already_carries_its_corrections(path):
         if isinstance(c, Correction) and c.field == "name" and named(c.target)
     }
 
+    reselected = {
+        c.target: ",".join(c.replace)
+        for c in declared
+        if isinstance(c, Correction)
+        and c.field == "avps"
+        and isinstance(c.target, corrections.element_row)
+    }
+
     for correction in declared:
         if isinstance(correction, corrections.Interpretation):
             assert correction.node in spec.sections
@@ -156,6 +164,12 @@ def test_every_corrected_file_already_carries_its_corrections(path):
             target = dataclasses.replace(target, avp=correction.replace)
         elif target in renamed:
             target = dataclasses.replace(target, name=renamed[target])
+        elif isinstance(target, corrections.element_row) and target in reselected:
+            # A row of a table naming no element answers to its AVP cell, so
+            # correcting its AVPs renames it: TS 32.299's Envelop-Reporting.
+            renaming = dataclasses.replace(target, name=reselected[target])
+            if not list(target.find(spec)):
+                target = renaming
         matches = list(target.find(spec))
         assert len(matches) == 1, f"{target.describe()} in {path.name}"
         assert getattr(matches[0], correction.field) == correction.replace

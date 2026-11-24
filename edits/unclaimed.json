@@ -1230,50 +1230,6 @@
     "section": "6.2.1.1"
    },
    {
-    "caption": "Table 6.2.2.1: 3GPP Accounting-Request message contents",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 58,
-    "section": "6.2.2"
-   },
-   {
-    "caption": "Table 6.2.2: 3GPP Accounting-Request Message Contents",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 50,
-    "section": "6.2.2"
-   },
-   {
-    "caption": "Table 6.2.3.1: 3GPP Accounting-Answer (ACA) message content",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 60,
-    "section": "6.2.3"
-   },
-   {
-    "caption": "Table 6.2.3: 3GPP Accounting-Answer (ACA) Message Content",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 52,
-    "section": "6.2.3"
-   },
-   {
     "caption": "Table 6.4.1.1.1: Online charging messages reference table",
     "header": [
      "Command-Name",
@@ -1296,72 +1252,6 @@
     "kind": "commands",
     "page": 63,
     "section": "6.4.1.1"
-   },
-   {
-    "caption": "Table 6.4.2.1: 3GPP CCR message content",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 72,
-    "section": "6.4.2"
-   },
-   {
-    "caption": "Table 6.4.2: 3GPP Credit-Control-Request Message Content",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 65,
-    "section": "6.4.2"
-   },
-   {
-    "caption": "Table 6.4.3.1: 3GPP CCA message content",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 78,
-    "section": "6.4.3"
-   },
-   {
-    "caption": "Table 6.4.3: 3GPP Credit-Control-Answer Message Content",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 70,
-    "section": "6.4.3"
-   },
-   {
-    "caption": "Table 6.4.4.1: RAR message contents for online charging",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 83,
-    "section": "6.4.4"
-   },
-   {
-    "caption": "Table 6.4.5.1: RAA message contents for online charging",
-    "header": [
-     "AVP",
-     "Category",
-     "Description"
-    ],
-    "kind": "information-elements",
-    "page": 84,
-    "section": "6.4.5"
    }
   ],
   "oneM2M-TS-0004": [

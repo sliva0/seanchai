@@ -24,6 +24,7 @@ from ..errors import SeanchaiError
 __all__ = [
     "AVP_NAME_PATTERN",
     "BASE_PROTOCOL",
+    "ELEMENT_AVP_COLUMNS",
     "ELEMENT_COLUMNS",
     "EXTERNAL_REF_PATTERN",
     "EXTERNAL_REF_RE",
@@ -1214,11 +1215,19 @@ class ValueTable(Node):
 class Category(enum.StrEnum):
     """An information element's category, the "Cat." column of a stage-3
     document's per-command tables (TS 29.272 clause 5.2: "M" mandatory, "C"
-    conditional, "O" optional)."""
+    conditional, "O" optional), or the "Category" column of TS 32.299's
+    message tables, which clauses 6.2.1.2 and 6.4.1.2 say are "as specified in
+    TS 32.240": "M" and "C" again, "OM" and "OC" operator provisionable,
+    mandatory and conditional ("all operator provisionable parameters (Oc and
+    Om)", clause 7.1.12), and a printed dash, "Not used in 3GPP" or "Not used
+    in CCR" in the row's description."""
 
     MANDATORY = "M"
     CONDITIONAL = "C"
     OPTIONAL = "O"
+    OPERATOR_MANDATORY = "OM"
+    OPERATOR_CONDITIONAL = "OC"
+    NOT_USED = "-"
 
 
 class ElementRow(Node):
@@ -1232,21 +1241,39 @@ class ElementRow(Node):
     "/" or "or", one of them ("Result-Code / Experimental-Result"), where a
     comma joins AVPs carried together ("Destination-Host,
     Destination-Realm"). A cell that names no AVP as a name is `printed`, as
-    printed: TS 29.273's "EAP payload". A blank cell is neither."""
+    printed: TS 29.273's "EAP payload". A blank cell is neither.
 
-    name: EnumValueName
+    `name` is None in a table naming each element by its AVP alone, TS
+    32.299's "AVP | Category | Description" (`; Columns: AVP Cat`). `depth`
+    is how far the row is set off under the rows above it: a row at depth n
+    + 1 is a member of the grouped AVP of the nearest row above at depth n,
+    as TS 32.299 sets Proxy-Host and Proxy-State off under Proxy-Info. A
+    category None is a blank cell; `Category.NOT_USED` is a printed dash."""
+
+    name: EnumValueName | None = None
     avps: tuple[AvpName, ...] = ()
     either: bool = False
     printed: Mark | None = None
     category: Category | None = None
+    depth: Annotated[int, Field(ge=0)] = 0
 
     @pydantic.model_validator(mode="after")
     def _one_mapping(self) -> ElementRow:
+        label = self.label
         if self.printed is not None and self.avps:
-            raise ValueError(f"{self.name}: a mapping is names or printed text")
+            raise ValueError(f"{label}: a mapping is names or printed text")
         if self.either and len(self.avps) < 2:
-            raise ValueError(f"{self.name}: 'either' needs two AVPs to choose from")
+            raise ValueError(f"{label}: 'either' needs two AVPs to choose from")
+        if self.name is None and not self.avps and self.printed is None:
+            raise ValueError("a row with no name maps an AVP or prints its cell")
         return self
+
+    @property
+    def label(self) -> str:
+        """The element as a message names it: its name, else its AVP cell."""
+        if self.name is not None:
+            return self.name
+        return self.printed or ("/" if self.either else ",").join(self.avps)
 
 
 class InformationElements(Node):
@@ -1254,7 +1281,9 @@ class InformationElements(Node):
     elements of one command to its AVPs, with each element's category. About
     eighteen Release 19 documents print one per command, "Information element
     name | Mapping to Diameter AVP | Cat. | Description" (TS 29.272 table
-    5.2.1.1.1/1, Update Location Request).
+    5.2.1.1.1/1, Update Location Request); TS 32.299 prints its commands'
+    AVPs so, "AVP | Category | Description", with no element name and each
+    grouped AVP's members set off under it (table 6.2.2.1, Accounting-Request).
 
     `command` is the command the rows describe, by name, and
     `application_id` the application, where the document prints that command
@@ -1270,7 +1299,12 @@ class InformationElements(Node):
     TS 29.273 prints Diameter-EAP-Request for SWa, STa and SWd, all in STa's
     application, each with its own body. `avp` is a
     grouped AVP of the command whose members the rows describe instead, as TS
-    29.228 table 6.3.2 does SIP-Auth-Data-Item's."""
+    29.228 table 6.3.2 does SIP-Auth-Data-Item's.
+
+    The rows name their elements, or none does (`columns`). A row's depth
+    is as printed, a level skipped included: TS 32.299 V19.0.0 table 6.4.3.1
+    prints Privacy-Indicator flush left between Announcement-Information's
+    members, Language two levels under it (`placed`)."""
 
     type: Literal["Information Elements"] = "Information Elements"
     command: AvpName | None = None
@@ -1284,8 +1318,37 @@ class InformationElements(Node):
     source: SourceRef
     rows: Annotated[tuple[ElementRow, ...], Field(min_length=1)]
 
+    @pydantic.model_validator(mode="after")
+    def _named(self) -> InformationElements:
+        if len({row.name is None for row in self.rows}) > 1:
+            raise ValueError("every row names its element, or none does")
+        return self
+
+    @property
+    def columns(self) -> tuple[str, ...]:
+        """`ELEMENT_COLUMNS`, or `ELEMENT_AVP_COLUMNS` where no row names its
+        element."""
+        return ELEMENT_AVP_COLUMNS if self.rows[0].name is None else ELEMENT_COLUMNS
+
+    def placed(self) -> list[tuple[tuple[str, ...], bool]]:
+        """Each row's grouped AVPs, by position, and whether the row sits
+        where its depth says: the AVPs of the rows it is set off under, or
+        the label (`ElementRow.label`) of one mapping no one AVP, outermost
+        first, empty at depth 0. A row set deeper than one below the row
+        above is not placed, and under those of its levels the rows above
+        print."""
+        found: list[tuple[tuple[str, ...], bool]] = []
+        chain: list[str] = []
+        for row in self.rows:
+            placed = row.depth <= len(chain)
+            del chain[row.depth :]
+            found.append((tuple(chain), placed))
+            chain.append(row.avps[0] if len(row.avps) == 1 else row.label)
+        return found
+
 
 ELEMENT_COLUMNS = ("Name", "AVP", "Cat")
+ELEMENT_AVP_COLUMNS = ("AVP", "Cat")
 
 
 # --- interpreted constraints ------------------------------------------------

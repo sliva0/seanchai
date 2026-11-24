@@ -528,7 +528,8 @@ class information_elements(Selector):
 @dataclass(frozen=True)
 class element_row(Selector):
     """One row of an information-element table, by the element's name as
-    printed; `occurrence` picks the n-th of several of one name."""
+    printed, or its AVP cell where the table names no element (TS 32.299's);
+    `occurrence` picks the n-th of several of one name."""
 
     parent: information_elements
     name: str
@@ -541,7 +542,7 @@ class element_row(Selector):
             found = [
                 ((*path, "rows", index), row)
                 for index, row in enumerate(section.rows)
-                if row.name == self.name
+                if row.label == self.name
             ]
             if self.occurrence is None:
                 yield from found

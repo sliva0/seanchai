@@ -9042,6 +9042,50 @@
      "kind": "correction",
      "reason": "clause 7.1.0 names RFC 6733 [401], RFC 4006 [402] and RFC 4005 [407] as where the IETF AVPs it uses are defined"
     },
+    "TS32.299.py#elements-depth-6-4-2-1-3gpp-rat-type": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints 3GPP-RAT-Type flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-envelop-reporting": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Envelop-Reporting flush left; the PDF sets it under 'Multiple-Services-Credit-Control' with Envelope, as clause 7.1.9 holds Envelope-Reporting"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-oc-feature-vector": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints OC-Feature-Vector flush left; the PDF sets it under 'OC-Supported-Features', whose member RFC 7683 makes it"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-related-trigger": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Related-Trigger flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it; the 'AVP' row below is MSCC's own"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-time-quota-mechanism": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Time-Quota-Mechanism flush left; the PDF sets it under 'Multiple-Services-Credit-Control' with Envelope, as clause 7.1.9 holds it; its own rows below are MSCC's Service-Specific-Info, QoS-Information and Announcement-Information"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-unit-quota-threshold": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Unit-Quota-Threshold flush left; the PDF sets it under 'Multiple-Services-Credit-Control' with Time-Quota-Threshold and Volume-Quota-Threshold, as clause 7.1.9 holds it; the docx sets it off with spaces in place of a tab"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-3gpp-rat-type": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints 3GPP-RAT-Type flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-oc-feature-vector": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints OC-Feature-Vector flush left; the PDF sets it under 'OC-Supported-Features', whose member RFC 7683 makes it"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-privacy-indicator": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints Privacy-Indicator flush left; the PDF sets it under 'Announcement-Information' with Play-Alternative and Language, as clause 7.2.12aB holds it"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-related-trigger": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints Related-Trigger flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it"
+    },
+    "TS32.299.py#elements-envelope-reporting-6-4-2-1": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 spells the row 'Envelop-Reporting'; clause 7.2.61 defines Envelope-Reporting, and Multiple-Services-Credit-Control's body (clause 7.1.9) and table 6.4.3.1 spell it so"
+    },
     "TS32.299.py#experimental-result-code-m-flag-must": {
      "kind": "correction",
      "reason": "table 7.1.0.1 puts M in Must not for Experimental-Result-Code, which its NOTE 2 says RFC 6733 defines; RFC 6733's table in clause 4.5 sets M in Must, and gives M,V in Must not to Error-Reporting-Host, the row above Experimental-Result there"
@@ -9486,7 +9530,7 @@
      "targets": [
       [
        "sections",
-       16
+       22
       ]
      ]
     },
@@ -9498,7 +9542,7 @@
      "targets": [
       [
        "sections",
-       212
+       218
       ]
      ]
     },
@@ -9636,7 +9680,7 @@
      "targets": [
       [
        "sections",
-       18
+       24
       ]
      ]
     },
@@ -10124,6 +10168,50 @@
      "kind": "correction",
      "reason": "clause 7.1.0 names RFC 6733 [401], RFC 4006 [402] and RFC 4005 [407] as where the IETF AVPs it uses are defined"
     },
+    "TS32.299.py#elements-depth-6-4-2-1-3gpp-rat-type": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints 3GPP-RAT-Type flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-envelop-reporting": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Envelop-Reporting flush left; the PDF sets it under 'Multiple-Services-Credit-Control' with Envelope, as clause 7.1.9 holds Envelope-Reporting"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-oc-feature-vector": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints OC-Feature-Vector flush left; the PDF sets it under 'OC-Supported-Features', whose member RFC 7683 makes it"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-related-trigger": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Related-Trigger flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it; the 'AVP' row below is MSCC's own"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-time-quota-mechanism": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Time-Quota-Mechanism flush left; the PDF sets it under 'Multiple-Services-Credit-Control' with Envelope, as clause 7.1.9 holds it; its own rows below are MSCC's Service-Specific-Info, QoS-Information and Announcement-Information"
+    },
+    "TS32.299.py#elements-depth-6-4-2-1-unit-quota-threshold": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 prints Unit-Quota-Threshold flush left; the PDF sets it under 'Multiple-Services-Credit-Control' with Time-Quota-Threshold and Volume-Quota-Threshold, as clause 7.1.9 holds it; the docx sets it off with spaces in place of a tab"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-3gpp-rat-type": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints 3GPP-RAT-Type flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-oc-feature-vector": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints OC-Feature-Vector flush left; the PDF sets it under 'OC-Supported-Features', whose member RFC 7683 makes it"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-privacy-indicator": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints Privacy-Indicator flush left; the PDF sets it under 'Announcement-Information' with Play-Alternative and Language, as clause 7.2.12aB holds it"
+    },
+    "TS32.299.py#elements-depth-6-4-3-1-related-trigger": {
+     "kind": "correction",
+     "reason": "table 6.4.3.1 prints Related-Trigger flush left; the PDF sets it under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it"
+    },
+    "TS32.299.py#elements-envelope-reporting-6-4-2-1": {
+     "kind": "correction",
+     "reason": "table 6.4.2.1 spells the row 'Envelop-Reporting'; clause 7.2.61 defines Envelope-Reporting, and Multiple-Services-Credit-Control's body (clause 7.1.9) and table 6.4.3.1 spell it so"
+    },
     "TS32.299.py#experimental-result-code-m-flag-must": {
      "kind": "correction",
      "reason": "table 7.1.0.1 puts M in Must not for Experimental-Result-Code, which its NOTE 2 says RFC 6733 defines; RFC 6733's table in clause 4.5 sets M in Must, and gives M,V in Must not to Error-Reporting-Host, the row above Experimental-Result there"
@@ -10568,7 +10656,7 @@
      "targets": [
       [
        "sections",
-       16
+       22
       ]
      ]
     },
@@ -10580,7 +10668,7 @@
      "targets": [
       [
        "sections",
-       212
+       218
       ]
      ]
     },
@@ -10718,7 +10806,7 @@
      "targets": [
       [
        "sections",
-       18
+       24
       ]
      ]
     },

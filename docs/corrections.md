@@ -88,7 +88,8 @@ The node is rebuilt through pydantic, so a wrong `field` or value fails.
   - `registry_row(registry, code)`, `registry_reservation(first, last)`
   - `information_elements(label, section=)`, `None` and the clause for a
     table printing no caption, and `element_row(parent, name, occurrence=)`,
-    `parent` an `information_elements`
+    `parent` an `information_elements`, `name` the element's, or its AVP
+    cell in a table naming none (TS 32.299's)
 - `occurrence=n` picks the n-th of several identical rules or values of one
   name in one body, as in TS 29.229's RTA, which prints `< Session-Id >`
   twice. It fails once the name stops repeating.

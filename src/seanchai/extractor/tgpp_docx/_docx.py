@@ -394,7 +394,8 @@ def _sections(
                                 patcher.apply(_normalize(line), number, record=False)
                                 for line in row.cells[0].text.splitlines()
                             ],
-                            indented=row.cells[0].text.startswith("\t"),
+                            indent=len(row.cells[0].text)
+                            - len(row.cells[0].text.lstrip("\t")),
                         )
                     )
                 # A table whose every row merges cells in the same pattern is

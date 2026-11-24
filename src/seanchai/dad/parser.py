@@ -960,6 +960,8 @@ def _element_mapping(
 
 
 _AVP_NAME_RE = re.compile(ast.AVP_NAME_PATTERN)
+# The spaces setting an element row off under the row above, per level.
+_ELEMENT_INDENT = 4
 
 
 def _parse_information_elements(
@@ -976,10 +978,12 @@ def _parse_information_elements(
     columns = _pop(directives, "Columns", lineno)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
-    if tuple(columns.value.split()) != ast.ELEMENT_COLUMNS:
+    named = tuple(columns.value.split())
+    if named not in (ast.ELEMENT_COLUMNS, ast.ELEMENT_AVP_COLUMNS):
         raise DadParseError(
             columns.lineno,
-            f"information elements have columns {' '.join(ast.ELEMENT_COLUMNS)}",
+            "information elements have columns"
+            f" {' '.join(ast.ELEMENT_COLUMNS)} or {' '.join(ast.ELEMENT_AVP_COLUMNS)}",
         )
     number = None
     if application_id is not None:
@@ -994,11 +998,22 @@ def _parse_information_elements(
         with _validated(command_section.lineno):
             _SECTION_NUMBER.validate_python(command_section.value)
     rows = []
-    for row_lineno, (name, mapping, category) in _cells(body, 3):
-        element = _text_cell(name, row_lineno, "Name")
-        if element is None:
-            raise DadParseError(row_lineno, "an information element has a name")
-        if category != "-" and category not in ast.Category:
+    for (row_lineno, cells), (_, line) in zip(
+        _cells(body, len(named)), body, strict=True
+    ):
+        indent = len(line) - len(line.lstrip(" "))
+        if indent % _ELEMENT_INDENT:
+            raise DadParseError(
+                row_lineno,
+                f"an element row is set off by multiples of {_ELEMENT_INDENT} spaces",
+            )
+        element = None
+        if named == ast.ELEMENT_COLUMNS:
+            element = _text_cell(cells[0], row_lineno, "Name")
+            if element is None:
+                raise DadParseError(row_lineno, "an information element has a name")
+        *_, mapping, category = cells
+        if category not in ast.Category and category != '""':
             raise DadParseError(row_lineno, f"malformed Cat cell {category!r}")
         avps, either, printed = _element_mapping(mapping, row_lineno)
         with _validated(row_lineno):
@@ -1008,7 +1023,8 @@ def _parse_information_elements(
                     avps=avps,
                     either=either,
                     printed=printed,
-                    category=None if category == "-" else ast.Category(category),
+                    category=None if category == '""' else ast.Category(category),
+                    depth=indent // _ELEMENT_INDENT,
                 )
             )
     with _validated(lineno):

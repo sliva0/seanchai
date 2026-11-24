@@ -525,13 +525,18 @@ information-elements = "; Type: Information Elements" NL
                        "; Section: " section-number NL
                        ["; Table: " inline-text NL]
                        ["; Page: " 1*DIGIT NL]
-                       "; Columns: Name" 1*SP "AVP" 1*SP "Cat" NL
-                       1*(element-row NL)
-element-row   = name-cell 1*SP mapping-cell 1*SP category-cell
+                       (named-elements / avp-elements)
+named-elements = "; Columns: Name" 1*SP "AVP" 1*SP "Cat" NL
+                 1*(element-row NL)
+avp-elements  = "; Columns: AVP" 1*SP "Cat" NL
+                1*(avp-element-row NL)
+element-row   = *(4SP) name-cell 1*SP mapping-cell 1*SP category-cell
+avp-element-row = *(4SP) mapping-cell 1*SP category-cell
+                ; a mapping cell naming an AVP or quoted, not "-"
 name-cell     = mark                    ; the element as printed
 mapping-cell  = avp-name *("," avp-name) / avp-name 1*("/" avp-name)
               / quoted / "-"
-category-cell = "M" / "C" / "O" / "-"
+category-cell = "M" / "C" / "O" / "OM" / "OC" / "-" / DQUOTE DQUOTE
 ```
 
 A stage-3 document's table of one command's information elements,
@@ -581,6 +586,45 @@ IMSI                                       User-Name            M
   Multimedia-Auth-Request).
 - `; Table:` is absent where the table prints no caption (TS 29.234 V11.2.0
   clause 8.3.2's first).
+- A category cell is the Cat. cell as printed, `""` a blank one. M, C and O
+  are a stage-3 document's mandatory, conditional and optional. TS 32.299's
+  message tables use TS 32.240's categories, as their clauses 6.2.1.2 and
+  6.4.1.2 say: M and C, OM and OC, operator provisionable mandatory and
+  conditional ("all operator provisionable parameters (Oc and Om)", clause
+  7.1.12), and `-`, a printed dash, the row's description "Not used in
+  3GPP" or "Not used in CCR".
+
+TS 32.299 prints each command's AVPs as a table in the clause printing its
+ABNF, "AVP | Category | Description", with no element name: `; Columns: AVP
+Cat`, whose rows are the AVP cell and the category. Every row of a block
+names its element, or none does. A row is set off four spaces a level under
+the row above it, a member of the grouped AVP that row maps, as the table
+sets it off a tab a level (TS 32.299 table 6.2.2.1):
+
+```dad
+; Type: Information Elements
+; Command: Accounting-Request
+; Section: 6.2.2
+; Table: 6.2.2.1
+; Page: 58
+; Columns: AVP                   Cat
+Session-Id                       M
+Acct-Application-Id              OM
+Vendor-Specific-Application-Id   -
+    Vendor-Id                    -
+User-Name                        OC
+Proxy-Info                       OC
+    Proxy-Host                   M
+    Proxy-State                  M
+AVP                              OC
+```
+
+- A row's depth is as printed. A row set more than one level under the row
+  above is the document's misprint, which the raw file keeps and the linter
+  reports (`element-misplaced`); a row with rows under it maps one AVP, or
+  they are under no AVP.
+- The `AVP` row is the body's `* [ AVP ]`.
+- `; Command:` is the command whose ABNF the table's clause prints.
 
 ### Interpreted Constraints
 

@@ -123,7 +123,10 @@ def extract_with_comments(
         value_tables, value_notes = _value_tables(
             read, warnings, quirks, ast.spec_ref(specification)
         )
-        elements = _element_tables(read, warnings, ast.spec_ref(specification))
+        printed: dict[str, list[str]] = {}
+        for message in collected.messages:
+            printed.setdefault(message.source.section, []).append(message.name)
+        elements = _element_tables(read, warnings, ast.spec_ref(specification), printed)
         patcher.finish()
         sections = _assemble(
             _resolve(collected, quirks, warnings),

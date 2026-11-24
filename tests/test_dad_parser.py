@@ -245,8 +245,43 @@ _GX = ("; Type: Application Scope", "; Name: Gx", "; Section: 5.1")
                 "IMSI M User-Name",
             ),
             7,
-            "information elements have columns Name AVP Cat",
+            "information elements have columns Name AVP Cat or AVP Cat",
             id="element-columns",
+        ),
+        pytest.param(
+            _dad(
+                "; Type: Information Elements",
+                "; Section: 6.2.2",
+                "; Columns: AVP Cat",
+                "Proxy-Info OC",
+                "  Proxy-Host M",
+            ),
+            9,
+            "set off by multiples of 4 spaces",
+            id="element-indent",
+        ),
+        pytest.param(
+            _dad(
+                "; Type: Information Elements",
+                "; Section: 6.2.2",
+                "; Columns: AVP Cat",
+                "Session-Id -",
+                "Proxy-Info Oc",
+            ),
+            9,
+            "malformed Cat cell 'Oc'",
+            id="element-charging-category",
+        ),
+        pytest.param(
+            _dad(
+                "; Type: Information Elements",
+                "; Section: 6.2.2",
+                "; Columns: AVP Cat",
+                "- M",
+            ),
+            8,
+            "maps an AVP or prints its cell",
+            id="element-avp-cell-blank",
         ),
         pytest.param(
             _grouped(

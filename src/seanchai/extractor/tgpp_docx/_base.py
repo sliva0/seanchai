@@ -87,9 +87,13 @@ class _Row:
     # The first cell's individual lines (normalized+patched) — merged
     # full-width NOTE rows hold one note per line.
     first_cell_lines: list[str]
-    # Whether the first cell opens on a tab, which normalizing removes: TS 32.299
-    # table 6.4.4 sets a grouped AVP's members off under it so.
-    indented: bool = False
+    # The tabs the first cell opens on, which normalizing removes: TS 32.299
+    # table 6.4.4 sets a grouped AVP's members off under it so, a tab a level.
+    indent: int = 0
+
+    @property
+    def indented(self) -> bool:
+        return self.indent > 0
 
 
 @dataclass

@@ -1266,7 +1266,7 @@ Termination-Cause                  Termination-Cause                C
 "NAS-IP address"                    "NAS-IP Address"                 C
 "NAS-Ipv6 address"                  "NAS-Ipv6 address"               C
 Visited-Network-Identifier          Visited-Network-Identifier       C
-"WLAN UE MAC address"               "Calling Station-ID"             -
+"WLAN UE MAC address"               "Calling Station-ID"             ""
 "Supported 3GPP WLAN QoS profile"   QoS-Capability                   O
 "Operator Name"                     Operator-Name                    M
 "Location Information"              Location-Information             M

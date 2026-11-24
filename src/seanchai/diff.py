@@ -608,14 +608,19 @@ class _Comparison:
         where: Mapping[str, Where],
     ) -> None:
         """Information-element rows, matched by the AVPs each maps to (or its
-        printed cell where it names none) and the grouped AVP whose members
-        their table describes. An element's name holds its citation, "(See
-        3GPP TS 29.229 [9])", which a document rewords."""
+        printed cell where it names none), the grouped AVP whose members
+        their table describes and those the row is set off under. An
+        element's name holds its citation, "(See 3GPP TS 29.229 [9])", which
+        a document rewords."""
 
         def keyed(command: dictionary.Command) -> dict[tuple[Any, ...], Any]:
             found: dict[tuple[Any, ...], dictionary.Element] = {}
             for each in command.elements:
-                key = (each.within or "", *(each.avps or (each.printed or each.name,)))
+                key = (
+                    each.within or "",
+                    *each.parents,
+                    *(each.avps or (each.printed or each.name or "",)),
+                )
                 while key in found:
                     key = (*key, "again")
                 found[key] = each
@@ -626,10 +631,11 @@ class _Comparison:
             was, now = before.get(key), after.get(key)
             element = now or was
             assert element is not None
+            within = [*([element.within] if element.within else []), *element.parents]
             named = (
                 f"{subject} element "
-                + (", ".join(element.avps) or element.printed or element.name)
-                + (f" within {element.within}" if element.within else "")
+                + (", ".join(element.avps) or element.printed or element.name or "")
+                + (f" within {' > '.join(within)}" if within else "")
             )
             element_where = {
                 "old": None if was is None else _element_where(was),

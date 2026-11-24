@@ -255,3 +255,38 @@ def test_two_releases_or_corpora_are_named_with_the_documents_that_moved():
     assert summary(
         _side(18, None, *many), _side(19, None, *[(r, "19.0.0") for r, _ in many])
     ).startswith("Release 18 -> Release 19, 6 documents at another version: ")
+
+
+# TS 32.299's shape: a command's AVPs named by their AVP cells, a grouped
+# AVP's members set off under it.
+_ELEMENTS = """
+
+; Type: Information Elements
+; Command: ACME-Probe-Request
+; Section: 1
+; Table: 1.1
+; Columns: AVP     Cat
+Session-Id         M
+ACME-Group         OC
+    ACME-Token     {token}
+"""
+
+
+def test_an_element_set_off_under_a_grouped_avp_is_matched_there(tmp_path):
+    base = Corpus.installed()
+    old = _write(tmp_path, _OLD + _ELEMENTS.format(token="OC"), "old/acme.dad")
+    new = _write(tmp_path, _OLD + _ELEMENTS.format(token="M"), "new/acme.dad")
+
+    found = diff.diff(
+        _built(base, old), _built(base, new), documents=["Private-ACME-HSS"]
+    )
+
+    assert _found(found, "element-category") == [
+        (
+            "Private-ACME-HSS 4242/APR element ACME-Token within ACME-Group",
+            "category",
+            "OC",
+            "M",
+            "breaking",
+        )
+    ]

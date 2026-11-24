@@ -155,15 +155,19 @@ syn match dadNoteRef "\%(see \)\@4<=[A-Za-z0-9_.+-]\+\.toml\>" contained
 " An Information Elements block, up to the next block of another type: its
 " rows are the element's name as printed, the AVPs it maps to (`A,B` carried
 " together, `A/B` one of them, a quoted cell naming none) and its category,
-" M, C or O. A re-used AVP table's `Name From Must` row has the same shape,
-" so the block, not the row, says which it is.
-syn cluster dadElementsBody contains=dadComment,dadDirectiveLine,dadDirectiveTextLine,dadElementName,dadQuotedCell,dadNumber,dadSection,dadSpecRef,dadDataType,dadCellConst,dadFlagCell,dadEmptyCell
+" M, C or O, TS 32.299's OM and OC, a dash or a blank. A table naming its
+" elements by their AVPs alone (`; Columns: AVP Cat`) has no name cell. Either
+" row is set off four spaces a level under a grouped AVP's. A re-used AVP
+" table's `Name From Must` row has the same shape, so the block, not the
+" row, says which it is.
+syn cluster dadElementsBody contains=dadComment,dadDirectiveLine,dadDirectiveTextLine,dadElementName,dadElementAvpCell,dadQuotedCell,dadNumber,dadSection,dadSpecRef,dadDataType,dadCellConst,dadFlagCell,dadEmptyCell
 syn region dadElements start="^\%(; Type: Information Elements\>\)\@=" end="^\%(; Type: \%(Information Elements\>\)\@!\)\@=" contains=@dadElementsBody
-syn match dadElementName #^\%("\%([^"\\]\|\\["\\]\)*"\|[^; "]\S*\)\ze\s\+\%("\%([^"\\]\|\\["\\]\)*"\|\S\+\)\s\+[MCO-]\s*\%(;;.*\)\=$# contained contains=dadQuotedCell nextgroup=dadElementMap skipwhite
+syn match dadElementName #^\s*\zs\%("\%([^"\\]\|\\["\\]\)*"\|[^; "]\S*\)\ze\s\+\%("\%([^"\\]\|\\["\\]\)*"\|\S\+\)\s\+\%(OM\|OC\|[MCO-]\|""\)\s*\%(;;.*\)\=$# contained contains=dadQuotedCell nextgroup=dadElementMap skipwhite
+syn match dadElementAvpCell #^\s*\zs\%("\%([^"\\]\|\\["\\]\)*"\|[^; "]\S*\)\ze\s\+\%(OM\|OC\|[MCO-]\|""\)\s*\%(;;.*\)\=$# contained contains=dadQuotedCell,dadElementAvp,dadElementSep,dadEmptyCell nextgroup=dadElementCat skipwhite
 syn match dadElementMap #"\%([^"\\]\|\\["\\]\)*"\|\S\+# contained contains=dadQuotedCell,dadElementAvp,dadElementSep,dadEmptyCell nextgroup=dadElementCat skipwhite
 syn match dadElementAvp "[A-Za-z0-9][A-Za-z0-9_-]*" contained
 syn match dadElementSep "[,/]" contained
-syn match dadElementCat "[MCO-]\ze\s*\%(;;.*\)\=$" contained
+syn match dadElementCat #\%(OM\|OC\|[MCO-]\|""\)\ze\s*\%(;;.*\)\=$# contained
 syn sync match dadElementsSync grouphere dadElements "^; Type: Information Elements\>"
 syn sync match dadElementsSync grouphere NONE "^; Type: \%(Information Elements\>\)\@!"
 

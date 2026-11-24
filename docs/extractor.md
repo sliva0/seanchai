@@ -470,6 +470,42 @@ Description" (any case, "Cat" without its full stop) becomes an
 TS 29.272 and 29.273 print most of these tables; nineteen documents do in
 all.
 
+### Charging message tables
+
+TS 32.299 prints each charging command's AVPs as a table under its ABNF
+(clauses 6.2.2 ACR, 6.2.3 ACA, 6.4.2 CCR, 6.4.3 CCA, 6.4.4 RAR and 6.4.5
+RAA), "AVP | Category | Description": 3GPP's profile of the command, which
+says per AVP, at every depth, whether it is mandatory, operator provisionable
+or not used. A table of that header becomes an `Information Elements` block
+with `; Columns: AVP Cat`, one per table, read by its structure, so with no
+quirk:
+
+- A row is the AVP cell, read as a mapping cell is, and the Category cell,
+  M, C, OM, OC or a dash; another category fails. Each tab the AVP cell opens
+  on sets the row a level deeper, under the grouped AVP above it. The
+  Description cell is dropped.
+- `; Command:` is the command whose ABNF the table's clause prints, the
+  only one there.
+- A cell misprinting an AVP's name with a space or in another case is
+  patched (`CC-Session Failover`); a category misprinted `Oc` is patched to
+  OC. A depth the docx misprints, a row the PDF sets indented printed flush
+  left (`Privacy-Indicator`, CCA's), is corrected (`element_row` by its AVP
+  cell, field `depth`), each correction citing the PDF's level.
+
+TS 32.299 V11.20.0 prints RAR only as such a table
+([below](#commands-printed-as-tables)): the same table gives the `Message`
+block, derived as described there, and the `Information Elements` block.
+Release 18 and 19 print every command's ABNF, so no rule is derived from a
+table. Where a document gives a command only as
+such a table, a rule is derived only behind `message-tables`, with the
+Diameter header the document states elsewhere supplied by a patch and the
+file's `;; patched:` note saying so; the category table keeps what the rule
+cannot say (OM against OC, and which members are not used).
+
+Clause 5's tables, "Information Element | Category | Description" (5.1.2's
+Charging Data Request and Response, 5.2.3's Debit / Reserve Units Request and
+Response), list the abstract operations' elements, which map to no AVP.
+
 ### Commands printed as tables
 
 Under `message-tables`, TS 32.299 V11.20.0 clause 6.4.5 prints a command as
@@ -677,7 +713,7 @@ What the baseline lists that holds definitions the corpus does not read:
 | Command-Code values (name, abbreviation, code, clause) | most 3GPP documents and RFCs; the ABNF gives the same codes |
 | a command's valid result codes, "Result-Code AVP value \| Condition" | TS 29.228, 29.234, 29.273, 29.328 |
 | an AVP's values as a table: Group-Service-Id, TWAN-S2a-Failure-Cause, IMEI-Check-In-VPLMN-Result | TS 29.272, 29.273 |
-| a command's AVPs with their category, "AVP \| Category \| Description" | TS 32.299 |
+| the abstract operations' elements, "Information Element \| Category \| Description", mapped to no AVP | TS 32.299 clause 5 |
 | Gmb's re-used AVPs, "AVP Name \| Reference" | TS 29.061 table 11 |
 | RADIUS attributes per message | TS 29.061, 29.561, RFC 4590 |
 | IANA's AVP, command and value registrations | RFC 4005, 4740, 5866, 8506 |

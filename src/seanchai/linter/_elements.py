@@ -21,6 +21,8 @@ ELEMENT_RULES = frozenset(
         "element-not-in-command",
         "element-required-in-abnf",
         "element-optional-in-abnf",
+        "element-unused-in-abnf",
+        "element-misplaced",
     }
 )
 
@@ -54,6 +56,31 @@ def _grouped(specs: Sequence[ast.Specification], name: str) -> ast.GroupedAvp | 
     return None
 
 
+def _origin_grouped(
+    spec: ast.Specification,
+    index: _Index,
+    name: str,
+    cited: Callable[[str], ast.Specification | None] | None,
+) -> ast.GroupedAvp | None:
+    """The grouped definition of `name` as `spec` reads it: its own, else
+    with `cited`, the one of the document its re-used rows name, else of its
+    bases'."""
+    found = _grouped([spec], name)
+    if found is not None or cited is None:
+        return found
+    origin = index.reused.get(name)
+    for reference in (*([] if origin is None else [origin]), *spec.bases):
+        document = cited(reference)
+        if document is not None and (found := _grouped([document], name)):
+            return found
+    return None
+
+
+# A body's rules by name, its name in a finding, and whether it is the
+# command's own.
+type _Body = tuple[dict[str, ast.AvpRule], str, bool]
+
+
 def _required(rule: ast.AvpRule) -> bool:
     return rule.presence is not ast.Presence.OPTIONAL and rule.min_occurs >= 1
 
@@ -82,7 +109,16 @@ def _elements(
     < >) where the row's category is O or C. `element-optional-in-abnf`
     (note): the body makes it optional ([ ]) where the category is M. A row
     offering one of several AVPs ("Result-Code / Experimental-Result") says
-    nothing of each, so is not compared.
+    nothing of each, so is not compared. `element-unused-in-abnf` (note):
+    the command's body holds the AVP where the row's category is TS 32.299's
+    dash, "Not used in 3GPP"; such a row, and every row under it, is
+    otherwise not compared, its member being struck from the body. A grouped
+    AVP's body holding a member the table does not use is no disagreement:
+    the body serves request and answer alike ("Not used in CCR"), or is
+    another document's. `element-misplaced` (error): a row is set off more
+    than one level under the row above it. A row set off under a grouped AVP
+    is compared with that AVP's body, as the file reads it, and not at all
+    where the corpus has no such body or the row is misplaced.
 
     Without `cited` (a single file), a table whose command the file does not
     print is not judged."""
@@ -96,7 +132,7 @@ def _elements(
                     Finding(
                         Severity.NOTE,
                         "element-unmapped",
-                        f"table {label} maps {row.name!r} to {row.printed!r},"
+                        f"table {label} maps {row.label!r} to {row.printed!r},"
                         " which names no AVP",
                         block.source.section,
                         paths=((*path, "rows", position),),
@@ -202,19 +238,67 @@ def _elements(
         else:
             body = message.avps
             holder = f"{message.abbreviation}'s ABNF (clause {message.source.section})"
-        rules = {rule.name: rule for rule in reversed(body)}
-        for position, row in enumerate(block.rows):
-            if row.either:
-                continue
+        # Each grouped AVP's rules as the file reads it, a body's name and
+        # whether it is the command's own, by the rows' parents.
+        bodies: dict[tuple[str, ...], _Body | None] = {
+            (): ({rule.name: rule for rule in reversed(body)}, holder, True)
+        }
+        # Whether a row at each depth above is not used, which its members are
+        # then too, whatever their own cells say.
+        unused: list[bool] = []
+        for position, (row, (parents, placed)) in enumerate(
+            zip(block.rows, block.placed(), strict=True)
+        ):
             at = ((*path, "rows", position),)
+            del unused[row.depth :]
+            under_unused = any(unused)
+            unused.append(row.category is ast.Category.NOT_USED)
+            if not placed:
+                findings.append(
+                    Finding(
+                        Severity.ERROR,
+                        "element-misplaced",
+                        f"table {label} sets {row.label!r} {row.depth} levels"
+                        f" deep, under {len(parents)} rows",
+                        block.source.section,
+                        paths=at,
+                    )
+                )
+                continue
+            if parents not in bodies:
+                grouped = _origin_grouped(spec, index, parents[-1], cited)
+                bodies[parents] = (
+                    None
+                    if grouped is None
+                    else (
+                        {rule.name: rule for rule in reversed(grouped.avps)},
+                        f"{parents[-1]}'s body (clause {grouped.source.section})",
+                        False,
+                    )
+                )
+            if row.either or under_unused or (held := bodies[parents]) is None:
+                continue
+            rules, holder, own = held
             for name in row.avps:
                 rule = rules.get(name)
-                if rule is None:
+                if row.category is ast.Category.NOT_USED:
+                    if rule is not None and own:
+                        findings.append(
+                            Finding(
+                                Severity.NOTE,
+                                "element-unused-in-abnf",
+                                f"{holder} holds {name}, which table {label}"
+                                " says is not used",
+                                block.source.section,
+                                paths=at,
+                            )
+                        )
+                elif rule is None:
                     findings.append(
                         Finding(
                             Severity.NOTE,
                             "element-not-in-command",
-                            f"table {label} maps {row.name!r} to {name}, which"
+                            f"table {label} maps {row.label!r} to {name}, which"
                             f" {holder} does not hold",
                             block.source.section,
                             paths=at,
@@ -230,7 +314,7 @@ def _elements(
                             Severity.NOTE,
                             "element-required-in-abnf",
                             f"{name} is required in {holder}, but table {label}"
-                            f" gives {row.name!r} category {row.category.value}",
+                            f" gives {row.label!r} category {row.category.value}",
                             block.source.section,
                             paths=at,
                         )
@@ -241,7 +325,7 @@ def _elements(
                             Severity.NOTE,
                             "element-optional-in-abnf",
                             f"{name} is optional in {holder}, but table {label}"
-                            f" gives {row.name!r} category M",
+                            f" gives {row.label!r} category M",
                             block.source.section,
                             paths=at,
                         )

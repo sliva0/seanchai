@@ -204,8 +204,9 @@ applications[]     id, reference, version, application_id, clause, name,
                    application_id (on the wire), header_application_id,
                    defined_in, section, members[], dropped[], walk[],
                    answer_message
-    elements[]     name, category, avps, either, printed, within, reference,
-                   version, section, table, page: its information elements
+    elements[]     name, category, avps, either, printed, within, parents,
+                   reference, version, section, table, page: its information
+                   elements
     constraints[]  as constraints[] below: what its document read of its
                    members
   pairs[]          command_code, requests[], answers[]: indexes into commands
@@ -368,7 +369,7 @@ they map to. A changed name is a rename. Each change has an impact:
 | Impact | Changes |
 |---|---|
 | `breaking` | a command, required member, AVP, value or row removed; a required member added; presence, occurrence or the order of fixed members changed; the M or V bit's rule, the basic type, the command flags changed; a value voided; an information element's category to or from M; an interpreted rule replaced by another; a hole reached |
-| `compatible` | a command, optional member, AVP, value or row added; a derived type over the same basic type; another flag's rule; a category between C and O; an interpreted rule read or dropped; a hole closed |
+| `compatible` | a command, optional member, AVP, value or row added; a derived type over the same basic type; another flag's rule; a category changed between any two but M; an interpreted rule read or dropped; a hole closed |
 | `editorial` | a rename; the Encrypt cell; an element added or removed beside the ABNF; a text-only rule or a quote |
 
 Every change names the command paths it affects, down from the command
@@ -963,10 +964,14 @@ in reference order answers.
 
 ### Information elements
 
-Nineteen documents print, per command, a table of its information elements:
+Twenty documents print, per command, a table of its information elements:
 each element's name, the AVPs it maps to and its category, M, C or O, which
-often says more than the ABNF's brackets do. `Message.elements` holds every
-row describing the command, as `model.Element`s, and each member the rows
+often says more than the ABNF's brackets do. TS 32.299 prints its charging
+commands' AVPs so, naming no element, each grouped AVP's members set off
+under it, and categories as TS 32.240 gives them: M, C, OM and OC (operator
+provisionable, mandatory or conditional), or a dash, not used.
+`Message.elements` holds every row describing the command, as
+`model.Element`s, and each member the rows
 mapping it:
 
 ```python
@@ -985,13 +990,18 @@ mandatory = [
 ]
 ```
 
-An `Element` has the element's `name` as printed, `category` (None for a
-blank cell), the `avps` it maps to, `either` where it offers one of them
+An `Element` has the element's `name` as printed (None in TS 32.299's
+tables), `category` (None for a blank cell, `Category.NOT_USED` for a
+printed dash), the `avps` it maps to, `either` where it offers one of them
 ("Result-Code / Experimental-Result"), `printed` for a mapping cell naming
-no AVP, and `within`, the grouped AVP whose members its table tabulates
-(TS 29.228 table 6.3.2, SIP-Auth-Data-Item's), none of which a member
-holds. `reference`, `version`, `section`, `table` and `page` locate the row,
-whose description the document holds: the corpus does not copy it.
+no AVP, `within`, the grouped AVP whose members its table tabulates (TS
+29.228 table 6.3.2, SIP-Auth-Data-Item's), and `parents`, the grouped AVPs
+its row is set off under, outermost first (TS 32.299 table 6.4.2.1's
+CC-Time under Multiple-Services-Credit-Control and Requested-Service-Unit).
+A member holds the rows of neither of the last two: those describe a
+grouped AVP's members, which `Message.elements` keeps. `reference`,
+`version`, `section`, `table` and `page` locate the row, whose description
+the document holds: the corpus does not copy it.
 
 A table describes a command of its own document, or of the document it says
 specifies it (TS 29.228's describe TS 29.229's commands), or a base's

@@ -442,21 +442,28 @@ class Hole(_Plain):
 @dataclass(frozen=True)
 class Element(_Plain):
     """One row of an information-element table describing a command: the
-    element as printed, its category (`ast.Category`, None for a blank cell)
-    and the AVPs it maps to, with where the row is printed: `reference`'s
-    clause `section`, `table` and `page`, which hold the row's description.
+    element as printed, None where the table names elements by their AVPs
+    alone (TS 32.299's), its category (`ast.Category`, None for a blank
+    cell, `NOT_USED` for TS 32.299's dash) and the AVPs it maps to, with
+    where the row is printed: `reference`'s clause `section`, `table` and
+    `page`, which hold the row's description.
 
     `either` says the row offers one of `avps` ("Result-Code /
     Experimental-Result"); `printed` is a mapping cell naming no AVP, as
     printed. `within` is the grouped AVP of the command whose members the
-    table describes, None for the command's own."""
+    table describes, None for the command's own. `parents` are the grouped
+    AVPs the row is set off under in its table, outermost first (TS 32.299
+    table 6.4.2.1's CC-Time under Multiple-Services-Credit-Control and
+    Requested-Service-Unit), empty for a row of `within`'s or the command's
+    own members."""
 
-    name: str
+    name: str | None
     category: ast.Category | None
     avps: tuple[str, ...]
     either: bool
     printed: str | None
     within: str | None
+    parents: tuple[str, ...]
     reference: str
     version: str | None
     section: str
@@ -465,7 +472,7 @@ class Element(_Plain):
 
     def __repr__(self) -> str:
         return (
-            f"<Element {self.name!r} {self.category or '-'}"
+            f"<Element {self.name!r} {self.category or '""'}"
             f" {'/'.join(self.avps) or self.printed!r} in {self.reference}"
             f" table {self.table}>"
         )

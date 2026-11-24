@@ -5,7 +5,13 @@ Description", each row an element, the AVPs it maps to and its category.
 The table's header is its exact structure. Which command a table describes
 is read from the clause's sentence mapping the procedure to a command pair,
 and only where the clause holds the two tables of that pair; anywhere else
-the block names no command and a correction supplies it."""
+the block names no command and a correction supplies it.
+
+TS 32.299 prints its commands' members so too, "AVP | Category |
+Description", in the clause printing the command's ABNF, which names the
+command: each row an AVP, set off a tab a level under the grouped AVP it is
+a member of, and its category under TS 32.240, M, C, OM, OC or a dash for
+"Not used in 3GPP"."""
 
 from __future__ import annotations
 
@@ -21,6 +27,23 @@ _NAME_LABELS = frozenset({"information element name"})
 _MAPPING_LABELS = frozenset({"mapping to diameter avp"})
 _CATEGORY_LABELS = frozenset({"cat.", "cat"})
 _DESCRIPTION_LABELS = frozenset({"description"})
+# TS 32.299's message tables (clauses 6.2.2-6.4.5), by label.
+_CATEGORY_HEADER = ("avp", "category", "description")
+# The categories an "Information element name" table prints, and those TS
+# 32.299's add (clauses 6.2.1.2 and 6.4.1.2: "a category as specified in TS
+# 32.240").
+_STAGE_3_CATEGORIES = frozenset(
+    {ast.Category.MANDATORY, ast.Category.CONDITIONAL, ast.Category.OPTIONAL}
+)
+_CHARGING_CATEGORIES = frozenset(
+    {
+        ast.Category.MANDATORY,
+        ast.Category.CONDITIONAL,
+        ast.Category.OPERATOR_MANDATORY,
+        ast.Category.OPERATOR_CONDITIONAL,
+        ast.Category.NOT_USED,
+    }
+)
 
 # The sentence mapping a procedure to its commands, in its three wordings:
 # "This procedure is mapped to the commands Update-Location-Request/Answer
@@ -122,7 +145,7 @@ def _rows(table: _Table, section: str, warnings: list[str]) -> list[ast.ElementR
                 f" naming no element, skipped: {cells[:3]!r}"
             )
             continue
-        if category and category not in ast.Category:
+        if category and category not in _STAGE_3_CATEGORIES:
             raise ExtractionError(
                 f"{section}: information element {name!r} has category"
                 f" {category!r}, none of M, C and O"
@@ -138,6 +161,72 @@ def _rows(table: _Table, section: str, warnings: list[str]) -> list[ast.ElementR
             )
         )
     return rows
+
+
+def _category_rows(table: _Table, section: str) -> list[ast.ElementRow]:
+    """A TS 32.299 message table's rows: the AVP, its category, and how many
+    tabs set it off, its depth."""
+    rows = []
+    for row in table.rows[1:]:
+        cells = row.cells
+        if len(set(cells)) == 1:
+            continue  # a blank or full-width row
+        if len(cells) != 3:
+            raise ExtractionError(
+                f"{section}: message table {table.caption} has a row of"
+                f" {len(cells)} cells: {cells!r}"
+            )
+        avp, category, _ = cells
+        if category and category not in _CHARGING_CATEGORIES:
+            raise ExtractionError(
+                f"{section}: {avp!r} in table {table.caption} has category"
+                f" {category!r}, none of M, C, OM, OC and a dash"
+            )
+        avps, either, printed = _mapping(avp)
+        try:
+            rows.append(
+                ast.ElementRow(
+                    avps=avps,
+                    either=either,
+                    printed=printed,
+                    category=ast.Category(category) if category else None,
+                    depth=row.indent,
+                )
+            )
+        except ValueError as error:
+            raise ExtractionError(
+                f"{section}: table {table.caption}: {error}"
+            ) from None
+    return rows
+
+
+def _category_tables(
+    sections: list[_Section], commands: dict[str, list[str]]
+) -> list[ast.InformationElements]:
+    """TS 32.299's message tables, each naming the command the clause prints
+    the ABNF of, where it prints one."""
+    found = []
+    for section in sections:
+        for table in section.tables:
+            labels = tuple(cell.strip().lower() for cell in table.rows[0].cells)
+            if labels != _CATEGORY_HEADER:
+                continue
+            table.claimed = True
+            printed = commands.get(section.number, [])
+            try:
+                found.append(
+                    ast.InformationElements(
+                        command=printed[0] if len(printed) == 1 else None,
+                        table=table.caption,
+                        source=ast.SourceRef(section=section.number),
+                        rows=tuple(_category_rows(table, section.number)),
+                    )
+                )
+            except ValueError as error:
+                raise ExtractionError(
+                    f"{section.number}: table {table.caption}: {error}"
+                ) from None
+    return found
 
 
 def _specifying(text: str, own: str) -> str | None:
@@ -182,12 +271,17 @@ def _commands(section: _Section, own: str) -> tuple[str, str, str | None] | None
 
 
 def _element_tables(
-    sections: list[_Section], warnings: list[str], own: str
+    sections: list[_Section],
+    warnings: list[str],
+    own: str,
+    commands: dict[str, list[str]],
 ) -> list[ast.InformationElements]:
     """Every information-element table of the document, in document order.
     A clause mapping its procedure to one command pair and holding two
-    tables gives the first the request and the second the answer."""
-    found = []
+    tables gives the first the request and the second the answer; a TS
+    32.299 message table describes the command whose ABNF its clause prints,
+    `commands` by clause."""
+    found = _category_tables(sections, commands)
     for section in sections:
         tables = [table for table in section.tables if _header(table) is not None]
         if not tables:

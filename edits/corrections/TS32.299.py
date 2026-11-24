@@ -8,9 +8,11 @@ from seanchai.dad.corrections import (
     Supply,
     avp_rule,
     definition,
+    element_row,
     enum_value,
     flag_rules,
     header,
+    information_elements,
     reused_avps,
     reused_row,
     table_row,
@@ -1165,4 +1167,103 @@ CORRECTIONS += [
         versions="11.20.0",
     )
     for value, printed, name, doubled in _POC_EVENT_TYPE_LABELS
+]
+
+# The CCR and CCA tables (6.4.2.1, 6.4.3.1) set a grouped AVP's members off
+# under it a tab a level, and the docx omits the tabs of a few rows the PDF
+# prints indented with their siblings: each row, the depth the PDF sets it at,
+# and the member it is there.
+_DEPTHS = (
+    (
+        "6.4.2.1",
+        "Unit-Quota-Threshold",
+        1,
+        "under 'Multiple-Services-Credit-Control' with Time-Quota-Threshold and"
+        " Volume-Quota-Threshold, as clause 7.1.9 holds it; the docx sets it off"
+        " with spaces in place of a tab",
+    ),
+    (
+        "6.4.2.1",
+        "Envelop-Reporting",
+        1,
+        "under 'Multiple-Services-Credit-Control' with Envelope, as clause 7.1.9"
+        " holds Envelope-Reporting",
+    ),
+    (
+        "6.4.2.1",
+        "Time-Quota-Mechanism",
+        1,
+        "under 'Multiple-Services-Credit-Control' with Envelope, as clause 7.1.9"
+        " holds it; its own rows below are MSCC's Service-Specific-Info,"
+        " QoS-Information and Announcement-Information",
+    ),
+    (
+        "6.4.2.1",
+        "3GPP-RAT-Type",
+        1,
+        "under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it",
+    ),
+    (
+        "6.4.2.1",
+        "Related-Trigger",
+        1,
+        "under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it; the"
+        " 'AVP' row below is MSCC's own",
+    ),
+    (
+        "6.4.2.1",
+        "OC-Feature-Vector",
+        1,
+        "under 'OC-Supported-Features', whose member RFC 7683 makes it",
+    ),
+    (
+        "6.4.3.1",
+        "Privacy-Indicator",
+        2,
+        "under 'Announcement-Information' with Play-Alternative and Language, as"
+        " clause 7.2.12aB holds it",
+    ),
+    (
+        "6.4.3.1",
+        "3GPP-RAT-Type",
+        1,
+        "under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it",
+    ),
+    (
+        "6.4.3.1",
+        "Related-Trigger",
+        1,
+        "under 'Multiple-Services-Credit-Control', as clause 7.1.9 holds it",
+    ),
+    (
+        "6.4.3.1",
+        "OC-Feature-Vector",
+        1,
+        "under 'OC-Supported-Features', whose member RFC 7683 makes it",
+    ),
+)
+CORRECTIONS += [
+    Correction(
+        id=f"elements-depth-{table.replace('.', '-')}-{row.lower()}",
+        target=element_row(information_elements(table), row),
+        field="depth",
+        expect=0,
+        replace=depth,
+        reason=f"table {table} prints {row} flush left; the PDF sets it {where}",
+        versions="18.0.0..19.0.0",
+    )
+    for table, row, depth, where in _DEPTHS
+]
+CORRECTIONS += [
+    Correction(
+        id="elements-envelope-reporting-6-4-2-1",
+        target=element_row(information_elements("6.4.2.1"), "Envelop-Reporting"),
+        field="avps",
+        expect=("Envelop-Reporting",),
+        replace=("Envelope-Reporting",),
+        reason="table 6.4.2.1 spells the row 'Envelop-Reporting'; clause 7.2.61"
+        " defines Envelope-Reporting, and Multiple-Services-Credit-Control's"
+        " body (clause 7.1.9) and table 6.4.3.1 spell it so",
+        versions="18.0.0..19.0.0",
+    ),
 ]

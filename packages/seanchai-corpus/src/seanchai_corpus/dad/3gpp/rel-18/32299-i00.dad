@@ -1101,6 +1101,468 @@ Physical-Access-ID   313    X     -     X     -     ETSI-ES283.034 ;; corrected:
 M2M-Information   1011   X     -     -     -     oneM2M-TS-0004
 
 
+; Type: Information Elements
+; Command: Accounting-Request
+; Section: 6.2.2
+; Table: 6.2.2.1
+; Page: 58
+; Columns: AVP                   Cat
+Session-Id                       M
+Origin-Host                      M
+Origin-Realm                     M
+Destination-Realm                M
+Accounting-Record-Type           M
+Accounting-Record-Number         M
+Acct-Application-Id              OM
+Vendor-Specific-Application-Id   -
+    Vendor-Id                    -
+    Auth-Application-Id          -
+    Acct-Application-Id          -
+User-Name                        OC
+Destination-Host                 OC
+Accounting-Sub-Session-Id        -
+Accounting-Session-Id            -
+Acct-Multi-Session-Id            -
+Acct-Interim-Interval            OC
+Accounting-Realtime-Required     -
+Origin-State-Id                  OC
+Event-Timestamp                  OC
+Proxy-Info                       OC
+    Proxy-Host                   M
+    Proxy-State                  M
+Route-Record                     OC
+Service-Context-Id               OM
+Service-Information              OM
+AVP                              OC
+
+
+; Type: Information Elements
+; Command: Accounting-Answer
+; Section: 6.2.3
+; Table: 6.2.3.1
+; Page: 60
+; Columns: AVP                   Cat
+Session-Id                       M
+Result-Code                      M
+Experimental-Result              OC
+Origin-Host                      M
+Origin-Realm                     M
+Accounting-Record-Type           M
+Accounting-Record-Number         M
+Acct-Application-Id              OM
+Vendor-Specific-Application-Id   -
+    Vendor-Id                    -
+    Auth-Application-Id          -
+    Acct-Application-Id          -
+User-Name                        OC
+Accounting-Sub-Session-Id        -
+Accounting-RADIUS-Session-Id     -
+Acct-Multi-Session-Id            -
+Error-Message                    OC
+Error-Reporting-Host             OC
+Acct-Interim-Interval            OC
+Accounting-Realtime-Required     -
+Failed-AVP                       OC
+Origin-State-Id                  OC
+Event-Timestamp                  OC
+Proxy-Info                       OC
+    Proxy-Host                   M
+    Proxy-State                  M
+AVP                              OC
+
+
+; Type: Information Elements
+; Command: Credit-Control-Request
+; Section: 6.4.2
+; Table: 6.4.2.1
+; Page: 72
+; Columns: AVP                          Cat
+Session-Id                              M
+Origin-Host                             M
+Origin-Realm                            M
+Destination-Realm                       M
+Auth-Application-Id                     M
+Service-Context-Id                      M
+CC-Request-Type                         M
+CC-Request-Number                       M
+Destination-Host                        OC
+User-Name                               OC
+CC-Sub-Session-Id                       -
+Acct-Multi-Session-Id                   -
+Origin-State-Id                         OC
+Event-Timestamp                         OC
+Subscription-Id                         OM
+    Subscription-Id-Type                M
+    Subscription-Id-Data                M
+Service-Identifier                      -
+Termination-Cause                       OC
+Requested-Service-Unit                  -
+    CC-Time                             -
+    CC-Money                            -
+        Unit-Value                      -
+            Value-Digits                -
+            Exponent                    -
+        Currency-Code                   -
+    CC-Total-Octets                     -
+    CC-Input-Octets                     -
+    CC-Output-Octets                    -
+    CC-Service-Specific-Units           -
+    AVP                                 -
+Requested-Action                        OC
+AoC-Request-Type                        OC
+Used-Service-Unit                       -
+    Tariff-Change-Usage                 -
+    CC-Time                             -
+    CC-Money                            -
+        Unit-Value                      -
+            Value-Digits                -
+            Exponent                    -
+        Currency-Code                   -
+    CC-Total-Octets                     -
+    CC-Input-Octets                     -
+    CC-Output-Octets                    -
+    CC-Service-Specific-Units           -
+    AVP                                 -
+Multiple-Services-Indicator             OM
+Multiple-Services-Credit-Control        OC
+    Granted-Service-Unit                -
+        Tariff-Time-Change              -
+        CC-Time                         -
+        CC-Money                        -
+            Unit-Value                  -
+                Value-Digits            -
+                Exponent                -
+            Currency-Code               -
+        CC-Total-Octets                 -
+        CC-Input-Octets                 -
+        CC-Output-Octets                -
+        CC-Service-Specific-Units       -
+        AVP                             -
+    Requested-Service-Unit              OC
+        CC-Time                         OC
+        CC-Money                        -
+            Unit-Value                  -
+                Value-Digits            -
+                Exponent                -
+            Currency-Code               -
+        CC-Total-Octets                 OC
+        CC-Input-Octets                 OC
+        CC-Output-Octets                OC
+        CC-Service-Specific-Units       OC
+        AVP                             -
+    Used-Service-Unit                   OC
+        Reporting-Reason                OC
+        Tariff-Change-Usage             OC
+        CC-Time                         OC
+        CC-Money                        -
+            Unit-Value                  -
+                Value-Digits            -
+                Exponent                -
+            Currency-Code               -
+        CC-Total-Octets                 OC
+        CC-Input-Octets                 OC
+        CC-Output-Octets                OC
+        CC-Service-Specific-Units       OC
+        Event-Charging-TimeStamp        OC
+        AVP                             -
+    Tariff-Change-Usage                 -
+    Service-Identifier                  OC
+    Rating-Group                        OC
+    G-S-U-Pool-Reference                -
+        G-S-U-Pool-Identifier           -
+        CC-Unit-Type                    -
+        Unit-Value                      -
+            Value-Digits                -
+            Exponent                    -
+    Validity-Time                       -
+    Result-Code                         -
+    Final-Unit-Indication               -
+        Final-Unit-Action               -
+        Restriction-Filter-Rule         -
+        Filter-Id                       -
+        Redirect-Server                 -
+            Redirect-Address-Type       -
+            Redirect-Server-Address     -
+    Time-Quota-Threshold                -
+    Volume-Quota-Threshold              -
+    Unit-Quota-Threshold                - ;; corrected: (TS32.299.py#elements-depth-6-4-2-1-unit-quota-threshold)
+    Quota-Holding-Time                  -
+    Quota-Consumption-Time              -
+    Reporting-Reason                    OC
+    Trigger                             OC
+        Trigger-Type                    OC
+    PS-Furnish-Charging-Information     -
+    Refund-Information                  OC
+    AF-Correlation-Information          OC
+    Envelope                            OC
+        Envelope-Start-Time             M
+        Envelope-End-Time               OC
+        CC-Total-Octets                 OC
+        CC-Input-Octets                 OC
+        CC-Output-Octets                OC
+        CC-Service-Specific-Units       OC
+    Envelope-Reporting                  OC ;; corrected: (TS32.299.py#elements-depth-6-4-2-1-envelop-reporting) ;; corrected: (TS32.299.py#elements-envelope-reporting-6-4-2-1)
+    Time-Quota-Mechanism                OC ;; corrected: (TS32.299.py#elements-depth-6-4-2-1-time-quota-mechanism)
+    Service-Specific-Info               OC
+        Service-Specific-Type           OC
+        Service-Specific-Data           OC
+    QoS-Information                     OC
+        QoS-Class-Identifier            M
+        Max-Requested-Bandwidth-UL      OC
+        Max-Requested-Bandwidth-DL      OC
+        Extended-Max-Requested-BW-UL    OC
+        Extended-Max-Requested-BW-DL    OC
+        Guaranteed-Bitrate-UL           OC
+        Guaranteed-Bitrate-DL           OC
+        Extended-GBR-UL                 OC
+        Extended-GBR-DL                 OC
+        Bearer-Identifier               OC
+        Allocation-Retention-Priority   OC
+            Priority-Level              OC
+            Pre-emption-Capability      OC
+            Pre-emption-Vulnerability   OC
+        APN-Aggregate-Max-Bitrate-UL    OC
+        APN-Aggregate-Max-Bitrate-DL    OC
+        Extended-APN-AMBR-UL            OC
+        Extended-APN-AMBR-DL            OC
+    Announcement-Information            OC
+    3GPP-RAT-Type                       OC ;; corrected: (TS32.299.py#elements-depth-6-4-2-1-3gpp-rat-type)
+    Related-Trigger                     OC ;; corrected: (TS32.299.py#elements-depth-6-4-2-1-related-trigger)
+    AVP                                 -
+Service-Parameter-Info                  -
+    Service-Parameter-Type              -
+    Service-Parameter-Value             -
+CC-Correlation-Id                       OC
+User-Equipment-Info                     OC
+    User-Equipment-Info-Type            M
+    User-Equipment-Info-Value           M
+OC-Supported-Features                   OC
+    OC-Feature-Vector                   OC ;; corrected: (TS32.299.py#elements-depth-6-4-2-1-oc-feature-vector)
+Proxy-Info                              OC
+    Proxy-Host                          M
+    Proxy-State                         M
+Route-Record                            OC
+Service-Information                     OM
+AVP                                     OC
+
+
+; Type: Information Elements
+; Command: Credit-Control-Answer
+; Section: 6.4.3
+; Table: 6.4.3.1
+; Page: 78
+; Columns: AVP                        Cat
+Session-Id                            M
+Result-Code                           M
+Experimental-Result                   OC
+Origin-Host                           M
+Origin-Realm                          M
+Auth-Application-Id                   M
+CC-Request-Type                       M
+CC-Request-Number                     M
+User-Name                             -
+CC-Session-Failover                   OC
+CC-Sub-Session-Id                     -
+Acct-Multi-Session-Id                 -
+Origin-State-Id                       -
+Event-Timestamp                       -
+Granted-Service-Unit                  -
+    Tariff-Time-Change                -
+    CC-Time                           -
+    CC-Money                          -
+        Unit-Value                    -
+            Value-Digits              -
+            Exponent                  -
+        Currency-Code                 -
+    CC-Total-Octets                   -
+    CC-Input-Octets                   -
+    CC-Output-Octets                  -
+    CC-Service-Specific-Units         -
+    AVP                               -
+Multiple-Services-Credit-Control      OC
+    Granted-Service-Unit              OC
+        Tariff-Time-Change            OC
+        CC-Time                       OC
+        CC-Money                      -
+            Unit-Value                -
+                Value-Digits          -
+                Exponent              -
+            Currency-Code             -
+        CC-Total-Octets               OC
+        CC-Input-Octets               OC
+        CC-Output-Octets              OC
+        CC-Service-Specific-Units     OC
+        AVP                           -
+    Requested-Service-Unit            -
+        CC-Time                       -
+        CC-Money                      -
+            Unit-Value                -
+                Value-Digits          -
+                Exponent              -
+            Currency-Code             -
+        CC-Total-Octets               -
+        CC-Input-Octets               -
+        CC-Output-Octets              -
+        CC-Service-Specific-Units     -
+        AVP                           -
+    Used-Service-Unit                 -
+        Reporting-Reason              -
+    Tariff-Change-Usage               -
+        CC-Time                       -
+        CC-Money                      -
+            Unit-Value                -
+                Value-Digits          -
+                Exponent              -
+            Currency-Code             -
+        CC-Total-Octets               -
+        CC-Input-Octets               -
+        CC-Output-Octets              -
+        CC-Service-Specific-Units     -
+        Event-Charging-TimeStamp      -
+        AVP                           -
+    Tariff-Change-Usage               -
+    Service-Identifier                OC
+    Rating-Group                      OC
+    G-S-U-Pool-Reference              OC
+        G-S-U-Pool-Identifier         M
+        CC-Unit-Type                  M
+        Unit-Value                    M
+            Value-Digits              M
+            Exponent                  OC
+    Validity-Time                     OC
+    Result-Code                       OC
+    Final-Unit-Indication             OC
+        Final-Unit-Action             M
+        Restriction-Filter-Rule       OC
+        Filter-Id                     OC
+        Redirect-Server               OC
+            Redirect-Address-Type     M
+            Redirect-Server-Address   M
+    Time-Quota-Threshold              OC
+    Volume-Quota-Threshold            OC
+    Unit-Quota-Threshold              OC
+    Quota-Holding-Time                OC
+    Quota-Consumption-Time            OC
+    Reporting-Reason                  -
+    Trigger                           OC
+        Trigger-Type                  OC
+    PS-Furnish-Charging-Information   OC
+    Refund-Information                OC
+    AF-Correlation-Information        -
+    Envelope-Reporting                OC
+    Time-Quota-Mechanism              OC
+        Time-Quota-Type               M
+        Base-Time-Interval            M
+    AF-Correlation-Information        -
+    Service-Specific-Info             -
+    QoS-Information                   -
+    Announcement-Information          OC
+        Announcement-Identifier       M
+        Variable-Part                 OC
+            Variable-Part-Order       OC
+            Variable-Part-Type        M
+            Variable-Part-Value       M
+        Time-Indicator                OC
+        Quota-Indicator               OC
+        Announcement-Order            OC
+        Play-Alternative              OC
+        Privacy-Indicator             OC ;; corrected: (TS32.299.py#elements-depth-6-4-3-1-privacy-indicator)
+        Language                      OC
+    3GPP-RAT-Type                     - ;; corrected: (TS32.299.py#elements-depth-6-4-3-1-3gpp-rat-type)
+    Related-Trigger                   - ;; corrected: (TS32.299.py#elements-depth-6-4-3-1-related-trigger)
+    AVP                               -
+Cost-Information                      OC
+    Unit-Value                        M
+        Value-Digits                  M
+        Exponent                      OC
+    Currency-Code                     M
+    Cost-Unit                         OC
+Low-Balance-Indication                OC
+Remaining-Balance                     OC
+    Unit-Value                        M
+        Value-Digits                  M
+        Exponent                      OC
+    Currency-Code                     M
+Final-Unit-Indication                 -
+    Final-Unit-Action                 -
+    Restriction-Filter-Rule           -
+    Filter-Id                         -
+    Redirect-Server                   -
+        Redirect-Address-Type         -
+        Redirect-Server-Address       -
+Check-Balance-Result                  -
+Credit-Control-Failure-Handling       OC
+Direct-Debiting-Failure-Handling      OC
+Validity-Time                         -
+OC-Supported-Features                 OC
+    OC-Feature-Vector                 OC ;; corrected: (TS32.299.py#elements-depth-6-4-3-1-oc-feature-vector)
+OC-OLR                                OC
+Redirect-Host                         OC
+Redirect-Host-Usage                   OC
+Redirect-Max-Cache-Time               OC
+Proxy-Info                            OC
+    Proxy-Host                        M
+    Proxy-State                       M
+Route-Record                          OC
+Failed-AVP                            OC
+Service-Information                   OC
+AVP                                   OC
+
+
+; Type: Information Elements
+; Command: Re-Auth-Request
+; Section: 6.4.4
+; Table: 6.4.4.1
+; Page: 83
+; Columns: AVP          Cat
+Session-Id              M
+Origin-Host             M
+Origin-Realm            M
+Destination-Realm       M
+Destination-Host        M
+Auth-Application-Id     M
+Re-Auth-Request-Type    M
+User-Name               OC
+Origin-State-Id         OC
+Proxy-Info              OC
+    Proxy-Host          M
+    Proxy-State         M
+Route-Record            OC
+CC-Sub-Session-Id       -
+G-S-U-Pool-Identifier   OC
+Service-Identifier      OC
+Rating-Group            OC
+AVP                     OC
+
+
+; Type: Information Elements
+; Command: Re-Auth-Answer
+; Section: 6.4.5
+; Table: 6.4.5.1
+; Page: 84
+; Columns: AVP            Cat
+Session-Id                M
+Result-Code               M
+Origin-Host               M
+Origin-Realm              M
+User-Name                 OC
+Origin-State-Id           OC
+Error-Message             OC
+Error-Reporting-Host      OC
+Failed-AVP                OC
+Redirect-Host             OC
+Redirect-Host-Usage       OC
+Redirect-Max-Cache-Time   OC
+Proxy-Info                OC
+    Proxy-Host            M
+    Proxy-State           M
+CC-Sub-Session-Id         -
+G-S-U-Pool-Identifier     -
+Service-Identifier        -
+Rating-Group              -
+AVP                       OC
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes

@@ -352,7 +352,9 @@ class Model(_Resolver):
                     mapping := tuple(
                         element
                         for element in elements
-                        if element.within is None and member.name in element.avps
+                        if element.within is None
+                        and not element.parents
+                        and member.name in element.avps
                     )
                 )
                 else member
@@ -381,13 +383,14 @@ class Model(_Resolver):
                 either=row.either,
                 printed=row.printed,
                 within=block.avp,
+                parents=parents,
                 reference=view.entry.reference,
                 version=self._older(view),
                 section=block.source.section,
                 table=block.table,
                 page=block.source.page,
             )
-            for row in block.rows
+            for row, (parents, _) in zip(block.rows, block.placed(), strict=True)
         )
 
     def element_tables(

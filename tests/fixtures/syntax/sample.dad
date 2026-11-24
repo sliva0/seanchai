@@ -107,6 +107,20 @@ Hosts                                          Destination-Host,Destination-Real
 Result                                         Result-Code/Experimental-Result    M ;; corrected: (Private-ACME-HSS.py#result)
 "EAP payload"                                  "EAP payload"                      O
 Unmapped                                       -                                  -
+Blank                                          User-Name                          ""
+
+; Type: Information Elements
+; Command: ACME-Answer
+; Section: 6.2.2
+; Table: 6.2.2/1
+; Columns: AVP                Cat
+ACME-Origin                   M
+Proxy-Info                    OC
+    Proxy-Host                M
+    Proxy-State               "" ;; corrected: (Private-ACME-HSS.py#depth)
+ACME-Grouped                  OM
+"ACME Typo"                   -
+AVP                           OC
 
 ; Type: Interpreted Constraints ;; interpreted: (Private-ACME-HSS.dadx#id-length)
 ; AVP: ACME-Id

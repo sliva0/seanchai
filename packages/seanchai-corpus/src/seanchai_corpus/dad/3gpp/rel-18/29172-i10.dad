@@ -350,7 +350,7 @@ SAI                                              Service-Area-Identity          
 "Delayed Location Reporting Data"                Delayed-Location-Reporting-Data   O
 "Civic Address"                                  Civic-Address                     O
 "Barometric Pressure"                            Barometric-Pressure               O
-"AMF Instance ID"                                AMF-Instance-Id                   -
+"AMF Instance ID"                                AMF-Instance-Id                   ""
 
 
 ; Type: Information Elements

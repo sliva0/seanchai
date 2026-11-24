@@ -183,10 +183,14 @@ _RAW_ERRORS = {
     + ["duplicate-identity"] * 6
     + ["vendor-id-mismatch"] * 2,
     "rfc4004.raw": ["table-definition-mismatch"],
-    # Two Integer32 rows clauses 7.2.111AaA and 7.2.111AaB define as
-    # Enumerated, and every grouped header in clause 7.2 printing no vendor
-    # while table 7.2.0.1 sets V.
-    "TS32.299.raw": ["table-definition-mismatch"] * 2 + ["vendor-id-mismatch"] * 96,
+    # CCA's table 6.4.3.1 printing Privacy-Indicator flush left between
+    # Announcement-Information's members, Language two levels under it; two
+    # Integer32 rows clauses 7.2.111AaA and 7.2.111AaB define as Enumerated;
+    # and every grouped header in clause 7.2 printing no vendor while table
+    # 7.2.0.1 sets V.
+    "TS32.299.raw": ["element-misplaced"]
+    + ["table-definition-mismatch"] * 2
+    + ["vendor-id-mismatch"] * 96,
     # Release 11: the grouped headers of clause 7.2 printing no vendor while
     # table 7.2 sets V.
     "32299-bk0.raw": ["vendor-id-mismatch"] * 66,
@@ -902,6 +906,11 @@ _ELEMENT_NOTES = {
     "TS29.337": {"element-not-in-command": 3},
     "TS29.338": {"element-optional-in-abnf": 2, "element-unmapped": 1},
     "TS29.345": {"element-not-in-command": 2, "element-required-in-abnf": 1},
+    # The CCR table's QoS-Information members as TS 32.299 profiles TS
+    # 29.212's: QoS-Class-Identifier M where its body has [ ], Priority-Level
+    # OC where Allocation-Retention-Priority's has { }.
+    "TS32.299": {"element-optional-in-abnf": 1, "element-required-in-abnf": 1},
+    "32299-bk0": {"element-optional-in-abnf": 1, "element-required-in-abnf": 1},
 }
 
 
@@ -1484,6 +1493,80 @@ def test_a_table_is_held_to_the_print_its_clause_names(section, rule, fact):
 
     assert {f.rule for f in findings if f.rule in ELEMENT_RULES} == {rule}
     assert fact in _only(findings, rule).message
+
+
+# TS 32.299's shape: a command's AVPs at every depth, named by their AVP
+# cells, with TS 32.240's categories.
+_CHARGING = """\
+; Type: Grouped AVP
+; Name: Proxy-Info
+; Section: 7.1.5
+Proxy-Info ::= < AVP header: 284 >
+        { Proxy-Host }
+        { Proxy-State }
+
+; Type: Information Elements
+; Command: Credit-Control-Request
+; Section: 6.1.1
+; Table: 6.1.1.1
+; Columns: AVP Cat
+Session-Id M
+Origin-Host OM
+User-Name -
+Proxy-Info OC
+    Proxy-Host M
+    Proxy-State OC
+Subscription-Id -
+    Subscription-Id-Type M
+Termination-Cause OC
+        Language OC
+"""
+
+
+def test_a_charging_table_is_held_to_its_command_and_grouped_bodies():
+    findings = linter.lint(
+        _dad(
+            "3GPP TS 32.299",
+            _ccr("6.1.1", "272, REQ, PXY, 4").replace(
+                "< Session-Id >",
+                "< Session-Id >\n        { Origin-Host }\n        [ User-Name ]",
+            ),
+            _CHARGING,
+        )
+    )
+    found = {(f.rule, f.message) for f in findings if f.rule in ELEMENT_RULES}
+
+    assert found == {
+        (
+            "element-required-in-abnf",
+            "Origin-Host is required in CCR's ABNF (clause 6.1.1), but table"
+            " 6.1.1.1 gives 'Origin-Host' category OM",
+        ),
+        (
+            "element-unused-in-abnf",
+            "CCR's ABNF (clause 6.1.1) holds User-Name, which table 6.1.1.1"
+            " says is not used",
+        ),
+        (
+            "element-not-in-command",
+            "table 6.1.1.1 maps 'Proxy-Info' to Proxy-Info, which CCR's ABNF"
+            " (clause 6.1.1) does not hold",
+        ),
+        (
+            "element-required-in-abnf",
+            "Proxy-State is required in Proxy-Info's body (clause 7.1.5), but"
+            " table 6.1.1.1 gives 'Proxy-State' category OC",
+        ),
+        (
+            "element-not-in-command",
+            "table 6.1.1.1 maps 'Termination-Cause' to Termination-Cause, which"
+            " CCR's ABNF (clause 6.1.1) does not hold",
+        ),
+        (
+            "element-misplaced",
+            "table 6.1.1.1 sets 'Language' 2 levels deep, under 1 rows",
+        ),
+    }
 
 
 def test_the_record_of_known_holes_is_held_to_the_corpus():

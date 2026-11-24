@@ -123,19 +123,23 @@ class Member(_Model):
 
 class Element(_Model):
     """One row of an information-element table describing a command
-    (`model.Element`): the element as printed, its `category` (`M`, `C`, `O`,
-    null for a blank cell), the AVPs it maps to (`either`: one of them) or the
-    cell as `printed` where it names none, and `within`, the grouped AVP whose
-    members its table describes, null for the command's own. `reference`,
-    `version`, `section`, `table` and `page` locate the row, whose description
-    the document holds."""
+    (`model.Element`): the element as printed, null where the table names
+    elements by their AVPs alone (TS 32.299's), its `category` (`M`, `C`,
+    `O`, TS 32.299's `OM` and `OC`, operator provisionable, and `-`, not
+    used; null for a blank cell), the AVPs it maps to (`either`: one of
+    them) or the cell as `printed` where it names none, `within`, the
+    grouped AVP whose members its table describes, null for the command's
+    own, and `parents`, the grouped AVPs the row is set off under in its
+    table, outermost first. `reference`, `version`, `section`, `table` and
+    `page` locate the row, whose description the document holds."""
 
-    name: str
+    name: str | None
     category: ast.Category | None
     avps: tuple[str, ...]
     either: bool
     printed: str | None
     within: str | None
+    parents: tuple[str, ...]
     reference: str
     version: str | None
     section: str

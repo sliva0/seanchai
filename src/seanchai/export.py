@@ -631,7 +631,7 @@ def _blocks(
             fields["columns"] = tuple(str(column) for column in section.columns)
         if isinstance(section, ast.InformationElements):
             fields["name"] = section.command
-            fields["columns"] = ast.ELEMENT_COLUMNS
+            fields["columns"] = section.columns
             fields["element_rows"] = tuple(
                 ElementRow(
                     line=placed.items[index, "rows", item],
@@ -641,6 +641,7 @@ def _blocks(
                     either=row.either,
                     printed=row.printed,
                     category=row.category,
+                    depth=row.depth,
                 )
                 for item, row in enumerate(section.rows)
             )
@@ -1445,6 +1446,8 @@ def _sections_search(corpus: _Lookups, entry: Entry) -> list[SearchEntry]:
                     ),
                 )
                 for row in section.rows
+                # A row naming no element is its AVP's, which is indexed.
+                if row.name is not None
             )
     return search
 

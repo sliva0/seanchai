@@ -423,6 +423,47 @@ reason = """
 first_version = "18.0.0"
 last_version = "19.0.0"
 
+[[patch]]
+find = "Oc"
+replace = "OC"
+exact = true
+count = 6
+section = "6"
+reason = """
+    The message tables print six Category cells 'Oc' (Route-Record and AVP in
+    table 6.2.2.1, AoC-Request-Type and Event-Charging-TimeStamp in 6.4.2.1,
+    Trigger and Low-Balance-Indication in 6.4.3.1), TS 32.240's OC as every
+    other such row prints it; clause 7.1.12 writes the pair 'Oc and Om'.
+    """
+first_version = "18.0.0"
+last_version = "19.0.0"
+
+[[patch]]
+find = "CC-Session Failover"
+replace = "CC-Session-Failover"
+exact = true
+count = 1
+section = "6.4.3"
+reason = """
+    Table 6.4.3.1 prints the row's AVP with a space for a hyphen; CCA's ABNF
+    above it and clause 7.1.0's table spell CC-Session-Failover.
+    """
+first_version = "18.0.0"
+last_version = "19.0.0"
+
+[[patch]]
+find = "CC-Sub-session-Id"
+replace = "CC-Sub-Session-Id"
+exact = true
+count = 1
+section = "6.4.3"
+reason = """
+    Table 6.4.3.1 spells the row's AVP 'CC-Sub-session-Id'; CCA's ABNF above
+    it writes CC-Sub-Session-Id, as RFC 4006 defines it.
+    """
+first_version = "18.0.0"
+last_version = "19.0.0"
+
 # Release 11, V11.20.0: what oneM2M TS-0004 [31] cites as "3GPP TS 32.299
 # ... (Release 11)". A release's template is its own, so these apply to it
 # alone and the Release 19 ones above do not (src/seanchai/_versions.py).
@@ -1083,6 +1124,58 @@ reason = """
     DIAMETER_CREDIT_CONTROL_NOT_APPLICABLE with '... or is treated for offline
     charging). DIAMETER_CREDIT_LIMIT_REACHED 4012', the next code, whose
     description follows; the ETSI PDF prints the code as an entry of its own
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Oc"
+replace = "OC"
+exact = true
+count = 6
+section = "6"
+reason = """
+    The message tables print Category cells 'Oc', TS 32.240's OC as every
+    other such row prints it, as V19.0.0 does.
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "Multiple-Services-Credit Control"
+replace = "Multiple-Services-Credit-Control"
+exact = true
+count = 1
+section = "6.4.2"
+reason = """
+    Table 6.4.2 prints the row's AVP with a space for a hyphen; CCR's ABNF
+    above it spells Multiple-Services-Credit-Control.
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "CC-Session Failover"
+replace = "CC-Session-Failover"
+exact = true
+count = 1
+section = "6.4.3"
+reason = """
+    Table 6.4.3 prints the row's AVP with a space for a hyphen; CCA's ABNF
+    above it spells CC-Session-Failover.
+    """
+first_version = "11.20.0"
+last_version = "11.20.0"
+
+[[patch]]
+find = "CC-Sub-session-Id"
+replace = "CC-Sub-Session-Id"
+exact = true
+count = 1
+section = "6.4.3"
+reason = """
+    Table 6.4.3 spells the row's AVP 'CC-Sub-session-Id'; CCA's ABNF above it
+    writes CC-Sub-Session-Id, as RFC 4006 defines it.
     """
 first_version = "11.20.0"
 last_version = "11.20.0"

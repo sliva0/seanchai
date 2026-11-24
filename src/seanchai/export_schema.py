@@ -333,17 +333,21 @@ class EnumEntry(_Model):
 
 class ElementRow(_Model):
     """A row of an Information Elements block at `line`, `cells` as a
-    `TableRow`'s: the element's `name` unquoted, the `avps` its mapping cell
-    names (`either`: one of them) or the cell as `printed`, and its
-    `category`, `M`, `C` or `O`."""
+    `TableRow`'s: the element's `name` unquoted, null where the block's
+    columns are `AVP Cat` (TS 32.299's), the `avps` its mapping cell names
+    (`either`: one of them) or the cell as `printed`, its `category`, `M`,
+    `C`, `O`, `OM`, `OC` or `-` (not used), null for a blank cell, and
+    `depth`, how many levels it is set off under the grouped AVP rows above
+    it."""
 
     line: int
-    name: str
+    name: str | None
     cells: tuple[str, ...]
     avps: tuple[str, ...] = ()
     either: bool = False
     printed: str | None = None
     category: ast.Category | None = None
+    depth: int = 0
 
 
 class ConstraintQuote(_Model):
