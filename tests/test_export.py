@@ -956,7 +956,10 @@ def test_corrections_directory_reads_the_modules_which_agree_with_the_record(
     books = Corpus.load([_ETSI])
     export_corpus(books, tmp_path / "default")
     export_corpus(
-        books, tmp_path / "named", corrections_directory=ROOT / "edits" / "corrections"
+        books,
+        tmp_path / "named",
+        corrections_directory=ROOT / "edits" / "corrections",
+        interpretations_directory=ROOT / "edits" / "interpretations",
     )
     assert _tree(tmp_path / "default") == _tree(tmp_path / "named")
 

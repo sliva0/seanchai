@@ -1,0 +1,164 @@
+; Interprets: ETSI TS 183 017
+;; What ETSI TS 183 017's clauses state in prose about an AVP's value or
+;; presence, read by hand and pinned to the sentences read
+;; (docs/constraints.md), in clause order: the Gq' procedures (clause 5),
+;; the use of the base protocol (clause 6) and the commands and AVPs (clause
+;; 7).
+;; The document is a hand transcription (edits/transcriptions/), so the
+;; quotes are held to the text of the PDF it was copied from, not to an
+;; extracted source, and each block is marked as quoted from the PDF. Each
+;; command prints once, under Gq's 16777222. A rule depending on a node, the
+;; procedure or an earlier message is `text-only`.
+
+
+;; Clause 5.1.1: an initial AAR the AAR does not tell apart from a
+;; modifying one, nor a hard-state reservation or the two-phase method.
+; Type: Interpreted Constraints
+; Id: aar-hard-state-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: AA-Request
+; Section: 5.1.1
+; Versions: 3.2.1
+"When requesting for Hard-state reservation, the AF shall not include an Authorization-Lifetime AVP."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aar-correlation-identifier
+; AVP: User-Name
+; Command: AA-Request
+; Section: 5.1.1
+; Versions: 3.2.1
+"For the purpose of access profile correlation in the A-RACF, the AF shall include within the AA-Request a correlation identifier in the form: • either of the User-Name AVP; and/or • the Globally-Unique-Address AVP."
+    text-only
+
+
+;; A media component's priority, as the request's (clause 7.3.9).
+; Type: Interpreted Constraints
+; Id: media-component-reservation-priority-default
+; AVP: Reservation-Priority
+; Within: Media-Component-Description
+; Section: 5.1.1
+; Versions: 3.2.1
+"The AF may further specify the Reservation-Priority AVP in Media-Component-Description AVP(s) in order to assign priority to individual media. If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0)."
+    default DEFAULT
+
+
+;; Clause 5.1.2: what the initial AAR held is an earlier message.
+; Type: Interpreted Constraints
+; Id: aar-reservation-priority-unmodified
+; AVP: Reservation-Priority
+; Command: AA-Request
+; Section: 5.1.2
+; Versions: 3.2.1
+"If present, the Reservation-Priority AVP associated with a reservation request or a media component shall not be modified by the AF."
+    text-only
+
+
+;; Clause 6.5: "both" of the AF's requests, the AAR and STR, which print
+;; Destination-Host optional and Destination-Realm required.
+; Type: Interpreted Constraints
+; Id: aar-destination-host
+; AVP: Destination-Host
+; Command: AA-Request
+; Section: 6.5
+; Versions: 3.2.1
+"The AF obtains the contact address of the SPDF for a given user via the e2 interface (ES 283 035 [13]). Both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+    present-if Destination-Realm
+
+
+; Type: Interpreted Constraints
+; Id: str-destination-host
+; AVP: Destination-Host
+; Command: ST-Request
+; Section: 6.5
+; Versions: 3.2.1
+"The AF obtains the contact address of the SPDF for a given user via the e2 interface (ES 283 035 [13]). Both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+    present-if Destination-Realm
+
+
+;; Clause 7.1.3: which of a RAR's Specific-Action AVPs hold the values no
+;; kind compares.
+; Type: Interpreted Constraints
+; Id: rar-specific-actions-not-combined
+; AVP: Specific-Action
+; Command: RA-Request
+; Section: 7.1.3
+; Versions: 3.2.1
+"The values INDICATION_OF_RELEASE_OF_BEARER, INDICATION_OF_SUBSCRIBER_DETACHMENT, INDICATION_OF_RESERVATION_EXPIRATION and INDICATION_OF_LOSS_OF_BEARER, INDICATION_OF_RECOVERY_OF_BEARER and INDICATION_OF_RELEASE_OF_BEARER of the Specific-Action AVP shall not be combined with each other in an Re-Auth-Request."
+    text-only
+
+
+;; Clause 7.3: the AVPs, read wherever the document reads them.
+; Type: Interpreted Constraints
+; Id: binding-input-list-pairs
+; AVP: Binding-Input-List
+; Section: 7.3.2
+; Versions: 3.2.1
+"In case one of the V4-Transport-Address AVP or V6-Transport-Address AVP is such pair is unknown, an even number of list elements shall be still provided with the unknown V4-Transport-Address AVP or V6-Transport-Address AVP wild-carded."
+"It shall be one pair of V4-Transport-Address AVP or V6-Transport-Address list elements in the Binding-Input-List AVP for each single Media-Component-Description AVP in an AAR."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aar-reservation-priority-default
+; AVP: Reservation-Priority
+; Command: AA-Request
+; Section: 7.3.9
+; Versions: 3.2.1
+"DEFAULT (0): This is the lowest level of priority. If no Reservation-Priority AVP is specified in the AA-Request, this is the priority associated with the reservation."
+    default DEFAULT
+
+
+;; `ip-filter`, which also admits the keyword "assigned" the clause
+;; forbids: no codec forbids it and admits a port list.
+; Type: Interpreted Constraints
+; Id: flow-description-restrictions
+; AVP: Flow-Description
+; Section: 7.3.17
+; Versions: 3.2.1
+"Only the Action \"permit\" shall be used."
+"No \"options\" shall be used."
+"The invert modifier \"!\" for addresses shall not be used."
+    encoding ip-filter
+
+
+;; Which Flow-Grouping AVPs a message holds no kind counts.
+; Type: Interpreted Constraints
+; Id: flow-grouping-empty-alone
+; AVP: Flow-Grouping
+; Section: 7.3.18
+; Versions: 3.2.1
+"A Flow-Grouping AVP containing no Flows AVP shall not be supplied together with other Flow-Grouping AVP(s)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: flow-usage-default
+; AVP: Flow-Usage
+; Section: 7.3.22
+; Versions: 3.2.1
+"NO_INFORMATION is the default value."
+    default NO_INFORMATION
+
+
+;; How many Codec-Data AVPs a body holds no kind counts, and an offer from
+;; an answer no kind reads.
+; Type: Interpreted Constraints
+; Id: media-component-codec-data
+; AVP: Codec-Data
+; Within: Media-Component-Description
+; Section: 7.3.26
+; Versions: 3.2.1
+"Each Media-Component-Description AVP shall contain either zero, or one, or two Codec-Data AVPs."
+"If the Media-Component-Description AVP contains two Codec-Data AVPs, one of them shall represent an SDP offer and the other one the corresponding SDP answer."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sip-forking-indication-default
+; AVP: SIP-Forking-Indication
+; Section: 7.3.32
+; Versions: 3.2.1
+"SINGLE_DIALOGUE (0) - This value is used to indicate that the Diameter session relates to a single SIP dialogue. This is the default value applicable if the AVP is omitted."
+    default SINGLE_DIALOGUE

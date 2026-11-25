@@ -6,6 +6,60 @@
 ; Transcribed: by hand from https://www.etsi.org/deliver/etsi_ts/183000_183099/183017/03.02.01_60/ts_183017v030201p.pdf
 
 
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#aar-hard-state-authorization-lifetime), quoted from the PDF
+; AVP: Authorization-Lifetime
+; Command: AA-Request
+; Section: 5.1.1
+; Versions: 3.2.1
+"When requesting for Hard-state reservation, the AF shall not include an Authorization-Lifetime AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#aar-correlation-identifier), quoted from the PDF
+; AVP: User-Name
+; Command: AA-Request
+; Section: 5.1.1
+; Versions: 3.2.1
+"For the purpose of access profile correlation in the A-RACF, the AF shall include within the AA-Request a correlation identifier in the form: • either of the User-Name AVP; and/or • the Globally-Unique-Address AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#media-component-reservation-priority-default), quoted from the PDF
+; AVP: Reservation-Priority
+; Within: Media-Component-Description
+; Section: 5.1.1
+; Versions: 3.2.1
+"The AF may further specify the Reservation-Priority AVP in Media-Component-Description AVP(s) in order to assign priority to individual media. If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0)."
+    default DEFAULT
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#aar-reservation-priority-unmodified), quoted from the PDF
+; AVP: Reservation-Priority
+; Command: AA-Request
+; Section: 5.1.2
+; Versions: 3.2.1
+"If present, the Reservation-Priority AVP associated with a reservation request or a media component shall not be modified by the AF."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#aar-destination-host), quoted from the PDF
+; AVP: Destination-Host
+; Command: AA-Request
+; Section: 6.5
+; Versions: 3.2.1
+"The AF obtains the contact address of the SPDF for a given user via the e2 interface (ES 283 035 [13]). Both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+    present-if Destination-Realm
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#str-destination-host), quoted from the PDF
+; AVP: Destination-Host
+; Command: ST-Request
+; Section: 6.5
+; Versions: 3.2.1
+"The AF obtains the contact address of the SPDF for a given user via the e2 interface (ES 283 035 [13]). Both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+    present-if Destination-Realm
+
+
 ; Type: Application Scope
 ; Name: Gq
 ; Section: 7
@@ -87,6 +141,16 @@
       * [ Proxy-Info ]
       * [ Route-Record ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#rar-specific-actions-not-combined), quoted from the PDF
+; AVP: Specific-Action
+; Command: RA-Request
+; Section: 7.1.3
+; Page: 18
+; Versions: 3.2.1
+"The values INDICATION_OF_RELEASE_OF_BEARER, INDICATION_OF_SUBSCRIBER_DETACHMENT, INDICATION_OF_RESERVATION_EXPIRATION and INDICATION_OF_LOSS_OF_BEARER, INDICATION_OF_RECOVERY_OF_BEARER and INDICATION_OF_RELEASE_OF_BEARER of the Specific-Action AVP shall not be combined with each other in an Re-Auth-Request."
+    text-only
 
 
 ; Type: Message
@@ -297,6 +361,16 @@ Binding-Input-List ::= < AVP header: 451 13019 >
       * [ V4-Transport-Address ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#binding-input-list-pairs), quoted from the PDF
+; AVP: Binding-Input-List
+; Section: 7.3.2
+; Page: 23
+; Versions: 3.2.1
+"In case one of the V4-Transport-Address AVP or V6-Transport-Address AVP is such pair is unknown, an even number of list elements shall be still provided with the unknown V4-Transport-Address AVP or V6-Transport-Address AVP wild-carded."
+"It shall be one pair of V4-Transport-Address AVP or V6-Transport-Address list elements in the Binding-Input-List AVP for each single Media-Component-Description AVP in an AAR."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Binding-Output-List
 ; Section: 7.3.3
@@ -356,6 +430,16 @@ Reservation-Priority ::= < Enumerated AVP header: 458 13019 >
         PRIORITY-FIFTEEN  = 15
 
 
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#aar-reservation-priority-default), quoted from the PDF
+; AVP: Reservation-Priority
+; Command: AA-Request
+; Section: 7.3.9
+; Page: 24
+; Versions: 3.2.1
+"DEFAULT (0): This is the lowest level of priority. If no Reservation-Priority AVP is specified in the AA-Request, this is the priority associated with the reservation."
+    default DEFAULT
+
+
 ; Type: Grouped AVP
 ; Name: Globally-Unique-Address
 ; Section: 7.3.10
@@ -376,12 +460,31 @@ Abort-Cause ::= < Enumerated AVP header: 500 10415 > ;; corrected: (ETSI-TS183.0
         INSUFFICIENT_BEARER_RESOURCES = 2
 
 
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#flow-description-restrictions), quoted from the PDF
+; AVP: Flow-Description
+; Section: 7.3.17
+; Versions: 3.2.1
+"Only the Action \"permit\" shall be used."
+"No \"options\" shall be used."
+"The invert modifier \"!\" for addresses shall not be used."
+    encoding ip-filter
+
+
 ; Type: Grouped AVP
 ; Name: Flow-Grouping
 ; Section: 7.3.18
 ; Page: 26
 Flow-Grouping ::= < AVP header: 508 10415 > ;; corrected: (ETSI-TS183.017.py#vendor-id-flow-grouping)
       * [ Flows ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#flow-grouping-empty-alone), quoted from the PDF
+; AVP: Flow-Grouping
+; Section: 7.3.18
+; Page: 26
+; Versions: 3.2.1
+"A Flow-Grouping AVP containing no Flows AVP shall not be supplied together with other Flow-Grouping AVP(s)."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -412,6 +515,15 @@ Flow-Status ::= < Enumerated AVP header: 511 10415 >
 Flow-Usage ::= < Enumerated AVP header: 512 10415 >
         NO_INFORMATION = 0
         RTCP           = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#flow-usage-default), quoted from the PDF
+; AVP: Flow-Usage
+; Section: 7.3.22
+; Page: 27
+; Versions: 3.2.1
+"NO_INFORMATION is the default value."
+    default NO_INFORMATION
 
 
 ; Type: Enumerated AVP
@@ -445,6 +557,17 @@ Media-Component-Description ::= < AVP header: 517 10415 > ;; corrected: (ETSI-TS
         [ Transport-Class ]
       * [ Codec-Data ]
       * [ Media-Authorization-Context-Id ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#media-component-codec-data), quoted from the PDF
+; AVP: Codec-Data
+; Within: Media-Component-Description
+; Section: 7.3.26
+; Page: 29
+; Versions: 3.2.1
+"Each Media-Component-Description AVP shall contain either zero, or one, or two Codec-Data AVPs."
+"If the Media-Component-Description AVP contains two Codec-Data AVPs, one of them shall represent an SDP offer and the other one the corresponding SDP answer."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -482,6 +605,15 @@ Media-Type ::= < Enumerated AVP header: 520 10415 >
 SIP-Forking-Indication ::= < Enumerated AVP header: 523 10415 > ;; corrected: (ETSI-TS183.017.py#sip-forking-indication-name)
         SINGLE_DIALOGUE   = 0
         SEVERAL_DIALOGUES = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (ETSI-TS183.017.dadx#sip-forking-indication-default), quoted from the PDF
+; AVP: SIP-Forking-Indication
+; Section: 7.3.32
+; Page: 31
+; Versions: 3.2.1
+"SINGLE_DIALOGUE (0) - This value is used to indicate that the Diameter session relates to a single SIP dialogue. This is the default value applicable if the AVP is omitted."
+    default SINGLE_DIALOGUE
 
 
 ; Type: Enumerated AVP

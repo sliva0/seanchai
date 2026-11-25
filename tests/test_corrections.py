@@ -38,7 +38,8 @@ def _declared(
     """`spec`'s declarations, then its interpretations, each on the page its
     block carries in the `corrected` file, `spec` itself if None:
     regenerating reads the page from the source, which these tests do
-    without."""
+    without; a transcription's marked as quoted from its PDF, as
+    regenerating marks them."""
     pages = {
         block.source.section: block.source.page
         for block in (spec if corrected is None else corrected).sections
@@ -46,7 +47,7 @@ def _declared(
         and block.source.page is not None
     }
     return [
-        interpretations.paged(item, pages)
+        interpretations.paged(item, pages, from_pdf=spec.transcribed is not None)
         if isinstance(item, corrections.Interpretation)
         else item
         for item in corrections.in_release(

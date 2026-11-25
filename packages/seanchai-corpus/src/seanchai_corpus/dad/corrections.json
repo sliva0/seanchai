@@ -25598,6 +25598,62 @@
   },
   "ts183017-030201": {
    "edits": {
+    "ETSI-TS183.017.dadx#aar-correlation-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.1: 'For the purpose of access profile correlation in the A-RACF, the AF shall include within the AA-Request a correlation identifier in the form: • either of the User-Name AVP; and/or • the Globally-Unique-Address AVP.'"
+    },
+    "ETSI-TS183.017.dadx#aar-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'The AF obtains the contact address of the SPDF for a given user via the e2 interface (ES 283 035 [13]). Both the Destination-Realm and Destination-Host AVPs shall be present in the request.'"
+    },
+    "ETSI-TS183.017.dadx#aar-hard-state-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.1: 'When requesting for Hard-state reservation, the AF shall not include an Authorization-Lifetime AVP.'"
+    },
+    "ETSI-TS183.017.dadx#aar-reservation-priority-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.9: 'DEFAULT (0): This is the lowest level of priority. If no Reservation-Priority AVP is specified in the AA-Request, this is the priority associated with the reservation.'"
+    },
+    "ETSI-TS183.017.dadx#aar-reservation-priority-unmodified": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'If present, the Reservation-Priority AVP associated with a reservation request or a media component shall not be modified by the AF.'"
+    },
+    "ETSI-TS183.017.dadx#binding-input-list-pairs": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.2: 'In case one of the V4-Transport-Address AVP or V6-Transport-Address AVP is such pair is unknown, an even number of list elements shall be still provided with the unknown V4-Transport-Address AVP or V6-Transport-Address AVP wild-carded.'; 'It shall be one pair of V4-Transport-Address AVP or V6-Transport-Address list elements in the Binding-Input-List AVP for each single Media-Component-Description AVP in an AAR.'"
+    },
+    "ETSI-TS183.017.dadx#flow-description-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.17: 'Only the Action \"permit\" shall be used.'; 'No \"options\" shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+    },
+    "ETSI-TS183.017.dadx#flow-grouping-empty-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.18: 'A Flow-Grouping AVP containing no Flows AVP shall not be supplied together with other Flow-Grouping AVP(s).'"
+    },
+    "ETSI-TS183.017.dadx#flow-usage-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.22: 'NO_INFORMATION is the default value.'"
+    },
+    "ETSI-TS183.017.dadx#media-component-codec-data": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.26: 'Each Media-Component-Description AVP shall contain either zero, or one, or two Codec-Data AVPs.'; 'If the Media-Component-Description AVP contains two Codec-Data AVPs, one of them shall represent an SDP offer and the other one the corresponding SDP answer.'"
+    },
+    "ETSI-TS183.017.dadx#media-component-reservation-priority-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.1: 'The AF may further specify the Reservation-Priority AVP in Media-Component-Description AVP(s) in order to assign priority to individual media. If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0).'"
+    },
+    "ETSI-TS183.017.dadx#rar-specific-actions-not-combined": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.3: 'The values INDICATION_OF_RELEASE_OF_BEARER, INDICATION_OF_SUBSCRIBER_DETACHMENT, INDICATION_OF_RESERVATION_EXPIRATION and INDICATION_OF_LOSS_OF_BEARER, INDICATION_OF_RECOVERY_OF_BEARER and INDICATION_OF_RELEASE_OF_BEARER of the Specific-Action AVP shall not be combined with each other in an Re-Auth-Request.'"
+    },
+    "ETSI-TS183.017.dadx#sip-forking-indication-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.32: 'SINGLE_DIALOGUE (0) - This value is used to indicate that the Diameter session relates to a single SIP dialogue. This is the default value applicable if the AVP is omitted.'"
+    },
+    "ETSI-TS183.017.dadx#str-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'The AF obtains the contact address of the SPDF for a given user via the e2 interface (ES 283 035 [13]). Both the Destination-Realm and Destination-Host AVPs shall be present in the request.'"
+    },
     "ETSI-TS183.017.py#abort-cause-name": {
      "kind": "correction",
      "reason": "clause 7.3.14's sentence names the AVP Session-Abort-Cause; its heading, table 7.3.3 (code 500) and the RAR and ASR ABNFs name Abort-Cause"
@@ -25646,7 +25702,7 @@
      "targets": [
       [
        "sections",
-       28
+       40
       ]
      ]
     },

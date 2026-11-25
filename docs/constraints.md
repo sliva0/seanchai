@@ -2080,3 +2080,63 @@ record, a re-authorization) and what a node does on receipt (a
 translation agent's RADIUS side, RFC 4005 section 9, its prohibited RADIUS
 attributes, which have no AVP of their name); and the authorization AVPs
 a successful answer carries "relevant to the service", the server's.
+
+## ETSI TS 183 017
+
+ETSI TS 183 017 V3.2.1 is read for Gq': the procedures of clause 5 for what
+they state of one message, clause 6's use of the base protocol and clause
+7's commands, result codes and every AVP clause of 7.3. The document is a
+hand transcription, so its quotes are held to the text of the PDF it was
+copied from ([above](#the-interpretations-file)), and every block is
+`quoted_from_pdf`. Each command prints once, under Gq's 16777222. Most of
+its AVPs are TS 29.209's, which clause 7.3 prints again with bodies and
+values of its own, and Codec-Data TS 29.214's. TS 29.214 and ES 283 026
+re-use its Reservation-Priority, whose blocks here are the AAR's and the
+Media-Component-Description's this document prints, which neither shares;
+the blocks with no scope hold where a document reading the AVP from this
+one reads it, TS 183 020, built on it, among them.
+
+| | |
+|---|---|
+| AVP clauses (clause 7.3, not its General clause) | 39 |
+| with something to declare | 7, in 7 blocks |
+| with nothing to declare | 32 |
+| procedure clauses (5.1.1, 5.1.2) | 4 blocks |
+| clause 6.5's routing, 7.1.3's RAR | 2, 1 blocks |
+| blocks | 14: 7 within a command, 2 within a grouped AVP, 5 on an AVP wherever read |
+| readings | 14 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 1: `ip-filter` (Flow-Description) |
+| `present-if` | 2: the AF's AAR and STR's Destination-Host beside the Destination-Realm both require |
+| `default` | 4: Reservation-Priority DEFAULT in the AAR and in a Media-Component-Description, Flow-Usage NO_INFORMATION, SIP-Forking-Indication SINGLE_DIALOGUE |
+| `text-only` | 7 |
+
+Clause 6.5's "Both the Destination-Realm and Destination-Host AVPs shall be
+present in the request" is read on the AF's requests, the AAR and STR, as
+the Destination-Host present beside the Destination-Realm their bodies
+require; the SPDF's RAR and ASR require both already. Flow-Description is
+`ip-filter`: "permit", no options and no "!", the keyword "assigned" the
+clause forbids too being one the codec admits, since `ip-filter-flow`,
+which forbids it, also refuses a source port list, which clause 7.3.17's
+"Source and destination port (list or ranges)" allows.
+
+The text-only rules are conditions on the procedure or an earlier message
+(a hard-state reservation's Authorization-Lifetime, the initial AAR's
+correlation identifier, a Reservation-Priority not modified) and counts no
+kind makes: a RAR's Specific-Action values not combined, the
+Binding-Input-List's pairs for each Media-Component-Description, a
+Flow-Grouping without Flows alone, at most two Codec-Data AVPs, an offer
+and an answer. The PDF prints words split by a space ("va lues",
+"AF-Charging-Id entifier"), as a quote must print them, and none is quoted
+here. Left unread: the "may" and "is used" sentences (the Gq
+Auth-Application-Id "is used together with the command code", Specific-
+Action's other values "not relevant ... and are not used"); clause 5.1.2's
+AVPs that "shall have the same value" as the initial AAR's, six AVPs of an
+earlier message; the SPDF's result codes (clauses 5.2.1, 7.2), which are
+what a node answers with, and the vendor of each code, which clause 7.2
+states and an Experimental-Result-Code's number alone does not tell;
+Codec-Data's coding, TS 29.214's AVP, as that document reads it; the
+capabilities exchange and transport of clauses 6.4 and 6.6; and Annex A's
+SIP forking and Annex B's SDP mapping, what a P-CSCF does.
