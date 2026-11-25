@@ -118,7 +118,7 @@ class Octets:
         return _bounds(self.low, self.high)
 
     def said(self) -> str:
-        single = self.low == self.high == 1
+        single = self.low == 1 and self.high in (1, None)
         return f"{self.bounds_text()} octet{'' if single else 's'}"
 
 
@@ -530,6 +530,46 @@ _GTPV1 = ("TS29.060", "19.0.0")
 _NGAP = ("TS38.413", "19.4.0")
 _GAD = ("TS23.032", "19.0.0")
 _SH = ("TS29.328", "19.2.0")
+_NON_3GPP_ACCESS = ("TS24.302", "19.0.0")
+_NON_3GPP_SECURITY = ("TS33.402", "19.0.0")
+_GBA = ("TS33.220", "19.1.0")
+
+
+def _network_name(clause: str, attribute: str, field: str) -> Element:
+    """TS 24.302's full or short name value: TS 24.008's Network Name from
+    its octet 3, the IEI and length left out."""
+    return Element(
+        "TS24.302",
+        clause,
+        f"{field.capitalize()} name value",
+        f"the {field} name value field of the {attribute} attribute: a"
+        " Network Name's contents without its IEI and length",
+        (
+            _source(
+                _NON_3GPP_ACCESS,
+                clause,
+                f"table {clause}-1, the {field} name value field 'the same as"
+                " the structure of the Network Name defined in 3GPP TS 24.008"
+                " [46] clause 10.5.3.5a except for the Network Name IEI and the"
+                " Length of Network Name contents'",
+            ),
+            _source(
+                _NAS,
+                "10.5.3.5a",
+                "figure 10.5.80, octet 3: ext 1, coding scheme, Add CI, number"
+                " of spare bits in last octet; octets 4 on the text string",
+            ),
+        ),
+        (
+            Octets(1, None),
+            Field("ext", 1, 8, 8, _codes(1)),
+        ),
+        Depth.PARTIAL,
+        "the coding scheme's reserved values 010 to 111 are not refused, since"
+        " the clause does not say they are not sent, and the text string, with"
+        " the spare bits its last octet holds, is not decoded",
+        example=b"\x80\x41\x42",
+    )
 
 
 def _source(document: tuple[str, str], clause: str, where: str) -> Source:
@@ -1503,6 +1543,94 @@ REGISTRY: tuple[Element, ...] = (
         "the nature of address and numbering plan values the type marks"
         " reserved are not refused, since it does not say they are not sent",
         example=b"\x91\x21\x43\x65",
+    ),
+    # TS 29.273's.
+    Element(
+        "TS24.302",
+        "8.1.1",
+        "Access Network Identity",
+        "an Access Network Identity: an ANID prefix and any additional ANID"
+        " strings, joined by ':'",
+        (
+            _source(
+                _NON_3GPP_ACCESS,
+                "8.1.1.1",
+                "UTF-8 text in NFKC, an octet string of at most 253 octets",
+            ),
+            _source(
+                _NON_3GPP_ACCESS,
+                "8.1.1.2",
+                "tables 8.1.1.2-1 and 8.1.1.2-2, the prefixes HRPD, WIMAX, WLAN,"
+                " ETHERNET and 5G",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "no shape of the registry bounds a text's octets, and a prefix the"
+        " tables do not name is 'Not defined', not refused: NOTE 6 leaves"
+        " further prefixes to be defined",
+    ),
+    _network_name("8.2.5.1", "AT_FULL_NAME_FOR_NETWORK", "full"),
+    _network_name("8.2.5.2", "AT_SHORT_NAME_FOR_NETWORK", "short"),
+    Element(
+        "TS33.402",
+        "9.2.1.2.2",
+        "FA-RK",
+        "the FA root key the authenticator derives MN-FA keys from",
+        (
+            _source(
+                _NON_3GPP_SECURITY,
+                "9.2.1.2.2",
+                "'FA-RK = HMAC-SHA1(MIP-RK, \"FA-RK\")', a 160-bit output",
+            ),
+        ),
+        (Octets(20, 20),),
+        Depth.FULL,
+        "a key: any value",
+        example=bytes(range(20)),
+    ),
+    Element(
+        "TS33.402",
+        "9.2.1.2.2",
+        "FA-RK-SPI",
+        "the security parameter index identifying the FA-RK, the MIP-SPI",
+        (
+            _source(
+                _NON_3GPP_SECURITY,
+                "9.2.1.2.2",
+                "'MIP-SPI = the 4 most significant bytes of HMAC-SHA256 (MIP-RK,"
+                " \"SPI CMIP PMIP \"| APN))', distributed 'in AAA protocol"
+                " attribute FA-RK-SPI'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "a derived index: the clause steps it clear of the other active SPIs"
+        " and of the top of the range, which a single message cannot show",
+    ),
+    Element(
+        "TS33.402",
+        "A.3",
+        "WLCP key",
+        "the key protecting WLCP signalling between the UE and the TWAG,"
+        " derived from the EMSK",
+        (
+            _source(
+                _NON_3GPP_SECURITY,
+                "A.3",
+                'the input S to the KDF, FC = 0x21, P0 = "wlcp-key"',
+            ),
+            _source(
+                _NON_3GPP_SECURITY,
+                "A.1",
+                "'the key derivation function (KDF) specified in TS 33.220'",
+            ),
+            _source(_GBA, "B.2.0", "'derived key = HMAC-SHA-256 ( Key , S )'"),
+        ),
+        (Octets(32, 32),),
+        Depth.FULL,
+        "a key: any value",
+        example=bytes(range(32)),
     ),
 )
 

@@ -5746,6 +5746,834 @@
   },
   "29273-i60": {
    "edits": {
+    "TS29.273.dadx#aaa-failure-indication-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.2.3.21/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver.'"
+    },
+    "TS29.273.dadx#aar-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.5/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver.'"
+    },
+    "TS29.273.dadx#access-authorization-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.2.3.20/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving 3GPP AAA Server.'"
+    },
+    "TS29.273.dadx#access-network-info-location-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.24: 'the content of Location-Information shall indicate that the encoding follows a civic location profile, by setting the \"Code\" field to 0.'"
+    },
+    "TS29.273.dadx#access-network-info-operator-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.24: 'Only values \"1\" (Realm) and \"2\" (E212, containing MCC and MNC values) shall be used in this specification.'"
+    },
+    "TS29.273.dadx#access-network-info-ssid": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.24: 'For a Trusted WLAN, it shall contain the SSID of the WLAN and, unless otherwise determined by the TWAN operator's policies, it shall contain at least one of the following elements:'; 'For an untrusted WLAN, it shall contain the same information as specified above for a trusted WLAN, where the operator name indicates the WLAN operator name.'"
+    },
+    "TS29.273.dadx#anid-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.7: 'The ANID AVP is of type UTF8String; this AVP contains the Access Network Identity; see'"
+    },
+    "TS29.273.dadx#connectivity-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.26/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#dea-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.21/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command.'"
+    },
+    "TS29.273.dadx#der-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.20/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#der-s6b-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.2.3.7/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#eca-equipment-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 11.1.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#emergency-services-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.4/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver.'"
+    },
+    "TS29.273.dadx#full-network-name-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.14: 'The Full-Network-Name AVP is of type OctetString; this AVP shall contain the Full Network Name and be encoded as the Full name value field of the AT_FULL_NAME_FOR_NETWORK attribute specified in clause 8.2.5.1'"
+    },
+    "TS29.273.dadx#hessid-mac-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.23: 'The HESSID AVP is of type UTF8String and it shall contain a 6-octet MAC address that identifies the Homogenous Extended Service Set (see IEEE Std 802.11-2012 [40]). It shall be encoded in upper-case ASCII characters with the octet values separated by dash characters. It shall contain a string of 17 octets.'"
+    },
+    "TS29.273.dadx#high-priority-access-info-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.36/1: 'NOTE: Bits not defined in this table shall be cleared by the sending TWAN and discarded by the receiving AAA Server.'"
+    },
+    "TS29.273.dadx#mip-fa-rk-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.12: 'The MIP-FA-RK AVP is of type OctetString; this AVP contains the FA-RK used to calculate the security parameters needed for the MN-FA authentication extension as defined by'"
+    },
+    "TS29.273.dadx#mip-fa-rk-spi-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.13: 'The MIP-FA-RK-SPI AVP is of type Unsigned32; this AVP contains the security index used in identifying the security context for the FA-RK as defined by'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The AMBR included in this grouped AVP shall include the AMBR associated to the user's subscription (UE-AMBR).'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Non-3GPP-User-Data AVP shall only contain APN-Configuration AVP(s) configured in the user subscription with an IP PDN type.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The APN-OI-Replacement included in this grouped AVP shall include the UE level APN-OI-Replacement associated to the user's subscription.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-content": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'For the conditions specified in clause 8.1.2.3.2, the Non-3GPP-User-Data AVP shall be empty, i.e. not include any AVP.'; 'If the Non-3GPP-User-Data AVP is not empty, the Non-3GPP-IP-Acess AVP, the Non-3GPP-IP-Access-APN AVP, the Context-Identifier AVP and at least one item of the APN-Configuration AVP shall always be included, except when the Non-3GPP-User-Data AVP is used for downloading trace activation or deactivation information on the SWx interface, for an already registered user, or when the Non-3GPP-User-Data is used for downloading the Emergency-Info.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Context-Identifier in this grouped AVP shall identify the user's default APN configuration.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Emergency-Info AVP shall contain the identity of the PDN-GW used for the establishment of emergency PDN connections.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The MPS-Priority AVP shall be present if an MPS subscription exists in the HSS for the UE.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The RAT-Type AVP(s) shall include the access technology type(s) not allowed for the user'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Subscription-ID, if present in this grouped AVP, shall contain either an MSISDN (if this identity is present in the subscription), or an External Identifier (if the subscriber does not have an MSISDN identity but has an External Identifier in the subscription).'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-twan-default-apn-context-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'This AVP shall be present if the default APN configuration for EPC access over Trusted WLAN differs from the default APN configuration for 3GPP access and other non-3GPP accesses.'"
+    },
+    "TS29.273.dadx#ppr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.2.3.17/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving 3GPP AAA Server.'"
+    },
+    "TS29.273.dadx#rar-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.2.3.1.5/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command.'"
+    },
+    "TS29.273.dadx#s6b-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'This information element shall not be included in the Authorization Answer if the Emergency-Indication bit of the Emergency-Services AVP is set in the Authorization Request.'"
+    },
+    "TS29.273.dadx#s6b-aaa-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'The 3GPP AAA Server shall insert this AVP if the authorization was successful.'; 'The PMIP6_SUPPORTED or the GTPv2_SUPPORTED flag shall be set according to the value received in the Authorization request.'"
+    },
+    "TS29.273.dadx#s6b-aaa-qos-resources": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded.'; 'The QoS profile template value in this IE shall be set to 0.'"
+    },
+    "TS29.273.dadx#s6b-aaa-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#s6b-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'In an authorization response sent during the authorization procedure at PDN connection setup, the Trace-Data AVP shall be included.'; 'In an authorization response sent during the service authorization information update procedure, - the Trace-data AVP shall be included if trace activation is requested - the Trace-Reference AVP shall be included, if trace deactivation is requested.'"
+    },
+    "TS29.273.dadx#s6b-aar-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this information element, with the Emergency-Indication bit set, during the establishment of an emergency PDN connection.'"
+    },
+    "TS29.273.dadx#s6b-aar-maximum-wait-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this IE if it received the Maximum Wait Time from the MME/SGSN or TWAN/ePDG, and the PGW supports the procedure specified in clause 13.3'"
+    },
+    "TS29.273.dadx#s6b-aar-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'It shall be present on the first authorization request sent by the PGW to the 3GPP AAA Server for a given APN.'"
+    },
+    "TS29.273.dadx#s6b-aar-origination-time-stamp": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this IE if it received the Origination Time Stamp from the MME/SGSN or TWAN/ePDG and if the PGW supports the procedure specified in clause 13.2'"
+    },
+    "TS29.273.dadx#s6b-aar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-dea-an-trusted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be present if the 3GPP AAA Server is able to make decision on whether the access network is Trusted or Untrusted.'"
+    },
+    "TS29.273.dadx#s6b-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#s6b-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'It shall be present only if the result code is set to success.'"
+    },
+    "TS29.273.dadx#s6b-dea-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS_RELOCATE_HA indicating to the PDN GW that it shall initiate a HA switch procedure towards the UE.'"
+    },
+    "TS29.273.dadx#s6b-dea-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be present if the authorization was successful.'; 'None of the PMIP6_SUPPORTED or MIP4_SUPPORTED flags shall be set, since DSMIPv6 is used in this case.'"
+    },
+    "TS29.273.dadx#s6b-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'This IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#s6b-dea-qos-resources": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded.'; 'The QoS profile template value in this IE shall be set to 0.'"
+    },
+    "TS29.273.dadx#s6b-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#s6b-dea-relocate-ha-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.1.2.1.3: 'If the HSS indicates that the user is currently being served by a different PDN GW, the 3GPP AAA Server shall respond to to the PDN GW with the Result-Code set to DIAMETER_SUCCESS_RELOCATE_HA and include the new assigned PDN GW identity in the MIP6-Agent-Info AVP.'"
+    },
+    "TS29.273.dadx#s6b-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is to be used to download the trace activation from the HSS to the PDN GW.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#s6b-der-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/1: 'This IE shall be present if it is available when the PDN GW sends the request.'"
+    },
+    "TS29.273.dadx#s6b-der-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/1: 'It shall be present when the PGW Identity does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aaa-an-trusted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/4: 'This AVP shall be sent if this re-authorization procedure is triggered by the authentication and authorization via STa or SWm, when the 3GPP AAA Server detects that an S6b session already exists for the UE and the S6b session was established as a result of an authentication request for DSMIPv6.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/4: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/4: 'Trace-data AVP shall be included (directly under the Trace-Info) if trace activation is requested'; 'Trace-Reference AVP shall be included, if trace deactivation is requested.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aar-qos-capability": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/3: 'The PGW shall include this IE only during UE the initial attach.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/3: 'It shall be present when the PGW Identity does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.4: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the S6b application.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-mip-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'it shall be included if the Result-Code value is set to DIAMETER_SUCCESS and the MIP-MN-HA-SPI was sent in the authorization request.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'The 3GPP AAA Server shall insert this AVP if the authorization was successful.'; 'The MIP4_SUPPORTED flag shall be set.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-qos-resources": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded.'; 'The QoS profile template value in this IE shall be set to 0.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aar-mip-mn-ha-spi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/1: 'It shall be included when the PDN-GW does not have the MN-HA shared key required to verify the MIPv4 RRQ message.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-mip4-mip6-agent-info-fqdn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.6.2: 'In all other cases the PDN GW shall use its FQDN.'; 'The FA/3GPP AAA Server/HSS shall use FQDN if known.'"
+    },
+    "TS29.273.dadx#s6b-mip4-mip6-agent-info-home-link-prefix": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.6.2: 'The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
+    },
+    "TS29.273.dadx#s6b-pmip-mip6-agent-info-fqdn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.2.2: 'In all other cases the PDN GW shall use its FQDN.'; 'MAG/AAA/HSS shall use FQDN if known.'"
+    },
+    "TS29.273.dadx#s6b-pmip-mip6-agent-info-home-link-prefix": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.2.2: 'The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
+    },
+    "TS29.273.dadx#service-selection-labels": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.5: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
+    },
+    "TS29.273.dadx#short-network-name-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.15: 'The Short-Network-Name AVP is of type OctetString; this AVP shall contain the Short Network Name and be encoded as the Short name value field of the AT_SHORT_NAME_FOR_NETWORK attribute specified in clause 8.2.5.2'"
+    },
+    "TS29.273.dadx#ssid-length": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.22: 'It shall contain a string of 1 to 32 octets.'"
+    },
+    "TS29.273.dadx#sta-aaa-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\".'"
+    },
+    "TS29.273.dadx#sta-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This information element shall only be sent if the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall only be included if NBM is authorized for use, the Emergency-Indication AVP was not present in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency Sessions and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This information element shall only be sent if it has been received in the corresponding authorization request and the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set.'"
+    },
+    "TS29.273.dadx#sta-aaa-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'Based on operator policy, this information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#sta-aaa-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the trusted non-3GPP access network.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#sta-aaa-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#sta-aar-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/3: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#sta-aar-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/3: 'This AVP shall be included only if optimized idle mode mobility from E-UTRAN to HRPD access is executed.'; 'When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set.'"
+    },
+    "TS29.273.dadx#sta-dea-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall be present only if the non-3GPP access network was decided to be trusted, the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\".'"
+    },
+    "TS29.273.dadx#sta-dea-an-trusted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall be included only in the first authentication and authorization response.'; 'For the STa case, the value \"TRUSTED\" shall be used.'"
+    },
+    "TS29.273.dadx#sta-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if EPC Access is authorized, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall only be included if NBM is authorized for use, the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-dea-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency sessions and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'it shall include this IE and set the Emergency-Indication bit when the UE indicates an Emergency Attach in EAP-AKA' signalling.'"
+    },
+    "TS29.273.dadx#sta-dea-erp-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if the ERP Keying Material is present.'"
+    },
+    "TS29.273.dadx#sta-dea-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'If the 3GPP AAA Server supports ERP, this IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS, the domain-specific re-authentication key was requested and the use of ERP is authorized for this user (see clause 8.2.3.27).'"
+    },
+    "TS29.273.dadx#sta-dea-mip-fa-rk": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall be present if MIPv4 FACoA mode is used, the MN-FA authentication extension is supported and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-dea-mip-fa-rk-spi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall be present if MIP-FA-RK is present'"
+    },
+    "TS29.273.dadx#sta-dea-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if EPC Access is authorized and if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'; 'If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#sta-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'Based on operator policy, this information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#sta-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#sta-dea-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the non-3GPP access network is trusted and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'For a trusted WLAN access, the 3GPP AAA Server shall include this IE if the user's Mobile Equipment Identity is available.'; 'When present, this grouped AVP shall contain the IMEI AVP and, if available, the Software Version AVP.'"
+    },
+    "TS29.273.dadx#sta-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'; 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the non-3GPP access network.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#sta-dea-twan-connection-mode": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'The 3GPP AAA Server shall include this IE if it selects either the SCM or MCM and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'; 'If this IE is not present, the TWAN shall use TSCM.'"
+    },
+    "TS29.273.dadx#sta-dea-twan-connectivity-parameters": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall contain the requested connectivity parameters received from the UE if the 3GPP AAA Server authorizes the SCM for TWAN and the Result-Code AVP is set to DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#sta-dea-wlcp-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the selected TWAN Connection Mode is MCM.'"
+    },
+    "TS29.273.dadx#sta-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority conveyed in an EAP response/identity message'"
+    },
+    "TS29.273.dadx#sta-der-imei-check-in-vplmn-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'The 3GPP AAA Proxy shall include this IE if it has performed an IMEI check in the VPLMN.'"
+    },
+    "TS29.273.dadx#sta-der-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'The PMIP6_SUPPORTED flag and/or the GTPv2 SUPPORTED flag shall be set if the non-3GPP access supports PMIPv6 and/or GTPv2.'; 'The flag MIP6_INTEGRATED shall be set if DHCPv6 based Home Agent address discovery is supported as defined in IETF RFC 5447 [6].'; 'The MIP4_SUPPORTED flag shall be set if the non-3GPP access supports MIPv4 FA-CoA mode.'"
+    },
+    "TS29.273.dadx#sta-der-transport-access-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19).'"
+    },
+    "TS29.273.dadx#sta-der-twag-cp-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'The TWAN shall include this IE if it indicates support of the MCM in the Supported TWAN Connection Modes IE.'"
+    },
+    "TS29.273.dadx#sta-der-twan-connectivity-parameters": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access.'; 'If the requested connectivity has been granted, the following information elements shall be included:'"
+    },
+    "TS29.273.dadx#sta-erp-dea-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.5.1/2: 'This IE shall be present if the ERP re-authentication is successful.'"
+    },
+    "TS29.273.dadx#sta-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.10: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the STa/SWa application.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall be present only if the non-3GPP access network was decided to be trusted, the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\".'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This information element shall only be sent if the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This IE shall be sent if Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency Sessions and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-mip-fa-rk": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall be present if MIPv4 is used, MN-FA authentication extension is supported and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-mip-fa-rk-spi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall be present if MIP-FA-RK is present'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'Based on operator policy, this information element shall be sent to the non-3GPP access network if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the trusted non-3GPP access network.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-wlcp-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the TWAN Connection Mode previously selected is MCM.'"
+    },
+    "TS29.273.dadx#sta-reauth-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/5: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#subscription-id-type-values": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.2: 'EPC shall make use only of the MSISDN and External Identifier values.'"
+    },
+    "TS29.273.dadx#swa-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swa-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and if the Transport Access Type in the request command indicated that the UE is accessing the EPC from a Fixed Broadband access network'; 'This IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#swa-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swa-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This information element shall be present if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#swa-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/1: 'This information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swa-der-transport-access-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/1: 'if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19).'"
+    },
+    "TS29.273.dadx#swa-reauth-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.4.1/4: 'This IE shall be sent if Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swa-reauth-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.4.1/4: 'This information element shall be sent to the non-3GPP access network if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swa-reauth-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.4.1/3: 'This information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swd-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'This information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swd-der-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'The PMIP6_SUPPORTED flag and/or the GTPv2_SUPPORTED flag shall be set if the trusted non-3GPP access network supports PMIPv6 and/or GTPv2.'; 'The flag MIP6_INTEGRATED shall be set if DHCPv6 based Home Agent address discovery is supported as defined in IETF RFC 5447 [6].'; 'The MIP4_SUPPORTED flag shall be set if the trusted non-3GPP access supports MIPv4 FA-CoA mode.'"
+    },
+    "TS29.273.dadx#swd-der-transport-access-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19).'"
+    },
+    "TS29.273.dadx#swd-der-twag-cp-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'The TWAN shall include this IE if it indicates support of the MCM in the Supported TWAN Connection Modes IE.'"
+    },
+    "TS29.273.dadx#swd-der-twan-connectivity-parameters": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access.'; 'If the requested connectivity has been granted, the following information elements shall be included:'"
+    },
+    "TS29.273.dadx#swm-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request.'"
+    },
+    "TS29.273.dadx#swm-aaa-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'It shall only be included if NBM is used, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request, and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swm-aaa-core-network-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#swm-aaa-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'Based on operator policy, this information element shall be sent to the ePDG if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swm-aaa-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This AVP shall contain the MSISDN of the UE and shall be sent only if it is available.'"
+    },
+    "TS29.273.dadx#swm-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the ePDG.'; 'Only the Trace-Data AVP shall be included if trace activation is requested. Only the Trace-Reference AVP shall be included if trace deactivation is requested.'"
+    },
+    "TS29.273.dadx#swm-aaa-user-location-info-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
+    },
+    "TS29.273.dadx#swm-aar-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swm-aar-ue-local-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/1: 'This IE shall be present if the ePDG provided the UE Local IP address in the initial Authentication and Authorization Request and the UE Local IP address has changed.'"
+    },
+    "TS29.273.dadx#swm-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Request.'"
+    },
+    "TS29.273.dadx#swm-dea-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'It shall only be included if NBM is used, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Request and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swm-dea-core-network-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#swm-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'It shall be present when Result Code is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swm-dea-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE shall only be present if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS and if the Emergency-Services AVP is present, with the Emergency-Indication bit set, in the Authentication and Authorization Request.'"
+    },
+    "TS29.273.dadx#swm-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This information element shall be present if NBM is used.'; 'If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#swm-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'Based on operator policy, this information element shall be sent to the ePDG if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swm-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#swm-dea-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This AVP shall contain the MSISDN of the UE and shall be sent only if it is available.'"
+    },
+    "TS29.273.dadx#swm-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the ePDG.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#swm-dea-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#swm-dea-user-location-info-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
+    },
+    "TS29.273.dadx#swm-der-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'An ePDG which supports emergency services shall include this information element, with the Emergency-Indication bit set, if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment'"
+    },
+    "TS29.273.dadx#swm-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swm-der-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'This information element shall be present if the access type is known by the ePDG.'; 'When not known by the ePDG, this information element should be present and, in that case, it shall take the value VIRTUAL (1).'"
+    },
+    "TS29.273.dadx#swm-der-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'This AVP shall be present if the ePDG has received an APN from the UE and the UE did not indicate the establishment of an emergency session in the IKEv2 signalling.'; 'This AVP shall be absent if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment'"
+    },
+    "TS29.273.dadx#swm-der-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'The ePDG shall include this IE and set it to the user's Mobile Equipment Identity, if this information is available.'; 'For an untrusted WLAN access, this grouped AVP shall contain the IMEI AVP and, if available, the Software-Version AVP.'"
+    },
+    "TS29.273.dadx#swm-der-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'This AVP shall be present if the ePDG is not in the UE's home network i.e. the UE is roaming.'"
+    },
+    "TS29.273.dadx#swm-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.3.2: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWm application.'"
+    },
+    "TS29.273.dadx#swx-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.15: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWx application.'"
+    },
+    "TS29.273.dadx#swx-maa-3gpp-aaa-server-name": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/4: 'This AVP shall be sent when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
+    },
+    "TS29.273.dadx#swx-maa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-maa-sip-auth-data-item": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/4: 'If the SIP-Number-Auth-Items AVP is equal to zero or it is not present, then this AVP shall not be present.'"
+    },
+    "TS29.273.dadx#swx-maa-sip-number-auth-items": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/4: 'It shall be present when the result is DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-mar-anid": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/1: 'This IE shall be present if the Authentication Method is EAP-AKA'.'"
+    },
+    "TS29.273.dadx#swx-mar-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-mar-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/1: 'If the 3GPP AAA Server knows the HSS name, this AVP shall be present.'"
+    },
+    "TS29.273.dadx#swx-mar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/1: 'The 3GPP AAA Server shall include this information element when received from signalling across the SWd.'"
+    },
+    "TS29.273.dadx#swx-ppa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-ppr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-restoration-sar-active-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.4.2.1/1: 'For the explicitly subscribed APNs, the following information shall be present:'; 'For the Wildcard APN, the following information shall be present:'"
+    },
+    "TS29.273.dadx#swx-rta-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-rtr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-saa-3gpp-aaa-server-name": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/2: 'This AVP shall be present when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
+    },
+    "TS29.273.dadx#swx-saa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-saa-non-3gpp-user-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/2: 'It shall be present when Server-Assignment-Type in the request is equal to AAA_USER_DATA_REQUEST or REGISTRATION and the Result-Code is equal to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-sar-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-sar-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'If the 3GPP AAA Server knows the HSS name this AVP shall be present.'"
+    },
+    "TS29.273.dadx#swx-sar-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'This IE shall only be included when the Server-Assignment-Type is set to PGW_UPDATE.'"
+    },
+    "TS29.273.dadx#swx-sar-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'This IE shall contain, either the identity of the dynamically allocated PDN GW, or the identity of a dynamically allocated PDN GW selected for the establishment of emergency PDN connections, and is included if the Server-Assignment-Type is set to PGW_UPDATE.'"
+    },
+    "TS29.273.dadx#swx-sar-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'For non-emergency PDN connection establishment, this information element shall contain the Network Identifier part of the APN, and it shall be included if the Server-Assignment-Type is set to PGW_UPDATE.'; 'For emergency PDN connection establishment, this information element shall be left absent.'"
+    },
+    "TS29.273.dadx#swx-sar-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'The 3GPP AAA Server shall include this IE and set it to the user's Mobile Equipment Identity, if this information is available, and if the Server-Assignment-Type is set to REGISTRATION.'; 'This IE shall also be present, independently of the value of the Server-Assignment-Type, if the Terminal-Information has changed from the last value previously reported to the HSS.'; 'This grouped AVP shall contain the IMEI AVP and, if available, the Software-Version AVP, for a trusted or untrusted WLAN access.'"
+    },
+    "TS29.273.dadx#swx-sar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#swx-sip-auth-data-item-sip-item-number": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/5: 'This information element shall be present in a SIP-Auth-Data-Item grouped AVP in circumstances where there are multiple occurrences of SIP-Auth-Data-Item AVPs, and the order in which they should be processed is significant.'"
+    },
+    "TS29.273.dadx#trace-info-either": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.13: 'Either the Trace-Data or the Trace-Reference AVP shall be included.'"
+    },
+    "TS29.273.dadx#twag-cp-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.29: 'The TWAG-CP-Address AVP is of type Address and shall contain the TWAG control-plane IPv4 and/or IPv6 address that the TWAG supports, to be used for WLCP by the UE if MCM is selected.'"
+    },
+    "TS29.273.dadx#twag-up-address-mac-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.30: 'The TWAG-UP-Address AVP is of type UTF8String and shall contain a 6-octet MAC address that identifies the TWAG user-plane MAC address to be used for encapsulating user plane packets between the UE and the TWAN, when SCM is used.'; 'It shall be encoded in upper-case ASCII characters with the octet values separated by dash characters. It shall contain a string of 17 octets.'"
+    },
+    "TS29.273.dadx#twan-access-info-access-authorization-flags-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.19: 'If the Access-Authorization-Flags AVP is not present in the TWAN-Access-Info AVP, EPC access and Non-Seamless WLAN Offload shall be considered to be not allowed.'"
+    },
+    "TS29.273.dadx#twan-access-info-wlan-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.19: 'If no WLAN-Identifier AVP is included in the TWAN-Access-Info AVP, the allowed access methods shall apply to any arbitrary Trusted WLAN.'; 'A specific Trusted-WLAN shall appear in at most one TWAN-Access-Info AVP.'; 'There shall be at most one TWAN-Access-Info AVP not including any WLAN-Identifier.'"
+    },
+    "TS29.273.dadx#twan-connection-mode-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.25/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#twan-connectivity-parameters-served-party-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.26: 'These AVPs shall be present if the S2a connection was successfully established, and they shall contain either of:'; 'For the IPv6 interface identifier, the higher 64 bits of the address shall be set to zero.'"
+    },
+    "TS29.273.dadx#twan-connectivity-parameters-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.26: 'It shall contain both the network identifier part and the operator identifier part of the Access Point Name.'"
+    },
+    "TS29.273.dadx#visited-network-identifier-domain": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.1.2: 'The AVP shall be encoded as:'; 'mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
+    },
+    "TS29.273.dadx#wlcp-key-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.33: 'The WLCP-Key AVP (AVP Code 1535) is of type OctetString and it shall contain the WLCP Key used for protecting the WLCP signalling between the UE and the TWAN, as specified in'"
+    },
     "TS29.273.py#accounting-interim-interval-row-5-2-3-1": {
      "kind": "correction",
      "reason": "Table 5.2.3.1/2 misspells the AVP; its cited origin defines Acct- Interim-Interval."
@@ -6351,9 +7179,9 @@
      "reason": "Clauses 9.2.3.2.2 and 9.2.3.6.2 both explicitly cite RFC 5447 and print identical bodies for the same identity; keep the first copy in the corrected dictionary."
     },
     "TS29.273.py#mip6-agent-info-row-clause": {
-     "expect": "MIP6-Agent-Info is cited at clause 9.2.3.6.2 in table 9.2.3.6.1/1, but the file holds it at clause 9.2.3.2.2, and nothing at clause 9.2.3.6.2",
+     "expect": "MIP6-Agent-Info is cited at clause 9.2.3.6.2 in table 9.2.3.6.1/1, but the file holds it at clause 9.2.3.2.2",
      "kind": "accept",
-     "reason": "the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so the file holds only clause 9.2.3.2.2's",
+     "reason": "the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so the file holds only clause 9.2.3.2.2's; what the file holds at clause 9.2.3.6.2 is the interpretations of its sentences",
      "rule": "section-mismatch",
      "targets": [
       [
@@ -6412,7 +7240,7 @@
      "targets": [
       [
        "sections",
-       137
+       286
       ]
      ]
     },
@@ -6558,6 +7386,834 @@
   },
   "29273-j20": {
    "edits": {
+    "TS29.273.dadx#aaa-failure-indication-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.2.3.21/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver.'"
+    },
+    "TS29.273.dadx#aar-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.5/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver.'"
+    },
+    "TS29.273.dadx#access-authorization-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.2.3.20/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving 3GPP AAA Server.'"
+    },
+    "TS29.273.dadx#access-network-info-location-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.24: 'the content of Location-Information shall indicate that the encoding follows a civic location profile, by setting the \"Code\" field to 0.'"
+    },
+    "TS29.273.dadx#access-network-info-operator-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.24: 'Only values \"1\" (Realm) and \"2\" (E212, containing MCC and MNC values) shall be used in this specification.'"
+    },
+    "TS29.273.dadx#access-network-info-ssid": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.24: 'For a Trusted WLAN, it shall contain the SSID of the WLAN and, unless otherwise determined by the TWAN operator's policies, it shall contain at least one of the following elements:'; 'For an untrusted WLAN, it shall contain the same information as specified above for a trusted WLAN, where the operator name indicates the WLAN operator name.'"
+    },
+    "TS29.273.dadx#anid-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.7: 'The ANID AVP is of type UTF8String; this AVP contains the Access Network Identity; see'"
+    },
+    "TS29.273.dadx#connectivity-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.26/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#dea-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.21/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command.'"
+    },
+    "TS29.273.dadx#der-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.20/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#der-s6b-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.2.3.7/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#eca-equipment-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 11.1.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#emergency-services-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.4/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver.'"
+    },
+    "TS29.273.dadx#full-network-name-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.14: 'The Full-Network-Name AVP is of type OctetString; this AVP shall contain the Full Network Name and be encoded as the Full name value field of the AT_FULL_NAME_FOR_NETWORK attribute specified in clause 8.2.5.1'"
+    },
+    "TS29.273.dadx#hessid-mac-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.23: 'The HESSID AVP is of type UTF8String and it shall contain a 6-octet MAC address that identifies the Homogenous Extended Service Set (see IEEE Std 802.11-2012 [40]). It shall be encoded in upper-case ASCII characters with the octet values separated by dash characters. It shall contain a string of 17 octets.'"
+    },
+    "TS29.273.dadx#high-priority-access-info-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.36/1: 'NOTE: Bits not defined in this table shall be cleared by the sending TWAN and discarded by the receiving AAA Server.'"
+    },
+    "TS29.273.dadx#mip-fa-rk-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.12: 'The MIP-FA-RK AVP is of type OctetString; this AVP contains the FA-RK used to calculate the security parameters needed for the MN-FA authentication extension as defined by'"
+    },
+    "TS29.273.dadx#mip-fa-rk-spi-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.13: 'The MIP-FA-RK-SPI AVP is of type Unsigned32; this AVP contains the security index used in identifying the security context for the FA-RK as defined by'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The AMBR included in this grouped AVP shall include the AMBR associated to the user's subscription (UE-AMBR).'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Non-3GPP-User-Data AVP shall only contain APN-Configuration AVP(s) configured in the user subscription with an IP PDN type.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The APN-OI-Replacement included in this grouped AVP shall include the UE level APN-OI-Replacement associated to the user's subscription.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-content": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'For the conditions specified in clause 8.1.2.3.2, the Non-3GPP-User-Data AVP shall be empty, i.e. not include any AVP.'; 'If the Non-3GPP-User-Data AVP is not empty, the Non-3GPP-IP-Acess AVP, the Non-3GPP-IP-Access-APN AVP, the Context-Identifier AVP and at least one item of the APN-Configuration AVP shall always be included, except when the Non-3GPP-User-Data AVP is used for downloading trace activation or deactivation information on the SWx interface, for an already registered user, or when the Non-3GPP-User-Data is used for downloading the Emergency-Info.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Context-Identifier in this grouped AVP shall identify the user's default APN configuration.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Emergency-Info AVP shall contain the identity of the PDN-GW used for the establishment of emergency PDN connections.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The MPS-Priority AVP shall be present if an MPS subscription exists in the HSS for the UE.'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The RAT-Type AVP(s) shall include the access technology type(s) not allowed for the user'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'The Subscription-ID, if present in this grouped AVP, shall contain either an MSISDN (if this identity is present in the subscription), or an External Identifier (if the subscriber does not have an MSISDN identity but has an External Identifier in the subscription).'"
+    },
+    "TS29.273.dadx#non-3gpp-user-data-twan-default-apn-context-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.1: 'This AVP shall be present if the default APN configuration for EPC access over Trusted WLAN differs from the default APN configuration for 3GPP access and other non-3GPP accesses.'"
+    },
+    "TS29.273.dadx#ppr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.2.3.17/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving 3GPP AAA Server.'"
+    },
+    "TS29.273.dadx#rar-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.2.3.1.5/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command.'"
+    },
+    "TS29.273.dadx#s6b-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'This information element shall not be included in the Authorization Answer if the Emergency-Indication bit of the Emergency-Services AVP is set in the Authorization Request.'"
+    },
+    "TS29.273.dadx#s6b-aaa-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'The 3GPP AAA Server shall insert this AVP if the authorization was successful.'; 'The PMIP6_SUPPORTED or the GTPv2_SUPPORTED flag shall be set according to the value received in the Authorization request.'"
+    },
+    "TS29.273.dadx#s6b-aaa-qos-resources": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded.'; 'The QoS profile template value in this IE shall be set to 0.'"
+    },
+    "TS29.273.dadx#s6b-aaa-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#s6b-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/2: 'In an authorization response sent during the authorization procedure at PDN connection setup, the Trace-Data AVP shall be included.'; 'In an authorization response sent during the service authorization information update procedure, - the Trace-data AVP shall be included if trace activation is requested - the Trace-Reference AVP shall be included, if trace deactivation is requested.'"
+    },
+    "TS29.273.dadx#s6b-aar-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this information element, with the Emergency-Indication bit set, during the establishment of an emergency PDN connection.'"
+    },
+    "TS29.273.dadx#s6b-aar-maximum-wait-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this IE if it received the Maximum Wait Time from the MME/SGSN or TWAN/ePDG, and the PGW supports the procedure specified in clause 13.3'"
+    },
+    "TS29.273.dadx#s6b-aar-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'It shall be present on the first authorization request sent by the PGW to the 3GPP AAA Server for a given APN.'"
+    },
+    "TS29.273.dadx#s6b-aar-origination-time-stamp": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this IE if it received the Origination Time Stamp from the MME/SGSN or TWAN/ePDG and if the PGW supports the procedure specified in clause 13.2'"
+    },
+    "TS29.273.dadx#s6b-aar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.2.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-dea-an-trusted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be present if the 3GPP AAA Server is able to make decision on whether the access network is Trusted or Untrusted.'"
+    },
+    "TS29.273.dadx#s6b-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#s6b-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'It shall be present only if the result code is set to success.'"
+    },
+    "TS29.273.dadx#s6b-dea-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS_RELOCATE_HA indicating to the PDN GW that it shall initiate a HA switch procedure towards the UE.'"
+    },
+    "TS29.273.dadx#s6b-dea-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be present if the authorization was successful.'; 'None of the PMIP6_SUPPORTED or MIP4_SUPPORTED flags shall be set, since DSMIPv6 is used in this case.'"
+    },
+    "TS29.273.dadx#s6b-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'This IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#s6b-dea-qos-resources": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded.'; 'The QoS profile template value in this IE shall be set to 0.'"
+    },
+    "TS29.273.dadx#s6b-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#s6b-dea-relocate-ha-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.1.2.1.3: 'If the HSS indicates that the user is currently being served by a different PDN GW, the 3GPP AAA Server shall respond to to the PDN GW with the Result-Code set to DIAMETER_SUCCESS_RELOCATE_HA and include the new assigned PDN GW identity in the MIP6-Agent-Info AVP.'"
+    },
+    "TS29.273.dadx#s6b-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is to be used to download the trace activation from the HSS to the PDN GW.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#s6b-der-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/1: 'This IE shall be present if it is available when the PDN GW sends the request.'"
+    },
+    "TS29.273.dadx#s6b-der-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.1/1: 'It shall be present when the PGW Identity does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aaa-an-trusted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/4: 'This AVP shall be sent if this re-authorization procedure is triggered by the authentication and authorization via STa or SWm, when the 3GPP AAA Server detects that an S6b session already exists for the UE and the S6b session was established as a result of an authentication request for DSMIPv6.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/4: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/4: 'Trace-data AVP shall be included (directly under the Trace-Info) if trace activation is requested'; 'Trace-Reference AVP shall be included, if trace deactivation is requested.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aar-qos-capability": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/3: 'The PGW shall include this IE only during UE the initial attach.'"
+    },
+    "TS29.273.dadx#s6b-dsmip-aar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.5.1/3: 'It shall be present when the PGW Identity does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.4: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the S6b application.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-mip-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'it shall be included if the Result-Code value is set to DIAMETER_SUCCESS and the MIP-MN-HA-SPI was sent in the authorization request.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'The 3GPP AAA Server shall insert this AVP if the authorization was successful.'; 'The MIP4_SUPPORTED flag shall be set.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-qos-resources": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded.'; 'The QoS profile template value in this IE shall be set to 0.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aaa-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aar-mip-mn-ha-spi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/1: 'It shall be included when the PDN-GW does not have the MN-HA shared key required to verify the MIPv4 RRQ message.'"
+    },
+    "TS29.273.dadx#s6b-mip4-aar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 9.1.2.6.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-mip4-mip6-agent-info-fqdn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.6.2: 'In all other cases the PDN GW shall use its FQDN.'; 'The FA/3GPP AAA Server/HSS shall use FQDN if known.'"
+    },
+    "TS29.273.dadx#s6b-mip4-mip6-agent-info-home-link-prefix": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.6.2: 'The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
+    },
+    "TS29.273.dadx#s6b-pmip-mip6-agent-info-fqdn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.2.2: 'In all other cases the PDN GW shall use its FQDN.'; 'MAG/AAA/HSS shall use FQDN if known.'"
+    },
+    "TS29.273.dadx#s6b-pmip-mip6-agent-info-home-link-prefix": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.2.2: 'The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
+    },
+    "TS29.273.dadx#service-selection-labels": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.5: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
+    },
+    "TS29.273.dadx#short-network-name-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.15: 'The Short-Network-Name AVP is of type OctetString; this AVP shall contain the Short Network Name and be encoded as the Short name value field of the AT_SHORT_NAME_FOR_NETWORK attribute specified in clause 8.2.5.2'"
+    },
+    "TS29.273.dadx#ssid-length": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.22: 'It shall contain a string of 1 to 32 octets.'"
+    },
+    "TS29.273.dadx#sta-aaa-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\".'"
+    },
+    "TS29.273.dadx#sta-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This information element shall only be sent if the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall only be included if NBM is authorized for use, the Emergency-Indication AVP was not present in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency Sessions and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This information element shall only be sent if it has been received in the corresponding authorization request and the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set.'"
+    },
+    "TS29.273.dadx#sta-aaa-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'Based on operator policy, this information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#sta-aaa-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the trusted non-3GPP access network.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#sta-aaa-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/4: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#sta-aar-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/3: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#sta-aar-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/3: 'This AVP shall be included only if optimized idle mode mobility from E-UTRAN to HRPD access is executed.'; 'When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set.'"
+    },
+    "TS29.273.dadx#sta-dea-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall be present only if the non-3GPP access network was decided to be trusted, the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\".'"
+    },
+    "TS29.273.dadx#sta-dea-an-trusted": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall be included only in the first authentication and authorization response.'; 'For the STa case, the value \"TRUSTED\" shall be used.'"
+    },
+    "TS29.273.dadx#sta-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if EPC Access is authorized, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall only be included if NBM is authorized for use, the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-dea-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency sessions and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'it shall include this IE and set the Emergency-Indication bit when the UE indicates an Emergency Attach in EAP-AKA' signalling.'"
+    },
+    "TS29.273.dadx#sta-dea-erp-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if the ERP Keying Material is present.'"
+    },
+    "TS29.273.dadx#sta-dea-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'If the 3GPP AAA Server supports ERP, this IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS, the domain-specific re-authentication key was requested and the use of ERP is authorized for this user (see clause 8.2.3.27).'"
+    },
+    "TS29.273.dadx#sta-dea-mip-fa-rk": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall be present if MIPv4 FACoA mode is used, the MN-FA authentication extension is supported and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-dea-mip-fa-rk-spi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall be present if MIP-FA-RK is present'"
+    },
+    "TS29.273.dadx#sta-dea-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if EPC Access is authorized and if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'; 'If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#sta-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'Based on operator policy, this information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#sta-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#sta-dea-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the non-3GPP access network is trusted and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'For a trusted WLAN access, the 3GPP AAA Server shall include this IE if the user's Mobile Equipment Identity is available.'; 'When present, this grouped AVP shall contain the IMEI AVP and, if available, the Software Version AVP.'"
+    },
+    "TS29.273.dadx#sta-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'; 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the non-3GPP access network.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#sta-dea-twan-connection-mode": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'The 3GPP AAA Server shall include this IE if it selects either the SCM or MCM and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'; 'If this IE is not present, the TWAN shall use TSCM.'"
+    },
+    "TS29.273.dadx#sta-dea-twan-connectivity-parameters": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall contain the requested connectivity parameters received from the UE if the 3GPP AAA Server authorizes the SCM for TWAN and the Result-Code AVP is set to DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags.'"
+    },
+    "TS29.273.dadx#sta-dea-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#sta-dea-wlcp-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the selected TWAN Connection Mode is MCM.'"
+    },
+    "TS29.273.dadx#sta-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority conveyed in an EAP response/identity message'"
+    },
+    "TS29.273.dadx#sta-der-imei-check-in-vplmn-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'The 3GPP AAA Proxy shall include this IE if it has performed an IMEI check in the VPLMN.'"
+    },
+    "TS29.273.dadx#sta-der-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'The PMIP6_SUPPORTED flag and/or the GTPv2 SUPPORTED flag shall be set if the non-3GPP access supports PMIPv6 and/or GTPv2.'; 'The flag MIP6_INTEGRATED shall be set if DHCPv6 based Home Agent address discovery is supported as defined in IETF RFC 5447 [6].'; 'The MIP4_SUPPORTED flag shall be set if the non-3GPP access supports MIPv4 FA-CoA mode.'"
+    },
+    "TS29.273.dadx#sta-der-transport-access-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19).'"
+    },
+    "TS29.273.dadx#sta-der-twag-cp-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'The TWAN shall include this IE if it indicates support of the MCM in the Supported TWAN Connection Modes IE.'"
+    },
+    "TS29.273.dadx#sta-der-twan-connectivity-parameters": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.1/1: 'This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access.'; 'If the requested connectivity has been granted, the following information elements shall be included:'"
+    },
+    "TS29.273.dadx#sta-erp-dea-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.5.1/2: 'This IE shall be present if the ERP re-authentication is successful.'"
+    },
+    "TS29.273.dadx#sta-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.10: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the STa/SWa application.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall be present only if the non-3GPP access network was decided to be trusted, the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\".'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This information element shall only be sent if the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This IE shall be sent if Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency Sessions and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-mip-fa-rk": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall be present if MIPv4 is used, MN-FA authentication extension is supported and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-mip-fa-rk-spi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall be present if MIP-FA-RK is present'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'Based on operator policy, this information element shall be sent to the non-3GPP access network if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the trusted non-3GPP access network.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#sta-reauth-dea-wlcp-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/6: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the TWAN Connection Mode previously selected is MCM.'"
+    },
+    "TS29.273.dadx#sta-reauth-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.1.2.3.1/5: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#subscription-id-type-values": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.2: 'EPC shall make use only of the MSISDN and External Identifier values.'"
+    },
+    "TS29.273.dadx#swa-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swa-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and if the Transport Access Type in the request command indicated that the UE is accessing the EPC from a Fixed Broadband access network'; 'This IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#swa-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swa-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/2: 'This information element shall be present if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#swa-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/1: 'This information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swa-der-transport-access-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.1/1: 'if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19).'"
+    },
+    "TS29.273.dadx#swa-reauth-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.4.1/4: 'This IE shall be sent if Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swa-reauth-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.4.1/4: 'This information element shall be sent to the non-3GPP access network if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swa-reauth-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 4.1.2.4.1/3: 'This information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swd-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'This information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swd-der-mip6-feature-vector": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'The PMIP6_SUPPORTED flag and/or the GTPv2_SUPPORTED flag shall be set if the trusted non-3GPP access network supports PMIPv6 and/or GTPv2.'; 'The flag MIP6_INTEGRATED shall be set if DHCPv6 based Home Agent address discovery is supported as defined in IETF RFC 5447 [6].'; 'The MIP4_SUPPORTED flag shall be set if the trusted non-3GPP access supports MIPv4 FA-CoA mode.'"
+    },
+    "TS29.273.dadx#swd-der-transport-access-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19).'"
+    },
+    "TS29.273.dadx#swd-der-twag-cp-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'The TWAN shall include this IE if it indicates support of the MCM in the Supported TWAN Connection Modes IE.'"
+    },
+    "TS29.273.dadx#swd-der-twan-connectivity-parameters": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.1.2.1.1-1: 'This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access.'; 'If the requested connectivity has been granted, the following information elements shall be included:'"
+    },
+    "TS29.273.dadx#swm-aaa-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request.'"
+    },
+    "TS29.273.dadx#swm-aaa-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'It shall only be included if NBM is used, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request, and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swm-aaa-core-network-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#swm-aaa-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'Based on operator policy, this information element shall be sent to the ePDG if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swm-aaa-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This AVP shall contain the MSISDN of the UE and shall be sent only if it is available.'"
+    },
+    "TS29.273.dadx#swm-aaa-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the ePDG.'; 'Only the Trace-Data AVP shall be included if trace activation is requested. Only the Trace-Reference AVP shall be included if trace deactivation is requested.'"
+    },
+    "TS29.273.dadx#swm-aaa-user-location-info-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
+    },
+    "TS29.273.dadx#swm-aar-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swm-aar-ue-local-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.2.1/1: 'This IE shall be present if the ePDG provided the UE Local IP address in the initial Authentication and Authorization Request and the UE Local IP address has changed.'"
+    },
+    "TS29.273.dadx#swm-dea-apn-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Request.'"
+    },
+    "TS29.273.dadx#swm-dea-apn-oi-replacement": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'It shall only be included if NBM is used, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Request and the Result-Code AVP is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swm-dea-core-network-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#swm-dea-eap-master-session-key": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'It shall be present when Result Code is set to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swm-dea-emergency-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE shall only be present if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'It shall be present for a non-roaming authenticated user, if this information was received from the HSS and if the Emergency-Services AVP is present, with the Emergency-Indication bit set, in the Authentication and Authorization Request.'"
+    },
+    "TS29.273.dadx#swm-dea-mobile-node-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This information element shall be present if NBM is used.'; 'If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes.'"
+    },
+    "TS29.273.dadx#swm-dea-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'Based on operator policy, this information element shall be sent to the ePDG if the UE has an MPS subscription in the HSS.'"
+    },
+    "TS29.273.dadx#swm-dea-redirect-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "TS29.273.dadx#swm-dea-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This AVP shall contain the MSISDN of the UE and shall be sent only if it is available.'"
+    },
+    "TS29.273.dadx#swm-dea-trace-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the ePDG.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#swm-dea-ue-usage-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE shall be present if this information is available in the user subscription.'"
+    },
+    "TS29.273.dadx#swm-dea-user-location-info-time": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
+    },
+    "TS29.273.dadx#swm-der-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'An ePDG which supports emergency services shall include this information element, with the Emergency-Indication bit set, if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment'"
+    },
+    "TS29.273.dadx#swm-der-high-priority-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#swm-der-rat-type": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'This information element shall be present if the access type is known by the ePDG.'; 'When not known by the ePDG, this information element should be present and, in that case, it shall take the value VIRTUAL (1).'"
+    },
+    "TS29.273.dadx#swm-der-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'This AVP shall be present if the ePDG has received an APN from the UE and the UE did not indicate the establishment of an emergency session in the IKEv2 signalling.'; 'This AVP shall be absent if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment'"
+    },
+    "TS29.273.dadx#swm-der-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'The ePDG shall include this IE and set it to the user's Mobile Equipment Identity, if this information is available.'; 'For an untrusted WLAN access, this grouped AVP shall contain the IMEI AVP and, if available, the Software-Version AVP.'"
+    },
+    "TS29.273.dadx#swm-der-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.1.2.1.1/1: 'This AVP shall be present if the ePDG is not in the UE's home network i.e. the UE is roaming.'"
+    },
+    "TS29.273.dadx#swm-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.3.2: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWm application.'"
+    },
+    "TS29.273.dadx#swx-feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.15: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWx application.'"
+    },
+    "TS29.273.dadx#swx-maa-3gpp-aaa-server-name": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/4: 'This AVP shall be sent when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
+    },
+    "TS29.273.dadx#swx-maa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-maa-sip-auth-data-item": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/4: 'If the SIP-Number-Auth-Items AVP is equal to zero or it is not present, then this AVP shall not be present.'"
+    },
+    "TS29.273.dadx#swx-maa-sip-number-auth-items": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/4: 'It shall be present when the result is DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-mar-anid": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/1: 'This IE shall be present if the Authentication Method is EAP-AKA'.'"
+    },
+    "TS29.273.dadx#swx-mar-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-mar-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/1: 'If the 3GPP AAA Server knows the HSS name, this AVP shall be present.'"
+    },
+    "TS29.273.dadx#swx-mar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/1: 'The 3GPP AAA Server shall include this information element when received from signalling across the SWd.'"
+    },
+    "TS29.273.dadx#swx-ppa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-ppr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-restoration-sar-active-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.4.2.1/1: 'For the explicitly subscribed APNs, the following information shall be present:'; 'For the Wildcard APN, the following information shall be present:'"
+    },
+    "TS29.273.dadx#swx-rta-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-rtr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-saa-3gpp-aaa-server-name": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/2: 'This AVP shall be present when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
+    },
+    "TS29.273.dadx#swx-saa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-saa-non-3gpp-user-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/2: 'It shall be present when Server-Assignment-Type in the request is equal to AAA_USER_DATA_REQUEST or REGISTRATION and the Result-Code is equal to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-sar-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-sar-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'If the 3GPP AAA Server knows the HSS name this AVP shall be present.'"
+    },
+    "TS29.273.dadx#swx-sar-emergency-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'This IE shall only be included when the Server-Assignment-Type is set to PGW_UPDATE.'"
+    },
+    "TS29.273.dadx#swx-sar-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'This IE shall contain, either the identity of the dynamically allocated PDN GW, or the identity of a dynamically allocated PDN GW selected for the establishment of emergency PDN connections, and is included if the Server-Assignment-Type is set to PGW_UPDATE.'"
+    },
+    "TS29.273.dadx#swx-sar-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'For non-emergency PDN connection establishment, this information element shall contain the Network Identifier part of the APN, and it shall be included if the Server-Assignment-Type is set to PGW_UPDATE.'; 'For emergency PDN connection establishment, this information element shall be left absent.'"
+    },
+    "TS29.273.dadx#swx-sar-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'The 3GPP AAA Server shall include this IE and set it to the user's Mobile Equipment Identity, if this information is available, and if the Server-Assignment-Type is set to REGISTRATION.'; 'This IE shall also be present, independently of the value of the Server-Assignment-Type, if the Terminal-Information has changed from the last value previously reported to the HSS.'; 'This grouped AVP shall contain the IMEI AVP and, if available, the Software-Version AVP, for a trusted or untrusted WLAN access.'"
+    },
+    "TS29.273.dadx#swx-sar-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.2.2.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#swx-sip-auth-data-item-sip-item-number": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.1.2.1.1/5: 'This information element shall be present in a SIP-Auth-Data-Item grouped AVP in circumstances where there are multiple occurrences of SIP-Auth-Data-Item AVPs, and the order in which they should be processed is significant.'"
+    },
+    "TS29.273.dadx#trace-info-either": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.13: 'Either the Trace-Data or the Trace-Reference AVP shall be included.'"
+    },
+    "TS29.273.dadx#twag-cp-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.29: 'The TWAG-CP-Address AVP is of type Address and shall contain the TWAG control-plane IPv4 and/or IPv6 address that the TWAG supports, to be used for WLCP by the UE if MCM is selected.'"
+    },
+    "TS29.273.dadx#twag-up-address-mac-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.30: 'The TWAG-UP-Address AVP is of type UTF8String and shall contain a 6-octet MAC address that identifies the TWAG user-plane MAC address to be used for encapsulating user plane packets between the UE and the TWAN, when SCM is used.'; 'It shall be encoded in upper-case ASCII characters with the octet values separated by dash characters. It shall contain a string of 17 octets.'"
+    },
+    "TS29.273.dadx#twan-access-info-access-authorization-flags-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.19: 'If the Access-Authorization-Flags AVP is not present in the TWAN-Access-Info AVP, EPC access and Non-Seamless WLAN Offload shall be considered to be not allowed.'"
+    },
+    "TS29.273.dadx#twan-access-info-wlan-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.3.19: 'If no WLAN-Identifier AVP is included in the TWAN-Access-Info AVP, the allowed access methods shall apply to any arbitrary Trusted WLAN.'; 'A specific Trusted-WLAN shall appear in at most one TWAN-Access-Info AVP.'; 'There shall be at most one TWAN-Access-Info AVP not including any WLAN-Identifier.'"
+    },
+    "TS29.273.dadx#twan-connection-mode-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.25/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.273.dadx#twan-connectivity-parameters-served-party-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.26: 'These AVPs shall be present if the S2a connection was successfully established, and they shall contain either of:'; 'For the IPv6 interface identifier, the higher 64 bits of the address shall be set to zero.'"
+    },
+    "TS29.273.dadx#twan-connectivity-parameters-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.26: 'It shall contain both the network identifier part and the operator identifier part of the Access Point Name.'"
+    },
+    "TS29.273.dadx#visited-network-identifier-domain": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.3.1.2: 'The AVP shall be encoded as:'; 'mnc<MNC>.mcc<MCC>.3gppnetwork.org'"
+    },
+    "TS29.273.dadx#wlcp-key-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.33: 'The WLCP-Key AVP (AVP Code 1535) is of type OctetString and it shall contain the WLCP Key used for protecting the WLCP signalling between the UE and the TWAN, as specified in'"
+    },
     "TS29.273.py#accounting-interim-interval-row-5-2-3-1": {
      "kind": "correction",
      "reason": "Table 5.2.3.1/2 misspells the AVP; its cited origin defines Acct- Interim-Interval."
@@ -7163,9 +8819,9 @@
      "reason": "Clauses 9.2.3.2.2 and 9.2.3.6.2 both explicitly cite RFC 5447 and print identical bodies for the same identity; keep the first copy in the corrected dictionary."
     },
     "TS29.273.py#mip6-agent-info-row-clause": {
-     "expect": "MIP6-Agent-Info is cited at clause 9.2.3.6.2 in table 9.2.3.6.1/1, but the file holds it at clause 9.2.3.2.2, and nothing at clause 9.2.3.6.2",
+     "expect": "MIP6-Agent-Info is cited at clause 9.2.3.6.2 in table 9.2.3.6.1/1, but the file holds it at clause 9.2.3.2.2",
      "kind": "accept",
-     "reason": "the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so the file holds only clause 9.2.3.2.2's",
+     "reason": "the row is right: clause 9.2.3.6.2 prints MIP6-Agent-Info again for its interface, and TS29.273.py#mip6-agent-info-duplicate deletes that copy, so the file holds only clause 9.2.3.2.2's; what the file holds at clause 9.2.3.6.2 is the interpretations of its sentences",
      "rule": "section-mismatch",
      "targets": [
       [
@@ -7224,7 +8880,7 @@
      "targets": [
       [
        "sections",
-       137
+       286
       ]
      ]
     },

@@ -171,6 +171,7 @@ _CODEC = {
     ast.Codec.PLMN_DOMAIN: b"mnc045.mcc123.3gppnetwork.org",
     ast.Codec.EPC_PLMN_DOMAIN: b"epc.mnc045.mcc123.3gppnetwork.org",
     ast.Codec.TIME_ZONE: b"+8",
+    ast.Codec.MAC_ADDRESS: b"00-10-A4-23-19-C0",
     ast.Codec.IP_ADDRESS: b"\x00\x01\xc0\x00\x02\x01",
 }
 # What breaks a codec's layout without changing its length.
@@ -184,6 +185,7 @@ _BROKEN_CODEC = {
     ast.Codec.PLMN_DOMAIN: lambda good: b"x" * len(good),
     ast.Codec.EPC_PLMN_DOMAIN: lambda good: b"x" * len(good),
     ast.Codec.TIME_ZONE: lambda good: b"x" * len(good),
+    ast.Codec.MAC_ADDRESS: lambda good: good.lower(),
     ast.Codec.IP_ADDRESS: lambda good: b"\x00\x03" + good[2:],
 }
 

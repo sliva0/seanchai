@@ -370,6 +370,7 @@ class Model(_Resolver):
                 for each in view.constraints
                 if each.command == message.name
                 and each.application_id in (None, message.application_id)
+                and each.command_section in (None, message.source.section)
             ),
             result_codes=tuple(
                 code

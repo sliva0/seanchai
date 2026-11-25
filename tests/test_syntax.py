@@ -283,6 +283,7 @@ _SCOPED_DADX = [
     ("    length 1..15", "characters", "constant.language.unit"),
     ("    length 1..15", "the octets", "comment.line.double-semicolon"),
     ("; Versions: 1.0.0", "..", "keyword.operator.range"),
+    ("; Command-Section:", "6.1.1", "constant.other.section"),
 ]
 
 

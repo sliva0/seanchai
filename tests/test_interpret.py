@@ -2,6 +2,7 @@
 (`.dadx`) that writes it, its merge into a corrected file and the quote check
 against the source document."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -34,6 +35,7 @@ _EVERY_RULE = _dad(
     "; AVP: Context-Identifier",
     "; Command: Delete-Subscriber-Data-Request",
     "; Application-ID: 16777251",
+    "; Command-Section: 7.2.27",
     "; Section: 5.2.2.2.1",
     "; Table: 5.2.2.2.1/1",
     "; Page: 43",
@@ -87,9 +89,10 @@ def test_every_rule_reads_and_writes_back():
     assert isinstance(block, ast.InterpretedConstraints)
     assert isinstance(unique_block, ast.InterpretedConstraints)
     assert unique_block.body[1:] == (ast.UniqueRule(),)
-    assert (block.command, block.application_id) == (
+    assert (block.command, block.application_id, block.command_section) == (
         "Delete-Subscriber-Data-Request",
         16777251,
+        "7.2.27",
     )
     first, second, third = block.readings
     assert first.quotes == ('It shall be present only if the "X" bit is set.',)
@@ -225,6 +228,12 @@ def test_every_rule_reads_and_writes_back():
             6,
             "Application-ID",
             id="application-without-command",
+        ),
+        pytest.param(
+            _block('"Q."', "    range 1", scope=("; Command-Section: 6.1.1",)),
+            6,
+            "Command-Section",
+            id="command-section-without-command",
         ),
         pytest.param(
             _block(
@@ -584,6 +593,58 @@ def test_an_interpretation_stands_beside_the_clause_it_reads():
 def test_an_interpretation_expects_what_it_names(declared, message):
     with pytest.raises(CorrectionError, match=message):
         corrections.apply(parser.parse(_RAW), declared)
+
+
+# The command printed a second time under its one application, as TS 29.273
+# prints Diameter-EAP-Request for STa and SWd.
+_TWICE = _RAW + "\n".join(
+    (
+        "",
+        "",
+        "; Type: Message",
+        "; Name: Example-Request, EXR",
+        "; Section: 6.1.2",
+        "<Example-Request> ::= < Diameter Header: 9, REQ, 99 >",
+        "        < Session-Id >",
+        "        [ Example-Flags ]",
+        "",
+    )
+)
+
+
+def test_an_interpretation_chooses_a_print_of_its_command_by_its_clause():
+    chosen = _interpret(
+        '"Only with the flag."',
+        "    requires Example-Flags bit 0",
+        id="example-number-in-first",
+        scope=("; Command: Example-Request", "; Command-Section: 6.1.1"),
+        section="6.1.1",
+    )
+
+    corrected, _ = corrections.apply(parser.parse(_TWICE), [chosen])
+
+    (block,) = [
+        section
+        for section in corrected.sections
+        if isinstance(section, ast.InterpretedConstraints)
+    ]
+    assert block.command_section == "6.1.1"
+    for scope, message in (
+        (("; Command: Example-Request",), "2 commands 'Example-Request' match"),
+        (
+            ("; Command: Example-Request", "; Command-Section: 6.1.2"),
+            "the body of Example-Request does not hold Example-Number",
+        ),
+        (
+            ("; Command: Example-Request", "; Command-Section: 6.1.3"),
+            "0 commands 'Example-Request' match",
+        ),
+    ):
+        with pytest.raises(CorrectionError, match=re.escape(message)):
+            corrections.apply(
+                parser.parse(_TWICE),
+                [_interpret(id="example-number-in-request", scope=scope)],
+            )
 
 
 def test_a_quote_is_held_to_its_clause_and_its_page_read_from_the_copy():
@@ -975,4 +1036,39 @@ def test_the_model_and_the_dictionary_carry_the_reading_documents_constraints(
         # TS 29.999's reading is TS 29.998's, so the one entry carries it.
         ("Example-Number", None, ("10415:1",)),
         ("Example-Number", "Example-Group", ("10415:2",)),
+    ]
+
+
+def test_the_linter_asks_a_command_printed_twice_for_its_clause():
+    from seanchai import linter
+
+    def found(*scope: str) -> list[str]:
+        text = _TWICE + "\n".join(
+            (
+                "",
+                "",
+                "; Type: Interpreted Constraints",
+                "; AVP: Example-Flags",
+                *scope,
+                "; Section: 6.3.4",
+                "; Versions: 19.0.0",
+                '"Q."',
+                "    bits only 0",
+                "",
+            )
+        )
+        return [
+            finding.message
+            for finding in linter.lint(parser.parse(text))
+            if finding.rule == "constraint-command-unknown"
+        ]
+
+    assert found("; Command: Example-Request") == [
+        "Example-Flags in Example-Request: names command Example-Request, which"
+        " the file prints at clauses 6.1.1, 6.1.2; Command-Section names one"
+    ]
+    assert found("; Command: Example-Request", "; Command-Section: 6.1.2") == []
+    assert found("; Command: Example-Request", "; Command-Section: 6.1.3") == [
+        "Example-Flags in Example-Request: names command Example-Request at"
+        " clause 6.1.3, which the file does not print there"
     ]

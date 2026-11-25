@@ -1301,11 +1301,23 @@ def _placed_constraints(
             (("sections", index), section)
             for index, section in enumerate(spec.sections)
         ]
-    scope = (node.avp, node.command, node.application_id, node.within)
+    scope = (
+        node.avp,
+        node.command,
+        node.application_id,
+        node.command_section,
+        node.within,
+    )
     for _, section in sections:
         if (
             isinstance(section, ast.InterpretedConstraints)
-            and (section.avp, section.command, section.application_id, section.within)
+            and (
+                section.avp,
+                section.command,
+                section.application_id,
+                section.command_section,
+                section.within,
+            )
             == scope
             and section.source.section == node.source.section
         ):
@@ -1374,6 +1386,7 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
             if isinstance(section, ast.Message)
             and section.name == node.command
             and node.application_id in (None, section.application_id)
+            and node.command_section in (None, section.source.section)
         ]
         if len(messages) != 1:
             raise CorrectionError(

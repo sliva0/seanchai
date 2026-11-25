@@ -110,7 +110,7 @@ syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-
 syn match dadConstraintWord "\s\zs\%(or\|if\|bit\|at-most-one\|at-least-one\|set\|clear\|only\)\ze\s" contained
 syn match dadConstraintOp "\.\.\|\%(\s\|\.\.\)\@2<=\*\|\s\@1<==\ze\s" contained
 " A codec after `encoding`, a length's unit after its bounds.
-syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-address\|time-zone\|element\)\ze\%(\s\|$\)" contained
+syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-address\|time-zone\|mac-address\|element\)\ze\%(\s\|$\)" contained
 syn match dadUnit "\%([0-9*] \)\@2<=\%(octets\|digits\|characters\)\ze\s*\%(;;.*\)\=$" contained
 " An element's clause, after its document: an annex's letter alone too.
 syn match dadElementClause "\%(^    encoding element \S\+ \)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\ze\%(\s\|$\)" contained

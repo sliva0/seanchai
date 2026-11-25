@@ -18,6 +18,7 @@
 ; AVP: ACME-Flags
 ; Command: ACME-Request
 ; Application-ID: 16777999
+; Command-Section: 6.1.1
 ; Section: 7.3.6
 ; Table: 7.3.6/1
 ; Versions: 1.0.0..1.2.0 ;; widened by --expand-ranges

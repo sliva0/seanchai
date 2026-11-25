@@ -1440,6 +1440,9 @@ class Codec(enum.StrEnum):
       clause 4.3.1), the clause allowing no other (TS 29.272 clause 7.3.98).
     - `time-zone`: the offset from UTC in units of 15 minutes, a sign and
       decimal digits, `+8` (TS 29.272 clause 7.3.163).
+    - `mac-address`: a 6-octet MAC address as text, each octet two
+      upper-case hexadecimal digits, separated by dashes,
+      `00-10-A4-23-19-C0` (TS 29.273 clauses 5.2.3.23 and 5.2.3.30).
     - `element`: an information element another document defines, carried
       whole: `document`, and the `clause` and `element` name where the
       clause gives them. Checked no further than a length rule states.
@@ -1455,6 +1458,7 @@ class Codec(enum.StrEnum):
     EPC_PLMN_DOMAIN = "epc-plmn-domain"
     IP_ADDRESS = "ip-address"
     TIME_ZONE = "time-zone"
+    MAC_ADDRESS = "mac-address"
     ELEMENT = "element"
 
 
@@ -1766,10 +1770,12 @@ class InterpretedConstraints(Node):
     sentences it was read from.
 
     `avp` is the AVP the rules constrain. `command` (with `application_id`
-    where the document prints the command for several applications) or
-    `within`, a grouped AVP, scopes them to where the AVP appears there, and
-    is where a predicate's conditions are looked up; with neither, the rules
-    hold wherever the document reads the AVP. `table` names the table
+    where the document prints the command for several applications, and
+    `command_section`, the clause of its block, where it prints the command
+    more than once for one application or for none) or `within`, a grouped
+    AVP, scopes them to where the AVP appears there, and is where a
+    predicate's conditions are looked up; with neither, the rules hold
+    wherever the document reads the AVP. `table` names the table
     printing the quote, an information element's description. `versions` is
     the range of document versions the quotes were checked against.
 
@@ -1783,6 +1789,7 @@ class InterpretedConstraints(Node):
     avp: AvpName
     command: AvpName | None = None
     application_id: Unsigned32 | None = None
+    command_section: SectionNumber | None = None
     within: AvpName | None = None
     table: TableLabel | None = None
     source: SourceRef
@@ -1797,6 +1804,8 @@ class InterpretedConstraints(Node):
             raise ValueError("a block is scoped to a command or a grouped AVP")
         if self.application_id is not None and self.command is None:
             raise ValueError("Application-ID chooses among a command's applications")
+        if self.command_section is not None and self.command is None:
+            raise ValueError("Command-Section chooses among a command's prints")
         if not isinstance(self.body[0], Quote):
             raise ValueError("the body opens with the quote its rules are read from")
         if isinstance(self.body[-1], Quote):

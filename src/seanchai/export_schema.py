@@ -459,9 +459,9 @@ class Block(_Model):
     - `interpreted`, `avp_target` and `readings` for an Interpreted
       Constraints block, `name` being the AVP it constrains, `avp_target`
       where its `; AVP:` line links, and `fields` its scope (`Command`,
-      `Application-ID` or `Within`) and `Versions`. `interpreted` is true
-      only here: a person read the block in the clause's prose, and no
-      document prints it as structure.
+      `Application-ID`, `Command-Section` or `Within`) and `Versions`.
+      `interpreted` is true only here: a person read the block in the
+      clause's prose, and no document prints it as structure.
 
     `commands` marks where its lines name a command.
     """

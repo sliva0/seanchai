@@ -545,6 +545,11 @@ local function codec_problem(codec, s)
     if not s:match("^[+-]%d+$") then
       return "not a sign and a number of 15 minutes"
     end
+  elseif codec == "mac-address" then
+    local octet = "[0-9A-F][0-9A-F]"
+    if not s:match("^" .. octet .. ("%-" .. octet):rep(5) .. "$") then
+      return "not six upper-case hexadecimal octets joined by '-'"
+    end
   end
   return nil
 end

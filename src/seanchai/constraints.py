@@ -55,6 +55,7 @@ CODEC_TYPES: dict[ast.Codec, frozenset[ast.DataType]] = {
     ast.Codec.PLMN_DOMAIN: _TEXT,
     ast.Codec.EPC_PLMN_DOMAIN: _TEXT,
     ast.Codec.TIME_ZONE: _TEXT,
+    ast.Codec.MAC_ADDRESS: _TEXT,
     ast.Codec.IP_ADDRESS: frozenset({ast.DataType.ADDRESS}),
     ast.Codec.ELEMENT: frozenset(ast.DataType),
 }
@@ -127,6 +128,7 @@ _LABELS = re.compile(r"[^.]+(?:\.[^.]+)*")
 _PLMN_DOMAIN = re.compile(r"mnc[0-9]{2,3}\.mcc[0-9]{3}\.3gppnetwork\.org", re.I)
 _EPC_PLMN_DOMAIN = re.compile(r"epc\." + _PLMN_DOMAIN.pattern, re.I)
 _TIME_ZONE = re.compile(r"[+-][0-9]+")
+_MAC_ADDRESS = re.compile(r"[0-9A-F]{2}(?:-[0-9A-F]{2}){5}")
 
 
 def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
@@ -181,6 +183,9 @@ def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
         case ast.Codec.TIME_ZONE:
             ok = _TIME_ZONE.fullmatch(text)
             return None if ok else "not a sign and a number of 15 minutes"
+        case ast.Codec.MAC_ADDRESS:
+            ok = _MAC_ADDRESS.fullmatch(text)
+            return None if ok else "not six upper-case hexadecimal octets joined by '-'"
     raise AssertionError(codec)
 
 

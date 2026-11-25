@@ -123,12 +123,24 @@ def _body(
             if isinstance(section, ast.Message)
             and section.name == block.command
             and block.application_id in (None, _application_id(spec, section))
+            and block.command_section in (None, section.source.section)
         ]
         if len(found) == 1:
             return found[0].avps, None
+        if not found and block.command_section is not None:
+            return None, (
+                f"names command {block.command} at clause"
+                f" {block.command_section}, which the file does not print there"
+            )
         if not found:
             return None, f"names command {block.command}, which the file does not print"
         ids = sorted({_application_id(spec, each) or 0 for each in found})
+        if len(ids) == 1:
+            sections = ", ".join(each.source.section for each in found)
+            return None, (
+                f"names command {block.command}, which the file prints at"
+                f" clauses {sections}; Command-Section names one"
+            )
         return None, (
             f"names command {block.command}, which the file prints under"
             f" applications {', '.join(map(str, ids))}; Application-ID names one"
@@ -501,12 +513,19 @@ def _constraints(
                     )
     # Rules on one AVP in one place: its blocks there, with those holding
     # wherever the document reads it.
-    places: dict[tuple[str, str | None, int | None, str | None], list] = {}
+    places: dict[tuple[str, str | None, int | None, str | None, str | None], list] = {}
     for block in blocks:
         places.setdefault(
-            (block.avp, block.command, block.application_id, block.within), []
+            (
+                block.avp,
+                block.command,
+                block.application_id,
+                block.command_section,
+                block.within,
+            ),
+            [],
         ).append(block)
-    for (avp, command, _, within), here in places.items():
+    for (avp, command, _, _, within), here in places.items():
         rules = [
             rule
             for block in here
@@ -516,7 +535,7 @@ def _constraints(
         if command is not None or within is not None:
             rules += [
                 rule
-                for block in places.get((avp, None, None, None), ())
+                for block in places.get((avp, None, None, None, None), ())
                 for rule in block.body
                 if not isinstance(rule, ast.Quote)
             ]

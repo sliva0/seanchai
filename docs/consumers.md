@@ -227,9 +227,9 @@ holes[]            id, name, reference, version, missing, what it does state,
 value_tables[]     kind (result-codes, bits, features, values), avp, avp_ids,
                    applications, reference, version, vendor_id, section, page,
                    table, application, feature_list_id, rows[]
-constraints[]      interpreted, avp, avp_ids, command, application_id, within,
-                   reference, version, section, table, page, versions,
-                   readings[]: quotes, rules[]
+constraints[]      interpreted, avp, avp_ids, command, application_id,
+                   command_section, within, reference, version, section,
+                   table, page, versions, readings[]: quotes, rules[]
 conflicts[]        vendor_id, code, defining, fields, obsolete,
                    readings[]: avp, obsoleted_by, paths[]
 ```

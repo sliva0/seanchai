@@ -111,6 +111,7 @@ def test_every_model_type_has_a_one_line_repr_and_a_json_dict(built):
             table=None,
             command=None,
             application_id=None,
+            command_section=None,
             within=None,
             versions="19.6.0",
             readings=(

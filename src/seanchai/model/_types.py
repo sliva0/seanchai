@@ -130,9 +130,11 @@ class Constraint(_Plain):
     always True, for a consumer meeting it among printed facts: each rule
     stands after the sentences it was read from (`readings`, as
     `ast.Reading`s), and a checker reports a `text-only` rule unknown.
-    `command` (with `application_id`) or `within` names where the AVP is
-    constrained as a member, and where a predicate's conditions are its
-    siblings; with neither, wherever the document reads it. `versions` is
+    `command` (with `application_id`, and `command_section`, the clause of
+    the command's block where the document prints it more than once) or
+    `within` names where the AVP is constrained as a member, and where a
+    predicate's conditions are its siblings; with neither, wherever the
+    document reads it. `versions` is
     the range of the document's versions the quotes were checked against.
     """
 
@@ -144,6 +146,7 @@ class Constraint(_Plain):
     table: str | None
     command: str | None
     application_id: int | None
+    command_section: str | None
     within: str | None
     versions: str
     readings: tuple[ast.Reading, ...]
@@ -173,6 +176,7 @@ def _constraint(entry: corpus.Entry, block: ast.InterpretedConstraints) -> Const
         table=block.table,
         command=block.command,
         application_id=block.application_id,
+        command_section=block.command_section,
         within=block.within,
         versions=block.versions,
         readings=block.readings,

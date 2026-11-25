@@ -1256,6 +1256,7 @@ def _parse_interpreted_constraints(
     # scope.
     command = directives.pop("Command", None)
     application_id = directives.pop("Application-ID", None)
+    command_section = directives.pop("Command-Section", None)
     within = directives.pop("Within", None)
     table = directives.pop("Table", None)
     versions = _pop(directives, "Versions", lineno)
@@ -1264,6 +1265,9 @@ def _parse_interpreted_constraints(
     number = None
     if application_id is not None:
         number = _number(application_id.value, application_id.lineno, "Application-ID")
+    if command_section is not None:
+        with _validated(command_section.lineno):
+            _SECTION_NUMBER.validate_python(command_section.value)
     if table is not None:
         with _validated(table.lineno):
             _INLINE_TEXT.validate_python(table.value)
@@ -1286,6 +1290,7 @@ def _parse_interpreted_constraints(
             avp=avp.value,
             command=None if command is None else command.value,
             application_id=number,
+            command_section=None if command_section is None else command_section.value,
             within=None if within is None else within.value,
             table=None if table is None else table.value,
             source=source,

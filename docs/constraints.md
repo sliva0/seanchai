@@ -130,6 +130,7 @@ name. A layout no clause states is not here.
 | `epc-plmn-domain` | `epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org` | TS 29.272 clause 7.3.43 |
 | `ip-address` | an Address of family 1 (IPv4, 4 octets) or 2 (IPv6, 16) | RFC 6733 clause 4.3.1, as TS 29.272 clauses 7.3.98 and 7.3.109 restrict it |
 | `time-zone` | a sign and decimal digits, the offset from UTC in 15 minutes: `+8` | TS 29.272 clause 7.3.163 |
+| `mac-address` | a 6-octet MAC address as text, each octet two upper-case hexadecimal digits, joined by dashes: `00-10-A4-23-19-C0` | TS 29.273 clauses 5.2.3.23 and 5.2.3.30 |
 | `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
 A clause pointing at another document without stating a layout ("Octets are
@@ -262,6 +263,17 @@ TS 29.329's 3 name 3 entries, of which 2 check something:
 | Call-Reference-Number | TS 29.002 17.7.3 CallReferenceNumber | TS 29.002 V19.1.0 17.7.3 | 1 to 8 octets | full | the octets take any value: the type says nothing more of them |
 | AS-Number | TS 29.002 17.7.8 ISDN-AddressString | TS 29.002 V19.1.0 17.7.3; TS 29.002 V19.1.0 17.7.8 | 1 to 9 octets; octet 1 bit 8 (extension, 1 for no extension) 1; octets 2 on TBCD digits (0-9, *, #, a, b, c), '1111' filling only the last octet's bits 8-5 | full | the nature of address and numbering plan values the type marks reserved are not refused, since it does not say they are not sent |
 
+TS 29.273's 6 name 6 entries, of which 4 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| ANID | TS 24.302 8.1.1 Access Network Identity | TS 24.302 V19.0.0 8.1.1.1; TS 24.302 V19.0.0 8.1.1.2 | nothing | none | no shape of the registry bounds a text's octets, and a prefix the tables do not name is 'Not defined', not refused: NOTE 6 leaves further prefixes to be defined |
+| Full-Network-Name | TS 24.302 8.2.5.1 Full name value | TS 24.302 V19.0.0 8.2.5.1; TS 24.008 V19.5.0 10.5.3.5a | at least 1 octet; octet 1 bit 8 (ext) 1 | partial | the coding scheme's reserved values 010 to 111 are not refused, since the clause does not say they are not sent, and the text string, with the spare bits its last octet holds, is not decoded |
+| Short-Network-Name | TS 24.302 8.2.5.2 Short name value | TS 24.302 V19.0.0 8.2.5.2; TS 24.008 V19.5.0 10.5.3.5a | at least 1 octet; octet 1 bit 8 (ext) 1 | partial | as Full-Network-Name's |
+| MIP-FA-RK | TS 33.402 9.2.1.2.2 FA-RK | TS 33.402 V19.0.0 9.2.1.2.2 | 20 octets | full | a key: any value |
+| MIP-FA-RK-SPI | TS 33.402 9.2.1.2.2 FA-RK-SPI | TS 33.402 V19.0.0 9.2.1.2.2 | nothing | none | a derived index: the clause steps it clear of the other active SPIs and of the top of the range, which a single message cannot show |
+| WLCP-Key | TS 33.402 A.3 WLCP key | TS 33.402 V19.0.0 A.3; TS 33.402 V19.0.0 A.1; TS 33.220 V19.1.0 B.2.0 | 32 octets | full | a key: any value |
+
 
 ## Reading them
 
@@ -316,8 +328,12 @@ a reviewer reads it beside the specification:
 ```
 
 - A person writes the scope (`; AVP:`, `; Within:` or `; Command:` with
-  `; Application-ID:`, `; Section:`, `; Table:`), the quotes and the rules,
-  and `; Versions:`, the range the quotes were checked against.
+  `; Application-ID:` and `; Command-Section:`, `; Section:`, `; Table:`),
+  the quotes and the rules, and `; Versions:`, the range the quotes were
+  checked against. `; Command-Section:` names the clause of the command's
+  block where the document prints the command more than once for one
+  application, or for none: TS 29.273 prints Diameter-EAP-Answer for STa
+  and SWd under STa's application, and for SWa with none.
 - `; Id:` names the block: a kebab-case name, unique in the file, naming what
   is read (`imei-digits`), not where. The corrected file's note and the
   corrections record cite it as `TS29.272.dadx#imei-digits`, so it stays put
@@ -343,8 +359,9 @@ the document's corrections:
   not print 'It should consist of 16 digits, ...'`. A transcription has no
   source text to check against, so a file for one is refused.
 - Merging expects the corrected file to hold every AVP a block names, one
-  command of its scope's name, the AVP in the command's or the grouped AVP's
-  printed body, and no other block for the same AVP, scope and clause.
+  command of its scope's name, application and clause, the AVP in the
+  command's or the grouped AVP's printed body, and no other block for the
+  same AVP, scope and clause.
 - A block applies only to copies of the releases its range spans, since
   whether a clause prints a sentence is a fact of each copy. Another
   release's are offered: `regenerate` counts them in a warning, and with
@@ -483,3 +500,76 @@ Experimental-Result as TS 29.272's clause 7.4 states it and its file does
 not read; Data-Reference's value 20, which the clause marks reserved without
 saying it is not sent; and Server-Name's "SIP-URL", for which no codec
 exists.
+
+## TS 29.273
+
+TS 29.273 V19.2.0 is read completely: every AVP clause of clauses 5.2.3,
+7.2.3, 8.2.3 and 9.2.3, and every C row of the information-element tables
+of clauses 4.1.2, 5.1.2, 6.1.2, 7.1.2, 8.1.2, 9.1.2 and 11.1.2, and the
+procedure and session-handling clauses for what they state of one message.
+Release 18's copy, V18.6.0, prints every sentence read and holds all 207
+blocks: it prints a reference to another 3GPP document as "3GPP TS" where
+Release 19 prints "TS", so a quote ends before such a reference.
+
+The document prints Diameter-EAP-Request and -Answer for SWa with no
+application and for STa and SWd under 16777250, and S6b's AA-Request and
+-Answer twice under 16777272, each print with a body of its own; a block
+names the print its table describes with `; Command-Section:`, as the
+corrections attaching the tables do. A re-authentication's answer is the
+first exchange's print: a row there allowing DIAMETER_SUCCESS alone, where
+the first exchange's allows DIAMETER_MULTI_ROUND_AUTH too, is text-only,
+since reading it would refuse the first exchange's answer.
+
+| | |
+|---|---|
+| AVP clauses (clauses 5.2.3, 7.2.3, 8.2.3 and 9.2.3, not their General, Void and grouping clauses) | 81 |
+| with something to declare | 36, in 51 blocks |
+| with nothing to declare | 45 |
+| information-element C rows | 157, of which 147 state a condition, a block each |
+| procedure clauses | 9.1.2.1.3's relocated PDN GW and 8.2.4's Auth-Session-State, in 9 blocks |
+| blocks | 207: 38 on an AVP wherever read, 21 within a grouped AVP, 148 within a command |
+| readings | 229 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 5: `mac-address` 2 (HESSID, TWAG-UP-Address), `labels`, `ip-address`, `plmn-domain` |
+| `encoding element` | 6, naming 6 entries of the registry; 4 rules checked, 2 not ([above](#elements)) |
+| `length` | 3, in octets |
+| `range` | 13: Auth-Session-State NO_STATE_MAINTAINED in SWx's 8 commands, Feature-List-ID 1 in each of the 4 applications, AN-Trusted TRUSTED in STa's answer |
+| `exclude` | 1: Subscription-Id-Type, MSISDN and External Identifier only |
+| `requires`, `present-if`, `absent-if` | 26, 21, 6 |
+| `default` | 1: Access-Authorization-Flags in TWAN-Access-Info |
+| `bits` | 12, each `only`: a flags AVP's NOTE that undefined bits are cleared |
+| `members` | 8: `only` 6 (Trace-Info in an answer), `at-least-one` 2 (Trace-Info, Access-Network-Info's SSID) |
+| `unique` | 1: WLAN-Identifier in TWAN-Access-Info |
+| `text-only` | 132 |
+
+Most text-only rules are conditions on the node, the subscription, the
+operator's policy, the procedure or an earlier message ("shall be sent to
+the 3GPP AAA Server if the UE has access priority", "if this information is
+available in the user subscription", "was not set in the initial
+Authentication and Authorization Answer"). The rest a single message could
+show but the format cannot say: a condition joining two of the message's
+AVPs with "and" (WLCP-Key present with DIAMETER_SUCCESS and the MCM
+selected), a member's member (the authentication scheme in
+SIP-Auth-Data-Item, an FQDN in MIP6-Agent-Info), a byte of a variable-length
+payload (Location-Information's Code, Operator-Name's Namespace ID), a flag
+of MIP6-Feature-Vector, whose flags clause 5.2.3.3 lists in prose and the
+file holds as no bit table, IMEI in Terminal-Information, which the file
+holds only as TS 29.272's re-used AVP, and six rows whose AVP the command's
+ABNF does not print (Transport-Access-Type in STa's and SWd's request,
+IMEI-Check-In-VPLMN-Result, AMBR and MIP6-Feature-Vector in STa's AA-Answer,
+AN-Trusted in S6b's Diameter-EAP-Answer), read where the document reads the
+AVP. ME-Identity-Check-Answer's Equipment-Status row is TS 29.272's command,
+which this file does not print, and TS 29.272's file reads it.
+
+Left unread: the session-handling clauses' "shall not include the
+Auth-Session-State AVP" (clauses 5.2.4, 7.2.4, 9.2.4) and "Neither the
+Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present"
+(clause 8.2.4), since no kind says an AVP is never sent; DER-Flags' and
+DEA-Flags' "This bit is only applicable to the TWAN authentication and
+authorization procedure", which says what a bit means, not when it is set;
+the detailed-behaviour clauses' result codes, which are what a node answers
+with, not a condition on an AVP; and the C rows saying only what an AVP
+holds when present ("If present, this IE shall contain the untrusted
+non-3GPP access network technology type").

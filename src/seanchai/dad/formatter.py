@@ -179,6 +179,7 @@ def _directives(
             ("AVP", "avp", section.avp),
             ("Command", "command", section.command),
             ("Application-ID", "application_id", section.application_id),
+            ("Command-Section", "command_section", section.command_section),
             ("Within", "within", section.within),
         ):
             if value is not None:

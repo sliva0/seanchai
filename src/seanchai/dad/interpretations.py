@@ -116,6 +116,8 @@ class Interpretation:
     def scope(self) -> str:
         """The AVP and where it is constrained, for messages."""
         block = self.block
+        if block.command is not None and block.command_section is not None:
+            return f"{block.avp} in {block.command} ({block.command_section})"
         if block.command is not None:
             return f"{block.avp} in {block.command}"
         if block.within is not None:

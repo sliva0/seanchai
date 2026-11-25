@@ -143,7 +143,7 @@ document read states is not judged.
 | Rule | Severity | Reports |
 |---|---|---|
 | `constraint-avp-unknown` | error | a name the block constrains, scopes or conditions on that the file does not hold |
-| `constraint-command-unknown` | error | a `; Command:` the file does not print, or prints for several applications with no `; Application-ID:` |
+| `constraint-command-unknown` | error | a `; Command:` the file does not print, or prints for several applications with no `; Application-ID:`, or more than once for one with no `; Command-Section:`, or not at the clause it names |
 | `constraint-not-member` | error | an AVP, or a condition's, that the printed body of its command or grouped AVP does not hold; a member a `members` rule names that the grouped AVP's body does not hold |
 | `constraint-type-mismatch` | error | a rule the AVP's type cannot meet: a range or `values` on an OctetString, a codec or a registered element for another type, an octet length on an integer, `bits` on neither an unsigned integer nor an OctetString, `members` on no grouped AVP; a condition testing a value or a bit of an AVP holding none, or a bit past its width |
 | `constraint-value-unknown` | error | a condition naming a value or bit the AVP's values, result codes or bit table do not name |

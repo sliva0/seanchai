@@ -966,7 +966,14 @@ class _Comparison:
             built: dictionary.Dictionary,
         ) -> dict[tuple[Any, ...], dictionary.Constraint]:
             return {
-                (c.reference, c.avp, c.command, c.application_id, c.within): c
+                (
+                    c.reference,
+                    c.avp,
+                    c.command,
+                    c.application_id,
+                    c.command_section,
+                    c.within,
+                ): c
                 for c in built.constraints
             }
 

@@ -104,6 +104,10 @@ VECTORS = [
     pytest.param(Codec.TIME_ZONE, b"-12", True, id="zone-behind"),
     pytest.param(Codec.TIME_ZONE, b"8", False, id="zone-unsigned"),
     pytest.param(Codec.TIME_ZONE, b"+8:00", False, id="zone-clock"),
+    pytest.param(Codec.MAC_ADDRESS, b"00-10-A4-23-19-C0", True, id="mac"),
+    pytest.param(Codec.MAC_ADDRESS, b"00-10-a4-23-19-c0", False, id="mac-lower"),
+    pytest.param(Codec.MAC_ADDRESS, b"00:10:A4:23:19:C0", False, id="mac-colons"),
+    pytest.param(Codec.MAC_ADDRESS, b"00-10-A4-23-19", False, id="mac-short"),
     pytest.param(Codec.ELEMENT, b"\xff\xff", True, id="element-unchecked"),
 ]
 

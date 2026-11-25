@@ -35,7 +35,7 @@ code, vendor, type and basic type, flag rules and Encrypt cell; each value
 table it carries comes too, and each feature list only for the application it
 numbers. `Emergency-Services`
 is one TS 29.272 re-uses: `show` prints TS 29.273's definition and its bits,
-both in `s6a.json`. The clauses of TS 29.272 and TS 29.329 are also read
+both in `s6a.json`. The clauses of TS 29.272, 29.273 and 29.329 are also read
 for what their prose says of each AVP's value and presence (a PLMN
 identity's layout, a range, a member allowed only beside another), as
 [interpreted constraints][constraints], each pinned to the sentences read

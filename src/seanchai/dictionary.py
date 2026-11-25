@@ -219,11 +219,13 @@ class Reading(_Model):
 class Constraint(_Model):
     """What a clause's prose says of an AVP's value or presence, as a person
     read it (`model.Constraint`): `interpreted` is always true, since no
-    document prints it as structure. `command` (with `application_id`) or
-    `within` names where the AVP is constrained as a member; with neither,
-    wherever the document reads it. `avp_ids` are the readings carrying it:
-    the AVP's own, the grouped AVP's for `within`, and the command's members
-    of that name for `command`. `versions` is the range of the document's
+    document prints it as structure. `command` (with `application_id`, and
+    `command_section`, the clause of the command's block where the document
+    prints it more than once) or `within` names where the AVP is
+    constrained as a member; with neither, wherever the document reads it.
+    `avp_ids` are the readings carrying it: the AVP's own, the grouped AVP's
+    for `within`, and the command's members of that name for `command`.
+    `versions` is the range of the document's
     versions the quotes were checked against."""
 
     interpreted: Literal[True]
@@ -231,6 +233,7 @@ class Constraint(_Model):
     avp_ids: tuple[str, ...]
     command: str | None
     application_id: int | None
+    command_section: str | None
     within: str | None
     reference: str
     version: str | None
@@ -913,6 +916,7 @@ def _constraint(constraint: model.Constraint, ids: Iterable[str]) -> Constraint:
         avp_ids=tuple(sorted(set(ids))),
         command=constraint.command,
         application_id=constraint.application_id,
+        command_section=constraint.command_section,
         within=constraint.within,
         reference=constraint.reference,
         version=constraint.version,

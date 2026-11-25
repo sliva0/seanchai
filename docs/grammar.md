@@ -693,7 +693,8 @@ DIAMETER_UNABLE_TO_COMPLY
 interpreted-constraints = "; Type: Interpreted Constraints" NL
                           "; AVP: " avp-name NL
                           ["; Command: " avp-name NL
-                           ["; Application-ID: " application-id NL]]
+                           ["; Application-ID: " application-id NL]
+                           ["; Command-Section: " section-number NL]]
                           ["; Within: " avp-name NL]
                           "; Section: " section-number NL
                           ["; Table: " inline-text NL]
@@ -718,7 +719,7 @@ encoding      = "encoding " codec
                 [SP DQUOTE name-text DQUOTE]
 codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
               / "labels" / "apn" / "plmn-domain" / "epc-plmn-domain"
-              / "ip-address" / "time-zone"
+              / "ip-address" / "time-zone" / "mac-address"
 predicate     = predicate-kind SP condition *(" or " condition)
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
 condition     = avp-name [" = " value-ref / " bit " value-ref]
@@ -765,9 +766,12 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   one before it, beside the clause it reads.
 - `; AVP:` is the AVP the rules constrain. `; Command:`, with
   `; Application-ID:` where the file prints the command for several
-  applications, or `; Within:`, a grouped AVP, scopes them to the AVP as a
-  member there; a predicate's conditions are its siblings. With neither, the
-  rules hold wherever the document reads the AVP.
+  applications and `; Command-Section:`, the clause of the command's block,
+  where it prints the command more than once for one application or for
+  none (TS 29.273's Diameter-EAP-Request for STa and SWd, as an Information
+  Elements block chooses), or `; Within:`, a grouped AVP, scopes them to the
+  AVP as a member there; a predicate's conditions are its siblings. With
+  neither, the rules hold wherever the document reads the AVP.
 - A quote is one or more sentences of the clause, or an information
   element's description where `; Table:` names its table, as printed once
   whitespace is collapsed; `\"` and `\\` are its escapes. `; Versions:` is

@@ -1591,6 +1591,80 @@ Equipment-Status       TS29.272   -
 "MPS Priority"                                   MPS-Priority                           C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-der-transport-access-type)
+; AVP: Transport-Access-Type
+; Command: Diameter-EAP-Request
+; Command-Section: 4.2.2.1.1
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/1
+; Page: 18
+; Versions: 18.6.0..19.2.0
+"if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-der-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: Diameter-EAP-Request
+; Command-Section: 4.2.2.1.1
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/1
+; Page: 18
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-dea-eap-master-session-key)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Answer
+; Command-Section: 4.2.2.1.2
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/2
+; Page: 18
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-dea-redirect-host)
+; AVP: Redirect-Host
+; Command: Diameter-EAP-Answer
+; Command-Section: 4.2.2.1.2
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/2
+; Page: 18
+; Versions: 18.6.0..19.2.0
+"This information element shall be present if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION."
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-dea-mobile-node-identifier)
+; AVP: Mobile-Node-Identifier
+; Command: Diameter-EAP-Answer
+; Command-Section: 4.2.2.1.2
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/2
+; Page: 18
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and if the Transport Access Type in the request command indicated that the UE is accessing the EPC from a Fixed Broadband access network"
+    requires Result-Code = DIAMETER_SUCCESS
+"This IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-dea-mps-priority)
+; AVP: MPS-Priority
+; Command: Diameter-EAP-Answer
+; Command-Section: 4.2.2.1.2
+; Section: 4.1.2.1.1
+; Table: 4.1.2.1/2
+; Page: 18
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Re-Auth-Request ;; corrected: (TS29.273.py#elements-command-4-1-2-4-1-1)
 ; Command-Section: 4.2.2.4.1 ;; corrected: (TS29.273.py#elements-command-section-4-1-2-4-1-1)
@@ -1642,6 +1716,42 @@ Result                      Result-Code/Experimental-Result   M
 "Accounting Interim Interval"   "Accounting Interim-Interval"          O
 "Pairwise Master Key"           EAP-Master-Session-Key                 C
 "MPS Priority"                  MPS-Priority                           C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-reauth-der-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: Diameter-EAP-Request
+; Command-Section: 4.2.2.1.1
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/3
+; Page: 22
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-reauth-dea-eap-master-session-key)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Answer
+; Command-Section: 4.2.2.1.2
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/4
+; Page: 22
+; Versions: 18.6.0..19.2.0
+"This IE shall be sent if Result-Code AVP is set to DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swa-reauth-dea-mps-priority)
+; AVP: MPS-Priority
+; Command: Diameter-EAP-Answer
+; Command-Section: 4.2.2.1.2
+; Section: 4.1.2.4.1
+; Table: 4.1.2.4.1/4
+; Page: 22
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent to the non-3GPP access network if the UE has an MPS subscription in the HSS."
+    text-only
 
 
 ; Type: Information Elements
@@ -1717,6 +1827,394 @@ MSISDN                                           Subscription-Id                
 "ERP Realm"                                      ERP-Realm                                  C
 "UE Usage Type"                                  UE-Usage-Type                              C
 "MPS Priority"                                   MPS-Priority                               C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-der-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.1
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"The PMIP6_SUPPORTED flag and/or the GTPv2 SUPPORTED flag shall be set if the non-3GPP access supports PMIPv6 and/or GTPv2."
+"The flag MIP6_INTEGRATED shall be set if DHCPv6 based Home Agent address discovery is supported as defined in IETF RFC 5447 [6]."
+"The MIP4_SUPPORTED flag shall be set if the non-3GPP access supports MIPv4 FA-CoA mode."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-der-transport-access-type)
+; AVP: Transport-Access-Type
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-der-twan-connectivity-parameters)
+; AVP: TWAN-Connectivity-Parameters
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.1
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access."
+"If the requested connectivity has been granted, the following information elements shall be included:"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-der-twag-cp-address)
+; AVP: TWAG-CP-Address
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.1
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"The TWAN shall include this IE if it indicates support of the MCM in the Supported TWAN Connection Modes IE."
+    present-if TWAN-Connection-Mode bit MC-MODE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-der-imei-check-in-vplmn-result)
+; AVP: IMEI-Check-In-VPLMN-Result
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"The 3GPP AAA Proxy shall include this IE if it has performed an IMEI check in the VPLMN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-der-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.1
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/1
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority conveyed in an EAP response/identity message"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-eap-master-session-key)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if Result-Code AVP is set to DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-context-identifier)
+; AVP: Context-Identifier
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is authorized for use, the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    absent-if Emergency-Services bit Emergency-Indication
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-apn-oi-replacement)
+; AVP: APN-OI-Replacement
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    absent-if Emergency-Services bit Emergency-Indication
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-apn-configuration)
+; AVP: APN-Configuration
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if EPC Access is authorized, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    absent-if Emergency-Services bit Emergency-Indication
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if EPC Access is authorized and if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-mobile-node-identifier)
+; AVP: Mobile-Node-Identifier
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+"If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-redirect-host)
+; AVP: Redirect-Host
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION."
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-ambr)
+; AVP: AMBR
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"It shall be present only if the non-3GPP access network was decided to be trusted, the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\"."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-an-trusted)
+; AVP: AN-Trusted
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included only in the first authentication and authorization response."
+    text-only
+"For the STa case, the value \"TRUSTED\" shall be used."
+    range 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-mip-fa-rk)
+; AVP: MIP-FA-RK
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if MIPv4 FACoA mode is used, the MN-FA authentication extension is supported and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-mip-fa-rk-spi)
+; AVP: MIP-FA-RK-SPI
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if MIP-FA-RK is present"
+    present-if MIP-FA-RK
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-trace-info)
+; AVP: Trace-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+"This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the non-3GPP access network."
+    text-only
+"Only the Trace-Data AVP shall be included to the Trace-Info AVP"
+    members only Trace-Data
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-subscription-id)
+; AVP: Subscription-Id
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the non-3GPP access network is trusted and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-twan-connection-mode)
+; AVP: TWAN-Connection-Mode
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"The 3GPP AAA Server shall include this IE if it selects either the SCM or MCM and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+"If this IE is not present, the TWAN shall use TSCM."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-twan-connectivity-parameters)
+; AVP: TWAN-Connectivity-Parameters
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This IE shall contain the requested connectivity parameters received from the UE if the 3GPP AAA Server authorizes the SCM for TWAN and the Result-Code AVP is set to DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-wlcp-key)
+; AVP: WLCP-Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the selected TWAN Connection Mode is MCM."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-terminal-information)
+; AVP: Terminal-Information
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"For a trusted WLAN access, the 3GPP AAA Server shall include this IE if the user's Mobile Equipment Identity is available."
+    text-only
+"When present, this grouped AVP shall contain the IMEI AVP and, if available, the Software Version AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-emergency-services)
+; AVP: Emergency-Services
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"it shall include this IE and set the Emergency-Indication bit when the UE indicates an Emergency Attach in EAP-AKA' signalling."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-emergency-info)
+; AVP: Emergency-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency sessions and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-key)
+; AVP: Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"If the 3GPP AAA Server supports ERP, this IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS, the domain-specific re-authentication key was requested and the use of ERP is authorized for this user (see clause 8.2.3.27)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-erp-realm)
+; AVP: ERP-Realm
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the ERP Keying Material is present."
+    present-if Key
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-ue-usage-type)
+; AVP: UE-Usage-Type
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if this information is available in the user subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-mps-priority)
+; AVP: MPS-Priority
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.1.1
+; Table: 5.1.2.1/2
+; Page: 27
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS."
+    text-only
 
 
 ; Type: Information Elements
@@ -1865,6 +2363,335 @@ MSISDN                          Subscription-Id                            C ;; 
 "MPS Priority"                  MPS-Priority                               C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aar-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: AA-Request
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/3
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included only if optimized idle mode mobility from E-UTRAN to HRPD access is executed."
+    text-only
+"When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aar-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: AA-Request
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/3
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-context-identifier)
+; AVP: Context-Identifier
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is authorized for use, the Emergency-Indication AVP was not present in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-apn-oi-replacement)
+; AVP: APN-OI-Replacement
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-apn-configuration)
+; AVP: APN-Configuration
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-ambr)
+; AVP: AMBR
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\"."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if it has been received in the corresponding authorization request and the Result-Code AVP is set to DIAMETER_SUCCESS."
+"When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-trace-info)
+; AVP: Trace-Info
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the trusted non-3GPP access network."
+    text-only
+"Only the Trace-Data AVP shall be included to the Trace-Info AVP"
+    members only Trace-Data
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-subscription-id)
+; AVP: Subscription-Id
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-emergency-info)
+; AVP: Emergency-Info
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency Sessions and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-ue-usage-type)
+; AVP: UE-Usage-Type
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if this information is available in the user subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-aaa-mps-priority)
+; AVP: MPS-Priority
+; Command: AA-Answer
+; Application-ID: 16777250
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/4
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the non-3GPP WLAN access if the UE has an MPS subscription in the HSS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-der-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.1
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/5
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-eap-master-session-key)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This IE shall be sent if Result-Code AVP is set to DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-context-identifier)
+; AVP: Context-Identifier
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-apn-oi-replacement)
+; AVP: APN-OI-Replacement
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-apn-configuration)
+; AVP: APN-Configuration
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Answer and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-ambr)
+; AVP: AMBR
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall be present only if the non-3GPP access network was decided to be trusted, the Result-Code AVP is set to DIAMETER_SUCCESS and ANID is \"HRPD\"."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-mip-fa-rk)
+; AVP: MIP-FA-RK
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if MIPv4 is used, MN-FA authentication extension is supported and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-mip-fa-rk-spi)
+; AVP: MIP-FA-RK-SPI
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if MIP-FA-RK is present"
+    present-if MIP-FA-RK
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-trace-info)
+; AVP: Trace-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the trusted non-3GPP access network."
+    text-only
+"Only the Trace-Data AVP shall be included to the Trace-Info AVP"
+    members only Trace-Data
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-subscription-id)
+; AVP: Subscription-Id
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-wlcp-key)
+; AVP: WLCP-Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the TWAN Connection Mode previously selected is MCM."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-emergency-info)
+; AVP: Emergency-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"It shall be present for a non-roaming authenticated user, if this information was received from the HSS, the TWAN indicated support of IMS Emergency Sessions and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-ue-usage-type)
+; AVP: UE-Usage-Type
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if this information is available in the user subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-reauth-dea-mps-priority)
+; AVP: MPS-Priority
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.3.1
+; Table: 5.1.2.3.1/6
+; Page: 51
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the non-3GPP access network if the UE has an MPS subscription in the HSS."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Session-Termination-Request ;; corrected: (TS29.273.py#elements-command-5-1-2-4-1-1)
 ; Command-Section: 5.2.2.4.1 ;; corrected: (TS29.273.py#elements-command-section-5-1-2-4-1-1)
@@ -1913,6 +2740,37 @@ EAP-Finish                      "EAP payload"                              O
 "ERP Keying Material"           Key                                        C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-erp-dea-key)
+; AVP: Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.1.2.5.1
+; Table: 5.1.2.5.1/2
+; Page: 64
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the ERP re-authentication is successful."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#service-selection-labels)
+; AVP: Service-Selection
+; Section: 5.2.3.5
+; Page: 74
+; Versions: 18.6.0..19.2.0
+"The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\")."
+    encoding labels
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#anid-element)
+; AVP: ANID
+; Section: 5.2.3.7
+; Page: 75
+; Versions: 18.6.0..19.2.0
+"The ANID AVP is of type UTF8String; this AVP contains the Access Network Identity; see"
+    encoding element TS24.302 8.1.1 "Access Network Identity"
+
+
 ; Type: Enumerated AVP
 ; Name: AN-Trusted
 ; Section: 5.2.3.9
@@ -1920,6 +2778,51 @@ EAP-Finish                      "EAP payload"                              O
 AN-Trusted ::= < Enumerated AVP header: 1503 10415 >
         TRUSTED   = 0
         UNTRUSTED = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-feature-list-id)
+; AVP: Feature-List-ID
+; Section: 5.2.3.10
+; Page: 75
+; Versions: 18.6.0..19.2.0
+"For this release, the Feature-List-ID AVP value shall be set to 1 for the STa/SWa application."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#mip-fa-rk-element)
+; AVP: MIP-FA-RK
+; Section: 5.2.3.12
+; Page: 75
+; Versions: 18.6.0..19.2.0
+"The MIP-FA-RK AVP is of type OctetString; this AVP contains the FA-RK used to calculate the security parameters needed for the MN-FA authentication extension as defined by"
+    encoding element TS33.402 9.2.1.2.2 "FA-RK"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#mip-fa-rk-spi-element)
+; AVP: MIP-FA-RK-SPI
+; Section: 5.2.3.13
+; Page: 75
+; Versions: 18.6.0..19.2.0
+"The MIP-FA-RK-SPI AVP is of type Unsigned32; this AVP contains the security index used in identifying the security context for the FA-RK as defined by"
+    encoding element TS33.402 9.2.1.2.2 "FA-RK-SPI"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#full-network-name-element)
+; AVP: Full-Network-Name
+; Section: 5.2.3.14
+; Page: 75
+; Versions: 18.6.0..19.2.0
+"The Full-Network-Name AVP is of type OctetString; this AVP shall contain the Full Network Name and be encoded as the Full name value field of the AT_FULL_NAME_FOR_NETWORK attribute specified in clause 8.2.5.1"
+    encoding element TS24.302 8.2.5.1 "Full name value"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#short-network-name-element)
+; AVP: Short-Network-Name
+; Section: 5.2.3.15
+; Page: 75
+; Versions: 18.6.0..19.2.0
+"The Short-Network-Name AVP is of type OctetString; this AVP shall contain the Short Network Name and be encoded as the Short name value field of the AT_SHORT_NAME_FOR_NETWORK attribute specified in clause 8.2.5.2"
+    encoding element TS24.302 8.2.5.2 "Short name value"
 
 
 ; Type: Grouped AVP
@@ -1955,6 +2858,16 @@ ERP-Support-Indication          = 5
 ERP-Re-Authentication           = 6
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#der-flags-undefined-bits)
+; AVP: DER-Flags
+; Section: 5.2.3.20
+; Table: 5.2.3.20/1
+; Page: 76
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
+    bits only 0 1 2 3 4 5 6
+
+
 ; Type: Value Table
 ; AVP: DEA-Flags
 ; Kind: bits
@@ -1964,6 +2877,35 @@ ERP-Re-Authentication           = 6
 NSWO-Authorization              = 0
 TWAN-S2a-Connectivity-Indicator = 1
 IMEI-Check-Request-In-VPLMN     = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#dea-flags-undefined-bits)
+; AVP: DEA-Flags
+; Section: 5.2.3.21
+; Table: 5.2.3.21/1
+; Page: 77
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command."
+    bits only 0 1 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#ssid-length)
+; AVP: SSID
+; Section: 5.2.3.22
+; Page: 78
+; Versions: 18.6.0..19.2.0
+"It shall contain a string of 1 to 32 octets."
+    length 1..32 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#hessid-mac-address)
+; AVP: HESSID
+; Section: 5.2.3.23
+; Page: 78
+; Versions: 18.6.0..19.2.0
+"The HESSID AVP is of type UTF8String and it shall contain a 6-octet MAC address that identifies the Homogenous Extended Service Set (see IEEE Std 802.11-2012 [40]). It shall be encoded in upper-case ASCII characters with the octet values separated by dash characters. It shall contain a string of 17 octets."
+    encoding mac-address
+    length 17 octets
 
 
 ; Type: Grouped AVP
@@ -1980,6 +2922,36 @@ Access-Network-Info ::= < AVP header: 1526 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#access-network-info-ssid)
+; AVP: Access-Network-Info
+; Section: 5.2.3.24
+; Page: 78
+; Versions: 18.6.0..19.2.0
+"For a Trusted WLAN, it shall contain the SSID of the WLAN and, unless otherwise determined by the TWAN operator's policies, it shall contain at least one of the following elements:"
+"For an untrusted WLAN, it shall contain the same information as specified above for a trusted WLAN, where the operator name indicates the WLAN operator name."
+    members at-least-one SSID
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#access-network-info-location-information)
+; AVP: Location-Information
+; Within: Access-Network-Info
+; Section: 5.2.3.24
+; Page: 78
+; Versions: 18.6.0..19.2.0
+"the content of Location-Information shall indicate that the encoding follows a civic location profile, by setting the \"Code\" field to 0."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#access-network-info-operator-name)
+; AVP: Operator-Name
+; Within: Access-Network-Info
+; Section: 5.2.3.24
+; Page: 78
+; Versions: 18.6.0..19.2.0
+"Only values \"1\" (Realm) and \"2\" (E212, containing MCC and MNC values) shall be used in this specification."
+    text-only
+
+
 ; Type: Value Table
 ; AVP: TWAN-Connection-Mode
 ; Kind: bits
@@ -1989,6 +2961,16 @@ Access-Network-Info ::= < AVP header: 1526 10415 >
 TSC-MODE = 0
 SC-MODE  = 1
 MC-MODE  = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twan-connection-mode-undefined-bits)
+; AVP: TWAN-Connection-Mode
+; Section: 5.2.3.25
+; Table: 5.2.3.25/1
+; Page: 79
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
+    bits only 0 1 2
 
 
 ; Type: Grouped AVP
@@ -2007,6 +2989,28 @@ TWAN-Connectivity-Parameters ::= < AVP header: 1528 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twan-connectivity-parameters-service-selection)
+; AVP: Service-Selection
+; Within: TWAN-Connectivity-Parameters
+; Section: 5.2.3.26
+; Page: 79
+; Versions: 18.6.0..19.2.0
+"It shall contain both the network identifier part and the operator identifier part of the Access Point Name."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twan-connectivity-parameters-served-party-ip-address)
+; AVP: Served-Party-IP-Address
+; Within: TWAN-Connectivity-Parameters
+; Section: 5.2.3.26
+; Page: 79
+; Versions: 18.6.0..19.2.0
+"These AVPs shall be present if the S2a connection was successfully established, and they shall contain either of:"
+    text-only
+"For the IPv6 interface identifier, the higher 64 bits of the address shall be set to zero."
+    text-only
+
+
 ; Type: Value Table
 ; AVP: Connectivity-Flags
 ; Kind: bits
@@ -2014,6 +3018,36 @@ TWAN-Connectivity-Parameters ::= < AVP header: 1528 10415 >
 ; Table: 5.2.3.26/1
 ; Page: 80
 Initial-Attach-Indicator = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#connectivity-flags-undefined-bits)
+; AVP: Connectivity-Flags
+; Section: 5.2.3.27
+; Table: 5.2.3.26/1
+; Page: 80
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
+    bits only 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twag-cp-address-ip)
+; AVP: TWAG-CP-Address
+; Section: 5.2.3.29
+; Page: 80
+; Versions: 18.6.0..19.2.0
+"The TWAG-CP-Address AVP is of type Address and shall contain the TWAG control-plane IPv4 and/or IPv6 address that the TWAG supports, to be used for WLCP by the UE if MCM is selected."
+    encoding ip-address
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twag-up-address-mac-address)
+; AVP: TWAG-UP-Address
+; Section: 5.2.3.30
+; Page: 80
+; Versions: 18.6.0..19.2.0
+"The TWAG-UP-Address AVP is of type UTF8String and shall contain a 6-octet MAC address that identifies the TWAG user-plane MAC address to be used for encapsulating user plane packets between the UE and the TWAN, when SCM is used."
+"It shall be encoded in upper-case ASCII characters with the octet values separated by dash characters. It shall contain a string of 17 octets."
+    encoding mac-address
+    length 17 octets
 
 
 ; Type: Value Table
@@ -2037,6 +3071,15 @@ Initial-Attach-Indicator = 0
 "Multiple accesses to a PDN connection not allowed" = 113
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#wlcp-key-element)
+; AVP: WLCP-Key
+; Section: 5.2.3.33
+; Page: 81
+; Versions: 18.6.0..19.2.0
+"The WLCP-Key AVP (AVP Code 1535) is of type OctetString and it shall contain the WLCP Key used for protecting the WLCP signalling between the UE and the TWAN, as specified in"
+    encoding element TS33.402 A.3 "WLCP key"
+
+
 ; Type: Value Table
 ; AVP: IMEI-Check-In-VPLMN-Result
 ; Kind: values
@@ -2054,6 +3097,16 @@ Illegal_ME = 1
 ; Table: 5.2.3.36/1
 ; Page: 82
 HPA_Configured = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#high-priority-access-info-undefined-bits)
+; AVP: High-Priority-Access-Info
+; Section: 5.2.3.36
+; Table: 5.2.3.36/1
+; Page: 82
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sending TWAN and discarded by the receiving AAA Server."
+    bits only 0
 
 
 ; Type: Information Elements
@@ -2085,6 +3138,71 @@ HPA_Configured = 0
 "TWAG Control Plane IP Address"                   TWAG-CP-Address                C
 "Domain-Specific Re-authentication Key Request"   ERP-RK-Request                 O
 "High Priority Access Info"                       High-Priority-Access-Info      C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swd-der-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 6.2.2.1.1.1
+; Section: 6.1.2.1.1
+; Table: 6.1.2.1.1-1
+; Page: 83
+; Versions: 18.6.0..19.2.0
+"The PMIP6_SUPPORTED flag and/or the GTPv2_SUPPORTED flag shall be set if the trusted non-3GPP access network supports PMIPv6 and/or GTPv2."
+"The flag MIP6_INTEGRATED shall be set if DHCPv6 based Home Agent address discovery is supported as defined in IETF RFC 5447 [6]."
+"The MIP4_SUPPORTED flag shall be set if the trusted non-3GPP access supports MIPv4 FA-CoA mode."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swd-der-transport-access-type)
+; AVP: Transport-Access-Type
+; Section: 6.1.2.1.1
+; Table: 6.1.2.1.1-1
+; Page: 83
+; Versions: 18.6.0..19.2.0
+"if the access network needs to receive the IMSI of the UE in the authentication response, then this information element shall be present, and it shall contain the value \"BBF\" (see clause 5.2.3.19)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swd-der-twan-connectivity-parameters)
+; AVP: TWAN-Connectivity-Parameters
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 6.2.2.1.1.1
+; Section: 6.1.2.1.1
+; Table: 6.1.2.1.1-1
+; Page: 83
+; Versions: 18.6.0..19.2.0
+"This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access."
+"If the requested connectivity has been granted, the following information elements shall be included:"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swd-der-twag-cp-address)
+; AVP: TWAG-CP-Address
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 6.2.2.1.1.1
+; Section: 6.1.2.1.1
+; Table: 6.1.2.1.1-1
+; Page: 83
+; Versions: 18.6.0..19.2.0
+"The TWAN shall include this IE if it indicates support of the MCM in the Supported TWAN Connection Modes IE."
+    present-if TWAN-Connection-Mode bit MC-MODE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swd-der-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 6.2.2.1.1.1
+; Section: 6.1.2.1.1
+; Table: 6.1.2.1.1-1
+; Page: 83
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
 
 
 ; Type: Information Elements
@@ -2155,6 +3273,231 @@ MSISDN                                           Subscription-Id                
 "MPS Priority"                                   MPS-Priority                           C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-der-service-selection)
+; AVP: Service-Selection
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if the ePDG has received an APN from the UE and the UE did not indicate the establishment of an emergency session in the IKEv2 signalling."
+    text-only
+"This AVP shall be absent if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment"
+    absent-if Emergency-Services bit Emergency-Indication
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-der-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if the ePDG is not in the UE's home network i.e. the UE is roaming."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-der-rat-type)
+; AVP: RAT-Type
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This information element shall be present if the access type is known by the ePDG."
+"When not known by the ePDG, this information element should be present and, in that case, it shall take the value VIRTUAL (1)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-der-terminal-information)
+; AVP: Terminal-Information
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"The ePDG shall include this IE and set it to the user's Mobile Equipment Identity, if this information is available."
+"For an untrusted WLAN access, this grouped AVP shall contain the IMEI AVP and, if available, the Software-Version AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-der-emergency-services)
+; AVP: Emergency-Services
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"An ePDG which supports emergency services shall include this information element, with the Emergency-Indication bit set, if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-der-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/1
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-eap-master-session-key)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"It shall be present when Result Code is set to DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-redirect-host)
+; AVP: Redirect-Host
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION."
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-apn-oi-replacement)
+; AVP: APN-OI-Replacement
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is used, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Request and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-apn-configuration)
+; AVP: APN-Configuration
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Request."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-trace-info)
+; AVP: Trace-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the ePDG."
+    text-only
+"Only the Trace-Data AVP shall be included to the Trace-Info AVP"
+    members only Trace-Data
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-subscription-id)
+; AVP: Subscription-Id
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This AVP shall contain the MSISDN of the UE and shall be sent only if it is available."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-mobile-node-identifier)
+; AVP: Mobile-Node-Identifier
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This information element shall be present if NBM is used."
+"If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-user-location-info-time)
+; AVP: User-Location-Info-Time
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This IE should be present if the WLAN Location Information IE is present."
+    present-if Access-Network-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-emergency-info)
+; AVP: Emergency-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This IE shall only be present if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+"It shall be present for a non-roaming authenticated user, if this information was received from the HSS and if the Emergency-Services AVP is present, with the Emergency-Indication bit set, in the Authentication and Authorization Request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-ue-usage-type)
+; AVP: UE-Usage-Type
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if this information is available in the user subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-core-network-restrictions)
+; AVP: Core-Network-Restrictions
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if this information is available in the user subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-dea-mps-priority)
+; AVP: MPS-Priority
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.1.1
+; Table: 7.1.2.1.1/2
+; Page: 94
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the ePDG if the UE has an MPS subscription in the HSS."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: AA-Request
 ; Application-ID: 16777264 ;; corrected: (TS29.273.py#elements-application-7-1-2-2-1-1)
@@ -2192,6 +3535,116 @@ MSISDN                        Subscription-Id                           C ;; cor
 "WLAN Location Timestamp"     User-Location-Info-Time                   C
 "Core Network Restrictions"   Core-Network-Restrictions                 C
 "MPS Priority"                MPS-Priority                              C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aar-ue-local-ip-address)
+; AVP: UE-Local-IP-Address
+; Command: AA-Request
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/1
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the ePDG provided the UE Local IP address in the initial Authentication and Authorization Request and the UE Local IP address has changed."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aar-high-priority-access-info)
+; AVP: High-Priority-Access-Info
+; Command: AA-Request
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/1
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-apn-oi-replacement)
+; AVP: APN-OI-Replacement
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"It shall only be included if NBM is used, the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request, and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-apn-configuration)
+; AVP: APN-Configuration
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-trace-info)
+; AVP: Trace-Info
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the ePDG."
+    text-only
+"Only the Trace-Data AVP shall be included if trace activation is requested. Only the Trace-Reference AVP shall be included if trace deactivation is requested."
+    members only Trace-Data Trace-Reference
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-subscription-id)
+; AVP: Subscription-Id
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"This AVP shall contain the MSISDN of the UE and shall be sent only if it is available."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-user-location-info-time)
+; AVP: User-Location-Info-Time
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"This IE should be present if the WLAN Location Information IE is present."
+    present-if Access-Network-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-core-network-restrictions)
+; AVP: Core-Network-Restrictions
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if this information is available in the user subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-aaa-mps-priority)
+; AVP: MPS-Priority
+; Command: AA-Answer
+; Application-ID: 16777264
+; Section: 7.1.2.2.1
+; Table: 7.1.2.2.1/2
+; Page: 107
+; Versions: 18.6.0..19.2.0
+"Based on operator policy, this information element shall be sent to the ePDG if the UE has an MPS subscription in the HSS."
+    text-only
 
 
 ; Type: Information Elements
@@ -2290,6 +3743,15 @@ DIAMETER_UNKNOWN_SESSION_ID
 DIAMETER_UNABLE_TO_COMPLY
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-feature-list-id)
+; AVP: Feature-List-ID
+; Section: 7.2.3.2
+; Page: 124
+; Versions: 18.6.0..19.2.0
+"For this release, the Feature-List-ID AVP value shall be set to 1 for the SWm application."
+    range 1
+
+
 ; Type: Value Table
 ; AVP: Emergency-Services
 ; Kind: bits
@@ -2299,6 +3761,16 @@ DIAMETER_UNABLE_TO_COMPLY
 Emergency-Indication = 0
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#emergency-services-undefined-bits)
+; AVP: Emergency-Services
+; Section: 7.2.3.4
+; Table: 7.2.3.4/1
+; Page: 124
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver."
+    bits only 0
+
+
 ; Type: Value Table
 ; AVP: AAR-Flags
 ; Kind: bits
@@ -2306,6 +3778,16 @@ Emergency-Indication = 0
 ; Table: 7.2.3.5/1
 ; Page: 125
 WLAN-Location-Info-Request = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#aar-flags-undefined-bits)
+; AVP: AAR-Flags
+; Section: 7.2.3.5
+; Table: 7.2.3.5/1
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver."
+    bits only 0
 
 
 ; Type: Information Elements
@@ -2382,6 +3864,84 @@ Result                                           Result-Code/Experimental-Result
 "Integrity Key AKA"                Integrity-Key               M
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-mar-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: Multimedia-Auth-Request
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/1
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"The 3GPP AAA Server shall include this information element when received from signalling across the SWd."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-mar-destination-host)
+; AVP: Destination-Host
+; Command: Multimedia-Auth-Request
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/1
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"If the 3GPP AAA Server knows the HSS name, this AVP shall be present."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-mar-anid)
+; AVP: ANID
+; Command: Multimedia-Auth-Request
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/1
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if the Authentication Method is EAP-AKA'."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-maa-sip-number-auth-items)
+; AVP: SIP-Number-Auth-Items
+; Command: Multimedia-Auth-Answer
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/4
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"It shall be present when the result is DIAMETER_SUCCESS."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-maa-sip-auth-data-item)
+; AVP: SIP-Auth-Data-Item
+; Command: Multimedia-Auth-Answer
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/4
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"If the SIP-Number-Auth-Items AVP is equal to zero or it is not present, then this AVP shall not be present."
+    requires SIP-Number-Auth-Items
+    absent-if SIP-Number-Auth-Items = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-maa-3gpp-aaa-server-name)
+; AVP: 3GPP-AAA-Server-Name
+; Command: Multimedia-Auth-Answer
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/4
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"This AVP shall be sent when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sip-auth-data-item-sip-item-number)
+; AVP: SIP-Item-Number
+; Within: SIP-Auth-Data-Item
+; Section: 8.1.2.1.1
+; Table: 8.1.2.1.1/5
+; Page: 125
+; Versions: 18.6.0..19.2.0
+"This information element shall be present in a SIP-Auth-Data-Item grouped AVP in circumstances where there are multiple occurrences of SIP-Auth-Data-Item AVPs, and the order in which they should be processed is significant."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Server-Assignment-Request ;; corrected: (TS29.273.py#elements-command-8-1-2-2-2-1-1)
 ; Command-Section: 8.2.2.3 ;; corrected: (TS29.273.py#elements-command-section-8-1-2-2-2-1-1)
@@ -2411,6 +3971,90 @@ IMSI                                             User-Name                      
 "User Profile"                                   Non-3GPP-User-Data                C
 "3GPP AAA Server Name"                           "3GPP-AAA- Server-Name"           C
 "Supported Features (See 3GPP TS 29.229 [24])"   Supported-Features                O
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-destination-host)
+; AVP: Destination-Host
+; Command: Server-Assignment-Request
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Versions: 18.6.0..19.2.0
+"If the 3GPP AAA Server knows the HSS name this AVP shall be present."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-mip6-agent-info)
+; AVP: MIP6-Agent-Info
+; Command: Server-Assignment-Request
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Versions: 18.6.0..19.2.0
+"This IE shall contain, either the identity of the dynamically allocated PDN GW, or the identity of a dynamically allocated PDN GW selected for the establishment of emergency PDN connections, and is included if the Server-Assignment-Type is set to PGW_UPDATE."
+    present-if Server-Assignment-Type = 13
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: Server-Assignment-Request
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Versions: 18.6.0..19.2.0
+"It shall be present when the PGW Identity is present and does not contain an FQDN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-service-selection)
+; AVP: Service-Selection
+; Command: Server-Assignment-Request
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Versions: 18.6.0..19.2.0
+"For non-emergency PDN connection establishment, this information element shall contain the Network Identifier part of the APN, and it shall be included if the Server-Assignment-Type is set to PGW_UPDATE."
+    text-only
+"For emergency PDN connection establishment, this information element shall be left absent."
+    absent-if Emergency-Services bit Emergency-Indication
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-terminal-information)
+; AVP: Terminal-Information
+; Command: Server-Assignment-Request
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Versions: 18.6.0..19.2.0
+"The 3GPP AAA Server shall include this IE and set it to the user's Mobile Equipment Identity, if this information is available, and if the Server-Assignment-Type is set to REGISTRATION."
+"This IE shall also be present, independently of the value of the Server-Assignment-Type, if the Terminal-Information has changed from the last value previously reported to the HSS."
+"This grouped AVP shall contain the IMEI AVP and, if available, the Software-Version AVP, for a trusted or untrusted WLAN access."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-emergency-services)
+; AVP: Emergency-Services
+; Command: Server-Assignment-Request
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/1
+; Versions: 18.6.0..19.2.0
+"This IE shall only be included when the Server-Assignment-Type is set to PGW_UPDATE."
+    requires Server-Assignment-Type = 13
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-saa-non-3gpp-user-data)
+; AVP: Non-3GPP-User-Data
+; Command: Server-Assignment-Answer
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/2
+; Versions: 18.6.0..19.2.0
+"It shall be present when Server-Assignment-Type in the request is equal to AAA_USER_DATA_REQUEST or REGISTRATION and the Result-Code is equal to DIAMETER_SUCCESS."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-saa-3gpp-aaa-server-name)
+; AVP: 3GPP-AAA-Server-Name
+; Command: Server-Assignment-Answer
+; Section: 8.1.2.2.2.1
+; Table: 8.1.2.2.2.1/2
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user."
+    text-only
 
 
 ; Type: Information Elements
@@ -2517,6 +4161,17 @@ IMSI                                             User-Name                      
 "Supported Features (See 3GPP TS 29.229 [24])"   Supported-Features                O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-restoration-sar-active-apn)
+; AVP: Active-APN
+; Command: Server-Assignment-Request
+; Section: 8.1.2.4.2.1
+; Table: 8.1.2.4.2.1/1
+; Versions: 18.6.0..19.2.0
+"For the explicitly subscribed APNs, the following information shall be present:"
+"For the Wildcard APN, the following information shall be present:"
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Non-3GPP-User-Data
 ; Section: 8.2.3.1
@@ -2544,6 +4199,106 @@ Non-3GPP-User-Data ::= < AVP header: 1500 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-subscription-id)
+; AVP: Subscription-Id
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The Subscription-ID, if present in this grouped AVP, shall contain either an MSISDN (if this identity is present in the subscription), or an External Identifier (if the subscriber does not have an MSISDN identity but has an External Identifier in the subscription)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-ambr)
+; AVP: AMBR
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The AMBR included in this grouped AVP shall include the AMBR associated to the user's subscription (UE-AMBR)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-apn-oi-replacement)
+; AVP: APN-OI-Replacement
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The APN-OI-Replacement included in this grouped AVP shall include the UE level APN-OI-Replacement associated to the user's subscription."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-apn-configuration)
+; AVP: APN-Configuration
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The Non-3GPP-User-Data AVP shall only contain APN-Configuration AVP(s) configured in the user subscription with an IP PDN type."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-context-identifier)
+; AVP: Context-Identifier
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The Context-Identifier in this grouped AVP shall identify the user's default APN configuration."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-twan-default-apn-context-id)
+; AVP: TWAN-Default-APN-Context-Id
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if the default APN configuration for EPC access over Trusted WLAN differs from the default APN configuration for 3GPP access and other non-3GPP accesses."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-rat-type)
+; AVP: RAT-Type
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The RAT-Type AVP(s) shall include the access technology type(s) not allowed for the user"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-emergency-info)
+; AVP: Emergency-Info
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The Emergency-Info AVP shall contain the identity of the PDN-GW used for the establishment of emergency PDN connections."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-mps-priority)
+; AVP: MPS-Priority
+; Within: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"The MPS-Priority AVP shall be present if an MPS subscription exists in the HSS for the UE."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#non-3gpp-user-data-content)
+; AVP: Non-3GPP-User-Data
+; Section: 8.2.3.1
+; Page: 147
+; Versions: 18.6.0..19.2.0
+"For the conditions specified in clause 8.1.2.3.2, the Non-3GPP-User-Data AVP shall be empty, i.e. not include any AVP."
+"If the Non-3GPP-User-Data AVP is not empty, the Non-3GPP-IP-Acess AVP, the Non-3GPP-IP-Access-APN AVP, the Context-Identifier AVP and at least one item of the APN-Configuration AVP shall always be included, except when the Non-3GPP-User-Data AVP is used for downloading trace activation or deactivation information on the SWx interface, for an already registered user, or when the Non-3GPP-User-Data is used for downloading the Emergency-Info."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Subscription-Id
 ; Section: 8.2.3.2
@@ -2551,6 +4306,16 @@ Non-3GPP-User-Data ::= < AVP header: 1500 10415 >
 Subscription-Id ::= < AVP header: 443 >
         [ Subscription-Id-Type ]
         [ Subscription-Id-Data ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#subscription-id-type-values)
+; AVP: Subscription-Id-Type
+; Within: Subscription-Id
+; Section: 8.2.3.2
+; Page: 148
+; Versions: 18.6.0..19.2.0
+"EPC shall make use only of the MSISDN and External Identifier values."
+    exclude 1, 2, 4
 
 
 ; Type: Enumerated AVP
@@ -2595,6 +4360,24 @@ Trace-Info ::= < AVP header: 1505 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#trace-info-either)
+; AVP: Trace-Info
+; Section: 8.2.3.13
+; Page: 150
+; Versions: 18.6.0..19.2.0
+"Either the Trace-Data or the Trace-Reference AVP shall be included."
+    members at-least-one Trace-Data Trace-Reference
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-feature-list-id)
+; AVP: Feature-List-ID
+; Section: 8.2.3.15
+; Page: 150
+; Versions: 18.6.0..19.2.0
+"For this release, the Feature-List-ID AVP value shall be set to 1 for the SWx application."
+    range 1
+
+
 ; Type: Value Table
 ; AVP: Feature-List
 ; Kind: features
@@ -2624,6 +4407,16 @@ UE-Local-Time-Zone-Request   = 2
 "P-CSCF Restoration Request" = 3
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#ppr-flags-undefined-bits)
+; AVP: PPR-Flags
+; Section: 8.2.3.17
+; Table: 8.2.3.17/1
+; Page: 153
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving 3GPP AAA Server."
+    bits only 0 1 2 3
+
+
 ; Type: Grouped AVP
 ; Name: TWAN-Access-Info
 ; Section: 8.2.3.19
@@ -2632,6 +4425,30 @@ TWAN-Access-Info ::= < AVP header: 1510 10415 >
         [ Access-Authorization-Flags ]
         [ WLAN-Identifier ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twan-access-info-wlan-identifier)
+; AVP: WLAN-Identifier
+; Within: TWAN-Access-Info
+; Section: 8.2.3.19
+; Page: 153
+; Versions: 18.6.0..19.2.0
+"If no WLAN-Identifier AVP is included in the TWAN-Access-Info AVP, the allowed access methods shall apply to any arbitrary Trusted WLAN."
+    text-only
+"A specific Trusted-WLAN shall appear in at most one TWAN-Access-Info AVP."
+    unique
+"There shall be at most one TWAN-Access-Info AVP not including any WLAN-Identifier."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#twan-access-info-access-authorization-flags-default)
+; AVP: Access-Authorization-Flags
+; Within: TWAN-Access-Info
+; Section: 8.2.3.19
+; Page: 153
+; Versions: 18.6.0..19.2.0
+"If the Access-Authorization-Flags AVP is not present in the TWAN-Access-Info AVP, EPC access and Non-Seamless WLAN Offload shall be considered to be not allowed."
+    default 0
 
 
 ; Type: Value Table
@@ -2644,6 +4461,16 @@ EPC-Access-Authorization  = 0
 NSWO-Access-Authorization = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#access-authorization-flags-undefined-bits)
+; AVP: Access-Authorization-Flags
+; Section: 8.2.3.20
+; Table: 8.2.3.20/1
+; Page: 154
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving 3GPP AAA Server."
+    bits only 0 1
+
+
 ; Type: Value Table
 ; AVP: AAA-Failure-Indication
 ; Kind: bits
@@ -2651,6 +4478,96 @@ NSWO-Access-Authorization = 1
 ; Table: 8.2.3.21/1
 ; Page: 154
 "AAA Failure" = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#aaa-failure-indication-undefined-bits)
+; AVP: AAA-Failure-Indication
+; Section: 8.2.3.21
+; Table: 8.2.3.21/1
+; Page: 154
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver."
+    bits only 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-mar-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Multimedia-Auth-Request
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-maa-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Multimedia-Auth-Answer
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-ppr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Push-Profile-Request
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-ppa-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Push-Profile-Answer
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-sar-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Server-Assignment-Request
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-saa-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Server-Assignment-Answer
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-rtr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Registration-Termination-Request
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-rta-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Registration-Termination-Answer
+; Section: 8.2.4
+; Page: 155
+; Versions: 18.6.0..19.2.0
+"In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58]."
+    range 1
 
 
 ; Type: Information Elements
@@ -2701,6 +4618,154 @@ APN                                              Service-Selection            O
 "Supported Features (See 3GPP TS 29.229 [24])"   Supported-Features                     O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-der-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: Diameter-EAP-Request
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/1
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"It shall be present when the PGW Identity does not contain an FQDN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-der-rat-type)
+; AVP: RAT-Type
+; Command: Diameter-EAP-Request
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/1
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This IE shall be present if it is available when the PDN GW sends the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-eap-master-session-key)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"It shall be present only if the result code is set to success."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if the authorization was successful."
+    text-only
+"None of the PMIP6_SUPPORTED or MIP4_SUPPORTED flags shall be set, since DSMIPv6 is used in this case."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-mobile-node-identifier)
+; AVP: Mobile-Node-Identifier
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+"This IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-apn-configuration)
+; AVP: APN-Configuration
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-mip6-agent-info)
+; AVP: MIP6-Agent-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS_RELOCATE_HA indicating to the PDN GW that it shall initiate a HA switch procedure towards the UE."
+    requires Result-Code = 2009
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-qos-resources)
+; AVP: QoS-Resources
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded."
+"The QoS profile template value in this IE shall be set to 0."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-redirect-host)
+; AVP: Redirect-Host
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION."
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-an-trusted)
+; AVP: AN-Trusted
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This AVP shall be present if the 3GPP AAA Server is able to make decision on whether the access network is Trusted or Untrusted."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-trace-info)
+; AVP: Trace-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.1
+; Table: 9.1.2.1/2
+; Page: 157
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is to be used to download the trace activation from the HSS to the PDN GW."
+    text-only
+"Only the Trace-Data AVP shall be included to the Trace-Info AVP"
+    members only Trace-Data
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dea-relocate-ha-mip6-agent-info)
+; AVP: MIP6-Agent-Info
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Section: 9.1.2.1.3
+; Page: 162
+; Versions: 18.6.0..19.2.0
+"If the HSS indicates that the user is currently being served by a different PDN GW, the 3GPP AAA Server shall respond to to the PDN GW with the Result-Code set to DIAMETER_SUCCESS_RELOCATE_HA and include the new assigned PDN GW identity in the MIP6-Agent-Info AVP."
+    present-if Result-Code = 2009
+
+
 ; Type: Information Elements
 ; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-2-1-1)
 ; Command-Section: 9.2.2.2.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-2-1-1)
@@ -2737,6 +4802,141 @@ APN                                              Service-Selection            M
 "3GPP AAA Server URI"                            Redirect-Host         C
 "Trace information"                              Trace-Info            C
 "Supported Features (See 3GPP TS 29.229 [24])"   Supported-Features    O
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aar-mip6-agent-info)
+; AVP: MIP6-Agent-Info
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/1
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"It shall be present on the first authorization request sent by the PGW to the 3GPP AAA Server for a given APN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aar-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/1
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"It shall be present when the PGW Identity is present and does not contain an FQDN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aar-origination-time-stamp)
+; AVP: Origination-Time-Stamp
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/1
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"The PGW shall include this IE if it received the Origination Time Stamp from the MME/SGSN or TWAN/ePDG and if the PGW supports the procedure specified in clause 13.2"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aar-maximum-wait-time)
+; AVP: Maximum-Wait-Time
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/1
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"The PGW shall include this IE if it received the Maximum Wait Time from the MME/SGSN or TWAN/ePDG, and the PGW supports the procedure specified in clause 13.3"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aar-emergency-services)
+; AVP: Emergency-Services
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/1
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"The PGW shall include this information element, with the Emergency-Indication bit set, during the establishment of an emergency PDN connection."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aaa-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/2
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"The 3GPP AAA Server shall insert this AVP if the authorization was successful."
+"The PMIP6_SUPPORTED or the GTPv2_SUPPORTED flag shall be set according to the value received in the Authorization request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aaa-apn-configuration)
+; AVP: APN-Configuration
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/2
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+"This information element shall not be included in the Authorization Answer if the Emergency-Indication bit of the Emergency-Services AVP is set in the Authorization Request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aaa-qos-resources)
+; AVP: QoS-Resources
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/2
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded."
+"The QoS profile template value in this IE shall be set to 0."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aaa-redirect-host)
+; AVP: Redirect-Host
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/2
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION."
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-aaa-trace-info)
+; AVP: Trace-Info
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.2.1
+; Table: 9.1.2.2.1/2
+; Page: 163
+; Versions: 18.6.0..19.2.0
+"In an authorization response sent during the authorization procedure at PDN connection setup, the Trace-Data AVP shall be included."
+"In an authorization response sent during the service authorization information update procedure, - the Trace-data AVP shall be included if trace activation is requested - the Trace-Reference AVP shall be included, if trace deactivation is requested."
+    text-only
 
 
 ; Type: Information Elements
@@ -2855,6 +5055,72 @@ APN                             Service-Selection            O
 "Trust Relationship Indicator"   AN-Trusted                             C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dsmip-aar-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/3
+; Page: 173
+; Versions: 18.6.0..19.2.0
+"It shall be present when the PGW Identity does not contain an FQDN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dsmip-aar-qos-capability)
+; AVP: QoS-Capability
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/3
+; Page: 173
+; Versions: 18.6.0..19.2.0
+"The PGW shall include this IE only during UE the initial attach."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dsmip-aaa-apn-configuration)
+; AVP: APN-Configuration
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/4
+; Page: 173
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dsmip-aaa-trace-info)
+; AVP: Trace-Info
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/4
+; Page: 173
+; Versions: 18.6.0..19.2.0
+"Trace-data AVP shall be included (directly under the Trace-Info) if trace activation is requested"
+"Trace-Reference AVP shall be included, if trace deactivation is requested."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-dsmip-aaa-an-trusted)
+; AVP: AN-Trusted
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.1.2.5.1
+; Table: 9.1.2.5.1/4
+; Page: 173
+; Versions: 18.6.0..19.2.0
+"This AVP shall be sent if this re-authorization procedure is triggered by the authentication and authorization via STa or SWm, when the 3GPP AAA Server detects that an S6b session already exists for the UE and the S6b session was established as a result of an authentication request for DSMIPv6."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: AA-Request ;; corrected: (TS29.273.py#elements-command-9-1-2-6-1-1)
 ; Command-Section: 9.2.2.5.1 ;; corrected: (TS29.273.py#elements-command-section-9-1-2-6-1-1)
@@ -2891,6 +5157,110 @@ APN                                              Service-Selection            C
 "APN Data"                                       APN-Configuration     C
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aar-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.1
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/1
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"It shall be present when the PGW Identity is present and does not contain an FQDN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aar-mip-mn-ha-spi)
+; AVP: MIP-MN-HA-SPI
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.1
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/1
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"It shall be included when the PDN-GW does not have the MN-HA shared key required to verify the MIPv4 RRQ message."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aaa-mip6-feature-vector)
+; AVP: MIP6-Feature-Vector
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.2
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/2
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"The 3GPP AAA Server shall insert this AVP if the authorization was successful."
+    text-only
+"The MIP4_SUPPORTED flag shall be set."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aaa-qos-resources)
+; AVP: QoS-Resources
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.2
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/2
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded."
+"The QoS profile template value in this IE shall be set to 0."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aaa-redirect-host)
+; AVP: Redirect-Host
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.2
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/2
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"This information element shall be sent if the Result-Code value is set to DIAMETER_REDIRECT_INDICATION."
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aaa-mip-session-key)
+; AVP: MIP-Session-Key
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.2
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/2
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"it shall be included if the Result-Code value is set to DIAMETER_SUCCESS and the MIP-MN-HA-SPI was sent in the authorization request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-aaa-apn-configuration)
+; AVP: APN-Configuration
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.2
+; Section: 9.1.2.6.1
+; Table: 9.1.2.6.1/2
+; Page: 178
+; Versions: 18.6.0..19.2.0
+"This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#visited-network-identifier-domain)
+; AVP: Visited-Network-Identifier
+; Section: 9.2.3.1.2
+; Page: 189
+; Versions: 18.6.0..19.2.0
+"The AVP shall be encoded as:"
+"mnc<MNC>.mcc<MCC>.3gppnetwork.org"
+    encoding plmn-domain
+
+
 ; Type: Value Table
 ; AVP: RAR-Flags
 ; Kind: bits
@@ -2899,6 +5269,16 @@ APN                                              Service-Selection            C
 ; Page: 189
 Trust-Relationship-Update-indication = 0
 "P-CSCF Restoration Request"         = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#rar-flags-undefined-bits)
+; AVP: RAR-Flags
+; Section: 9.2.3.1.5
+; Table: 9.2.3.1.5/1
+; Page: 189
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command."
+    bits only 0 1
 
 
 ; Type: Grouped AVP
@@ -2910,6 +5290,27 @@ MIP6-Agent-Info ::= < AVP header: 486 >
         [ MIP-Home-Agent-Host ]
         [ MIP6-Home-Link-Prefix ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-pmip-mip6-agent-info-fqdn)
+; AVP: MIP-Home-Agent-Host
+; Within: MIP6-Agent-Info
+; Section: 9.2.3.2.2
+; Page: 190
+; Versions: 18.6.0..19.2.0
+"In all other cases the PDN GW shall use its FQDN."
+"MAG/AAA/HSS shall use FQDN if known."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-pmip-mip6-agent-info-home-link-prefix)
+; AVP: MIP6-Home-Link-Prefix
+; Within: MIP6-Agent-Info
+; Section: 9.2.3.2.2
+; Page: 190
+; Versions: 18.6.0..19.2.0
+"The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP."
+    text-only
 
 
 ; Type: Reused AVPs
@@ -2926,6 +5327,15 @@ QoS-Capability    RFC5777
 QoS-Resources     RFC5777
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-feature-list-id)
+; AVP: Feature-List-ID
+; Section: 9.2.3.4
+; Page: 191
+; Versions: 18.6.0..19.2.0
+"For this release, the Feature-List-ID AVP value shall be set to 1 for the S6b application."
+    range 1
+
+
 ; Type: Value Table
 ; AVP: Feature-List
 ; Kind: features
@@ -2938,6 +5348,27 @@ QoS-Resources     RFC5777
 
 
 ;; deleted: definition 'MIP6-Agent-Info' (clause 9.2.3.6.2) (TS29.273.py#mip6-agent-info-duplicate)
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-mip6-agent-info-fqdn)
+; AVP: MIP-Home-Agent-Host
+; Within: MIP6-Agent-Info
+; Section: 9.2.3.6.2
+; Page: 192
+; Versions: 18.6.0..19.2.0
+"In all other cases the PDN GW shall use its FQDN."
+"The FA/3GPP AAA Server/HSS shall use FQDN if known."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-mip4-mip6-agent-info-home-link-prefix)
+; AVP: MIP6-Home-Link-Prefix
+; Within: MIP6-Agent-Info
+; Section: 9.2.3.6.2
+; Page: 192
+; Versions: 18.6.0..19.2.0
+"The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP."
+    text-only
 
 
 ; Type: Reused AVPs
@@ -2975,6 +5406,16 @@ MIP-Session-Key   RFC4004
 ; Table: 9.2.3.7/1
 ; Page: 193
 Initial-Attach-Indicator = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#der-s6b-flags-undefined-bits)
+; AVP: DER-S6b-Flags
+; Section: 9.2.3.7
+; Table: 9.2.3.7/1
+; Page: 193
+; Versions: 18.6.0..19.2.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
+    bits only 0
 
 
 ; Type: Value Table
@@ -3016,3 +5457,13 @@ IMSI                     User-Name              O
 ; Columns: Name      AVP                               Cat
 Result               Result-Code/Experimental-Result   M
 "Equipment Status"   Equipment-Status                  C
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#eca-equipment-status)
+; AVP: Equipment-Status
+; Section: 11.1.2.1.1
+; Table: 11.1.2.1.1/2
+; Page: 196
+; Versions: 18.6.0..19.2.0
+"It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS."
+    text-only
