@@ -475,7 +475,7 @@ C row of its information-element tables.
 | AVP clauses (clause 7.3, not its General and Void clauses) | 247 |
 | with something to declare | 99, in 122 blocks |
 | with nothing to declare | 148 |
-| information-element C rows | 45, of which 35 state a condition, 10 of them typed |
+| information-element C rows | 45, of which 35 state a condition, 17 of them typed |
 | blocks | 157: 87 on an AVP wherever read, 33 within a grouped AVP, 37 within a command |
 | readings | 176 |
 
@@ -486,26 +486,32 @@ C row of its information-element tables.
 | `length` | 8: 6 in octets, 2 in digits |
 | `range` | 7 |
 | `exclude` | 4 |
-| `requires`, `present-if`, `absent-if`, `excludes` | 17, 2, 2, 1 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 17, 9, 2, 2 |
 | `default` | 9 |
 | `bits` | 10: `at-most-one` 3 (DSR-Flags), `at-least-one` (Preferred-Data-Mode), `clear` 4 (Reachability-Type, eDRX-Cycle-Length-Value, Paging-Time-Window-Length, CSG-Id), `set` (Reachability-Type), `only` (DSR-Flags on S7a) |
 | `members` | 3: `at-least-one` 2 (AESE-Communication-Pattern, Monitoring-Event-Configuration), `only` (Terminal-Information in NOR) |
 | `unique` | 2: Context-Identifier and Service-Selection in APN-Configuration |
-| `values` | 1: Reachability-Information in Monitoring-Event-Report |
-| `text-only` | 54 |
+| `values` | 2: Reachability-Information in Monitoring-Event-Report, Maximum-Number-of-Reports for a last known location |
+| reading the request | 6: the IDA's EPS-User-State, EPS-Location-Information and Local-Time-Zone where the IDR's IDR-Flags asks for them, its Monitoring-Event-Config-Status beside the IDR's Monitoring-Event-Configuration, and the ULA's and UVA's subscription data unless the request skips it |
+| `text-only` | 45 |
 
 The text-only rules are mostly conditions on the node, the interface, an
 earlier message or a feature (an information element's "shall be present if
 the MME supports SMS in MME"), what an absent AVP means where that is no
 value or differs between commands (MDT-User-Consent's in ULA and IDR), and
 conditions on an OctetString's value (PDP-Type's, whose octets the clauses
-do not spell out). The rest a single message could show but no kind says
-without a member's member, a negation or a mapping between two bit tables:
-Visited-Network-Identifier present when MIP6-Agent-Info holds no FQDN,
-Maximum-Number-of-Reports bounded by MONTE-Location-Type inside
-Location-Information-Configuration, PLMN-RAT-Usage-Control's bits against
-Access-Restriction-Data's. Access-Restriction-Data's "Bits 11 and 12 are only
-used when bit 4 is not set" says what they mean, not that they are clear.
+do not spell out). A row read as an answer's rule on its request is held to
+a success's answer, `Result-Code = DIAMETER_SUCCESS`, where the row says
+nothing of an error's: an IDA reporting one carries no EPS-User-State
+though the IDR asked for it. The rest a single message could show but no
+kind says: a text value (Specific-APN-Info only for the wild card APN `*`),
+a mapping between two bit tables (PLMN-RAT-Usage-Control's bits against
+Access-Restriction-Data's), the address type of Ext-PDP-Address against
+PDP-Address's, and MIP6-Home-Link-Prefix "not used in S6a/S6d", which a
+`; Within:` scope would hold to every interface reading MIP6-Agent-Info as
+TS 29.272 does, SWx's APN-Configuration among them.
+Access-Restriction-Data's "Bits 11 and 12 are only used when bit 4 is not
+set" says what they mean, not that they are clear.
 
 ## TS 29.329
 

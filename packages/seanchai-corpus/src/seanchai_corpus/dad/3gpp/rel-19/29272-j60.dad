@@ -1040,7 +1040,7 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Page: 18
 ; Versions: 18.7.0..19.6.0
 "It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request."
-    text-only
+    present-if Result-Code = DIAMETER_SUCCESS and not request/ULR-Flags bit "Skip Subscriber Data"
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-sgsn-number)
@@ -1224,7 +1224,7 @@ IMSI                                       User-Name            M
 ; Page: 35
 ; Versions: 18.7.0..19.6.0
 "It shall be present if EPS user state was requested within IDR."
-    text-only
+    present-if request/IDR-Flags bit "EPS User State Request" and Result-Code = DIAMETER_SUCCESS
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-eps-location-information)
@@ -1236,7 +1236,7 @@ IMSI                                       User-Name            M
 ; Page: 35
 ; Versions: 18.7.0..19.6.0
 "It shall be present if EPS location information was requested within IDR."
-    text-only
+    present-if request/IDR-Flags bit "EPS Location Information Request" and Result-Code = DIAMETER_SUCCESS
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-local-time-zone)
@@ -1248,7 +1248,7 @@ IMSI                                       User-Name            M
 ; Page: 35
 ; Versions: 18.7.0..19.6.0
 "It shall be present if the Local Time Zone was requested within IDR."
-    text-only
+    present-if request/IDR-Flags bit "Local Time Zone Request" and Result-Code = DIAMETER_SUCCESS
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-monitoring-event-report)
@@ -1272,7 +1272,7 @@ IMSI                                       User-Name            M
 ; Page: 35
 ; Versions: 18.7.0..19.6.0
 "This Information Element shall be present if Monitoring event configuration is included in IDR."
-    text-only
+    present-if request/Subscription-Data/Monitoring-Event-Configuration and Result-Code = DIAMETER_SUCCESS
 
 
 ; Type: Information Elements
@@ -1507,7 +1507,7 @@ IMSI                                                                User-Name   
 ; Page: 54
 ; Versions: 18.7.0..19.6.0
 "It shall be present when the PDN GW Identity is present and does not contain an FQDN."
-    text-only
+    present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-service-selection)
@@ -1633,7 +1633,7 @@ MSISDN                                     MSISDN               C
 ; Page: 61
 ; Versions: 18.7.0..19.6.0
 "It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set."
-    text-only
+    present-if Result-Code = DIAMETER_SUCCESS and not request/UVR-Flags bit "Skip Subscriber Data" and not UVA-Flags bit "Temporary Empty VPLMN CSG Subscription Data"
 
 
 ; Type: Information Elements
@@ -1820,7 +1820,7 @@ Subscription-Data ::= < AVP header: 1400 10415 >
 ; Page: 98
 ; Versions: 18.7.0..19.6.0
 "Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\"."
-    text-only
+    excludes AMBR/Max-Requested-Bandwidth-UL = 0 and AMBR/Max-Requested-Bandwidth-DL = 0
 
 
 ; Type: Grouped AVP
@@ -4217,7 +4217,7 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 "Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6)."
     absent-if Monitoring-Type = 6
 "Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1)."
-    text-only
+    values 0, 1 if Monitoring-Type = 2 and Location-Information-Configuration/MONTE-Location-Type = 1
 
 
 ; Type: Grouped AVP
