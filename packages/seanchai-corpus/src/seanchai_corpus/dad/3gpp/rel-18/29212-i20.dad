@@ -3623,7 +3623,7 @@ User-Equipment-Info-Extension = 14 ; O
 ; Versions: 18.2.0..19.1.0
 "The following exceptions apply to the initial CCR/CCA command pair:"
 "If the CCR command contains the Supported-Features AVP, the PCRF shall include the Supported-Features AVP in the CCA command, with the 'M' bit cleared, indicating only the features that both the PCRF and PCEF support."
-    present-if CC-Request-Type = INITIAL_REQUEST and request/Supported-Features and Result-Code = 2001
+    present-if CC-Request-Type = INITIAL_REQUEST and request/Supported-Features and Result-Code = DIAMETER_SUCCESS
 "If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-7 Gx functionality, the CCA command shall not include the Supported-Features AVP."
     text-only
 

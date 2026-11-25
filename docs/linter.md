@@ -138,7 +138,9 @@ countable by rule and acceptable through `Accept` like any note.
 An `Interpreted Constraints` block ([constraints.md](constraints.md)) is held
 to what the documents print. Types, values and bits come from the file, and
 with a corpus from the document its re-used row cites and its bases; one no
-document read states is not judged.
+document read states is not judged. A document's result codes add to its
+bases' (TS 29.212 prints no DIAMETER_SUCCESS, RFC 6733 does), so a condition's
+result-code name is judged only where every base is read.
 
 | Rule | Severity | Reports |
 |---|---|---|

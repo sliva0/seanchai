@@ -1609,6 +1609,82 @@ DIAMETER_ACME_TYPO
     }
 
 
+def test_a_condition_names_a_result_code_of_the_bases():
+    # A document's result codes add to its bases': TS 29.212's tables of
+    # clause 5.5 print no DIAMETER_SUCCESS, which RFC 6733 defines. Linted
+    # alone the name is not judged; with the base read, it resolves there,
+    # and a name neither defines is refused.
+    def found(name: str, *, with_base: bool) -> list[str]:
+        spec = _dad(
+            "3GPP TS 29.900",
+            """\
+            ; Type: Message
+            ; Name: Credit-Control-Answer, CCA
+            ; Section: 6.1.2
+            <Credit-Control-Answer> ::= < Diameter Header: 272, PXY >
+            < Session-Id >
+            { Result-Code }
+            [ Example-Number ]
+            """,
+            """\
+            ; Type: AVP Table
+            ; Section: 6.3.1
+            ; Columns: Name     Code   Section   Type          Must
+            Example-Number      1      6.3.2     OctetString   V
+            """,
+            """\
+            ; Type: Value Table
+            ; AVP: Result-Code
+            ; Kind: result-codes
+            ; Section: 6.4
+            DIAMETER_ACME_ERROR = 5999
+            """,
+            f"""\
+            ; Type: Interpreted Constraints
+            ; AVP: Example-Number
+            ; Command: Credit-Control-Answer
+            ; Section: 6.3.2
+            ; Versions: 19.0.0
+            "Q."
+                present-if Result-Code = {name}
+            """,
+            bases="RFC6733",
+        )
+        base = _dad(
+            "RFC 6733",
+            """\
+            ; Type: AVP Table
+            ; Section: 4.5
+            ; Columns: Name     Code   Section   Type          Must
+            Result-Code         268    7.1       Unsigned32    M
+            """,
+            """\
+            ; Type: Value Table
+            ; AVP: Result-Code
+            ; Kind: result-codes
+            ; Section: 7.1
+            DIAMETER_SUCCESS = 2001
+            """,
+            version=None,
+            vendor_id=0,
+        )
+        findings = (
+            linter.lint_with_corpus(spec, _books(spec, base))
+            if with_base
+            else linter.lint(spec)
+        )
+        return [f.message for f in findings if f.rule == "constraint-value-unknown"]
+
+    assert found("DIAMETER_SUCCESS", with_base=False) == []
+    assert found("DIAMETER_NOPE", with_base=False) == []
+    assert found("DIAMETER_SUCCESS", with_base=True) == []
+    assert found("DIAMETER_ACME_ERROR", with_base=True) == []
+    assert found("DIAMETER_NOPE", with_base=True) == [
+        "Example-Number in Credit-Control-Answer: Result-Code names no value"
+        " 'DIAMETER_NOPE'"
+    ]
+
+
 def test_the_record_of_known_holes_is_held_to_the_corpus():
     spec = _dad(
         "3GPP TS 29.900",

@@ -82,6 +82,13 @@ def _documents(spec: ast.Specification, name: str, cited: _Cited | None) -> list
 
 def _facts(spec: ast.Specification, name: str, cited: _Cited | None) -> _Facts:
     facts = _Facts()
+    # A document's result codes add to its bases' (TS 29.212's tables of
+    # clause 5.5 beside RFC 6733's DIAMETER_SUCCESS), so they name every
+    # value only where every base is read too, as the model resolves them.
+    result_codes = False
+    bases_read = cited is not None and all(
+        cited(reference) is not None for reference in spec.bases
+    )
     for document in _documents(spec, name, cited):
         for section in document.sections:
             if isinstance(section, ast.EnumeratedAvp) and section.name == name:
@@ -105,11 +112,14 @@ def _facts(spec: ast.Specification, name: str, cited: _Cited | None) -> _Facts:
                     ast.ValueKind.RESULT_CODES,
                     ast.ValueKind.VALUES,
                 ):
+                    result_codes |= section.kind is ast.ValueKind.RESULT_CODES
                     facts.values = (facts.values or set()) | {
                         row.name for row in section.rows
                     }
         if facts.data_type is not None and document is not spec:
             break
+    if result_codes and not bases_read:
+        facts.values = None
     return facts
 
 
