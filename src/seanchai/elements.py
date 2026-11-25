@@ -537,6 +537,10 @@ _NAS_5GS = ("TS24.501", "19.8.0")
 _CAP = ("TS29.078", "19.0.0")
 _GI = ("TS29.061", "19.1.0")
 _SMS = ("TS23.040", "19.0.0")
+_S1AP = ("TS36.413", "19.2.0")
+_RANAP = ("TS25.413", "19.0.0")
+_BSSGP = ("TS48.018", "19.0.0")
+_EPS_NAS = ("TS24.301", "19.8.0")
 
 
 def _network_name(clause: str, attribute: str, field: str) -> Element:
@@ -2036,6 +2040,214 @@ REGISTRY: tuple[Element, ...] = (
         (),
         Depth.NONE,
         "no shape of the registry bounds a text's digits",
+    ),
+    Element(
+        "TS36.413",
+        "9.2.1.3",
+        "Cause",
+        "the cause value of an S1AP Cause, the index of its group's ENUMERATED",
+        (
+            _source(
+                _S1AP,
+                "9.3.4",
+                "Cause ::= CHOICE { radioNetwork CauseRadioNetwork, transport"
+                " CauseTransport, nas CauseNas, protocol CauseProtocol, misc"
+                " CauseMisc, ... }, each group an extensible ENUMERATED",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "how many values a cause has turns on its group, which another AVP"
+        " (Cause-Type) carries, and every group's ENUMERATED is extensible,"
+        " so no bound holds of each",
+    ),
+    Element(
+        "TS25.413",
+        "9.2.1.4",
+        "Cause",
+        "the cause value of a RANAP Cause, an INTEGER numbered across the groups",
+        (
+            _source(
+                _RANAP,
+                "9.3.4",
+                "Cause ::= CHOICE of CauseRadioNetwork (1..64),"
+                " CauseTransmissionNetwork (65..80), CauseNAS (81..96),"
+                " CauseProtocol (97..112), CauseMisc (113..128),"
+                " CauseNon-Standard (129..256) and CauseRadioNetworkExtension"
+                " (257..512), '-- Cause value 256 shall not be used --'",
+            ),
+        ),
+        (Integer(1, 512),),
+        Depth.PARTIAL,
+        "value 256, which the module's comment says 'shall not be used', is"
+        " not refused: no shape leaves out one value of a range; a value its"
+        " group's INTEGER names no cause for is not refused either, since the"
+        " groups leave room for causes to come",
+    ),
+    Element(
+        "TS48.018",
+        "11.3.8",
+        "Cause",
+        "the cause value of a BSSGP Cause IE, its one octet",
+        (
+            _source(
+                _BSSGP,
+                "11.3.8",
+                "table 11.3.8.b, the cause values x00 to x8f, 'All values not"
+                ' listed below shall be treated as "protocol error -'
+                " unspecified\"'",
+            ),
+        ),
+        (Integer(0, 255),),
+        Depth.FULL,
+        "a value the table does not list is treated as 'protocol error -"
+        " unspecified', not refused",
+    ),
+    Element(
+        "TS24.008",
+        "10.5.5.14",
+        "GMM cause",
+        "the cause value of the GMM cause information element, its octet 2",
+        (
+            _source(
+                _NAS,
+                "10.5.5.14",
+                "'a type 3 information element with 2 octets length', the cause"
+                " value in octet 2, 'Any other value received by the mobile"
+                " station shall be treated as 0110 1111'",
+            ),
+        ),
+        (Integer(0, 255),),
+        Depth.FULL,
+        "a value table 10.5.147 does not name is read as 'Protocol error,"
+        " unspecified', not refused",
+    ),
+    Element(
+        "TS24.008",
+        "10.5.6.6",
+        "SM cause",
+        "the cause value of the SM cause information element, its octet 2,"
+        " which SM cause 2 carries in its octet 3",
+        (
+            _source(
+                _NAS,
+                "10.5.6.6",
+                "'a type 3 information element with 2 octets length', the cause"
+                " value in octet 2, 'Any other value received by the mobile"
+                " station shall be treated as 0010 0010'",
+            ),
+            _source(
+                _NAS,
+                "10.5.6.6A",
+                "'SM cause 2 value is coded as octet 2 of the SM cause"
+                " information element'",
+            ),
+        ),
+        (Integer(0, 255),),
+        Depth.FULL,
+        "a value table 10.5.157 does not name is read as another, not refused",
+    ),
+    Element(
+        "TS24.301",
+        "9.9.4.26",
+        "Extended protocol configuration options",
+        "the contents of the extended protocol configuration options IE from"
+        " its octet 4: the configuration protocol octet, then the protocol"
+        " and container entries",
+        (
+            _source(
+                _EPS_NAS,
+                "9.9.4.26",
+                "'See clause 10.5.6.3A in 3GPP TS 24.008 [13].'",
+            ),
+            _source(
+                _NAS,
+                "10.5.6.3A",
+                "'Extended protocol configuration options contents (octet 4 to"
+                " octet n); Max value of 65535 octets', 'coded as octet 3 and"
+                " above of protocol configuration options IE'",
+            ),
+            _source(
+                _NAS,
+                "10.5.6.3",
+                "figure 10.5.136, octet 3: '1 ext', '0 0 0 0 Spare',"
+                " 'Configuration protocol'",
+            ),
+        ),
+        (Octets(1, 65535), Field("ext", 1, 8, 8, ((1, 1),))),
+        Depth.PARTIAL,
+        "the spare bits, which the receiver ignores (TS 24.008 clause 10.5),"
+        " the configuration protocol and the protocol and container entries"
+        " are not checked: no shape walks a list of entries",
+        example=bytes([0x80, 0x00, 0x0D, 0x00]),
+    ),
+    Element(
+        "TS29.274",
+        "8.38",
+        "Uplink number of packets allowed",
+        "a field of the MM Context's APN Rate Control Status, octets (k+1) to (k+4)",
+        (
+            _source(
+                _GTPV2,
+                "8.38",
+                "figure 8.38-10, APN Rate Control Status, octets (k+1) to (k+4)"
+                " 'Uplink number of packets allowed'",
+            ),
+        ),
+        (),
+        Depth.FULL,
+        valid="4 octets the Unsigned32 carries whole: every value",
+    ),
+    Element(
+        "TS29.274",
+        "8.38",
+        "Number of additional exception reports",
+        "a field of the MM Context's APN Rate Control Status, octets (k+5) to (k+8)",
+        (
+            _source(
+                _GTPV2,
+                "8.38",
+                "figure 8.38-10, APN Rate Control Status, octets (k+5) to (k+8)"
+                " 'Number of additional exception reports'",
+            ),
+        ),
+        (),
+        Depth.FULL,
+        valid="4 octets the Unsigned32 carries whole: every value",
+    ),
+    Element(
+        "TS29.274",
+        "8.38",
+        "Downlink number of packets allowed",
+        "a field of the MM Context's APN Rate Control Status, octets (k+9) to (k+12)",
+        (
+            _source(
+                _GTPV2,
+                "8.38",
+                "figure 8.38-10, APN Rate Control Status, octets (k+9) to (k+12)"
+                " 'Downlink number of packets allowed'",
+            ),
+        ),
+        (),
+        Depth.FULL,
+        valid="4 octets the Unsigned32 carries whole: every value",
+    ),
+    Element(
+        "TS29.274",
+        "8.38",
+        "APN Rate Control Status validity Time",
+        "a field of the MM Context's APN Rate Control Status, octets (k+13) to (k+20)",
+        (
+            _source(
+                _GTPV2,
+                "8.38",
+                "figure 8.38-10, APN Rate Control Status, octets (k+13) to (k+20)"
+                " 'APN Rate Control Status validity Time'",
+            ),
+        ),
+        (),
+        Depth.FULL,
+        valid="8 octets the Unsigned64 carries whole: every value",
     ),
 )
 

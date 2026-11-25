@@ -216,20 +216,26 @@ def test_the_plugin_reads_each_element_as_python_does(lua, tmp_path):
         "  return (text:gsub('..', function(pair)",
         "    return string.char(tonumber(pair, 16)) end))",
         "end",
-        "for index = 1, #arg, 3 do",
-        "  print(core.element_problem(elements[tonumber(arg[index])],"
-        " unhex(arg[index + 2]), arg[index + 1]) or 'ok')",
+        # A case a line, "entry type hex", read from a file: a payload past
+        # an entry's longest (TS 24.301's 65535 octets) outgrows a command line.
+        "for line in io.lines(arg[1]) do",
+        "  local index, data_type, payload = line:match('(%d+) (%S+) (%x*)')",
+        "  print(core.element_problem(elements[tonumber(index)],"
+        " unhex(payload), data_type) or 'ok')",
         "end",
     ]
     runner = tmp_path / "runner.lua"
     runner.write_text("\n".join(lines) + "\n", "utf-8")
-    arguments = [
-        part
-        for entry, payload, data_type, _ in CASES
-        for part in (str(numbered[entry]), data_type.value, payload.hex())
-    ]
+    cases = tmp_path / "cases.txt"
+    cases.write_text(
+        "".join(
+            f"{numbered[entry]} {data_type.value} {payload.hex()}\n"
+            for entry, payload, data_type, _ in CASES
+        ),
+        "utf-8",
+    )
     done = subprocess.run(
-        [lua, str(runner), *arguments], check=True, capture_output=True, text=True
+        [lua, str(runner), str(cases)], check=True, capture_output=True, text=True
     )
 
     assert done.stdout.splitlines() == [

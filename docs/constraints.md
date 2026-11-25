@@ -362,6 +362,19 @@ TS 29.338's 9 name 4 entries, of which 3 check something:
 | SM-RP-UI | TS 23.040 9.2.2 TPDU | TS 23.040 V19.0.0 9.2.2; TS 23.040 V19.0.0 9.2.3.1 | at least 1 octet | length | the PDU's type and fields are not checked: what a TP-MTI value means turns on the direction, which the AVP does not carry, and a receiver reads the reserved one as an SMS-DELIVER |
 | HSS-ID | TS 23.003 5.3 HSS-ID | TS 23.003 V19.8.0 5.3 | nothing | none | no shape of the registry bounds a text's digits |
 
+TS 29.128's 10 name 10 entries, of which 5 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| S1AP-Cause | TS 36.413 9.2.1.3 Cause | TS 36.413 V19.2.0 9.3.4 | nothing | none | how many values a cause has turns on its group, which another AVP (Cause-Type) carries, and every group's ENUMERATED is extensible, so no bound holds of each |
+| RANAP-Cause | TS 25.413 9.2.1.4 Cause | TS 25.413 V19.0.0 9.3.4 | an integer 1 to 512 | partial | value 256, which the module's comment says 'shall not be used', is not refused: no shape leaves out one value of a range; a value its group's INTEGER names no cause for is not refused either, since the groups leave room for causes to come |
+| BSSGP-Cause | TS 48.018 11.3.8 Cause | TS 48.018 V19.0.0 11.3.8 | an integer 0 to 255 | full | a value the table does not list is treated as 'protocol error - unspecified', not refused |
+| GMM-Cause | TS 24.008 10.5.5.14 GMM cause | TS 24.008 V19.5.0 10.5.5.14 | an integer 0 to 255 | full | a value table 10.5.147 does not name is read as 'Protocol error, unspecified', not refused |
+| SM-Cause | TS 24.008 10.5.6.6 SM cause | TS 24.008 V19.5.0 10.5.6.6; TS 24.008 V19.5.0 10.5.6.6A | an integer 0 to 255 | full | a value table 10.5.157 does not name is read as another, not refused |
+| Extended-PCO | TS 24.301 9.9.4.26 Extended protocol configuration options | TS 24.301 V19.8.0 9.9.4.26; TS 24.008 V19.5.0 10.5.6.3A; TS 24.008 V19.5.0 10.5.6.3 | 1 to 65535 octets; octet 1 bit 8 (ext) 1 | partial | the spare bits, which the receiver ignores (TS 24.008 clause 10.5), the configuration protocol and the protocol and container entries are not checked: no shape walks a list of entries |
+| Uplink-Number-Of-Packets-Allowed, Number-Of-Additional-Exception-Reports, Downlink-Number-Of-Packets-Allowed | TS 29.274 8.38 (the field of that name) | TS 29.274 V19.6.0 8.38 | 4 octets the Unsigned32 carries whole: every value | full |  |
+| APN-Rate-Control-Status-Validity-Time | TS 29.274 8.38 APN Rate Control Status validity Time | TS 29.274 V19.6.0 8.38 | 8 octets the Unsigned64 carries whole: every value | full |  |
+
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
@@ -1097,3 +1110,90 @@ a table row (clause 6.2.2.3's SMS-GMSC address beside a
 Maximum-Retransmission-Time), read at the row; Feature-List's SMSF-Support
 description, which the SRA's NOTE rows read; and Annex A's DRMP, an
 operator's priority.
+
+## TS 29.128
+
+TS 29.128 V19.2.0 is read completely for T6a/T6b, T6ai/T6bi and T7: the
+information-element tables of clause 5's procedures (5.2.1 to 5.8.1), with
+the procedure clauses for what they state of one message, clause 6.1's
+common aspects, clause 6.2.2's commands, clause 6.3's result codes and
+every AVP clause of clause 6.4. Release 18's copy, V18.0.0, holds 104 of the
+105 blocks: it prints no clause 5.2.2.8, whose store and forward satellite
+event Release 19 added. Each command prints once under
+16777346, for every interface, so a table describing one direction of a
+command (the MME's or SGSN's Connection-Management-Request of clause 5.7.1,
+the SCEF's of 5.8.1) describes the one print: a rule is read only where it
+holds of both, as an establishment's AVPs, which the SCEF never requests.
+
+| | |
+|---|---|
+| AVP clauses (clause 6.4, not its General clause) | 45 |
+| with something to declare | 15, in 16 blocks |
+| with nothing to declare | 30 |
+| information-element C rows | 18, of which 15 state a condition |
+| the tables' blocks (clauses 5.2.1 to 5.8.1), M rows and each answer's Result among them | 26 |
+| procedure clauses (5.2.2.0 to 5.2.2.8, 5.7.2) | 8 blocks |
+| clause 6.1.4's sessions, 6.1.9's Supported-Features, 6.2.2's commands, 6.3.3's result codes | 30, 10, 10, 5 blocks |
+| blocks | 105: 84 within a command, 8 within a grouped AVP, 13 on an AVP wherever read |
+| readings | 105 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 1: `labels` (Service-Selection) |
+| `encoding element` | 10, naming 10 entries of the registry; 5 rules checked, 5 not ([above](#elements)) |
+| `range` | 10: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands |
+| `exclude` | 2: Uplink-Rate-Limit and Downlink-Rate-Limit 1 to 9 |
+| `requires`, `present-if`, `absent-if` | 22, 8, 5 |
+| `absent` | 30: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in each of the 10 commands |
+| reading the request | 1: the CMA's PDN-Connection-Charging-ID answering an establishment with DIAMETER_SUCCESS |
+| `values` | 1: a reachability report's Reachability-Information REACHABLE_FOR_DATA |
+| `bits` | 2, each `only`: CMR-Flags, TDA-Flags |
+| `text-only` | 15 |
+
+Clause 6.1.4's session handling and clause 6.2.2's Vendor-Specific-
+Application-Id are read in each of the ten commands as TS 29.338's clauses
+4.5 and 5.3.2.2 are, and clause 6.3.3's "the Result-Code AVP shall be
+absent" beside one of its twelve codes in each answer, TS 29.172's
+DIAMETER_ERROR_UNREACHABLE_USER (4221) among them. Clause 5.2.2's report
+contents are read within Monitoring-Event-Report, as the document prints
+its body: the event a report carries is its Monitoring-Type, TS 29.336's
+Unsigned32, whose values the corpus does not read and the rules write as
+numbers, so a location report (2) carries its EPS-Location-Information, a
+communication failure's (5) its Communication-Failure-Information, and a
+reachability report (1, or 8 without an Idle-Status-Indication, its NOTE
+says) Reachability-Information REACHABLE_FOR_DATA (1). Connection-Action is
+an Unsigned32 too, its CONNECTION_ESTABLISHMENT written 0.
+
+The text-only rules are mostly conditions on the node, a feature, the
+subscription or what a node needs to send ("if present in the subscription
+data received from the HSS", "if the MME or SGSN receives Extended PCO
+information from the UE", "If an immediate report is available", "When the
+\"Extended Reference IDs\" feature is supported", "if Serving PLMN Rate
+Control is configured"), a request's purpose its own AVP's presence already
+tells (Non-IP-Data "shall be present when the request conveys Non-IP
+data"), and two times compared (the TDA's Requested-Retransmission-Time
+within the request's Maximum-Retransmission-Time). The CMR's RAT-Type and
+Visited-PLMN-Id "shall be present if the request is for a T6a/b connection
+establishment or for a T6a/b connection update" are read of an
+establishment alone: an update is the SCEF's request too (clause 5.8.1),
+whose table names neither.
+
+The document is wrong in places the corpus reads around: clauses 5.2.2.7
+and 5.2.2.8 number PDN_CONNECTIVITY_STATUS 8 and SAT_SF_OPERATION_INFO 9,
+the values clause 5.2.2.2 and 5.2.2.6 give UE_REACHABILITY_AND_IDLE_STATUS_
+INDICATION and AVAILABILITY_AFTER_DDN_FAILURE_AND_IDLE_STATUS_INDICATION,
+where TS 29.336 clause 8.4.7 numbers them 10 and 11, so the two events'
+AVPs are read `text-only`; clause 6.4.3's text names an
+SCEF-Reference-ID-Ext its Monitoring-Event-Report body does not print, nor
+admit through a `* [ AVP ]`; table 5.8.1-1 has the SCEF's
+Connection-Action indicate "a T6a/b connection update" where clauses 5.8.1
+and 5.8.3 have it request a release too; and clause 6.4.35's text runs
+into Annex A's heading, "Annex A (normative): Diameter overload control
+mechanism". Left unread: the C and O rows saying only what an AVP holds when
+present and the "may" rows (the TDA's Requested-Retransmission-Time "may be
+present if" the answer reports DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE);
+clause 6.1.7's Capabilities-Exchange AVPs, RFC 6733's commands'; the
+routing clause 6.1.6; the procedures' result codes, which are what a node
+answers with; Cause-Type's and the other Unsigned32 AVPs' value lists,
+which the clauses do not say are all a sender may send; and Annex A's
+overload control and Annex B's DRMP.
