@@ -9124,6 +9124,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.2: 'This AVP contains an MSISDN, in international number format as described in ITU-T Rec E.164 [8], encoded as a TBCD-string, i.e. digits from 0 through 9 are encoded 0000 to 1001; 1111 is used as a filler when there is an odd number of digits; bits 8 to 5 of octet n encode digit 2n; bits 4 to 1 of octet n encode digit 2(n-1)+1.'"
     },
+    "TS29.329.dadx#pna-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
+    },
     "TS29.329.dadx#pre-paging-supported-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.26: 'If this AVP is not present in the command, the default value is PREPAGING_NOT_SUPPORTED (0).'"
@@ -9132,13 +9136,25 @@
      "kind": "interpret",
      "reason": "interpreted from clause 6.1.4: 'NOTE: The Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature.'"
     },
+    "TS29.329.dadx#pua-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
+    },
     "TS29.329.dadx#pur-data-reference-update-eff-enhance": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.1.3: 'NOTE: More than one Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature.'"
     },
+    "TS29.329.dadx#sna-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
+    },
     "TS29.329.dadx#snr-one-time-notification": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.22: 'This AVP is only applicable to UE reachability for IP (25)'"
+    },
+    "TS29.329.dadx#uda-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
     },
     "TS29.329.dadx#udr-flags-undefined-bits": {
      "kind": "interpret",
@@ -9179,6 +9195,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.2: 'This AVP contains an MSISDN, in international number format as described in ITU-T Rec E.164 [8], encoded as a TBCD-string, i.e. digits from 0 through 9 are encoded 0000 to 1001; 1111 is used as a filler when there is an odd number of digits; bits 8 to 5 of octet n encode digit 2n; bits 4 to 1 of octet n encode digit 2(n-1)+1.'"
     },
+    "TS29.329.dadx#pna-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
+    },
     "TS29.329.dadx#pre-paging-supported-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.26: 'If this AVP is not present in the command, the default value is PREPAGING_NOT_SUPPORTED (0).'"
@@ -9187,13 +9207,25 @@
      "kind": "interpret",
      "reason": "interpreted from clause 6.1.4: 'NOTE: The Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature.'"
     },
+    "TS29.329.dadx#pua-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
+    },
     "TS29.329.dadx#pur-data-reference-update-eff-enhance": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.1.3: 'NOTE: More than one Data-Reference AVP may be present in the message only if both the AS and the HSS support the Update-Eff-Enhance feature.'"
     },
+    "TS29.329.dadx#sna-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
+    },
     "TS29.329.dadx#snr-one-time-notification": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.22: 'This AVP is only applicable to UE reachability for IP (25)'"
+    },
+    "TS29.329.dadx#uda-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent.'"
     },
     "TS29.329.dadx#udr-flags-undefined-bits": {
      "kind": "interpret",

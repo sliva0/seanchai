@@ -515,11 +515,11 @@ set" says what they mean, not that they are clear.
 
 ## TS 29.329
 
-TS 29.329 V19.1.0 is read completely: every AVP clause of clause 6.3 and the
-notes under the commands of clause 6.1. Its commands' information-element
-tables and its procedures are TS 29.328's, whose clauses are not read here.
-Release 18's copy, V18.0.0, prints every sentence read and holds all 11
-blocks.
+TS 29.329 V19.1.0 is read completely: every AVP clause of clause 6.3, the
+notes under the commands of clause 6.1 and clause 6.2's sentence on its
+result codes. Its commands' information-element tables and its procedures
+are TS 29.328's, whose clauses are not read here. Release 18's copy,
+V18.0.0, prints every sentence read and holds all 15 blocks.
 
 | | |
 |---|---|
@@ -527,14 +527,16 @@ blocks.
 | with something to declare | 9, in 9 blocks |
 | with nothing to declare | 27 |
 | notes under the commands | 2, both on a feature |
-| blocks | 11: 8 on an AVP wherever read, 3 within a command |
-| readings | 11 |
+| the result codes' clause, 6.2 | 1 sentence, a block per answer |
+| blocks | 15: 8 on an AVP wherever read, 7 within a command |
+| readings | 15 |
 
 | Rules | |
 |---|---|
 | `encoding`, a codec | 1: `e164-tbcd` (MSISDN) |
 | `encoding element` | 3, naming 3 entries of the registry; 2 rules checked, 1 not ([above](#elements)) |
 | `requires` | 1: One-Time-Notification in SNR, on Data-Reference |
+| `absent-if` | 4: Result-Code in UDA, PUA, SNA and PNA, beside one of clause 6.2's codes in Experimental-Result's Experimental-Result-Code |
 | `default` | 1: Pre-paging-Supported |
 | `bits` | 1: `only` (UDR-Flags) |
 | `members` | 1: `at-least-one` (User-Identity) |
@@ -545,12 +547,11 @@ and any in PUA, depend on both nodes supporting Update-Eff-Enhance, and
 Wildcarded-Public-Identity's "only contains a Wildcarded PSI", which a
 Wildcarded IMPU's text does not differ from. User-Identity's "either ... or"
 is read as at least one of its three members: that no two are present has no
-`members` form. Left unread: clause 6.2's "Result-Code AVP shall be absent"
-beside one of its result codes, a condition on a member of
-Experimental-Result as TS 29.272's clause 7.4 states it and its file does
-not read; Data-Reference's value 20, which the clause marks reserved without
-saying it is not sent; and Server-Name's "SIP-URL", for which no codec
-exists.
+`members` form. Clause 6.2's "Result-Code AVP shall be absent" is read of
+each answer as a path into its Experimental-Result, the codes the clause
+lists, those it takes from TS 29.229 among them. Left unread:
+Data-Reference's value 20, which the clause marks reserved without saying it
+is not sent; and Server-Name's "SIP-URL", for which no codec exists.
 
 ## TS 29.273
 

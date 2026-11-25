@@ -321,6 +321,46 @@ DIAMETER_USER_DATA_NOT_AVAILABLE              = 4100 ; 6.2.3.1
 DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#uda-result-code-absent-with-experimental-result)
+; AVP: Result-Code
+; Command: User-Data-Answer
+; Section: 6.2
+; Page: 16
+; Versions: 18.0.0..19.1.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_TOO_MUCH_DATA or Experimental-Result/Experimental-Result-Code = "DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC" or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SUBS_DATA_ABSENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_DSAI_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_IDENTITIES_DONT_MATCH or Experimental-Result/Experimental-Result-Code = DIAMETER_USER_DATA_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pua-result-code-absent-with-experimental-result)
+; AVP: Result-Code
+; Command: Profile-Update-Answer
+; Section: 6.2
+; Page: 16
+; Versions: 18.0.0..19.1.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_TOO_MUCH_DATA or Experimental-Result/Experimental-Result-Code = "DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC" or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SUBS_DATA_ABSENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_DSAI_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_IDENTITIES_DONT_MATCH or Experimental-Result/Experimental-Result-Code = DIAMETER_USER_DATA_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#sna-result-code-absent-with-experimental-result)
+; AVP: Result-Code
+; Command: Subscribe-Notifications-Answer
+; Section: 6.2
+; Page: 16
+; Versions: 18.0.0..19.1.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_TOO_MUCH_DATA or Experimental-Result/Experimental-Result-Code = "DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC" or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SUBS_DATA_ABSENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_DSAI_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_IDENTITIES_DONT_MATCH or Experimental-Result/Experimental-Result-Code = DIAMETER_USER_DATA_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pna-result-code-absent-with-experimental-result)
+; AVP: Result-Code
+; Command: Push-Notification-Answer
+; Section: 6.2
+; Page: 16
+; Versions: 18.0.0..19.1.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_DATA_CANNOT_BE_NOTIFIED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_TOO_MUCH_DATA or Experimental-Result/Experimental-Result-Code = "DIAMETER_ERROR_TRANSPARENT_DATA OUT_OF_SYNC" or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SUBS_DATA_ABSENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_DSAI_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_IDENTITIES_DONT_MATCH or Experimental-Result/Experimental-Result-Code = DIAMETER_USER_DATA_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+
+
 ; Type: Reused AVPs
 ; Section: 6.3
 ; Table: 6.3.1
