@@ -422,6 +422,12 @@ suite, per command of the selection (`--application`, `--document`):
   rule, an AVP an `absent` rule keeps out, and an answer's rule on its
   request.
 
+A negative breaking an interpreted rule of a command's print that another
+print of the command under its application id does not hold (TS 29.273's two
+S6b AA-Answers, STa's and SWd's Diameter-EAP-Answer) is listed in `skipped`:
+a checker may hold the message to the other print, which it breaks nothing
+of; so is one whose breaking value breaks a predicate on a path to it too.
+
 An answer whose rules read the request it answers is sent with that request,
 `request` in the vector, the pair sharing Hop-by-Hop and End-to-End
 identifiers no other vector has; a checker reads the request first. Each

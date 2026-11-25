@@ -1318,9 +1318,59 @@ class _Negatives:
         rule: str,
         severity: Severity,
     ) -> None:
+        if (other := self.accepted_elsewhere(what, rule)) is not None:
+            self.skip(
+                what,
+                f"the command's print in clause {other} holds no such rule, and"
+                " a checker may hold the message to it",
+            )
+            return
         self.generator.emit(
             message, "negative", what, breaks, [Expected(rule=rule, severity=severity)]
         )
+
+    def accepted_elsewhere(self, what: str, rule: str) -> str | None:
+        """The clause of another print of the command under the application
+        (TS 29.273's S6b AA-Answer, clauses 9.2.2.2.2 and 9.2.2.5.2) holding
+        no rule of the kind a negative breaks on its AVP, which this print
+        holds as its member's: the plugin may hold the message to that print,
+        which it breaks nothing of. None where no such print is."""
+        if not rule.startswith("constraint-") or "/" not in what:
+            return None
+        kind, name = rule.removeprefix("constraint-"), what.split("/")[1]
+        # An element's rule is an encoding's.
+        kind = "encoding" if kind == "element" else kind
+
+        def holds(command: dictionary.Command) -> bool:
+            return any(
+                each.avp == name
+                and any(
+                    each_rule.kind == kind
+                    for reading in each.readings
+                    for each_rule in reading.rules
+                )
+                for each in command.constraints
+            )
+
+        if not holds(self.command):
+            return None
+        # Another interface's print counts too: TS 29.273 prints SWd's
+        # Diameter-EAP-Answer under STa's application id.
+        for other in (
+            each
+            for application in self.generator.built.applications
+            for each in application.commands
+            if each.application_id == self.command.application_id
+        ):
+            if (
+                other is not self.command
+                and other.command_code == self.command.command_code
+                and other.is_request == self.command.is_request
+                and other.section != self.command.section
+                and not holds(other)
+            ):
+                return other.section
+        return None
 
     def skip(self, what: str, reason: str) -> None:
         self.generator.skipped.append(
@@ -1708,6 +1758,14 @@ class _Negatives:
                         trial = message.copy()
                         target = self.find(trial, node)
                         target.payload = payload
+                        if self.builder.broken(self.scope, trial.nodes, trial.asked):
+                            # Every value breaking it breaks a predicate on a
+                            # path to it too.
+                            self.skip(
+                                f"constraint-{rule.kind}/{name}/{each.section}",
+                                "the value breaking it breaks a predicate on it too",
+                            )
+                            continue
                         kind = "element" if _element_of(rule) else rule.kind
                         self.emit(
                             trial,
@@ -2044,7 +2102,9 @@ class _Negatives:
                         "note",
                     )
                 continue
-            member = next(m for m in self.scope.members if m.name == name)
+            member = next((m for m in self.scope.members if m.name == name), None)
+            if member is None:
+                continue  # only `* [ AVP ]` admits it
             subject = [n for n in nodes if n.avp.name == name]
             if rule.kind in ("absent-if", "excludes", "present-if"):
                 if not all(self.make_hold(nodes, c) for c in rule.conditions[0]):
@@ -2126,7 +2186,7 @@ class _Negatives:
             if not _reads_request(rule):
                 continue
             what = f"{rule.kind}/{name}/{each.section}"
-            made = self.pair(name, rule)
+            made = self.pair(name, rule, each)
             if made is None:
                 self.skip(
                     f"constraint-{what}",
@@ -2170,18 +2230,31 @@ class _Negatives:
         )
 
     def pair(
-        self, name: str, rule: dictionary.Rule
+        self, name: str, rule: dictionary.Rule, each: dictionary.Constraint
     ) -> tuple[_Message, _Message] | None:
         """A valid request and answer for `rule` on the answer's AVP `name`,
-        its conditions met, and the same pair breaking the rule."""
+        its conditions met, and the same pair breaking the rule. The AVP is
+        a member of the body or one its `* [ AVP ]` admits."""
         valid = self.full()
-        member = next(m for m in self.scope.members if m.name == name)
+        member = next((m for m in self.scope.members if m.name == name), None)
 
         def present(message: _Message) -> _Avp | None:
-            return self.sibling(message.nodes, name)
+            if member is not None:
+                return self.sibling(message.nodes, name)
+            held = next((n for n in message.nodes if n.avp.name == name), None)
+            if held is not None or not each.avp_ids:
+                return held
+            try:
+                node = self.builder.avp(
+                    self.builder.avps[each.avp_ids[0]], self.scope, None, False, ()
+                )
+            except _Unbuildable:
+                return None
+            message.nodes.append(node)
+            return node
 
         def absent(message: _Message) -> bool:
-            if member.min_occurs:
+            if member is not None and member.min_occurs:
                 return False
             message.nodes[:] = [n for n in message.nodes if n.avp.name != name]
             return True
@@ -2361,7 +2434,13 @@ class _Negatives:
                 ] or (
                     [0, 1] if node.avp.data_type is not ast.DataType.ENUMERATED else []
                 )
-            others = [value for value in candidates if value != number]
+            # Another value, one the AVP's own rules allow.
+            others = [
+                value
+                for value in candidates
+                if value != number
+                and self.keeps_rules(node, scope, _integer(node.avp.data_type, value))
+            ]
             if not others:
                 return False
             node.payload = _integer(node.avp.data_type, others[0])

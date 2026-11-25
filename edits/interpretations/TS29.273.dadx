@@ -397,7 +397,7 @@
 ; Table: 5.1.2.1/2
 ; Versions: 18.6.0..19.2.0
 "This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the non-3GPP access network is trusted and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    text-only
+    requires Subscription-Id/Subscription-Id-Type = END_USER_E164
 
 
 ; Type: Interpreted Constraints
@@ -437,11 +437,11 @@
 ; Table: 5.1.2.1/2
 ; Versions: 18.6.0..19.2.0
 "This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the selected TWAN Connection Mode is MCM."
-    text-only
+    present-if Result-Code = DIAMETER_SUCCESS and TWAN-Connection-Mode bit MC-MODE
 
 
 ;; IMEI is a member of TS 29.272's Terminal-Information, which this file
-;; holds as re-used: a members rule names only what the file holds.
+;; re-uses: a members rule names it as the defining document prints it.
 ; Type: Interpreted Constraints
 ; Id: sta-dea-terminal-information
 ; AVP: Terminal-Information
@@ -454,7 +454,7 @@
 "For a trusted WLAN access, the 3GPP AAA Server shall include this IE if the user's Mobile Equipment Identity is available."
     text-only
 "When present, this grouped AVP shall contain the IMEI AVP and, if available, the Software Version AVP."
-    text-only
+    members at-least-one IMEI
 
 
 ; Type: Interpreted Constraints
@@ -613,15 +613,21 @@
     text-only
 
 
-;; The command's body prints no MIP6-Feature-Vector: the row describes an AVP the
-;; ABNF carries only as *[ AVP ], so no scope names the command.
+;; The command's body admits MIP6-Feature-Vector only through * [ AVP ],
+;; which makes it a member there. Clause 5.2.3.3 lists the flags in prose,
+;; which the file holds as no bit table: a bits rule names only bits a
+;; table holds.
 ; Type: Interpreted Constraints
 ; Id: sta-aaa-mip6-feature-vector
 ; AVP: MIP6-Feature-Vector
+; Command: AA-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.3.4
 ; Section: 5.1.2.3.1
 ; Table: 5.1.2.3.1/4
 ; Versions: 18.6.0..19.2.0
 "This information element shall only be sent if it has been received in the corresponding authorization request and the Result-Code AVP is set to DIAMETER_SUCCESS."
+    requires request/MIP6-Feature-Vector and Result-Code = DIAMETER_SUCCESS
 "When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set."
     text-only
 
@@ -649,7 +655,7 @@
 ; Table: 5.1.2.3.1/4
 ; Versions: 18.6.0..19.2.0
 "This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS."
-    text-only
+    requires Subscription-Id/Subscription-Id-Type = END_USER_E164
 
 
 ; Type: Interpreted Constraints
@@ -821,7 +827,7 @@
 ; Table: 5.1.2.3.1/6
 ; Versions: 18.6.0..19.2.0
 "This AVP shall contain the MSISDN of the UE and shall be sent if it is available and the Result-Code AVP is set to DIAMETER_SUCCESS."
-    text-only
+    requires Subscription-Id/Subscription-Id-Type = END_USER_E164
 
 
 ; Type: Interpreted Constraints
@@ -1112,6 +1118,142 @@
     bits only 0
 
 
+;; Clause 5.2.4, session handling: every command of the interface but
+;; the ASR, whose Auth-Session-State a 3GPP AAA Proxy may override
+;; (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), each admitting the AVP
+;; through its * [ AVP ].
+; Type: Interpreted Constraints
+; Id: sta-der-5-2-2-1-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Diameter-EAP-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.1
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-dea-5-2-2-1-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.1.2
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-asa-5-2-2-2-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Abort-Session-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.2.2
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-str-5-2-2-2-3-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.2.3
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-sta-5-2-2-2-4-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.2.4
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-rar-5-2-2-3-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Re-Auth-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.3.1
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-raa-5-2-2-3-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Re-Auth-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.3.2
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-aar-5-2-2-3-3-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.3.3
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-aaa-5-2-2-3-4-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.3.4
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-str-5-2-2-4-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Application-ID: 16777250
+; Command-Section: 5.2.2.4.1
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sta-sta-5-2-2-4-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Application-ID: 16777250
+; Command-Section: 5.2.2.4.2
+; Section: 5.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
 ;; SWd, clause 6: table 6.1.2.1.1-1, describing the Diameter-EAP-Request
 ;; printed for SWd in clause 6.2.2.1.1.1 under 16777250.
 ; Type: Interpreted Constraints
@@ -1333,7 +1475,7 @@
 ; Table: 7.1.2.1.1/2
 ; Versions: 18.6.0..19.2.0
 "This AVP shall contain the MSISDN of the UE and shall be sent only if it is available."
-    text-only
+    requires Subscription-Id/Subscription-Id-Type = END_USER_E164
 
 
 ; Type: Interpreted Constraints
@@ -1483,7 +1625,7 @@
 ; Table: 7.1.2.2.1/2
 ; Versions: 18.6.0..19.2.0
 "This AVP shall contain the MSISDN of the UE and shall be sent only if it is available."
-    text-only
+    requires Subscription-Id/Subscription-Id-Type = END_USER_E164
 
 
 ; Type: Interpreted Constraints
@@ -1552,6 +1694,142 @@
     bits only 0
 
 
+;; Clause 7.2.4, session handling: every command of the interface but
+;; the ASR, whose Auth-Session-State a 3GPP AAA Proxy may override
+;; (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), each admitting the AVP
+;; through its * [ AVP ].
+; Type: Interpreted Constraints
+; Id: swm-der-7-2-2-1-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Diameter-EAP-Request
+; Application-ID: 16777264
+; Command-Section: 7.2.2.1.1
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-dea-7-2-2-1-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777264
+; Command-Section: 7.2.2.1.2
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-aar-7-2-2-1-3-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Request
+; Application-ID: 16777264
+; Command-Section: 7.2.2.1.3
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-aaa-7-2-2-1-4-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Answer
+; Application-ID: 16777264
+; Command-Section: 7.2.2.1.4
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-str-7-2-2-2-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Application-ID: 16777264
+; Command-Section: 7.2.2.2.1
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-sta-7-2-2-2-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Application-ID: 16777264
+; Command-Section: 7.2.2.2.2
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-asa-7-2-2-3-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Abort-Session-Answer
+; Application-ID: 16777264
+; Command-Section: 7.2.2.3.2
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-str-7-2-2-3-3-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Application-ID: 16777264
+; Command-Section: 7.2.2.3.3
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-sta-7-2-2-3-4-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Application-ID: 16777264
+; Command-Section: 7.2.2.3.4
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-rar-7-2-2-4-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Re-Auth-Request
+; Application-ID: 16777264
+; Command-Section: 7.2.2.4.1
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swm-raa-7-2-2-4-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Re-Auth-Answer
+; Application-ID: 16777264
+; Command-Section: 7.2.2.4.2
+; Section: 7.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
 ;; SWx, clause 8: the tables of clause 8.1.2, describing the commands of
 ;; clause 8.2.2.
 ; Type: Interpreted Constraints
@@ -1577,7 +1855,7 @@
 
 
 ;; The method is the SIP-Authentication-Scheme inside SIP-Auth-Data-Item,
-;; a member's member no condition reads.
+;; a text: a condition tests a number, a name of one, or presence.
 ; Type: Interpreted Constraints
 ; Id: swx-mar-anid
 ; AVP: ANID
@@ -1657,8 +1935,8 @@
     present-if Server-Assignment-Type = 13
 
 
-;; Whether MIP6-Agent-Info holds an FQDN is a member's presence no
-;; condition reads.
+;; The PGW Identity is MIP6-Agent-Info, its FQDN MIP-Home-Agent-Host's
+;; Destination-Host.
 ; Type: Interpreted Constraints
 ; Id: swx-sar-visited-network-identifier
 ; AVP: Visited-Network-Identifier
@@ -1667,7 +1945,7 @@
 ; Table: 8.1.2.2.2.1/1
 ; Versions: 18.6.0..19.2.0
 "It shall be present when the PGW Identity is present and does not contain an FQDN."
-    text-only
+    present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host
 
 
 ;; The AAA server sets Emergency-Services' Emergency-Indication bit for
@@ -1680,7 +1958,7 @@
 ; Table: 8.1.2.2.2.1/1
 ; Versions: 18.6.0..19.2.0
 "For non-emergency PDN connection establishment, this information element shall contain the Network Identifier part of the APN, and it shall be included if the Server-Assignment-Type is set to PGW_UPDATE."
-    text-only
+    present-if Server-Assignment-Type = PGW_UPDATE and not Emergency-Services bit Emergency-Indication
 "For emergency PDN connection establishment, this information element shall be left absent."
     absent-if Emergency-Services bit Emergency-Indication
 
@@ -1717,7 +1995,7 @@
 ; Table: 8.1.2.2.2.1/2
 ; Versions: 18.6.0..19.2.0
 "It shall be present when Server-Assignment-Type in the request is equal to AAA_USER_DATA_REQUEST or REGISTRATION and the Result-Code is equal to DIAMETER_SUCCESS."
-    text-only
+    present-if request/Server-Assignment-Type = AAA_USER_DATA_REQUEST and Result-Code = DIAMETER_SUCCESS or request/Server-Assignment-Type = REGISTRATION and Result-Code = DIAMETER_SUCCESS
 
 
 ; Type: Interpreted Constraints
@@ -2017,12 +2295,208 @@
     range 1
 
 
+;; Clause 8.2.4, session handling: every command of the interface but
+;; on every command of the interface; Non-3GPP-User-Data's Session-Timeout
+;; is that grouped AVP's member, not the command's. Each body admits the
+;; AVPs only through its * [ AVP ].
+; Type: Interpreted Constraints
+; Id: swx-mar-8-2-2-1-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Multimedia-Auth-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.1
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-maa-8-2-2-1-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Multimedia-Auth-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.1
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-ppr-8-2-2-2-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Push-Profile-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.2
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-ppa-8-2-2-2-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Push-Profile-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.2
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-sar-8-2-2-3-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Server-Assignment-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.3
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-saa-8-2-2-3-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Server-Assignment-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.3
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-rtr-8-2-2-4-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Registration-Termination-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.4
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-rta-8-2-2-4-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Registration-Termination-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.4
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-mar-8-2-2-1-no-session-timeout
+; AVP: Session-Timeout
+; Command: Multimedia-Auth-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.1
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-maa-8-2-2-1-no-session-timeout
+; AVP: Session-Timeout
+; Command: Multimedia-Auth-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.1
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-ppr-8-2-2-2-no-session-timeout
+; AVP: Session-Timeout
+; Command: Push-Profile-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.2
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-ppa-8-2-2-2-no-session-timeout
+; AVP: Session-Timeout
+; Command: Push-Profile-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.2
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-sar-8-2-2-3-no-session-timeout
+; AVP: Session-Timeout
+; Command: Server-Assignment-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.3
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-saa-8-2-2-3-no-session-timeout
+; AVP: Session-Timeout
+; Command: Server-Assignment-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.3
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-rtr-8-2-2-4-no-session-timeout
+; AVP: Session-Timeout
+; Command: Registration-Termination-Request
+; Application-ID: 16777265
+; Command-Section: 8.2.2.4
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: swx-rta-8-2-2-4-no-session-timeout
+; AVP: Session-Timeout
+; Command: Registration-Termination-Answer
+; Application-ID: 16777265
+; Command-Section: 8.2.2.4
+; Section: 8.2.4
+; Versions: 18.6.0..19.2.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
 ;; S6b, clause 9: the tables of clause 9.1.2, describing the commands of
 ;; clause 9.2.2 under 16777272. The authorization requests and answers of
 ;; PMIPv6 or GTPv2 (clause 9.1.2.2) and of DSMIPv6 (clause 9.1.2.5) share
 ;; the AA-Request and -Answer of clause 9.2.2.2; MIPv4's are clause 9.2.2.5's.
-;; The PGW identity is the request's MIP6-Agent-Info, whose FQDN is a
-;; member's presence no condition reads; so in each S6b request below.
+;; The PGW identity is the request's MIP6-Agent-Info, its FQDN
+;; MIP-Home-Agent-Host's Destination-Host; so in each S6b request below.
 ; Type: Interpreted Constraints
 ; Id: s6b-der-visited-network-identifier
 ; AVP: Visited-Network-Identifier
@@ -2032,7 +2506,7 @@
 ; Table: 9.1.2.1/1
 ; Versions: 18.6.0..19.2.0
 "It shall be present when the PGW Identity does not contain an FQDN."
-    text-only
+    present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host
 
 
 ; Type: Interpreted Constraints
@@ -2124,6 +2598,7 @@
 ; Table: 9.1.2.1/2
 ; Versions: 18.6.0..19.2.0
 "This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded."
+    requires request/QoS-Capability
 "The QoS profile template value in this IE shall be set to 0."
     text-only
 
@@ -2202,7 +2677,7 @@
 ; Table: 9.1.2.2.1/1
 ; Versions: 18.6.0..19.2.0
 "It shall be present when the PGW Identity is present and does not contain an FQDN."
-    text-only
+    present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host
 
 
 ; Type: Interpreted Constraints
@@ -2264,13 +2739,14 @@
 ; Command: AA-Answer
 ; Application-ID: 16777272
 ; Command-Section: 9.2.2.2.2
+; Request-Section: 9.2.2.2.1
 ; Section: 9.1.2.2.1
 ; Table: 9.1.2.2.1/2
 ; Versions: 18.6.0..19.2.0
 "This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS."
     requires Result-Code = DIAMETER_SUCCESS
 "This information element shall not be included in the Authorization Answer if the Emergency-Indication bit of the Emergency-Services AVP is set in the Authorization Request."
-    text-only
+    absent-if request/Emergency-Services bit Emergency-Indication
 
 
 ; Type: Interpreted Constraints
@@ -2279,10 +2755,12 @@
 ; Command: AA-Answer
 ; Application-ID: 16777272
 ; Command-Section: 9.2.2.2.2
+; Request-Section: 9.2.2.2.1
 ; Section: 9.1.2.2.1
 ; Table: 9.1.2.2.1/2
 ; Versions: 18.6.0..19.2.0
 "This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded."
+    requires request/QoS-Capability
 "The QoS profile template value in this IE shall be set to 0."
     text-only
 
@@ -2324,7 +2802,7 @@
 ; Table: 9.1.2.5.1/3
 ; Versions: 18.6.0..19.2.0
 "It shall be present when the PGW Identity does not contain an FQDN."
-    text-only
+    present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host
 
 
 ; Type: Interpreted Constraints
@@ -2390,7 +2868,7 @@
 ; Table: 9.1.2.6.1/1
 ; Versions: 18.6.0..19.2.0
 "It shall be present when the PGW Identity is present and does not contain an FQDN."
-    text-only
+    present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host
 
 
 ; Type: Interpreted Constraints
@@ -2429,10 +2907,12 @@
 ; Command: AA-Answer
 ; Application-ID: 16777272
 ; Command-Section: 9.2.2.5.2
+; Request-Section: 9.2.2.5.1
 ; Section: 9.1.2.6.1
 ; Table: 9.1.2.6.1/2
 ; Versions: 18.6.0..19.2.0
 "This AVP shall be included only if the QoS-Capability AVP was received in the authorization request and the authorization succeeded."
+    requires request/QoS-Capability
 "The QoS profile template value in this IE shall be set to 0."
     text-only
 
@@ -2456,11 +2936,12 @@
 ; Command: AA-Answer
 ; Application-ID: 16777272
 ; Command-Section: 9.2.2.5.2
+; Request-Section: 9.2.2.5.1
 ; Section: 9.1.2.6.1
 ; Table: 9.1.2.6.1/2
 ; Versions: 18.6.0..19.2.0
 "it shall be included if the Result-Code value is set to DIAMETER_SUCCESS and the MIP-MN-HA-SPI was sent in the authorization request."
-    text-only
+    present-if Result-Code = DIAMETER_SUCCESS and request/MIP-MN-HA-SPI
 
 
 ; Type: Interpreted Constraints
@@ -2556,6 +3037,166 @@
 ; Versions: 18.6.0..19.2.0
 "NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
     bits only 0
+
+
+;; Clause 9.2.4, session handling: every command of the interface but
+;; the ASR, whose Auth-Session-State a 3GPP AAA Proxy may override
+;; (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), each admitting the AVP
+;; through its * [ AVP ].
+; Type: Interpreted Constraints
+; Id: s6b-der-9-2-2-1-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Diameter-EAP-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.1.1
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-dea-9-2-2-1-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Diameter-EAP-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.1.2
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-aar-9-2-2-2-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.1
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-aaa-9-2-2-2-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.2.2
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-str-9-2-2-3-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.3.1
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-sta-9-2-2-3-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.3.2
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-asa-9-2-2-4-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Abort-Session-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.4.2
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-str-9-2-2-4-3-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.4.3
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-sta-9-2-2-4-4-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.4.4
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-aar-9-2-2-5-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.1
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-aaa-9-2-2-5-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.5.2
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-rar-9-2-2-6-1-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Re-Auth-Request
+; Application-ID: 16777272
+; Command-Section: 9.2.2.6.1
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: s6b-raa-9-2-2-6-2-no-auth-session-state
+; AVP: Auth-Session-State
+; Command: Re-Auth-Answer
+; Application-ID: 16777272
+; Command-Section: 9.2.2.6.2
+; Section: 9.2.4
+; Versions: 18.6.0..19.2.0
+"In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages"
+    absent
 
 
 ;; The 3GPP AAA Server/Proxy - EIR reference point, clause 11: the

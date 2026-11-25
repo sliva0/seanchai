@@ -711,8 +711,8 @@ def _constraint(
         "{"
         + ",".join(
             [
-                *admitted,
                 *_cited("at", places.constraint(constraint)),
+                *admitted,
                 f"rules={{{','.join(rules)}}}",
             ]
         )

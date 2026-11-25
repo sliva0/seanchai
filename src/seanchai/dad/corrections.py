@@ -1373,9 +1373,6 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
     )
     # A members rule's member may be another document's grouped AVP's,
     # which the linter reads with the corpus.
-    for name in names:
-        if name not in held:
-            raise CorrectionError(f"{described}: the file holds no AVP {name!r}")
     body: tuple[ast.AvpRule, ...] | None = None
     if node.command is not None:
         messages = [
@@ -1404,7 +1401,13 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
             None,
         )
     # An AVP the body admits only through its `* [ AVP ]` is a member there
-    # too: TS 29.273's tables describe some, and clause 5.2.4 forbids one.
+    # too: TS 29.273's tables describe some, and clause 5.2.4 forbids one. It
+    # may be one only the file's bases define (RFC 6733's
+    # Authorization-Lifetime, clause 8.2.4), which the linter reads them for.
+    admitted = body is not None and any(rule.name == "AVP" for rule in body)
+    for name in names:
+        if name not in held and not (admitted and name == node.avp):
+            raise CorrectionError(f"{described}: the file holds no AVP {name!r}")
     if body is not None and not any(rule.name in (node.avp, "AVP") for rule in body):
         raise CorrectionError(
             f"{described}: the body of {node.command or node.within} does not"

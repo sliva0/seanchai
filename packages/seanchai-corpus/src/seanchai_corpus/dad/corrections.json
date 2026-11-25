@@ -5866,6 +5866,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 9.2.3.1.5/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command.'"
     },
+    "TS29.273.dadx#s6b-aaa-9-2-2-2-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-aaa-9-2-2-5-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#s6b-aaa-apn-configuration": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'This information element shall not be included in the Authorization Answer if the Emergency-Indication bit of the Emergency-Services AVP is set in the Authorization Request.'"
@@ -5886,6 +5894,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/2: 'In an authorization response sent during the authorization procedure at PDN connection setup, the Trace-Data AVP shall be included.'; 'In an authorization response sent during the service authorization information update procedure, - the Trace-data AVP shall be included if trace activation is requested - the Trace-Reference AVP shall be included, if trace deactivation is requested.'"
     },
+    "TS29.273.dadx#s6b-aar-9-2-2-2-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-aar-9-2-2-5-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#s6b-aar-emergency-services": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this information element, with the Emergency-Indication bit set, during the establishment of an emergency PDN connection.'"
@@ -5905,6 +5921,14 @@
     "TS29.273.dadx#s6b-aar-visited-network-identifier": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-asa-9-2-2-4-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-dea-9-2-2-1-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#s6b-dea-an-trusted": {
      "kind": "interpret",
@@ -5945,6 +5969,10 @@
     "TS29.273.dadx#s6b-dea-trace-info": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is to be used to download the trace activation from the HSS to the PDN GW.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#s6b-der-9-2-2-1-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#s6b-der-rat-type": {
      "kind": "interpret",
@@ -6022,6 +6050,30 @@
      "kind": "interpret",
      "reason": "interpreted from clause 9.2.3.2.2: 'The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
     },
+    "TS29.273.dadx#s6b-raa-9-2-2-6-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-rar-9-2-2-6-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-sta-9-2-2-3-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-sta-9-2-2-4-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-str-9-2-2-3-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-str-9-2-2-4-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#service-selection-labels": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.3.5: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
@@ -6033,6 +6085,10 @@
     "TS29.273.dadx#ssid-length": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.3.22: 'It shall contain a string of 1 to 32 octets.'"
+    },
+    "TS29.273.dadx#sta-aaa-5-2-2-3-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#sta-aaa-ambr": {
      "kind": "interpret",
@@ -6074,6 +6130,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/4: 'This IE shall be present if this information is available in the user subscription.'"
     },
+    "TS29.273.dadx#sta-aar-5-2-2-3-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#sta-aar-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/3: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
@@ -6081,6 +6141,14 @@
     "TS29.273.dadx#sta-aar-mip6-feature-vector": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/3: 'This AVP shall be included only if optimized idle mode mobility from E-UTRAN to HRPD access is executed.'; 'When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set.'"
+    },
+    "TS29.273.dadx#sta-asa-5-2-2-2-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-dea-5-2-2-1-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#sta-dea-ambr": {
      "kind": "interpret",
@@ -6174,6 +6242,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the selected TWAN Connection Mode is MCM.'"
     },
+    "TS29.273.dadx#sta-der-5-2-2-1-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#sta-der-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority conveyed in an EAP response/identity message'"
@@ -6205,6 +6277,14 @@
     "TS29.273.dadx#sta-feature-list-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.3.10: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the STa/SWa application.'"
+    },
+    "TS29.273.dadx#sta-raa-5-2-2-3-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-rar-5-2-2-3-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#sta-reauth-dea-ambr": {
      "kind": "interpret",
@@ -6261,6 +6341,22 @@
     "TS29.273.dadx#sta-reauth-der-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/5: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#sta-sta-5-2-2-2-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-sta-5-2-2-4-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-str-5-2-2-2-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-str-5-2-2-4-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#subscription-id-type-values": {
      "kind": "interpret",
@@ -6322,6 +6418,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 6.1.2.1.1-1: 'This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access.'; 'If the requested connectivity has been granted, the following information elements shall be included:'"
     },
+    "TS29.273.dadx#swm-aaa-7-2-2-1-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swm-aaa-apn-configuration": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request.'"
@@ -6350,6 +6450,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
     },
+    "TS29.273.dadx#swm-aar-7-2-2-1-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swm-aar-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
@@ -6357,6 +6461,14 @@
     "TS29.273.dadx#swm-aar-ue-local-ip-address": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/1: 'This IE shall be present if the ePDG provided the UE Local IP address in the initial Authentication and Authorization Request and the UE Local IP address has changed.'"
+    },
+    "TS29.273.dadx#swm-asa-7-2-2-3-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-dea-7-2-2-1-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#swm-dea-apn-configuration": {
      "kind": "interpret",
@@ -6406,6 +6518,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.1.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
     },
+    "TS29.273.dadx#swm-der-7-2-2-1-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swm-der-emergency-services": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.1.1/1: 'An ePDG which supports emergency services shall include this information element, with the Emergency-Indication bit set, if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment'"
@@ -6434,6 +6550,30 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.3.2: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWm application.'"
     },
+    "TS29.273.dadx#swm-raa-7-2-2-4-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-rar-7-2-2-4-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-sta-7-2-2-2-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-sta-7-2-2-3-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-str-7-2-2-2-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-str-7-2-2-3-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swx-feature-list-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.3.15: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWx application.'"
@@ -6441,6 +6581,14 @@
     "TS29.273.dadx#swx-maa-3gpp-aaa-server-name": {
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.1.1/4: 'This AVP shall be sent when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
+    },
+    "TS29.273.dadx#swx-maa-8-2-2-1-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-maa-8-2-2-1-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-maa-auth-session-state": {
      "kind": "interpret",
@@ -6453,6 +6601,14 @@
     "TS29.273.dadx#swx-maa-sip-number-auth-items": {
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.1.1/4: 'It shall be present when the result is DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-mar-8-2-2-1-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-mar-8-2-2-1-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-mar-anid": {
      "kind": "interpret",
@@ -6470,9 +6626,25 @@
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.1.1/1: 'The 3GPP AAA Server shall include this information element when received from signalling across the SWd.'"
     },
+    "TS29.273.dadx#swx-ppa-8-2-2-2-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-ppa-8-2-2-2-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
     "TS29.273.dadx#swx-ppa-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-ppr-8-2-2-2-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-ppr-8-2-2-2-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-ppr-auth-session-state": {
      "kind": "interpret",
@@ -6482,9 +6654,25 @@
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.4.2.1/1: 'For the explicitly subscribed APNs, the following information shall be present:'; 'For the Wildcard APN, the following information shall be present:'"
     },
+    "TS29.273.dadx#swx-rta-8-2-2-4-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-rta-8-2-2-4-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
     "TS29.273.dadx#swx-rta-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-rtr-8-2-2-4-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-rtr-8-2-2-4-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-rtr-auth-session-state": {
      "kind": "interpret",
@@ -6494,6 +6682,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.2.2.1/2: 'This AVP shall be present when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
     },
+    "TS29.273.dadx#swx-saa-8-2-2-3-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-saa-8-2-2-3-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
     "TS29.273.dadx#swx-saa-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
@@ -6501,6 +6697,14 @@
     "TS29.273.dadx#swx-saa-non-3gpp-user-data": {
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.2.2.1/2: 'It shall be present when Server-Assignment-Type in the request is equal to AAA_USER_DATA_REQUEST or REGISTRATION and the Result-Code is equal to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-sar-8-2-2-3-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-sar-8-2-2-3-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-sar-auth-session-state": {
      "kind": "interpret",
@@ -7240,7 +7444,7 @@
      "targets": [
       [
        "sections",
-       286
+       308
       ]
      ]
     },
@@ -7506,6 +7710,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 9.2.3.1.5/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the recever of the command.'"
     },
+    "TS29.273.dadx#s6b-aaa-9-2-2-2-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-aaa-9-2-2-5-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#s6b-aaa-apn-configuration": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS.'; 'This information element shall not be included in the Authorization Answer if the Emergency-Indication bit of the Emergency-Services AVP is set in the Authorization Request.'"
@@ -7526,6 +7738,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/2: 'In an authorization response sent during the authorization procedure at PDN connection setup, the Trace-Data AVP shall be included.'; 'In an authorization response sent during the service authorization information update procedure, - the Trace-data AVP shall be included if trace activation is requested - the Trace-Reference AVP shall be included, if trace deactivation is requested.'"
     },
+    "TS29.273.dadx#s6b-aar-9-2-2-2-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-aar-9-2-2-5-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#s6b-aar-emergency-services": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/1: 'The PGW shall include this information element, with the Emergency-Indication bit set, during the establishment of an emergency PDN connection.'"
@@ -7545,6 +7765,14 @@
     "TS29.273.dadx#s6b-aar-visited-network-identifier": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.2.1/1: 'It shall be present when the PGW Identity is present and does not contain an FQDN.'"
+    },
+    "TS29.273.dadx#s6b-asa-9-2-2-4-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-dea-9-2-2-1-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#s6b-dea-an-trusted": {
      "kind": "interpret",
@@ -7585,6 +7813,10 @@
     "TS29.273.dadx#s6b-dea-trace-info": {
      "kind": "interpret",
      "reason": "interpreted from table 9.1.2.1/2: 'This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is to be used to download the trace activation from the HSS to the PDN GW.'; 'Only the Trace-Data AVP shall be included to the Trace-Info AVP'"
+    },
+    "TS29.273.dadx#s6b-der-9-2-2-1-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#s6b-der-rat-type": {
      "kind": "interpret",
@@ -7662,6 +7894,30 @@
      "kind": "interpret",
      "reason": "interpreted from clause 9.2.3.2.2: 'The AVP MIP6-Home-Link-Prefix is not used in S6b, but it is included here to reflect the complete IETF definition of the grouped AVP.'"
     },
+    "TS29.273.dadx#s6b-raa-9-2-2-6-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-rar-9-2-2-6-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-sta-9-2-2-3-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-sta-9-2-2-4-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-str-9-2-2-3-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#s6b-str-9-2-2-4-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#service-selection-labels": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.3.5: 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
@@ -7673,6 +7929,10 @@
     "TS29.273.dadx#ssid-length": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.3.22: 'It shall contain a string of 1 to 32 octets.'"
+    },
+    "TS29.273.dadx#sta-aaa-5-2-2-3-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#sta-aaa-ambr": {
      "kind": "interpret",
@@ -7714,6 +7974,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/4: 'This IE shall be present if this information is available in the user subscription.'"
     },
+    "TS29.273.dadx#sta-aar-5-2-2-3-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#sta-aar-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/3: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
@@ -7721,6 +7985,14 @@
     "TS29.273.dadx#sta-aar-mip6-feature-vector": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/3: 'This AVP shall be included only if optimized idle mode mobility from E-UTRAN to HRPD access is executed.'; 'When included, the PMIP_SUPPORTED and the OPTIMIZED_IDLE_MODE_MOBILITY flags shall be set.'"
+    },
+    "TS29.273.dadx#sta-asa-5-2-2-2-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-dea-5-2-2-1-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#sta-dea-ambr": {
      "kind": "interpret",
@@ -7814,6 +8086,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.1/2: 'This IE shall be present if the Result-Code AVP is set to DIAMETER_SUCCESS and the selected TWAN Connection Mode is MCM.'"
     },
+    "TS29.273.dadx#sta-der-5-2-2-1-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#sta-der-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority conveyed in an EAP response/identity message'"
@@ -7845,6 +8121,14 @@
     "TS29.273.dadx#sta-feature-list-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.3.10: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the STa/SWa application.'"
+    },
+    "TS29.273.dadx#sta-raa-5-2-2-3-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-rar-5-2-2-3-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#sta-reauth-dea-ambr": {
      "kind": "interpret",
@@ -7901,6 +8185,22 @@
     "TS29.273.dadx#sta-reauth-der-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 5.1.2.3.1/5: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
+    },
+    "TS29.273.dadx#sta-sta-5-2-2-2-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-sta-5-2-2-4-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-str-5-2-2-2-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#sta-str-5-2-2-4-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#subscription-id-type-values": {
      "kind": "interpret",
@@ -7962,6 +8262,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 6.1.2.1.1-1: 'This information element shall be present if the 3GPP AAA Server has previously authorized the SCM to be used for EPC access.'; 'If the requested connectivity has been granted, the following information elements shall be included:'"
     },
+    "TS29.273.dadx#swm-aaa-7-2-2-1-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swm-aaa-apn-configuration": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/2: 'This information element shall only be sent if the Result-Code AVP is set to DIAMETER_SUCCESS and the Emergency-Indication bit of the Emergency-Services AVP was not set in the initial Authentication and Authorization Request.'"
@@ -7990,6 +8294,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
     },
+    "TS29.273.dadx#swm-aar-7-2-2-1-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swm-aar-high-priority-access-info": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/1: 'Based on operator policy, this information element shall be sent to the 3GPP AAA Server if the UE has access priority'"
@@ -7997,6 +8305,14 @@
     "TS29.273.dadx#swm-aar-ue-local-ip-address": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.2.1/1: 'This IE shall be present if the ePDG provided the UE Local IP address in the initial Authentication and Authorization Request and the UE Local IP address has changed.'"
+    },
+    "TS29.273.dadx#swm-asa-7-2-2-3-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-dea-7-2-2-1-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
     },
     "TS29.273.dadx#swm-dea-apn-configuration": {
      "kind": "interpret",
@@ -8046,6 +8362,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.1.1/2: 'This IE should be present if the WLAN Location Information IE is present.'"
     },
+    "TS29.273.dadx#swm-der-7-2-2-1-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swm-der-emergency-services": {
      "kind": "interpret",
      "reason": "interpreted from table 7.1.2.1.1/1: 'An ePDG which supports emergency services shall include this information element, with the Emergency-Indication bit set, if the UE indicated the establishment of an emergency session during the IKEv2 tunnel establishment'"
@@ -8074,6 +8394,30 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.3.2: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWm application.'"
     },
+    "TS29.273.dadx#swm-raa-7-2-2-4-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-rar-7-2-2-4-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-sta-7-2-2-2-2-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-sta-7-2-2-3-4-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-str-7-2-2-2-1-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
+    "TS29.273.dadx#swm-str-7-2-2-3-3-no-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'In order to indicate that the session state is to be maintained, the Diameter client and server shall not include the Auth-Session-State AVP, either in the request or in the response messages'"
+    },
     "TS29.273.dadx#swx-feature-list-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.3.15: 'For this release, the Feature-List-ID AVP value shall be set to 1 for the SWx application.'"
@@ -8081,6 +8425,14 @@
     "TS29.273.dadx#swx-maa-3gpp-aaa-server-name": {
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.1.1/4: 'This AVP shall be sent when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
+    },
+    "TS29.273.dadx#swx-maa-8-2-2-1-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-maa-8-2-2-1-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-maa-auth-session-state": {
      "kind": "interpret",
@@ -8093,6 +8445,14 @@
     "TS29.273.dadx#swx-maa-sip-number-auth-items": {
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.1.1/4: 'It shall be present when the result is DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-mar-8-2-2-1-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-mar-8-2-2-1-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-mar-anid": {
      "kind": "interpret",
@@ -8110,9 +8470,25 @@
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.1.1/1: 'The 3GPP AAA Server shall include this information element when received from signalling across the SWd.'"
     },
+    "TS29.273.dadx#swx-ppa-8-2-2-2-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-ppa-8-2-2-2-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
     "TS29.273.dadx#swx-ppa-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-ppr-8-2-2-2-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-ppr-8-2-2-2-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-ppr-auth-session-state": {
      "kind": "interpret",
@@ -8122,9 +8498,25 @@
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.4.2.1/1: 'For the explicitly subscribed APNs, the following information shall be present:'; 'For the Wildcard APN, the following information shall be present:'"
     },
+    "TS29.273.dadx#swx-rta-8-2-2-4-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-rta-8-2-2-4-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
     "TS29.273.dadx#swx-rta-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
+    },
+    "TS29.273.dadx#swx-rtr-8-2-2-4-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-rtr-8-2-2-4-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-rtr-auth-session-state": {
      "kind": "interpret",
@@ -8134,6 +8526,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.2.2.1/2: 'This AVP shall be present when the user has been previously authenticated by another 3GPP AAA Server and therefore there is another 3GPP AAA Server serving the user.'"
     },
+    "TS29.273.dadx#swx-saa-8-2-2-3-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-saa-8-2-2-3-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
     "TS29.273.dadx#swx-saa-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 8.2.4: 'In order to indicate that session state shall not be maintained, the diameter client and server shall include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [58].'"
@@ -8141,6 +8541,14 @@
     "TS29.273.dadx#swx-saa-non-3gpp-user-data": {
      "kind": "interpret",
      "reason": "interpreted from table 8.1.2.2.2.1/2: 'It shall be present when Server-Assignment-Type in the request is equal to AAA_USER_DATA_REQUEST or REGISTRATION and the Result-Code is equal to DIAMETER_SUCCESS.'"
+    },
+    "TS29.273.dadx#swx-sar-8-2-2-3-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.273.dadx#swx-sar-8-2-2-3-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
     },
     "TS29.273.dadx#swx-sar-auth-session-state": {
      "kind": "interpret",
@@ -8880,7 +9288,7 @@
      "targets": [
       [
        "sections",
-       286
+       308
       ]
      ]
     },

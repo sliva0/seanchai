@@ -24,9 +24,22 @@ LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.whic
 S6A = 16777251
 # The base protocol, DCCA (several documents' CCR), EAP (TS 29.234's DEA lists
 # User-Name twice), Cx, Gx, S6a, PC3a's WiFi-P2P-Assistance-Info (a member
-# listed twice) and T6a (APN-Rate-Control-Status, typed Grouped by a table
-# that prints no rule).
-_APPLICATIONS = (0, 4, 5, 16777216, 16777238, S6A, 16777340, 16777346)
+# listed twice), T6a (APN-Rate-Control-Status, typed Grouped by a table
+# that prints no rule), SWm (Auth-Session-State absent in every command but
+# the ASR) and S6b (answers read against the request, AA-Answer printed
+# twice).
+_APPLICATIONS = (
+    0,
+    4,
+    5,
+    16777216,
+    16777238,
+    S6A,
+    16777264,
+    16777272,
+    16777340,
+    16777346,
+)
 
 
 @pytest.fixture(scope="module")
@@ -116,6 +129,17 @@ def test_a_negative_vector_cites_the_rule_it_breaks(s6a):
     assert imei.expected == (
         vectors.Expected(rule="constraint-length", severity="note"),
     )
+
+
+def test_a_negative_another_print_of_the_command_accepts_is_skipped(built):
+    s6b = _vectors(built, 16777272)
+    # TS 29.273 prints S6b's AA-Answer twice, a rule of each print being no
+    # rule of the other: the plugin may hold the message to either.
+    assert {(s.command, s.what) for s in s6b.skipped} >= {
+        ("16777272/AAA", "constraint-absent-if/APN-Configuration/9.1.2.2.1"),
+        ("16777272/AAA", "constraint-present-if/MIP-Session-Key/9.1.2.6.1"),
+    }
+    assert any(v.request is not None for v in s6b.vectors)
 
 
 def test_a_command_requiring_what_the_corpus_cannot_complete_is_skipped(built):

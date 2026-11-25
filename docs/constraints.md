@@ -559,7 +559,7 @@ TS 29.273 V19.2.0 is read completely: every AVP clause of clauses 5.2.3,
 7.2.3, 8.2.3 and 9.2.3, and every C row of the information-element tables
 of clauses 4.1.2, 5.1.2, 6.1.2, 7.1.2, 8.1.2, 9.1.2 and 11.1.2, and the
 procedure and session-handling clauses for what they state of one message.
-Release 18's copy, V18.6.0, prints every sentence read and holds all 207
+Release 18's copy, V18.6.0, prints every sentence read and holds all 258
 blocks: it prints a reference to another 3GPP document as "3GPP TS" where
 Release 19 prints "TS", so a quote ends before such a reference.
 
@@ -579,8 +579,9 @@ since reading it would refuse the first exchange's answer.
 | with nothing to declare | 45 |
 | information-element C rows | 157, of which 147 state a condition, a block each |
 | procedure clauses | 9.1.2.1.3's relocated PDN GW and 8.2.4's Auth-Session-State, in 9 blocks |
-| blocks | 207: 38 on an AVP wherever read, 21 within a grouped AVP, 148 within a command |
-| readings | 229 |
+| session-handling clauses | 5.2.4's, 7.2.4's and 9.2.4's Auth-Session-State and 8.2.4's Authorization-Lifetime and Session-Timeout, never sent, in 51 blocks |
+| blocks | 258: 37 on an AVP wherever read, 21 within a grouped AVP, 200 within a command |
+| readings | 284 |
 
 | Rules | |
 |---|---|
@@ -589,36 +590,44 @@ since reading it would refuse the first exchange's answer.
 | `length` | 3, in octets |
 | `range` | 13: Auth-Session-State NO_STATE_MAINTAINED in SWx's 8 commands, Feature-List-ID 1 in each of the 4 applications, AN-Trusted TRUSTED in STa's answer |
 | `exclude` | 1: Subscription-Id-Type, MSISDN and External Identifier only |
-| `requires`, `present-if`, `absent-if` | 26, 21, 6 |
+| `requires`, `present-if`, `absent-if` | 35, 30, 7 |
+| `absent` | 51: Auth-Session-State in every STa, SWm and S6b command but the ASR, whose Auth-Session-State a 3GPP AAA Proxy may set (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), Authorization-Lifetime and Session-Timeout in SWx's 8 commands |
+| reading the request | 7: SAA's Non-3GPP-User-Data as the SAR's Server-Assignment-Type asks, S6b answers' QoS-Resources only after a QoS-Capability, MIP-Session-Key after an MIP-MN-HA-SPI and no APN-Configuration for an emergency, STa's AA-Answer's MIP6-Feature-Vector only after the request's |
 | `default` | 1: Access-Authorization-Flags in TWAN-Access-Info |
 | `bits` | 12, each `only`: a flags AVP's NOTE that undefined bits are cleared |
-| `members` | 8: `only` 6 (Trace-Info in an answer), `at-least-one` 2 (Trace-Info, Access-Network-Info's SSID) |
+| `members` | 9: `only` 6 (Trace-Info in an answer), `at-least-one` 3 (Trace-Info, Access-Network-Info's SSID, IMEI in STa's Terminal-Information, a member of TS 29.272's AVP) |
 | `unique` | 1: WLAN-Identifier in TWAN-Access-Info |
-| `text-only` | 132 |
+| `text-only` | 116 |
 
 Most text-only rules are conditions on the node, the subscription, the
 operator's policy, the procedure or an earlier message ("shall be sent to
 the 3GPP AAA Server if the UE has access priority", "if this information is
 available in the user subscription", "was not set in the initial
-Authentication and Authorization Answer"). The rest a single message could
-show but the format cannot say: a condition joining two of the message's
-AVPs with "and" (WLCP-Key present with DIAMETER_SUCCESS and the MCM
-selected), a member's member (the authentication scheme in
-SIP-Auth-Data-Item, an FQDN in MIP6-Agent-Info), a byte of a variable-length
-payload (Location-Information's Code, Operator-Name's Namespace ID), a flag
-of MIP6-Feature-Vector, whose flags clause 5.2.3.3 lists in prose and the
-file holds as no bit table, IMEI in Terminal-Information, which the file
-holds only as TS 29.272's re-used AVP, and six rows whose AVP the command's
-ABNF does not print (Transport-Access-Type in STa's and SWd's request,
-IMEI-Check-In-VPLMN-Result, AMBR and MIP6-Feature-Vector in STa's AA-Answer,
-AN-Trusted in S6b's Diameter-EAP-Answer), read where the document reads the
-AVP. ME-Identity-Check-Answer's Equipment-Status row is TS 29.272's command,
+Authentication and Authorization Answer"). A row whose condition is partly
+the node's keeps the part a message shows where that part alone holds of
+every message the row allows: "shall contain the MSISDN of the UE and shall
+be sent if it is available" is read as the Subscription-Id's type, and
+"shall be included only if the QoS-Capability AVP was received in the
+authorization request and the authorization succeeded" as the request's
+QoS-Capability. The rest a single message could show but the format cannot
+say: a text value (the authentication scheme in SIP-Auth-Data-Item,
+EAP-AKA', ANID's "HRPD"), a byte of a variable-length payload
+(Location-Information's Code, Operator-Name's Namespace ID), a flag of
+MIP6-Feature-Vector, whose flags clause 5.2.3.3 lists in prose and RFC
+5447's bit table names two of, and five rows whose AVP the command's ABNF
+leaves to its `* [ AVP ]` and whose condition is the node's
+(Transport-Access-Type in STa's and SWd's request,
+IMEI-Check-In-VPLMN-Result, AMBR in STa's AA-Answer, AN-Trusted in S6b's
+Diameter-EAP-Answer), read where the document reads the AVP.
+ME-Identity-Check-Answer's Equipment-Status row is TS 29.272's command,
 which this file does not print, and TS 29.272's file reads it.
 
-Left unread: the session-handling clauses' "shall not include the
-Auth-Session-State AVP" (clauses 5.2.4, 7.2.4, 9.2.4) and "Neither the
-Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present"
-(clause 8.2.4), since no kind says an AVP is never sent; DER-Flags' and
+The session-handling clauses' "shall not include the Auth-Session-State
+AVP" (clauses 5.2.4, 7.2.4, 9.2.4) and "Neither the Authorization-Lifetime
+AVP nor the Session-Timeout AVP shall be present" (clause 8.2.4) are read as
+`absent` in each command of the interface, a body admitting the AVP through
+its `* [ AVP ]`; Non-3GPP-User-Data's Session-Timeout is that grouped AVP's
+member, not the command's. Left unread: DER-Flags' and
 DEA-Flags' "This bit is only applicable to the TWAN authentication and
 authorization procedure", which says what a bit means, not when it is set;
 the detailed-behaviour clauses' result codes, which are what a node answers

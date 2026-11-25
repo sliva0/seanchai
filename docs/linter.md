@@ -142,7 +142,7 @@ document read states is not judged.
 
 | Rule | Severity | Reports |
 |---|---|---|
-| `constraint-avp-unknown` | error | a name the block constrains, scopes or conditions on that the file does not hold |
+| `constraint-avp-unknown` | error | a name the block constrains, scopes or conditions on that the file does not hold, but an AVP a command's `* [ AVP ]` admits that its bases define, and, linted alone, a member of a grouped AVP the file re-uses |
 | `constraint-command-unknown` | error | a `; Command:` the file does not print, or prints for several applications with no `; Application-ID:`, or more than once for one with no `; Command-Section:`, or not at the clause it names |
 | `constraint-not-member` | error | an AVP, or one a rule reads, that the printed body of its command or grouped AVP neither holds nor admits through `* [ AVP ]`, or a `request/` name the request's body does not, or a path's member the body of the grouped AVP before it does not, or a path of a block with no scope that does not start at its AVP; a member a `members` rule names that the grouped AVP's body does not hold |
 | `constraint-type-mismatch` | error | a rule the AVP's type cannot meet: a range or `values` on an OctetString, a codec or a registered element for another type, an octet length on an integer, `bits` on neither an unsigned integer nor an OctetString, `members` on no grouped AVP; a condition testing a value or a bit of an AVP holding none, or a bit past its width; `equals`, or a condition's value read from another AVP, comparing AVPs of two types |

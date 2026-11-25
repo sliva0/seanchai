@@ -153,6 +153,26 @@ def _body(
     return None, None
 
 
+def _reused(spec: ast.Specification) -> set[str]:
+    """The names `spec`'s re-used tables take from another document."""
+    return {
+        row.name
+        for section in spec.sections
+        if isinstance(section, ast.ReusedAvps)
+        for row in section.rows
+    }
+
+
+def _based(spec: ast.Specification, name: str, cited: _Cited | None) -> bool:
+    """Whether a base document of `spec` holds `name`, as far as `cited`
+    reads them."""
+    return cited is not None and any(
+        name in _held(document)
+        for reference in spec.bases
+        if (document := cited(reference)) is not None
+    )
+
+
 def _request_body(
     spec: ast.Specification, block: ast.InterpretedConstraints
 ) -> tuple[tuple[ast.AvpRule, ...] | None, str | None]:
@@ -460,15 +480,26 @@ def _constraints(
             else None
         )
         owned = set() if owner is None else {rule.name for rule in owner.avps}
+        # Alone, a file cannot say what a grouped AVP it re-uses holds.
+        unread = owner is None and cited is None and block.avp in _reused(spec)
         names = dict.fromkeys(
             [block.avp, *([block.within] if block.within else [])]
             + [reference.path[0] for reference in references]
-            + [name for name in listed if name not in owned]
+            + [name for name in listed if name not in owned and not unread]
         )
-        for name in names:
-            if name not in held:
-                found("constraint-avp-unknown", block, f"the file holds no AVP {name}")
         body, unknown = _body(spec, block, cited)
+        for name in names:
+            # The AVP a command's `* [ AVP ]` admits may be one only a base
+            # document defines: RFC 6733's Authorization-Lifetime in TS
+            # 29.273's SWx commands.
+            admitted = (
+                name == block.avp
+                and body is not None
+                and any(rule.name == "AVP" for rule in body)
+                and (cited is None or _based(spec, name, cited))
+            )
+            if name not in held and not admitted:
+                found("constraint-avp-unknown", block, f"the file holds no AVP {name}")
         if unknown is not None:
             found("constraint-command-unknown", block, unknown)
         request: tuple[ast.AvpRule, ...] | None = None
