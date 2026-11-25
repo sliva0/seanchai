@@ -12246,6 +12246,638 @@
   },
   "29336-i20": {
    "edits": {
+    "TS29.336.dadx#additional-identifiers-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.69: 'The AdditionalIdentifiers AVP is of type Grouped, and it shall contain External Group Identifiers.'"
+    },
+    "TS29.336.dadx#additional-serving-node-mme-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#additional-serving-node-mme-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'"
+    },
+    "TS29.336.dadx#additional-serving-node-mme-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#additional-serving-node-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'd) MSC-Number'"
+    },
+    "TS29.336.dadx#additional-serving-node-sgsn-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#additional-serving-node-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#additional-serving-node-sgsn-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#aese-communication-pattern-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.25: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
+    },
+    "TS29.336.dadx#allowed-plmn-list-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.54: 'Absence of Visited-PLMN-Id AVPs indicates that Enhanced Coverage is restricted in all serving PLMNs.'"
+    },
+    "TS29.336.dadx#battery-indicator-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.81-1: 'NOTE1: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command. NOTE2: If bit 0 is set, bit 1 and bit 2 shall be cleared.'"
+    },
+    "TS29.336.dadx#cia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#cia-enhanced-coverage-restriction-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'It shall be present if the request contained a CIR-Flag AVP with the bit for Enhanced-Coverage-Query set.'"
+    },
+    "TS29.336.dadx#cia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'Experimental-Result AVP shall only be used for S6t errors which are applicable regardless of the services requested (e.g. DIAMETER_ERROR_USER_UNKNOWN). This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#cia-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.60-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#cia-imsi-group-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This information element shall be present if the CIR-Flag for IMSI Group Retrieval was set in the request and the Result-Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#cia-monitoring-event-config-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This IE shall be present if Monitoring Event Configuration IE is included in CIR and if the Result-Code AVP in Configuration Information Answer is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#cia-monitoring-event-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'If an immediate report is available this information element shall contain the requested data available in the HSS.'"
+    },
+    "TS29.336.dadx#cia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#cia-number-of-ues": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This IE shall be present if the External-Identifier of User-Identifier in CIR message contains the identity of a Group of UEs (i.e. External Group Identifier).'"
+    },
+    "TS29.336.dadx#cia-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#cia-s6t-hss-cause": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'It shall be present if the user is not registered in any serving node.'"
+    },
+    "TS29.336.dadx#cia-suggested-network-configuration-unmodified": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'When the HSS did not modify parameters received in the Suggested-Network-Configuration AVP, the HSS shall return a Suggested-Network-Configuration AVP to the SCEF in CIA containing only SCEF Reference ID and SCEF-ID.'"
+    },
+    "TS29.336.dadx#cia-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#cia-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This IE shall not be present if the External-Identifier of User-Identifier in CIR message contains the identity of a Group of UEs (i.e. External Group Identifier). This IE shall be present only when the Result-Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#cia-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#cir-additional-identifiers": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-1: 'If the request is used to retrieve multiple IMSI Group IDs for multiple External Group Identifiers, this information element shall be present and shall contain all the External Group Identifiers for which the IMSI Group IDs are requested, except the one conveyed in the User-Identifier AVP.'"
+    },
+    "TS29.336.dadx#cir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#cir-delete-all-communication-pattern": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'If the CIR message contains the CIR-Flags with delete all communication pattern, and the feature Config-Eff-CP is supported, the HSS shall delete all Communication Pattern configured by the SCEF for the subscriber. This includes forwarding the deletion to involved serving nodes. In this case the CIR message shall not contain new communication pattern.'"
+    },
+    "TS29.336.dadx#cir-delete-all-monitoring-events": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'IF the CIR message contains the CIR-Flags with delete all monitoring events, the HSS shall delete all Monitoring events configured by the SCEF for the subscriber. This includes forwarding the deletion to involved serving nodes. In this case the CIR message shall not contain new monitoring events.'"
+    },
+    "TS29.336.dadx#cir-delete-all-network-parameter-configurations": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'If the CIR message contains the CIR-Flags with delete all network parameter configurations, and the feature Config-Eff-NP is supported, the HSS shall delete all Suggested Network Configurations configured by the SCEF for the subscriber. This includes the updating of involved serving nodes. In this case the CIR message shall not contain new network parameter configurations.'"
+    },
+    "TS29.336.dadx#cir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.39-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#cir-group-reporting-guard-timer": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-1: 'Shall be present if the User-Identifier contains an External Group Identifier.'"
+    },
+    "TS29.336.dadx#cir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#cir-origin-host-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.5: 'The SCEF- ID AVP is of type DiameterIdentity and it shall contain the identity of the SCEF which has originated the service request towards the HSS, i.e. when sent within a Monitoring-Event-Configuration AVP in S6t-CIR, SCEF-ID AVP and Origin-Host AVP shall have the same value.'"
+    },
+    "TS29.336.dadx#cir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#cir-user-identifier-one": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-1: 'This is a grouped AVP containing either an External Identifier or an MSISDN (exactly one, and only one, of those identifiers shall be included in the request).'"
+    },
+    "TS29.336.dadx#communication-pattern-set-duration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.26: 'Communication-duration-time and Periodic-Time shall be only provided when the Periodic-Communication-Indicator is set to PERIODICALLY.'"
+    },
+    "TS29.336.dadx#communication-pattern-set-periodic-time": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.26: 'Communication-duration-time and Periodic-Time shall be only provided when the Periodic-Communication-Indicator is set to PERIODICALLY.'"
+    },
+    "TS29.336.dadx#communication-pattern-set-validity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.26: 'If the Reference-ID-Validity-Time AVP is absent, it indicates that there is no expiration time defined for the Communication-Pattern-Set.'"
+    },
+    "TS29.336.dadx#exclude-identifiers-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.84: 'The Exclude-Identifiers AVP is of type Grouped, and it shall contain External Group Identifiers or MSISDNs.'"
+    },
+    "TS29.336.dadx#external-identifier-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.11: 'For S6m/S6n interface it shall contain an external identifier of the UE. See 3GPP TS 23.003 [11] for the definition and formatting of the External Identifier. For S6t interface, it shall contain an external identifier for an individual UE or a group of UEs, as indicated by Type-Of-External-Identifier AVP.'"
+    },
+    "TS29.336.dadx#group-report-item-partially-cancel": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the RIR command is triggered by partially cancelling of group-based monitoring, the S6t-HSS-Cause IE shall be set to \"Group Event Monitoring Partially Cancel\".'"
+    },
+    "TS29.336.dadx#group-report-item-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#group-user-identifier-member": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.3.2: '6a. If the User-Identifier contains an External Group Identifier, the HSS shall include the IMSI and the MSISDN or External-Identifier assigned to each member of the group in the Group-User-Identifier.'"
+    },
+    "TS29.336.dadx#hss-cause-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.4.9/1: 'NOTE 2: Bits not defined in this table shall be cleared by the HSS and discarded by the receiving node, MTC-IWF.'"
+    },
+    "TS29.336.dadx#imei-change-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.22-1: 'NOTE 1: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command. NOTE 2: Bits 0 and 1 shall not be set simultaneously.'"
+    },
+    "TS29.336.dadx#include-identifiers-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.85: 'The Include-Identifiers AVP is of type Grouped, and it shall contain External Group Identifiers or MSISDNs.'"
+    },
+    "TS29.336.dadx#ip-sm-gw-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.14: 'The IP-SM-GW-Number AVP is of type OctetString and it shall contain the ISDN number of the IP-SM-GW in international number format as described in ITU-T Rec E.164 [41]. It shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan.'"
+    },
+    "TS29.336.dadx#monitoring-event-configuration-maximum-number-of-reports": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.8: 'This AVP shall not be present when Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'This AVP shall not be greater than one if:'; '- Monitoring-Type is UE_REACHABILITY (1) and Reachability-Type is \"Reachability for SMS\" or'; '- Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
+    },
+    "TS29.336.dadx#monitoring-event-configuration-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.2: 'At least SCEF-Reference-ID or one SCEF-Reference-ID-for-Deletion shall be present.'; 'At least one of the SCEF-Reference-ID or SCEF-Reference–ID-for-Deletion shall be present.'; 'When the \"Extended Reference IDs\" feature is supported by the HSS and SCEF, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used insted of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
+    },
+    "TS29.336.dadx#monte-location-type-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.16: 'The default value, when this AVP is not included, is LAST_KNOWN_LOCATION (1).'"
+    },
+    "TS29.336.dadx#nia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#nia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-2: 'Experimental-Result AVP shall be used for S6t errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#nia-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.72-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#nia-group-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-2: 'This information element shall be present if the request was for a group of UEs and the Result-Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#nia-nidd-authorization-response": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-2: 'When sent by the HSS the IE shall only be present when the Result Code is DIAMETER_SUCCESS. Shall be absent when sent by the SCEF.'"
+    },
+    "TS29.336.dadx#nia-nidd-authorization-response-identities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.3.2: '4. If the User-Identifier contains an External Identifier, the HSS shall include the IMSI and if available the MSISDN associated with the appropriate External Identifier in the NIDD-Authorization-Response.'; '5. If the User-Identifier contains an MSISDN, the HSS shall include the IMSI and if available, the appropriate External Identifier associated with the MSISDN in the NIDD-Authorization-Response.'; '6. If the User-Identifier contains an IMSI the HSS shall include the MSISDN and the appropriate External Identifier assigned to the IMSI in the NIDD-Authorization-Response.'; 'The HSS may indicate within the NIDD-Authorization-Response AVP a granted validity time which shall not be later than the requested validity time as received within the NIDD-Authorization-Request AVP (if any).'"
+    },
+    "TS29.336.dadx#nia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#nia-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#nia-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#nidd-authorization-update-all-apns": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.65: 'Absence of Service-Selection AVP indicates that the Granted-Validity-Time applies to all granted NIDD Authorizations for the user. In this case only one APN-Validity-Time AVP shall be present within the NIDD-Authorization-Update AVP.'"
+    },
+    "TS29.336.dadx#nir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#nir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.70-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#nir-group-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'This information element shall be present if the request is sent from HSS to SCEF following a previous NIA with an incomplete Group User Identifier List.'"
+    },
+    "TS29.336.dadx#nir-hss-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.6: 'As the HSS knows the address/name and the associated home network domain name of the SCEF to which it sends RIR and NIR commands from a previously received CIR command, both the Destination-Realm and Destination-Host AVPs shall be present in request commands sent by the HSS to the SCEF.'"
+    },
+    "TS29.336.dadx#nir-nidd-authorization-request": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'When sent by the SCEF, the Service-Selection AVP inside NIDD-Authorization-Request shall be present, and it shall contain the APN for which NIDD authorization is requested. Shall be absent when sent by the HSS.'"
+    },
+    "TS29.336.dadx#nir-nidd-authorization-update": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'If present, this Information Element shall contain the details of the updated NIDD Authorization. Shall be absent when sent by the SCEF.'; 'Shall be absent when sent by the HSS.'"
+    },
+    "TS29.336.dadx#nir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#nir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#nir-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'This is a grouped AVP containing in authorization requests sent from SCEF to HSS either an External Identifier or an MSISDN (exactly one, and only one, of those identifiers shall be included in the request), and containing in update/revocation requests sent from HSS to SCEF an IMSI and either MSISDN or External Identifier or both.'"
+    },
+    "TS29.336.dadx#nir-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-configuration-all-apns": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.76: 'If the Service-Selection AVP is included, then the monitoring applies to that specific APN; if the Service-Selection is absent, the monitoring request applies to all APNs.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: '- an IPv4 address, or'; '- an IPv6 address/prefix, or'; '- both, an IPv4 address and an IPv6 address/prefix (for dual-stack UEs with PDN-Type set to \"IPv4v6\").'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-delivery": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'The Non-IP-Data-Delivery-Mechanism AVP is defined in 3GPP TS 29.272 [14] and it shall be present if the Non-IP-PDN-Type-Indicator AVP is present and set to TRUE.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-non-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'If this AVP is present, it shall be set to TRUE and the PDN-Type AVP shall be absent.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-pdn-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'The PDN-Type AVP is defined in 3GPP TS 29.272 [14] and it shall be present when the PDN Connection is an IP connection, and it may contain the value IPv4, IPv6 or IPv4v6.'; 'The Non-IP-PDN-Type-Indicator AVP is defined in 3GPP TS 29.272 [14] and it indicates whether the PDN Connection is of type \"Non-IP\".'; 'The value IPv4_OR_IPv6 shall not be used for this event reporting.'; 'If PDN-Type AVP is present, then the Non-IP-PDN-Type-Indicator and Non-IP-Data-Delivery-Mechanism AVPs shall be absent.'"
+    },
+    "TS29.336.dadx#plmn-id-requested-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.68: 'The default value, when this AVP is not included, is TRUE (0).'"
+    },
+    "TS29.336.dadx#reachability-type-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.12-1: 'The default value, when this AVP is not included, is Reachability for SMS (bit 0 set).'; 'NOTE 1: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command. NOTE 2: Bit 0 and 1 shall not be set simultaneously.'"
+    },
+    "TS29.336.dadx#restricted-plmn-list-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.53: 'Absence of Visited-PLMN-Id AVPs indicates that Enhanced Coverage is allowed in all serving PLMNs.'"
+    },
+    "TS29.336.dadx#ria-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#ria-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-2: 'Experimental-Result AVP shall be used for S6t errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#ria-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#ria-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#ria-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#ria-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#ria-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#rir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#rir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.63-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#rir-group-configuration-in-progress": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the HSS knows that it has additional RIR commands to send for the same group, the HSS shall include the RIR-Flags AVP with the Group-Configuration-In-Progress bit set and restart the Group Guard Timer to the value it originally received in the CIR.'"
+    },
+    "TS29.336.dadx#rir-group-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'Shall be present if User-Identifier contains an External Group Identifier'"
+    },
+    "TS29.336.dadx#rir-monitoring-event-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'If a report is available in the HSS this information element shall contain the requested data available in the HSS.'"
+    },
+    "TS29.336.dadx#rir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#rir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#rir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#rir-pdn-connectivity-status-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'The AVP shall always be present in RIR command if Monitoring-Event-Report AVP includes Monitoring-Type AVP with value PDN_CONNECTIVITY_STATUS (10).'"
+    },
+    "TS29.336.dadx#rir-report-eff-monte": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the HSS and SCEF support the Report-Eff-MONTE feature, the HSS shall make use of RIR-flags AVP for a given User-Identity and no Monitoring-Event-Report AVP(s) shall be included.'"
+    },
+    "TS29.336.dadx#rir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#rir-supported-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'If RIR-flags indicates a change of SCEF authorization for one or more monitoring events, this information element shall be present.'"
+    },
+    "TS29.336.dadx#rir-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'This AVP shall not carry the IMSI towards the SCEF.'; 'For group based configuration processing, the External-Identifier shall be present and contain an External Group Identifier (see 3GPP TS 23.003 [11]).'"
+    },
+    "TS29.336.dadx#rir-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#s6t-hss-cause-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.50-1: 'NOTE: Bits not defined in this table shall be cleared by the sending node and discarded by the receiving node.'"
+    },
+    "TS29.336.dadx#scef-reference-id-ext-feature": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.82: 'The SCEF-Reference-ID-Ext AVP is of type Unsigned64 and it shall contain a 64-bit identifier provided by the SCEF, which shall be used instead of the 32-bit identifier SCEF-Reference-ID, when supported by both SCEF and HSS.'"
+    },
+    "TS29.336.dadx#scef-reference-id-for-deletion-ext-feature": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.83: 'The SCEF-Reference-ID-for-Deletion-Ext AVP is of type Unsigned64 and it shall contain a 64-bit identifier provided by the SCEF, which shall be used instead of the 32-bit identifier SCEF-Reference-ID-for-Deletion, when supported by both SCEF and HSS.'"
+    },
+    "TS29.336.dadx#scheduled-communication-time-days": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.30: 'If Day-Of-Week-Mask is not provided this shall be interpreted as every day of the week.'"
+    },
+    "TS29.336.dadx#scheduled-communication-time-end": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.30: 'If Time-Of-Day-End is not provided, ending time is end of the day(s) indicated by Day-Of-Week-Mask.'"
+    },
+    "TS29.336.dadx#scheduled-communication-time-start": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.30: 'If Time-Of-Day-Start is not provided, starting time shall be set to start of the day(s) indicated by Day-Of-Week-Mask.'"
+    },
+    "TS29.336.dadx#service-result-vendor-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.37: 'If the Service-Result-Code contains an Experimental-Result-Code value defined by 3GPP, then the Vendor-Id shall be set to the value 10415. If the Service-Result-Code contains a Result-Code value defined in the Diameter base protocol by IETF (see IETF RFC 6733 [23]), then the Vendor-Id shall be absent or set to the value 0.'"
+    },
+    "TS29.336.dadx#service-selection-labels": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.49: 'This AVP shall contain the APN Network Identifier (i.e. an APN without the Operator Identifier) per 3GPP TS 23.003 [11], clauses 9.1 & 9.1.1,).'; 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
+    },
+    "TS29.336.dadx#serving-node-ip-sm-gw-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'g) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-Realm'"
+    },
+    "TS29.336.dadx#serving-node-ip-sm-gw-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'g) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-Realm'"
+    },
+    "TS29.336.dadx#serving-node-mme-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#serving-node-mme-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'"
+    },
+    "TS29.336.dadx#serving-node-mme-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#serving-node-msc-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'd) MSC-Number'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#serving-node-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'd) MSC-Number'; 'f) IP-SM-GW-Number'"
+    },
+    "TS29.336.dadx#serving-node-sgsn-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#serving-node-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#serving-node-sgsn-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#sia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#sia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'Experimental-Result AVP shall be used for S6m/S6n errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#sia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#sia-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#sia-service-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present only when the Requested Service IE was included in the request, and the Result- Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#sia-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#sia-user-identifier-returned": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'if available, the MSISDN of the user shall also be returned by the HSS, along with the user's IMSI.'; 'If it is known, the HSS shall answer successfully and return in the response one or several instances of the User Identity IE, each one containing either an External-Identifier or an MSISDN (if any of these identities are present in the subscriber profile in HSS), or the subscriber's IMSI (if the subscriber does not have any External Identifiers or MSISDNs assigned).'"
+    },
+    "TS29.336.dadx#sia-user-identifier-success": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present only when the Result- Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#sir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#sir-flags-mtc-aaa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.4: 'When the MTC-AAA sends a Subscriber Information Retrieval request to the HSS, it shall clear the S6m/S6n indicator bit in the SIR Flags IE.'"
+    },
+    "TS29.336.dadx#sir-flags-mtc-iwf": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.3: 'When the MTC-IWF sends a Subscriber Information Retrieval request to the HSS, it shall set the S6m/S6n indicator bit in the SIR Flags IE.'"
+    },
+    "TS29.336.dadx#sir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.4.10/1: 'Note: Bits not defined in this table shall be cleared by the sending node, MTC-IWF or MTC-AAA, and discarded by the receiving HSS.'"
+    },
+    "TS29.336.dadx#sir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#sir-scs-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'When the Service-ID indicates DEVICE_TRIGGER (0) or SMS_MO (1), the SCS-Identity shall be formatted as an E.164 address as described in clause 6.4.4.'; 'In this release, only the Device Triggering and SMS_MO services are supported.'; 'For S6n (i.e., when the procedure is invoked by the MTC-AAA), this IE is not applicable, and shall be absent.'"
+    },
+    "TS29.336.dadx#sir-service-id-s6n": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'For S6n (i.e., when the procedure is invoked by the MTC-AAA), this IE is not applicable, and shall be absent.'"
+    },
+    "TS29.336.dadx#sir-service-parameters-s6n": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'For S6n (i.e., when the procedure is invoked by the MTC-AAA), this IE is not applicable, and shall be absent.'"
+    },
+    "TS29.336.dadx#sir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#sir-user-identifier-mtc-aaa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.4: 'The MTC-AAA shall only include the User Identifier IE in the request, and it shall contain only the IMSI of the UE.'"
+    },
+    "TS29.336.dadx#sir-user-identifier-one": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'This is a grouped AVP containing either an External Identifier, an MSISDN or an IMSI (exactly one, and only one, of those identifiers shall be included in the request).'"
+    },
+    "TS29.336.dadx#suggested-network-configuration-deletion": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.66: 'If the values of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion are the same, no Network Parameter Configurations AVP(s) shall be present, that is, SCEF-Reference-ID-for-Deletion takes precedence.'"
+    },
+    "TS29.336.dadx#supported-monitoring-events-default": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.41-1: 'Absence of this AVP shall have the same meaning as all bits cleared (i.e. serving node does not support MONTE).'"
+    },
+    "TS29.336.dadx#supported-services-node-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the services supported and authorized by the HSS are the same than those supported by the serving node(s), the Node-Type AVP shall be absent.'"
+    },
+    "TS29.336.dadx#t4-data-additional-serving-node": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.8: 'When the HSS-Cause indicates Absent Subscriber, via the corresponding flag in the bit mask, the Serving-Node and Additional-Serving-Node AVPs shall not be present.'; 'Additional-Serving-Node AVP shall be absent if Serving-Node AVP is absent.'"
+    },
+    "TS29.336.dadx#t4-data-serving-node-absent-subscriber": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.8: 'When the HSS-Cause indicates Absent Subscriber, via the corresponding flag in the bit mask, the Serving-Node and Additional-Serving-Node AVPs shall not be present.'"
+    },
+    "TS29.336.dadx#type-of-external-identifier-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'When the Type-Of-External-Identifier is not present, it means the External-Identifier AVP contains the identity of an individual UE.'"
+    },
+    "TS29.336.dadx#updated-network-configuration-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.80: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'; 'If not included inside Group-Report-Item AVP, it shall contain only the Network Parameter Configurations which were received in a previous CIR command and have been updated due to a new CIR command.'"
+    },
+    "TS29.336.dadx#user-identifier-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.2: 'This AVP shall contain at least one of the identifiers used by the UE, i.e., it shall not be empty.'"
+    },
     "TS29.336.py#additional-serving-node-t4-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
      "kind": "accept",
@@ -12254,7 +12886,7 @@
      "targets": [
       [
        "sections",
-       24
+       62
       ]
      ]
     },
@@ -12330,7 +12962,7 @@
      "targets": [
       [
        "sections",
-       23
+       51
       ]
      ]
     },
@@ -12382,6 +13014,642 @@
   },
   "29336-j10": {
    "edits": {
+    "TS29.336.dadx#additional-identifiers-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.69: 'The AdditionalIdentifiers AVP is of type Grouped, and it shall contain External Group Identifiers.'"
+    },
+    "TS29.336.dadx#additional-serving-node-mme-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#additional-serving-node-mme-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'"
+    },
+    "TS29.336.dadx#additional-serving-node-mme-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#additional-serving-node-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'd) MSC-Number'"
+    },
+    "TS29.336.dadx#additional-serving-node-sgsn-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#additional-serving-node-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#additional-serving-node-sgsn-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.13: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#aese-communication-pattern-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.25: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
+    },
+    "TS29.336.dadx#allowed-plmn-list-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.54: 'Absence of Visited-PLMN-Id AVPs indicates that Enhanced Coverage is restricted in all serving PLMNs.'"
+    },
+    "TS29.336.dadx#battery-indicator-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.81-1: 'NOTE1: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command. NOTE2: If bit 0 is set, bit 1 and bit 2 shall be cleared.'"
+    },
+    "TS29.336.dadx#cia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#cia-enhanced-coverage-restriction-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'It shall be present if the request contained a CIR-Flag AVP with the bit for Enhanced-Coverage-Query set.'"
+    },
+    "TS29.336.dadx#cia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'Experimental-Result AVP shall only be used for S6t errors which are applicable regardless of the services requested (e.g. DIAMETER_ERROR_USER_UNKNOWN). This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#cia-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.60-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#cia-imsi-group-id": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This information element shall be present if the CIR-Flag for IMSI Group Retrieval was set in the request and the Result-Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#cia-monitoring-event-config-status": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This IE shall be present if Monitoring Event Configuration IE is included in CIR and if the Result-Code AVP in Configuration Information Answer is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#cia-monitoring-event-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'If an immediate report is available this information element shall contain the requested data available in the HSS.'"
+    },
+    "TS29.336.dadx#cia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#cia-number-of-ues": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This IE shall be present if the External-Identifier of User-Identifier in CIR message contains the identity of a Group of UEs (i.e. External Group Identifier).'"
+    },
+    "TS29.336.dadx#cia-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#cia-s6t-hss-cause": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'It shall be present if the user is not registered in any serving node.'"
+    },
+    "TS29.336.dadx#cia-suggested-network-configuration-unmodified": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'When the HSS did not modify parameters received in the Suggested-Network-Configuration AVP, the HSS shall return a Suggested-Network-Configuration AVP to the SCEF in CIA containing only SCEF Reference ID and SCEF-ID.'"
+    },
+    "TS29.336.dadx#cia-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#cia-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-2: 'This IE shall not be present if the External-Identifier of User-Identifier in CIR message contains the identity of a Group of UEs (i.e. External Group Identifier). This IE shall be present only when the Result-Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#cia-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#cir-additional-identifiers": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-1: 'If the request is used to retrieve multiple IMSI Group IDs for multiple External Group Identifiers, this information element shall be present and shall contain all the External Group Identifiers for which the IMSI Group IDs are requested, except the one conveyed in the User-Identifier AVP.'"
+    },
+    "TS29.336.dadx#cir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#cir-delete-all-communication-pattern": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'If the CIR message contains the CIR-Flags with delete all communication pattern, and the feature Config-Eff-CP is supported, the HSS shall delete all Communication Pattern configured by the SCEF for the subscriber. This includes forwarding the deletion to involved serving nodes. In this case the CIR message shall not contain new communication pattern.'"
+    },
+    "TS29.336.dadx#cir-delete-all-monitoring-events": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'IF the CIR message contains the CIR-Flags with delete all monitoring events, the HSS shall delete all Monitoring events configured by the SCEF for the subscriber. This includes forwarding the deletion to involved serving nodes. In this case the CIR message shall not contain new monitoring events.'"
+    },
+    "TS29.336.dadx#cir-delete-all-network-parameter-configurations": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.1.2: 'If the CIR message contains the CIR-Flags with delete all network parameter configurations, and the feature Config-Eff-NP is supported, the HSS shall delete all Suggested Network Configurations configured by the SCEF for the subscriber. This includes the updating of involved serving nodes. In this case the CIR message shall not contain new network parameter configurations.'"
+    },
+    "TS29.336.dadx#cir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.39-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#cir-group-reporting-guard-timer": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-1: 'Shall be present if the User-Identifier contains an External Group Identifier.'"
+    },
+    "TS29.336.dadx#cir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#cir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#cir-origin-host-scef-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.5: 'The SCEF- ID AVP is of type DiameterIdentity and it shall contain the identity of the SCEF which has originated the service request towards the HSS, i.e. when sent within a Monitoring-Event-Configuration AVP in S6t-CIR, SCEF-ID AVP and Origin-Host AVP shall have the same value.'"
+    },
+    "TS29.336.dadx#cir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#cir-user-identifier-one": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.1.1-1: 'This is a grouped AVP containing either an External Identifier or an MSISDN (exactly one, and only one, of those identifiers shall be included in the request).'"
+    },
+    "TS29.336.dadx#communication-pattern-set-duration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.26: 'Communication-duration-time and Periodic-Time shall be only provided when the Periodic-Communication-Indicator is set to PERIODICALLY.'"
+    },
+    "TS29.336.dadx#communication-pattern-set-periodic-time": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.26: 'Communication-duration-time and Periodic-Time shall be only provided when the Periodic-Communication-Indicator is set to PERIODICALLY.'"
+    },
+    "TS29.336.dadx#communication-pattern-set-validity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.26: 'If the Reference-ID-Validity-Time AVP is absent, it indicates that there is no expiration time defined for the Communication-Pattern-Set.'"
+    },
+    "TS29.336.dadx#exclude-identifiers-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.84: 'The Exclude-Identifiers AVP is of type Grouped, and it shall contain External Group Identifiers or MSISDNs.'"
+    },
+    "TS29.336.dadx#external-identifier-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.11: 'For S6m/S6n interface it shall contain an external identifier of the UE. See 3GPP TS 23.003 [11] for the definition and formatting of the External Identifier. For S6t interface, it shall contain an external identifier for an individual UE or a group of UEs, as indicated by Type-Of-External-Identifier AVP.'"
+    },
+    "TS29.336.dadx#group-report-item-partially-cancel": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the RIR command is triggered by partially cancelling of group-based monitoring, the S6t-HSS-Cause IE shall be set to \"Group Event Monitoring Partially Cancel\".'"
+    },
+    "TS29.336.dadx#group-report-item-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#group-user-identifier-member": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.3.2: '6a. If the User-Identifier contains an External Group Identifier, the HSS shall include the IMSI and the MSISDN or External-Identifier assigned to each member of the group in the Group-User-Identifier.'"
+    },
+    "TS29.336.dadx#hss-cause-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.4.9/1: 'NOTE 2: Bits not defined in this table shall be cleared by the HSS and discarded by the receiving node, MTC-IWF.'"
+    },
+    "TS29.336.dadx#imei-change-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.22-1: 'NOTE 1: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command. NOTE 2: Bits 0 and 1 shall not be set simultaneously.'"
+    },
+    "TS29.336.dadx#include-identifiers-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.85: 'The Include-Identifiers AVP is of type Grouped, and it shall contain External Group Identifiers or MSISDNs.'"
+    },
+    "TS29.336.dadx#ip-sm-gw-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.14: 'The IP-SM-GW-Number AVP is of type OctetString and it shall contain the ISDN number of the IP-SM-GW in international number format as described in ITU-T Rec E.164 [41]. It shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan.'"
+    },
+    "TS29.336.dadx#monitoring-event-configuration-maximum-number-of-reports": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.8: 'This AVP shall not be present when Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'This AVP shall not be greater than one if:'; '- Monitoring-Type is UE_REACHABILITY (1) and Reachability-Type is \"Reachability for SMS\" or'; '- Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
+    },
+    "TS29.336.dadx#monitoring-event-configuration-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.2: 'At least SCEF-Reference-ID or one SCEF-Reference-ID-for-Deletion shall be present.'; 'At least one of the SCEF-Reference-ID or SCEF-Reference–ID-for-Deletion shall be present.'; 'When the \"Extended Reference IDs\" feature is supported by the HSS and SCEF, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used insted of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
+    },
+    "TS29.336.dadx#monte-location-type-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.16: 'The default value, when this AVP is not included, is LAST_KNOWN_LOCATION (1).'"
+    },
+    "TS29.336.dadx#nia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#nia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-2: 'Experimental-Result AVP shall be used for S6t errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#nia-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.72-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#nia-group-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-2: 'This information element shall be present if the request was for a group of UEs and the Result-Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#nia-nidd-authorization-response": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-2: 'When sent by the HSS the IE shall only be present when the Result Code is DIAMETER_SUCCESS. Shall be absent when sent by the SCEF.'"
+    },
+    "TS29.336.dadx#nia-nidd-authorization-response-identities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.3.2: '4. If the User-Identifier contains an External Identifier, the HSS shall include the IMSI and if available the MSISDN associated with the appropriate External Identifier in the NIDD-Authorization-Response.'; '5. If the User-Identifier contains an MSISDN, the HSS shall include the IMSI and if available, the appropriate External Identifier associated with the MSISDN in the NIDD-Authorization-Response.'; '6. If the User-Identifier contains an IMSI the HSS shall include the MSISDN and the appropriate External Identifier assigned to the IMSI in the NIDD-Authorization-Response.'; 'The HSS may indicate within the NIDD-Authorization-Response AVP a granted validity time which shall not be later than the requested validity time as received within the NIDD-Authorization-Request AVP (if any).'"
+    },
+    "TS29.336.dadx#nia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#nia-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#nia-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#nidd-authorization-update-all-apns": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.65: 'Absence of Service-Selection AVP indicates that the Granted-Validity-Time applies to all granted NIDD Authorizations for the user. In this case only one APN-Validity-Time AVP shall be present within the NIDD-Authorization-Update AVP.'"
+    },
+    "TS29.336.dadx#nir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#nir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.70-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#nir-group-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'This information element shall be present if the request is sent from HSS to SCEF following a previous NIA with an incomplete Group User Identifier List.'"
+    },
+    "TS29.336.dadx#nir-hss-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.6: 'As the HSS knows the address/name and the associated home network domain name of the SCEF to which it sends RIR and NIR commands from a previously received CIR command, both the Destination-Realm and Destination-Host AVPs shall be present in request commands sent by the HSS to the SCEF.'"
+    },
+    "TS29.336.dadx#nir-nidd-authorization-request": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'When sent by the SCEF, the Service-Selection AVP inside NIDD-Authorization-Request shall be present, and it shall contain the APN for which NIDD authorization is requested. Shall be absent when sent by the HSS.'"
+    },
+    "TS29.336.dadx#nir-nidd-authorization-update": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'If present, this Information Element shall contain the details of the updated NIDD Authorization. Shall be absent when sent by the SCEF.'; 'Shall be absent when sent by the HSS.'"
+    },
+    "TS29.336.dadx#nir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#nir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#nir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#nir-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.3.1-1: 'This is a grouped AVP containing in authorization requests sent from SCEF to HSS either an External Identifier or an MSISDN (exactly one, and only one, of those identifiers shall be included in the request), and containing in update/revocation requests sent from HSS to SCEF an IMSI and either MSISDN or External Identifier or both.'"
+    },
+    "TS29.336.dadx#nir-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-configuration-all-apns": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.76: 'If the Service-Selection AVP is included, then the monitoring applies to that specific APN; if the Service-Selection is absent, the monitoring request applies to all APNs.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: '- an IPv4 address, or'; '- an IPv6 address/prefix, or'; '- both, an IPv4 address and an IPv6 address/prefix (for dual-stack UEs with PDN-Type set to \"IPv4v6\").'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-delivery": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'The Non-IP-Data-Delivery-Mechanism AVP is defined in 3GPP TS 29.272 [14] and it shall be present if the Non-IP-PDN-Type-Indicator AVP is present and set to TRUE.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-non-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'If this AVP is present, it shall be set to TRUE and the PDN-Type AVP shall be absent.'"
+    },
+    "TS29.336.dadx#pdn-connectivity-status-report-pdn-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'The PDN-Type AVP is defined in 3GPP TS 29.272 [14] and it shall be present when the PDN Connection is an IP connection, and it may contain the value IPv4, IPv6 or IPv4v6.'; 'The Non-IP-PDN-Type-Indicator AVP is defined in 3GPP TS 29.272 [14] and it indicates whether the PDN Connection is of type \"Non-IP\".'; 'The value IPv4_OR_IPv6 shall not be used for this event reporting.'; 'If PDN-Type AVP is present, then the Non-IP-PDN-Type-Indicator and Non-IP-Data-Delivery-Mechanism AVPs shall be absent.'"
+    },
+    "TS29.336.dadx#plmn-id-requested-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.68: 'The default value, when this AVP is not included, is TRUE (0).'"
+    },
+    "TS29.336.dadx#reachability-type-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.12-1: 'The default value, when this AVP is not included, is Reachability for SMS (bit 0 set).'; 'NOTE 1: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command. NOTE 2: Bit 0 and 1 shall not be set simultaneously.'"
+    },
+    "TS29.336.dadx#restricted-plmn-list-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.53: 'Absence of Visited-PLMN-Id AVPs indicates that Enhanced Coverage is allowed in all serving PLMNs.'"
+    },
+    "TS29.336.dadx#ria-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#ria-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-2: 'Experimental-Result AVP shall be used for S6t errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#ria-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#ria-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#ria-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#ria-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#ria-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#rir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#rir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.63-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#rir-group-configuration-in-progress": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the HSS knows that it has additional RIR commands to send for the same group, the HSS shall include the RIR-Flags AVP with the Group-Configuration-In-Progress bit set and restart the Group Guard Timer to the value it originally received in the CIR.'"
+    },
+    "TS29.336.dadx#rir-group-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'Shall be present if User-Identifier contains an External Group Identifier'"
+    },
+    "TS29.336.dadx#rir-monitoring-event-report": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'If a report is available in the HSS this information element shall contain the requested data available in the HSS.'"
+    },
+    "TS29.336.dadx#rir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#rir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#rir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#rir-pdn-connectivity-status-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.77: 'The AVP shall always be present in RIR command if Monitoring-Event-Report AVP includes Monitoring-Type AVP with value PDN_CONNECTIVITY_STATUS (10).'"
+    },
+    "TS29.336.dadx#rir-report-eff-monte": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the HSS and SCEF support the Report-Eff-MONTE feature, the HSS shall make use of RIR-flags AVP for a given User-Identity and no Monitoring-Event-Report AVP(s) shall be included.'"
+    },
+    "TS29.336.dadx#rir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#rir-supported-services": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'If RIR-flags indicates a change of SCEF authorization for one or more monitoring events, this information element shall be present.'"
+    },
+    "TS29.336.dadx#rir-user-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.2.1-1: 'This AVP shall not carry the IMSI towards the SCEF.'; 'For group based configuration processing, the External-Identifier shall be present and contain an External Group Identifier (see 3GPP TS 23.003 [11]).'"
+    },
+    "TS29.336.dadx#rir-user-identifier-s6t": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'This AVP shall contain one of the identifiers (IMSI, MSISDN or External-Identifier).'"
+    },
+    "TS29.336.dadx#s6t-hss-cause-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.50-1: 'NOTE: Bits not defined in this table shall be cleared by the sending node and discarded by the receiving node.'"
+    },
+    "TS29.336.dadx#scef-reference-id-ext-feature": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.82: 'The SCEF-Reference-ID-Ext AVP is of type Unsigned64 and it shall contain a 64-bit identifier provided by the SCEF, which shall be used instead of the 32-bit identifier SCEF-Reference-ID, when supported by both SCEF and HSS.'"
+    },
+    "TS29.336.dadx#scef-reference-id-for-deletion-ext-feature": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.83: 'The SCEF-Reference-ID-for-Deletion-Ext AVP is of type Unsigned64 and it shall contain a 64-bit identifier provided by the SCEF, which shall be used instead of the 32-bit identifier SCEF-Reference-ID-for-Deletion, when supported by both SCEF and HSS.'"
+    },
+    "TS29.336.dadx#scheduled-communication-time-days": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.30: 'If Day-Of-Week-Mask is not provided this shall be interpreted as every day of the week.'"
+    },
+    "TS29.336.dadx#scheduled-communication-time-end": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.30: 'If Time-Of-Day-End is not provided, ending time is end of the day(s) indicated by Day-Of-Week-Mask.'"
+    },
+    "TS29.336.dadx#scheduled-communication-time-start": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.30: 'If Time-Of-Day-Start is not provided, starting time shall be set to start of the day(s) indicated by Day-Of-Week-Mask.'"
+    },
+    "TS29.336.dadx#service-result-vendor-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.37: 'If the Service-Result-Code contains an Experimental-Result-Code value defined by 3GPP, then the Vendor-Id shall be set to the value 10415. If the Service-Result-Code contains a Result-Code value defined in the Diameter base protocol by IETF (see IETF RFC 6733 [23]), then the Vendor-Id shall be absent or set to the value 0.'"
+    },
+    "TS29.336.dadx#service-selection-labels": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.49: 'This AVP shall contain the APN Network Identifier (i.e. an APN without the Operator Identifier) per 3GPP TS 23.003 [11], clauses 9.1 & 9.1.1,).'; 'The contents of the Service-Selection AVP shall be formatted as a character string composed of one or more labels separated by dots (\".\").'"
+    },
+    "TS29.336.dadx#serving-node-ip-sm-gw-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'g) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-Realm'"
+    },
+    "TS29.336.dadx#serving-node-ip-sm-gw-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'g) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-Realm'"
+    },
+    "TS29.336.dadx#serving-node-mme-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#serving-node-mme-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'"
+    },
+    "TS29.336.dadx#serving-node-mme-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#serving-node-msc-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'd) MSC-Number'; 'e) MSC-Number & MME-Name & MME-Realm'"
+    },
+    "TS29.336.dadx#serving-node-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'c) MME-Name & MME-Realm & MME-Number-for-MT-SMS'; 'd) MSC-Number'; 'f) IP-SM-GW-Number'"
+    },
+    "TS29.336.dadx#serving-node-sgsn-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#serving-node-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'a) SGSN-Number'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#serving-node-sgsn-realm": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.12: 'The following combinations are allowed:'; 'b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])'"
+    },
+    "TS29.336.dadx#sia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#sia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'Experimental-Result AVP shall be used for S6m/S6n errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.336.dadx#sia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#sia-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.336.dadx#sia-service-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present only when the Requested Service IE was included in the request, and the Result- Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#sia-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#sia-user-identifier-returned": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'if available, the MSISDN of the user shall also be returned by the HSS, along with the user's IMSI.'; 'If it is known, the HSS shall answer successfully and return in the response one or several instances of the User Identity IE, each one containing either an External-Identifier or an MSISDN (if any of these identities are present in the subscriber profile in HSS), or the subscriber's IMSI (if the subscriber does not have any External Identifiers or MSISDNs assigned).'"
+    },
+    "TS29.336.dadx#sia-user-identifier-success": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present only when the Result- Code is DIAMETER_SUCCESS.'"
+    },
+    "TS29.336.dadx#sir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [23].'"
+    },
+    "TS29.336.dadx#sir-flags-mtc-aaa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.4: 'When the MTC-AAA sends a Subscriber Information Retrieval request to the HSS, it shall clear the S6m/S6n indicator bit in the SIR Flags IE.'"
+    },
+    "TS29.336.dadx#sir-flags-mtc-iwf": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.3: 'When the MTC-IWF sends a Subscriber Information Retrieval request to the HSS, it shall set the S6m/S6n indicator bit in the SIR Flags IE.'"
+    },
+    "TS29.336.dadx#sir-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.4.10/1: 'Note: Bits not defined in this table shall be cleared by the sending node, MTC-IWF or MTC-AAA, and discarded by the receiving HSS.'"
+    },
+    "TS29.336.dadx#sir-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sir-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.336.dadx#sir-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.336.dadx#sir-scs-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'When the Service-ID indicates DEVICE_TRIGGER (0) or SMS_MO (1), the SCS-Identity shall be formatted as an E.164 address as described in clause 6.4.4.'; 'In this release, only the Device Triggering and SMS_MO services are supported.'; 'For S6n (i.e., when the procedure is invoked by the MTC-AAA), this IE is not applicable, and shall be absent.'"
+    },
+    "TS29.336.dadx#sir-service-id-s6n": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'For S6n (i.e., when the procedure is invoked by the MTC-AAA), this IE is not applicable, and shall be absent.'"
+    },
+    "TS29.336.dadx#sir-service-parameters-s6n": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'For S6n (i.e., when the procedure is invoked by the MTC-AAA), this IE is not applicable, and shall be absent.'"
+    },
+    "TS29.336.dadx#sir-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.336.dadx#sir-user-identifier-mtc-aaa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.4: 'The MTC-AAA shall only include the User Identifier IE in the request, and it shall contain only the IMSI of the UE.'"
+    },
+    "TS29.336.dadx#sir-user-identifier-one": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'This is a grouped AVP containing either an External Identifier, an MSISDN or an IMSI (exactly one, and only one, of those identifiers shall be included in the request).'"
+    },
+    "TS29.336.dadx#suggested-network-configuration-deletion": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.66: 'If the values of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion are the same, no Network Parameter Configurations AVP(s) shall be present, that is, SCEF-Reference-ID-for-Deletion takes precedence.'"
+    },
+    "TS29.336.dadx#supported-monitoring-events-default": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.41-1: 'Absence of this AVP shall have the same meaning as all bits cleared (i.e. serving node does not support MONTE).'"
+    },
+    "TS29.336.dadx#supported-monitoring-events-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 8.4.41-1: 'This bit shall be set if Store and Forward operation for satellite access monitoring event is supported in the HSS/MME/SGSN.'; 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.336.dadx#supported-services-node-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2.2: 'If the services supported and authorized by the HSS are the same than those supported by the serving node(s), the Node-Type AVP shall be absent.'"
+    },
+    "TS29.336.dadx#t4-data-additional-serving-node": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.8: 'When the HSS-Cause indicates Absent Subscriber, via the corresponding flag in the bit mask, the Serving-Node and Additional-Serving-Node AVPs shall not be present.'; 'Additional-Serving-Node AVP shall be absent if Serving-Node AVP is absent.'"
+    },
+    "TS29.336.dadx#t4-data-serving-node-absent-subscriber": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.8: 'When the HSS-Cause indicates Absent Subscriber, via the corresponding flag in the bit mask, the Serving-Node and Additional-Serving-Node AVPs shall not be present.'"
+    },
+    "TS29.336.dadx#type-of-external-identifier-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.36: 'When the Type-Of-External-Identifier is not present, it means the External-Identifier AVP contains the identity of an individual UE.'"
+    },
+    "TS29.336.dadx#updated-network-configuration-reference-ids": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4.80: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'; 'If not included inside Group-Report-Item AVP, it shall contain only the Network Parameter Configurations which were received in a previous CIR command and have been updated due to a new CIR command.'"
+    },
+    "TS29.336.dadx#user-identifier-not-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.2: 'This AVP shall contain at least one of the identifiers used by the UE, i.e., it shall not be empty.'"
+    },
     "TS29.336.py#additional-serving-node-t4-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
      "kind": "accept",
@@ -12390,7 +13658,7 @@
      "targets": [
       [
        "sections",
-       24
+       62
       ]
      ]
     },
@@ -12466,7 +13734,7 @@
      "targets": [
       [
        "sections",
-       23
+       51
       ]
      ]
     },

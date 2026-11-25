@@ -17,7 +17,8 @@ each such rule gets a valid pair and one breaking it.
 
 Values are valid for their type and every constraint read for the AVP: a
 codec's layout (`seanchai.constraints`), a length, a range, a predicate's
-siblings. A member the corpus cannot complete is left out where optional;
+siblings, a required grouped AVP's members its command's predicates name. A
+member the corpus cannot complete is left out where optional;
 where required, the command has no minimal message and is listed in
 `skipped`. Every vector has its octets, a readable tree, the rule it breaks
 with its document, clause and page, and the finding the plugin reports
@@ -1078,10 +1079,82 @@ class _Builder:
                     )
                 elif name in optional:
                     nodes[:] = [n for n in nodes if n.avp.name != name]
-                else:
+                elif not self.mend_inside(nodes, name, kind, rule, request):
                     raise _Unbuildable(f"{name} is required and a predicate forbids it")
         if self.broken(scope, nodes, request):
             raise _Unbuildable("the predicates cannot all hold")
+
+    def mend_inside(
+        self,
+        nodes: list[_Avp],
+        name: str,
+        kind: str,
+        rule: dictionary.Rule,
+        request: Sequence[_Avp] | None,
+    ) -> bool:
+        """Mend a required grouped AVP `name` of `nodes` that a predicate's
+        paths into its own members break: add the members an alternative of
+        a `requires` wants present, or drop an optional member making an
+        alternative of an `excludes` or `absent-if` hold (TS 29.336's SIR,
+        its User-Identifier holding exactly one identifier). Whether it
+        changed anything."""
+        held = next((n for n in nodes if n.avp.name == name), None)
+        if held is None or held.avp.kind != "grouped":
+            return False
+        inner = self.scope_of(held.avp)
+
+        def own(condition: dictionary.Condition) -> bool:
+            # The presence of a member of the AVP itself, by a path from it.
+            return (
+                condition.root is None
+                and len(condition.path) == 2
+                and condition.path[0] == name
+                and condition.value is None
+                and condition.bit is None
+                and not condition.values
+                and not condition.negated
+            )
+
+        if kind == "requires":
+            for conjunction in rule.conditions:
+                wanted = [
+                    c
+                    for c in conjunction
+                    if self.condition(nodes, c, request) == c.negated
+                ]
+                if not wanted or not all(own(c) for c in wanted):
+                    continue
+                members = [
+                    next((m for m in inner.members if m.name == c.path[1]), None)
+                    for c in wanted
+                ]
+                if any(m is None or m.avp is None for m in members):
+                    continue
+                for member in members:
+                    assert member is not None and member.avp is not None
+                    held.children.append(
+                        self.avp(self.avps[member.avp], inner, member, False, ())
+                    )
+                self.satisfy(inner, held.children, False)
+                return True
+            return False
+        if kind in ("excludes", "absent-if"):
+            optional = {m.name for m in inner.members if m.min_occurs == 0}
+            for conjunction in rule.conditions:
+                if not all(
+                    self.condition(nodes, c, request) != c.negated for c in conjunction
+                ):
+                    continue
+                for c in reversed(conjunction):
+                    if own(c) and c.path[1] in optional:
+                        held.children[:] = [
+                            child
+                            for child in held.children
+                            if child.avp.name != c.path[1]
+                        ]
+                        return True
+            return False
+        return False
 
 
 # --- vectors ---------------------------------------------------------------
@@ -1896,8 +1969,14 @@ class _Negatives:
                         if rule.kind != "members" or key in done:
                             continue
                         trial = message.copy()
-                        target, _, _ = list(self.each_grouped(trial))[index]
-                        if self.break_members(target, inner, rule):
+                        target, outer, run = list(self.each_grouped(trial))[index]
+                        # Breaking the rule must keep the predicates of the
+                        # run holding the AVP whose paths reach into it: TS
+                        # 29.336's CIR requires its User-Identifier to hold
+                        # an External-Identifier or MSISDN.
+                        if self.break_members(
+                            target, inner, rule
+                        ) and not self.builder.broken(outer, run):
                             done.add(key)
                             self.emit(
                                 trial,

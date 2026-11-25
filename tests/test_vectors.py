@@ -672,3 +672,100 @@ def test_the_core_checks_a_predicate_of_a_block_with_no_scope(lua, asked, tmp_pa
     valid, broken = done.stdout.splitlines()
     assert valid.split("\t")[1:] == []
     assert broken.split("\t")[1:] == ["note constraint-excludes"]
+
+
+# A request whose required grouped AVP holds exactly one of two identities,
+# a rule of the command on its members, as TS 29.336's CIR holds its
+# User-Identifier's External-Identifier or MSISDN.
+_ONE_OF = """\
+; Specification: 3GPP TS 29.998
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+
+
+; Type: Message
+; Name: Choice-Request, CHR
+; Section: 6.1.1
+<Choice-Request> ::= < Diameter Header: 9, REQ, PXY, 16777998 >
+        < Session-Id >
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Ch-Id }
+        *[ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Ch-Id
+; Section: 6.2.1
+Ch-Id ::= < AVP header: 1 10415 >
+        [ Ch-Name ]
+        [ Ch-Number ]
+        [ Ch-Other ]
+
+
+; Type: Interpreted Constraints
+; AVP: Ch-Id
+; Command: Choice-Request
+; Section: 6.1.1
+; Versions: 19.0.0
+"It holds a name or a number, not both."
+    requires Ch-Id/Ch-Name or Ch-Id/Ch-Number
+    excludes Ch-Id/Ch-Name and Ch-Id/Ch-Number
+
+
+; Type: Interpreted Constraints
+; AVP: Ch-Id
+; Section: 6.2.1
+; Versions: 19.0.0
+"It is never empty."
+    members at-least-one Ch-Other Ch-Name Ch-Number
+
+
+; Type: AVP Table
+; Section: 6.2
+; Columns: Name   Code   Section   Type         Must
+Ch-Id             1      6.2.1     Grouped      M,V
+Ch-Name           2      6.2.2     UTF8String   M,V
+Ch-Number         3      6.2.3     UTF8String   M,V
+Ch-Other          4      6.2.4     UTF8String   M,V
+"""
+
+
+def test_a_required_grouped_avp_is_mended_for_its_commands_rules(tmp_path):
+    shutil.copy(CORPUS_DIR / "rfc" / "rfc6733.dad", tmp_path / "rfc6733.dad")
+    (tmp_path / "29998-j00.dad").write_text(_ONE_OF, "utf-8")
+    out = tmp_path / "v.json"
+    done = CliRunner().invoke(
+        main,
+        [
+            "vectors",
+            "--corpus",
+            str(tmp_path),
+            "--application",
+            "16777998",
+            "-o",
+            str(out),
+        ],
+    )
+    assert done.exit_code == 0, done.output
+    found = vectors.Vectors.model_validate_json(out.read_text("utf-8"))
+    built = {v.kind: v for v in found.vectors if v.kind != "negative"}
+
+    def held(vector: vectors.Vector) -> set[str]:
+        (identity,) = (node for node in vector.tree if node.name == "Ch-Id")
+        return {child.name for child in identity.children}
+
+    # The minimal message, its Ch-Other built for the members rule, gains
+    # the member the command's rule asks for; the maximal one drops one of
+    # the two it may not hold together.
+    assert set(built) == {"minimal", "maximal"}
+    assert len(held(built["minimal"]) & {"Ch-Name", "Ch-Number"}) == 1
+    assert len(held(built["maximal"]) & {"Ch-Name", "Ch-Number"}) == 1
+    # Emptying Ch-Id would break the command's rule too: no vector breaks
+    # the members rule alone.
+    ids = {v.id for v in found.vectors}
+    assert "16777998/CHR/negative/constraint-members/Ch-Id/6.2.1" not in ids
+    assert "16777998/CHR/negative/constraint-excludes/Ch-Id/6.1.1" in ids

@@ -433,7 +433,9 @@ its `* [ AVP ]` where the rule is the AVP's wherever read (SWa's
 Diameter-EAP-Request, which prints no Visited-Network-Identifier), is listed
 in `skipped`: a checker may hold the message to the other print, which it
 breaks nothing of; so is one whose breaking value breaks a predicate on a
-path to it too.
+path to it too. A grouped AVP's `members` rule is broken only where emptying
+it keeps its command's predicates on paths into it, which TS 29.336's SIR,
+CIR, CIA, RIR and NIR do not.
 
 An answer whose rules read the request it answers is sent with that request,
 `request` in the vector, the pair sharing Hop-by-Hop and End-to-End
@@ -444,8 +446,10 @@ conditions met and the rule kept, and a negative one breaking it.
 Values are valid for their type and for every constraint read of the AVP: a
 codec's layout (a PLMN identity is MCC 123, MNC 45), an element's, a length, a
 range, bits, a predicate's siblings, the members a grouped AVP must or may not
-hold, a distinct value of a `unique` member in each repeated grouped AVP. A
-command a
+hold, a required grouped AVP's own members a predicate of its command names
+through a path (TS 29.336's CIR, its User-Identifier holding an
+External-Identifier or an MSISDN and not both), a distinct value of a
+`unique` member in each repeated grouped AVP. A command a
 required member of which the corpus cannot complete is listed in `skipped` (TS
 29.154's ECR under `--policy hole`); an optional one is left out. A command
 printing no application id is sent in application 0.

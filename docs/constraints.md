@@ -1243,6 +1243,130 @@ answers with; Cause-Type's and the other Unsigned32 AVPs' value lists,
 which the clauses do not say are all a sender may send; and Annex A's
 overload control and Annex B's DRMP.
 
+## TS 29.336
+
+TS 29.336 V19.1.0 is read completely for S6m/S6n and S6t: the
+information-element tables of clauses 5.2.1.1, 7.2.1.1, 7.2.2.1 and 7.2.3.1,
+with the procedure clauses for what they state of one message, clauses 6.1
+and 8.1's common aspects, 6.2.2's and 8.2.2's commands, 6.3.3's and 8.3.3's
+result codes and every AVP clause of clauses 6.4 and 8.4. Release 18's copy,
+V18.2.0, holds 158 of the 159 blocks: its Supported-Monitoring-Events table
+ends at bit 8, and it prints no sentence of its own a bits rule could be
+pinned to. SIR and SIA print once under 16777310 for S6m and S6n alike, the
+S6m/S6n Indicator of SIR-Flags telling the MTC-IWF's request from the
+MTC-AAA's (table 6.4.10/1); S6t's commands print once under 16777345, NIR
+and NIA serving both directions, the SCEF's request told apart by its
+NIDD-Authorization-Request and the HSS's by its NIDD-Authorization-Update
+(table 7.2.3.1-1). Whether an S6t External-Identifier names a group the
+User-Identifier's Type-Of-External-Identifier says, which its `* [ AVP ]`
+admits as clause 8.4.36's S6t format prints it, its absence an individual
+UE's identity.
+
+| | |
+|---|---|
+| AVP clauses (clauses 6.4 and 8.4, not their General clauses) | 103 |
+| with something to declare | 41, in 70 blocks |
+| with nothing to declare | 62 |
+| information-element C rows | 16, each stating a condition |
+| the tables' blocks (clauses 5.2.1.1 to 7.2.3.1), M and O rows and each answer's Result among them | 30 |
+| procedure clauses (5.2.1.2 to 5.2.1.4, 7.2.1.2, 7.2.2.2, 7.2.3.2) | 14 blocks |
+| clauses 6.1.4's and 8.1.4's sessions, 8.1.6's routing, 6.1.9's and 8.1.9's Supported-Features, 6.2.2's and 8.2.2's commands, 6.3.3's and 8.3.3's result codes | 24, 1, 8, 8, 4 blocks |
+| blocks | 159: 91 within a command, 38 within a grouped AVP, 30 on an AVP wherever read |
+| readings | 172 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 4: `e164-tbcd` 2 (the SIR's SCS-Identity, IP-SM-GW-Number), `labels` (Service-Selection), `ip-address` (PDN-Connectivity-Status-Report's Served-Party-IP-Address) |
+| `range` | 9: Auth-Session-State NO_STATE_MAINTAINED in each of the 8 commands, PDN-Connectivity-Status-Report's Non-IP-PDN-Type-Indicator TRUE |
+| `exclude` | 1: PDN-Connectivity-Status-Report's PDN-Type IPv4_OR_IPv6 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 41, 12, 13, 13 |
+| `absent` | 24: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in each of the 8 commands |
+| `equals` | 1: the CIR's Origin-Host, the SCEF-ID of its Monitoring-Event-Configuration |
+| reading the request | 10: the SIA's Service-Data after the SIR's Service-ID and its User-Identifier answering S6n, the CIA's User-Identifier, Number-Of-UEs and IMSI-Group-Id as the CIR's group or flags ask, its Monitoring-Event-Config-Status after a Monitoring-Event-Configuration and its Enhanced-Coverage-Restriction-Data after the query, the NIA's NIDD-Authorization-Response answering the HSS's update and holding the IMSI for an MSISDN, its Group-User-Identifier for a group |
+| `default` | 6: Reachability-Type, MONTE-Location-Type, Scheduled-Communication-Time's Time-Of-Day-Start, Type-Of-External-Identifier, Supported-Monitoring-Events, PLMN-ID-Requested |
+| `values` | 1: Maximum-Number-of-Reports at most one for an SMS reachability or a last known location (clause 8.4.8) |
+| `bits` | 16: `only` 12, a flags AVP's NOTE that undefined bits are cleared, Supported-Monitoring-Events' in Release 19 alone; `at-most-one` 4 (Reachability-Type, IMEI-Change, Battery-Indicator's bit 0 against bits 1 and 2) |
+| `members` | 12, each `at-least-one`: User-Identifier not empty, Serving-Node's and Additional-Serving-Node's numbers, the reference IDs of Monitoring-Event-Configuration, AESE-Communication-Pattern and Updated-Network-Configuration, the SCEF's NIDD-Authorization-Request's APN, each Group-User-Identifier's IMSI and MSISDN or External-Identifier, AdditionalIdentifiers, Exclude-Identifiers, Include-Identifiers |
+| `text-only` | 33 |
+
+Clauses 6.1.4 and 8.1.4's session handling and clauses 6.2.2 and 8.2.2's
+Vendor-Specific-Application-Id are read in each of the eight commands as TS
+29.338's clauses 4.5 and 5.3.2.2 are, clause 6.1.4 opening on the MTC-IWF
+and its requirement the application's client's and server's, and clauses
+6.3.3's and 8.3.3's "the Result-Code AVP shall be absent" beside one of their
+three and eight codes in each answer. The tables' "exactly one" identifier
+of a request's User-Identifier (the SIR's, the CIR's) is read through paths
+from the command as at least one of those the row names and no two, the
+MTC-AAA's request holding only the IMSI (clause 5.2.1.4); Serving-Node's and
+Additional-Serving-Node's "The following combinations are allowed" (clauses
+6.4.12 and 6.4.13) member by member as TS 29.338 reads its own, combination g
+naming the IP-SM-GW-Realm TS 29.338's leaves out. A CIR deleting all
+monitoring events carries no new one, a Monitoring-Event-Configuration with
+a reference ID (clause 7.2.1.2); an RIR's report of PDN_CONNECTIVITY_STATUS
+its PDN-Connectivity-Status-Report (clause 8.4.77), read through paths into
+the Monitoring-Event-Reports, any one meeting a condition; and the HSS's NIR
+its Destination-Host (clause 8.1.6). Maximum-Number-of-Reports' conditions
+hold of an absent Reachability-Type or MONTE-Location-Type too, whose
+defaults are the values the clause names (clauses 8.4.12, 8.4.16). The
+blocks with no scope, or within a grouped AVP, hold where TS 29.128 and TS
+29.272 read the AVPs, which they re-use from this document
+([Precedence](#precedence)): Monitoring-Event-Configuration's reference IDs
+and Maximum-Number-of-Reports in T6a's, which TS 29.272's own blocks on the
+AVP set aside in S6a's, Battery-Indicator's bits in S6a's
+Communication-Pattern-Set.
+
+The text-only rules are mostly conditions on the node, a feature, the
+subscription, what the HSS stores or decides, or an earlier message ("if
+available, the MSISDN of the user shall also be returned", "It shall be
+present if the user is not registered in any serving node", "When the
+\"Extended Reference IDs\" feature is supported", "following a previous NIA
+with an incomplete Group User Identifier List"), which node sends a SIR,
+which only the bit itself shows (clauses 5.2.1.3, 5.2.1.4), a request's
+purpose its own AVP's presence tells (AdditionalIdentifiers), and what an
+absent AVP means where that is no value of its own (Reference-ID-Validity-
+Time, Day-Of-Week-Mask, the PLMN lists' Visited-PLMN-Id, an APN-less
+APN-Validity-Time or PDN-Connectivity-Status-Configuration). The rest a
+single message could show but no kind says: External-Identifier's
+identifier, a UE's or a group's of TS 23.003 clauses 19.7.2 and 19.7.3 by
+the interface and Type-Of-External-Identifier, a username@realm text no
+codec reads; Service-Result's Vendor-Id, which turns on which document
+defines a code the base protocol's and 3GPP's share numbers of (5001); two
+values compared (a Suggested-Network-Configuration's reference IDs, the
+NIA's granted validity time against the NIR's requested one); an IPv6
+prefix's low 64 bits; an External Identifier in the NIR, which may be a
+group's whose IMSIs go in the Group-User-Identifier (clause 7.2.3.2 step 4);
+and Time-Of-Day-End's "end of the day", RFC 5777's 86400 or one second
+before it.
+
+The document disagrees with itself where the corpus reads around it: table
+7.2.3.1-1 has the SCEF's NIR hold "either an External Identifier or an
+MSISDN (exactly one, and only one ...)", where clause 7.2.3.2's step 6 and
+NOTE 2 have its User-Identifier contain an IMSI, so only "not both" is read;
+clause 8.4.70 has NIR-Flags' Incomplete Group-User-Identifier-List bit set
+"when the SCEF indicates" that more segments will follow in NIR commands,
+which clause 7.2.3.2's step 6a has the HSS send; clause 7.2.2.3 has the SCEF
+"set Experimental-Result to DIAMETER_SUCCESS", a Result-Code value; clauses
+8.4.84 and 8.4.85 have Exclude-Identifiers and Include-Identifiers "contain
+External Group Identifiers or MSISDNs", where clause 7.2.1.2's step 5 lists
+in them the UEs of a group, read only as at least one of the two AVPs;
+clause 5.2.1.4 has the MTC-AAA "only include the User Identifier IE", beside
+the SIR-Flags its ABNF requires; and Release 18's clause 8.2.6 sends the RIA
+"from the HSS to the SCEF". Left unread: the C and O rows saying only what an
+AVP holds when present and the "may" and "should" sentences (T4-Data's
+"should not be present" for Teleservice Not Provisioned or Call Barred,
+Exclude-Identifiers' "may be included"); clauses 6.1.7 and 8.1.7's
+Capabilities-Exchange AVPs, RFC 6733's commands'; the routing clauses 6.1.6
+and 8.1.6 but the HSS's requests; the procedures' result codes, which are
+what a node answers with; the sentences repeating the ABNF (a grouped AVP's
+required SCEF-Reference-ID "included ... by the sender") or a table row
+(clause 5.2.1.2's Serving-Node left out for an absent user, read at clause
+6.4.8, step 6a's Group-User-Identifier, read in its no-scope block);
+Monitoring-Type's and the other Unsigned32 AVPs' value lists, which the
+clauses do not say are all a sender may send; what a bit or value means
+("This bit shall be set if the SCEF wants to"); the IMSI a User-Name holds,
+which no codec reads; and Annex A's overload control and Annex B's message
+priorities.
+
 ## RFC 6733
 
 RFC 6733 is read for what it says of the base protocol's AVPs and its own
