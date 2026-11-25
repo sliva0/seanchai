@@ -471,32 +471,54 @@ _KEY_LIFETIME = """; Interprets: RFC 6942
 ; Type: Interpreted Constraints
 ; Id: erp-realm-names-the-er-server
 ; AVP: ERP-Realm
-; Section: 8.2
-; Versions: *..*
-"It contains the name of the realm in which the ER server is {where}."
+; Section: {section}
+{versions}"{quote}"
     text-only
 """
+_LOCATED = "It contains the name of the realm in which the ER server is located."
 
 
 @pytest.mark.parametrize(
-    ("where", "error"),
+    ("section", "quote", "versions", "error"),
     [
-        ("located", None),
+        ("8.2", _LOCATED, "", None),
         (
-            "found",
-            "RFC6942.dadx:9: erp-realm-names-the-er-server: clause 8.2 does not print",
+            "8.2",
+            _LOCATED.replace("located", "found"),
+            "",
+            "RFC6942.dadx:8: erp-realm-names-the-er-server: clause 8.2 does not print",
+        ),
+        # Across the break between pages 5 and 6, its footer and header
+        # dropped, and a word broken after its hyphen ("Destination-" over
+        # "Realm") whole.
+        (
+            "4",
+            "If such key is found, the ER server processes the ERP message",
+            "",
+            None,
+        ),
+        ("4", "even if the Destination-Realm is not the same", "", None),
+        (
+            "8.2",
+            _LOCATED,
+            "; Versions: *..*\n",
+            "RFC6942.dadx:4: erp-realm-names-the-er-server: names '; Versions:"
+            " *..*', and the document has one edition and no version",
         ),
     ],
 )
 def test_an_rfc_interpretation_is_held_to_its_clause_on_its_page(
-    tmp_path, where, error
+    tmp_path, section, quote, versions, error
 ):
     """RFC 6942 section 8.2's sentence, wrapped over two lines of the text,
-    is one paragraph's; the block's page is where the section starts."""
+    is one paragraph's, as is section 4's running on across a page break;
+    the block's page is where the section starts. An RFC has no version, so
+    a block names no `; Versions:`."""
     interpretations = tmp_path / "interpretations"
     interpretations.mkdir()
     (interpretations / "RFC6942.dadx").write_text(
-        _KEY_LIFETIME.format(where=where), encoding="utf-8"
+        _KEY_LIFETIME.format(section=section, quote=quote, versions=versions),
+        encoding="utf-8",
     )
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
@@ -530,7 +552,9 @@ def test_an_rfc_interpretation_is_held_to_its_clause_on_its_page(
     if error is None:
         assert outcome.error is None
         text = (output / "rfc" / "rfc6942.dad").read_text(encoding="utf-8")
-        assert "; AVP: ERP-Realm\n; Section: 8.2\n; Page: 13\n" in text
+        page = {"8.2": 13, "4": 5}[section]
+        assert f"; AVP: ERP-Realm\n; Section: {section}\n; Page: {page}\n" in text
+        assert "; Versions:" not in text
     else:
         assert outcome.status == "failed"
         assert error in (outcome.error or "")

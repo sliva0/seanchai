@@ -1100,12 +1100,14 @@ for message in s6a.messages:
   7.3.43's rules on RFC 4004's MIP-Home-Agent-Host bind S6a's commands, not
   RFC 4004's AA-Mobile-Node-Request.
   `Grouped.member_constraints` holds what it read of the grouped AVP's
-  members, `Message.constraints` of the command's.
+  members, each member it reads as it says and the others as the origin
+  does, `Message.constraints` of the command's.
 - A `model.Constraint` has the `avp`, its scope (`command`,
   `application_id` and `command_section`, or `within`), `request_section`,
   the clause of the request an answer's rules read, `reference`, `version`,
   `section`, `table` and `page`, `versions`, the range of versions the
-  quotes were checked against, and `readings`, each an `ast.Reading` of
+  quotes were checked against (None for an RFC, which has one edition and
+  no version), and `readings`, each an `ast.Reading` of
   `quotes` and `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`,
   `EncodingRule`, `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`,
   `UniqueRule`, `ValuesRule`, `EqualsRule`, `AbsentRule`, `TextOnly`). A

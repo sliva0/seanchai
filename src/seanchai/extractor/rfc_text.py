@@ -2602,7 +2602,12 @@ def clause_texts(
     whitespace collapsed, patched as `extract` reads them, by section number;
     and the page each section starts on. What an interpreted constraint's
     quotes are checked against (`dad.interpretations.check_quotes`), and its
-    page read from (`dad.interpretations.paged`)."""
+    page read from (`dad.interpretations.paged`).
+
+    A paragraph runs on across a page break (`_runs_on`), the blank lines the
+    page's furniture leaves no end of it, and a line ending in a word's
+    hyphen joins the next with none between: RFC 6733 clause 2.1.1 breaks
+    "out-of-" before "order"."""
     with boundary(f"reading {text_path}"):
         raw = Path(text_path).read_text(encoding="utf-8").splitlines()
         specification = _specification(raw)
@@ -2615,16 +2620,61 @@ def clause_texts(
         lines, headings = _content_lines(raw, patcher)
         texts: dict[str, list[str]] = {}
         pages: dict[str, int] = {}
-        for section in _doc_sections(lines, headings):
-            paragraphs: list[str] = []
-            current: list[str] = []
-            for line in [*section.texts, ""]:
-                if line.strip():
-                    current.append(line.strip())
-                elif current:
-                    paragraphs.append(" ".join(" ".join(current).split()))
-                    current = []
-            texts.setdefault(section.number, []).extend(paragraphs)
-            if section.page is not None:
-                pages.setdefault(section.number, section.page)
+        section: str | None = None
+        current: list[_Line] = []
+        blank = False
+
+        def close(section: str | None) -> None:
+            if current and section is not None:
+                texts.setdefault(section, []).append(_joined(current))
+            current.clear()
+
+        for line in lines:
+            heading = _HEADING_RE.match(line.text)
+            if heading is not None and headings.get(heading["number"]) is line:
+                close(section)
+                number: str = heading["number"]
+                section = number
+                texts.setdefault(number, [])
+                if line.page is not None:
+                    pages.setdefault(number, line.page)
+                blank = False
+                continue
+            if not line.text.strip():
+                blank = True
+                continue
+            if blank and current and not _runs_on(current[-1], line):
+                close(section)
+            blank = False
+            current.append(line)
+        close(section)
         return texts, pages
+
+
+# The width RFC 7322 section 4.3 fills a line to.
+_RFC_LINE_WIDTH = 72
+
+
+def _runs_on(last: _Line, line: _Line) -> bool:
+    """Whether `line`, after blank lines, continues the paragraph `last`
+    ends: only across a page break, at the paragraph's indent, where `last`
+    was filled, the next word not fitting on it."""
+    if last.page == line.page or last.page is None:
+        return False
+    indent = len(line.text) - len(line.text.lstrip())
+    if indent != len(last.text) - len(last.text.lstrip()):
+        return False
+    word = line.text.split()[0]
+    return len(last.text.rstrip()) + 1 + len(word) > _RFC_LINE_WIDTH
+
+
+def _joined(lines: Sequence[_Line]) -> str:
+    """A paragraph's lines as one, whitespace collapsed, a line ending in a
+    word's hyphen ("out-of-") joining the next with no space."""
+    text = ""
+    for line in lines:
+        part = line.text.strip()
+        if text and not (text[-1] == "-" and text[-2:-1].isalnum()):
+            text += " "
+        text += part
+    return " ".join(text.split())

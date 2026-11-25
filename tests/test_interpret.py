@@ -345,18 +345,6 @@ def test_a_condition_names_every_value_a_table_holds():
             id="two-scopes",
         ),
         pytest.param(
-            _dad(
-                "; Type: Interpreted Constraints",
-                "; AVP: Example",
-                "; Section: 6.3.2",
-                '"Q."',
-                "    range 1",
-            ),
-            6,
-            "missing directive 'Versions'",
-            id="versions",
-        ),
-        pytest.param(
             _block(
                 '"Q."',
                 "    range 1",
@@ -418,9 +406,10 @@ def _written(
     avp: str = "Example-Number",
     section: str = "6.3.2",
     scope: tuple[str, ...] = (),
-    versions: str = "19.0.0",
+    versions: str | None = "19.0.0",
 ) -> str:
-    """One block of an interpretations file, as a person writes it."""
+    """One block of an interpretations file, as a person writes it; with no
+    `versions`, an RFC's, no `; Versions:`."""
     return "\n".join(
         (
             "; Type: Interpreted Constraints",
@@ -428,7 +417,7 @@ def _written(
             f"; AVP: {avp}",
             *scope,
             f"; Section: {section}",
-            f"; Versions: {versions}",
+            *(() if versions is None else (f"; Versions: {versions}",)),
             *(body or ('"It is a number."', "    encoding e164-tbcd")),
         )
     )
@@ -623,7 +612,7 @@ def _interpret(
     avp: str = "Example-Number",
     section: str = "6.3.2",
     scope: tuple[str, ...] = (),
-    versions: str = "19.0.0",
+    versions: str | None = "19.0.0",
 ) -> interpretations.Interpretation:
     """One block, as an interpretations file at `path` writes it."""
     text = _dadx(
@@ -671,6 +660,22 @@ def test_an_interpretation_applies_only_in_a_release_its_range_spans():
         correction,
         widened,
     ]
+
+
+def test_an_interpretation_names_a_range_only_where_its_document_has_versions():
+    """An RFC has one edition and no `; Version:`, and its file's blocks no
+    `; Versions:`, which reads and writes back as absent; a 3GPP document's
+    block naming none, or an RFC's naming one, is refused."""
+    unversioned = _interpret(versions=None, path=Path("TS29.999.dadx"))
+    tree, _ = interpretations.parse(_dadx(_written(versions=None)))
+    assert tree.sections[0].versions is None
+    assert "; Versions:" not in formatter.format_interpretations(tree)
+
+    assert corrections.in_release([unversioned], None) == [unversioned]
+    with pytest.raises(CorrectionError, match="names no '; Versions:'"):
+        corrections.in_release([unversioned], "19.0.0")
+    with pytest.raises(CorrectionError, match="one edition and no version"):
+        corrections.in_release([_interpret()], None)
 
 
 def test_an_interpretation_stands_beside_the_clause_it_reads():
@@ -895,6 +900,27 @@ def test_a_quote_is_held_to_its_clause_and_its_page_read_from_the_copy():
     assert interpretations.paged(item, {"6.3.2": 13}).node.source.page == 13
     assert interpretations.paged(item, {}).page is None
     assert interpretations.paged(item, None) is item
+
+
+def test_a_quote_may_be_what_a_clause_above_prints_for_its_subclauses():
+    """RFC 6733 clause 10 gives the symbols clause 10.1's table uses: a
+    block reading the table quotes both, and a block reading clause 10
+    quotes nothing of 10.1."""
+    clauses = {
+        "10": ["0 The AVP MUST NOT be present in the message."],
+        "10.1": ["Example-Number |0 |"],
+    }
+    table = _interpret(
+        '"0 The AVP MUST NOT be present in the message."',
+        '"Example-Number |0 |"',
+        "    text-only",
+        section="10.1",
+    )
+    above = _interpret('"Example-Number |0 |"', "    text-only", section="10")
+
+    interpretations.check_quotes([table], clauses)
+    with pytest.raises(CorrectionError, match="clause 10 does not print"):
+        interpretations.check_quotes([above], clauses)
 
 
 @pytest.mark.sources
@@ -1260,6 +1286,107 @@ def test_the_model_and_the_dictionary_carry_the_reading_documents_constraints(
         ("Example-Number", "Example-Group", ("10415:2",)),
     ]
     assert cited.read_through == "TS29.999" and origin.read_through == "TS29.998"
+
+
+_GROUP_ORIGIN = """\
+; Specification: 3GPP TS 29.998
+; Version: 19.0.0
+; Vendor-ID: 10415
+
+
+; Type: AVP Table
+; Section: 6.3.1
+; Columns: Name     Code   Section   Type         Must
+Example-Group       2      6.3.3     Grouped      V
+Example-Number      1      6.3.4     Unsigned32   V
+Example-Flags       3      6.3.5     Unsigned32   V
+
+
+; Type: Grouped AVP
+; Name: Example-Group
+; Section: 6.3.3
+Example-Group ::= < AVP header: 2 10415 >
+        [ Example-Number ]
+        [ Example-Flags ]
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Number
+; Within: Example-Group
+; Section: 6.3.3
+; Versions: 19.0.0
+"The number is never zero."
+    exclude 0
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Flags
+; Within: Example-Group
+; Section: 6.3.3
+; Versions: 19.0.0
+"The flags are never zero."
+    exclude 0
+"""
+
+_GROUP_CITING = """\
+; Specification: 3GPP TS 29.999
+; Version: 19.0.0
+; Vendor-ID: 10415
+
+
+; Type: Message
+; Name: Example-Request, EXR
+; Section: 6.1.1
+<Example-Request> ::= < Diameter Header: 9, REQ, 99 >
+        < Session-Id >
+        [ Example-Group ]
+
+
+; Type: Reused AVPs
+; Section: 6.3.1
+; Columns: Name     From
+Example-Group       TS29.998
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Flags
+; Within: Example-Group
+; Section: 6.3.1
+; Versions: 19.0.0
+"Within the group the flags are 1 to 3."
+    range 1..3
+"""
+
+
+def test_a_document_reading_a_member_sets_aside_its_origins_reading_of_it_alone(
+    tmp_path,
+):
+    """TS 29.999 reads Example-Flags within TS 29.998's Example-Group, and
+    not Example-Number: its reading of the flags replaces the origin's, and
+    the origin's of the number holds in it still."""
+    from seanchai.corpus import Corpus
+    from seanchai.model import Grouped, HolePolicy, Model
+
+    for name, text in (
+        ("29998-j00.dad", _GROUP_ORIGIN),
+        ("29999-j00.dad", _GROUP_CITING),
+    ):
+        (tmp_path / name).write_text(text, "utf-8")
+    built = Model.build(Corpus.load(tmp_path), holes=HolePolicy.ANY)
+
+    cited = built.resolve("TS29.999", "Example-Group")
+    origin = built.resolve("TS29.998", "Example-Group")
+    assert isinstance(cited, Grouped) and isinstance(origin, Grouped)
+    assert [
+        (each.reference, each.avp, each.rules) for each in cited.member_constraints
+    ] == [
+        ("TS29.998", "Example-Number", (ast.ExcludeRule(values=(0,)),)),
+        ("TS29.999", "Example-Flags", (ast.RangeRule(low=1, high=3),)),
+    ]
+    assert [each.avp for each in origin.member_constraints] == [
+        "Example-Number",
+        "Example-Flags",
+    ]
 
 
 def test_the_linter_asks_a_command_printed_twice_for_its_clause():

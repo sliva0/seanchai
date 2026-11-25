@@ -184,6 +184,7 @@ def lint_interpretations(
             continue
         if ast.spec_ref(entry.spec.specification) != reference:
             continue
+        interpretations.check_versions(declared, entry.spec.version)
         held = [
             item
             for item in declared

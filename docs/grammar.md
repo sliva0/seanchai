@@ -702,7 +702,7 @@ interpreted-constraints = "; Type: Interpreted Constraints" NL
                           "; Section: " section-number NL
                           ["; Table: " inline-text NL]
                           ["; Page: " 1*DIGIT NL]
-                          "; Versions: " versions NL
+                          ["; Versions: " versions NL]  ; none for an RFC
                           1*reading
 versions      = version-bound [".." version-bound]
 version-bound = version / "*"
@@ -799,7 +799,9 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
 - A quote is one or more sentences of the clause, or an information
   element's description where `; Table:` names its table, as printed once
   whitespace is collapsed; `\"` and `\\` are its escapes. `; Versions:` is
-  the range of the document's versions the quotes were checked against.
+  the range of the document's versions the quotes were checked against; a
+  block of a document with one edition and no `; Version:`, an RFC, names
+  none, and every other block names one.
 - `length` counts the payload's octets, the digits an encoding carries, or a
   text's characters. `range` and `exclude` bound an integer value.
 - `encoding` names the layout, one of a closed set of codecs

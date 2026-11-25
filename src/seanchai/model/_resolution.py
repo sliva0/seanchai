@@ -356,10 +356,23 @@ class _Resolver:
             members = tuple(
                 each for each in view.constraints if each.within == found.name
             )
+            # A member the reading document reads is read as it says, the
+            # origin's reading of it set aside; the origin's of the other
+            # members stand: TS 32.299 reads Vendor-Id within RFC 6733's
+            # Vendor-Specific-Application-Id, and RFC 6733's own rule on its
+            # Auth-Application-Id holds there still.
+            read = {each.avp for each in members}
             found = replace(
                 found,
                 constraints=own or found.constraints,
-                member_constraints=members or found.member_constraints,
+                member_constraints=(
+                    *(
+                        each
+                        for each in found.member_constraints
+                        if each.avp not in read
+                    ),
+                    *members,
+                ),
             )
             if (own or members) and found.reference != view.entry.reference:
                 # A document's readings of an AVP it re-uses hold where it

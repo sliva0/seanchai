@@ -215,7 +215,7 @@ def _directives(
         lines.extend(
             notes.line(f"; Values: {section.values_source}", (*path, "values_source"))
         )
-    if isinstance(section, ast.InterpretedConstraints):
+    if isinstance(section, ast.InterpretedConstraints) and section.versions is not None:
         lines.extend(notes.line(f"; Versions: {section.versions}", (*path, "versions")))
     return lines
 

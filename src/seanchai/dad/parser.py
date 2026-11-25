@@ -1299,7 +1299,8 @@ def _parse_interpreted_constraints(
     request_section = directives.pop("Request-Section", None)
     within = directives.pop("Within", None)
     table = directives.pop("Table", None)
-    versions = _pop(directives, "Versions", lineno)
+    # Absent for a document with no version, an RFC.
+    versions = directives.pop("Versions", None)
     source = _source_ref(directives, lineno)
     _no_leftovers(directives, lineno)
     number = None
@@ -1324,8 +1325,9 @@ def _parse_interpreted_constraints(
                 item_lineno,
                 f"expected a quote or an indented rule, got {line.strip()!r}",
             )
-    with _validated(versions.lineno):
-        _VERSIONS_TEXT.validate_python(versions.value)
+    if versions is not None:
+        with _validated(versions.lineno):
+            _VERSIONS_TEXT.validate_python(versions.value)
     with _validated(lineno):
         return ast.InterpretedConstraints(
             avp=avp.value,
@@ -1336,7 +1338,7 @@ def _parse_interpreted_constraints(
             within=None if within is None else within.value,
             table=None if table is None else table.value,
             source=source,
-            versions=versions.value,
+            versions=None if versions is None else versions.value,
             body=tuple(items),
         )
 

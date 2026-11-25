@@ -51,7 +51,7 @@ from .._versions import (
 )
 from . import ast, formatter
 from ._errors import CorrectionError
-from .interpretations import Interpretation
+from .interpretations import Interpretation, check_versions
 
 __all__ = [
     "UNSPECIFIED",
@@ -1587,7 +1587,12 @@ def in_release(
     range spans (`_versions.spans`): whether a clause prints a sentence is a
     fact of each copy, which `seanchai corpus regenerate --expand-ranges`
     checks before widening a range to another release (`offered`).
+    An interpretation of a document with versions names its range, and one
+    of a document with none, an RFC, names none (`check_versions`).
     """
+    check_versions(
+        [item for item in declarations if isinstance(item, Interpretation)], version
+    )
     release = reviewed_release(
         [
             VersionRange.parse(item.versions)

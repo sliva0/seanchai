@@ -251,7 +251,8 @@ class Constraint(_Model):
     `avp_ids` are the readings carrying it: the AVP's own, the grouped AVP's
     for `within`, and the command's members of that name for `command`.
     `versions` is the range of the document's
-    versions the quotes were checked against."""
+    versions the quotes were checked against, null for a document with no
+    version, an RFC."""
 
     interpreted: Literal[True]
     avp: str
@@ -266,7 +267,7 @@ class Constraint(_Model):
     section: str
     table: str | None
     page: int | None
-    versions: str
+    versions: str | None
     readings: tuple[Reading, ...]
 
 

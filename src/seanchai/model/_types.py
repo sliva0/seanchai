@@ -139,7 +139,8 @@ class Constraint(_Plain):
     the block names, else the one print of the request under the answer's
     application, None where the block reads no request or the document
     prints none or several. `versions` is
-    the range of the document's versions the quotes were checked against.
+    the range of the document's versions the quotes were checked against,
+    None for a document with no version, an RFC.
     """
 
     avp: str
@@ -152,7 +153,7 @@ class Constraint(_Plain):
     application_id: int | None
     command_section: str | None
     within: str | None
-    versions: str
+    versions: str | None
     readings: tuple[ast.Reading, ...]
     request_section: str | None = None
     interpreted: bool = True

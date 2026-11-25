@@ -1860,7 +1860,8 @@ class Reading(Node):
 
 
 # `; Versions:` — the versions a block was read against, as a declaration's
-# range: "19.6.0", "19.0.0..19.6.0", `*` for an open bound.
+# range: "19.6.0", "19.0.0..19.6.0", `*` for an open bound. A document with no
+# version axis, an RFC, has none to name.
 VersionsText = Annotated[
     str, Field(pattern=r"^(\*|\d+(\.\d+)*)(\.\.(\*|\d+(\.\d+)*))?$")
 ]
@@ -1883,7 +1884,8 @@ class InterpretedConstraints(Node):
     `request_section` where the document prints it more than once there.
     `table` names the table printing the quote, an information element's
     description. `versions` is the range of document versions the quotes
-    were checked against.
+    were checked against, None for a document that has one edition and no
+    version, an RFC, whose `.dad` prints no `; Version:`.
 
     Only the document's interpretations file writes the block
     (`InterpretationBlock`, merged in as the corrections are applied), so
@@ -1900,7 +1902,7 @@ class InterpretedConstraints(Node):
     within: AvpName | None = None
     table: TableLabel | None = None
     source: SourceRef
-    versions: VersionsText
+    versions: VersionsText | None = None
     # Quotes and rules, in reading order: each run of quotes is followed by
     # the rules read from it.
     body: Annotated[tuple[Quote | ConstraintRule, ...], Field(min_length=2)]

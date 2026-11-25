@@ -79,7 +79,9 @@ class Interpretation:
 
     @property
     def versions(self) -> str:
-        return self.block.versions
+        """The block's range, every version where its document has none (an
+        RFC's block names no `; Versions:`, `check_versions`)."""
+        return self.block.versions or "*..*"
 
     @property
     def readings(self) -> tuple[ast.Reading, ...]:
@@ -190,22 +192,60 @@ def _normalize(text: str) -> str:
     return " ".join(text.replace("\xa0", " ").split())
 
 
+def _enclosing(section: str) -> list[str]:
+    """`section` and each clause containing it, nearest first: a quote may
+    be what a clause above prints for its subclauses, as RFC 6733 clause 10
+    gives the symbols of clause 10.1's table, "0 The AVP MUST NOT be present
+    in the message".
+    """
+    parts = section.split(".")
+    return [".".join(parts[:count]) for count in range(len(parts), 0, -1)]
+
+
+def check_versions(declared: Sequence[Interpretation], version: str | None) -> None:
+    """Check that every block of `declared` names the range of versions its
+    quotes were checked against where its document, at `version`, has
+    versions, and none where it has one edition and no version, an RFC.
+
+    Raises `CorrectionError` naming every block that does not, at its line.
+    """
+    misses = []
+    for each in declared:
+        if version is None and each.block.versions is not None:
+            misses.append(
+                f"{each.at()}: names '; Versions: {each.block.versions}', and"
+                " the document has one edition and no version"
+            )
+        elif version is not None and each.block.versions is None:
+            misses.append(
+                f"{each.at()}: names no '; Versions:', the range of the"
+                " document's versions its quotes were checked against"
+            )
+    if misses:
+        raise CorrectionError("; ".join(misses))
+
+
 def check_quotes(
     declared: Sequence[Interpretation], clauses: Mapping[str, Sequence[str]]
 ) -> None:
     """Check every quote of `declared` against the text of its clause:
     `clauses` maps a clause number to its paragraphs and table cells, as the
-    extractor read and normalized them. A quote must be within one of them.
+    extractor read and normalized them. A quote must be within one of them,
+    or of a clause containing it (`_enclosing`).
 
     Raises `CorrectionError` naming every miss with its file and line, as a
     correction's `expect` fails once upstream changes.
     """
     misses = []
     for each in declared:
-        texts = clauses.get(each.section)
-        if texts is None:
+        if each.section not in clauses:
             misses.append(f"{each.at()}: the document has no clause {each.section}")
             continue
+        texts = [
+            text
+            for clause in _enclosing(each.section)
+            for text in clauses.get(clause, ())
+        ]
         for index, item in enumerate(each.block.body):
             if not isinstance(item, ast.Quote):
                 continue

@@ -27,7 +27,8 @@ from the printed facts, so a consumer can weigh it:
   fails when the document no longer prints it, as a correction does when the
   document is fixed. The block's page is the clause's in that copy's PDF.
 - `; Versions:` is the range of the document's versions the reading was
-  checked against. A reading is carried to another release's copy only once
+  checked against. An RFC has one edition and no version, and its blocks
+  name none. A reading is carried to another release's copy only once
   its sentences are found there, and is otherwise left out of that copy: of
   TS 29.272's 157, Release 18's copy holds 152
   ([below](#the-interpretations-file)).
@@ -381,8 +382,10 @@ TS 29.128's 10 name 10 entries, of which 5 check something:
   AVP wherever it appears, or else its origin's, as value tables are; a
   document's rules on an AVP it re-uses make its reading one of its own,
   read through it, so they hold where that document reads the AVP;
-  `Grouped.member_constraints` what it read of the grouped AVP's members;
+  `Grouped.member_constraints` what it read of the grouped AVP's members,
+  and the origin's of the members it does not read;
   `Message.constraints` what it read of the command's members.
+  ([Precedence](#precedence) says which document's rules hold where.)
   `Model.constraints(reference)` lists a document's. Each is a
   `model.Constraint` with its `readings` (`ast.Reading`: quotes and rules),
   clause, page, table and `versions`
@@ -405,6 +408,23 @@ TS 29.128's 10 name 10 entries, of which 5 check something:
   a `default` breaks nothing on the wire
   ([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)).
 
+## Precedence
+
+A rule belongs to the document whose clause it reads, and holds where that
+document's reading reaches: a block on a command, the command's print; a
+block within a grouped AVP, that AVP wherever the document reads it; a
+block with no scope, the AVP wherever the document reads it. A document
+reading an AVP or grouped AVP another defines reads the origin's rules with
+it, unless it reads that AVP itself, in the same scope: its blocks on the
+AVP with no scope set aside the origin's with no scope, and its blocks on a
+member within the grouped AVP the origin's on that member. So RFC 6733's
+reading of Vendor-Specific-Application-Id's Auth-Application-Id holds in
+TS 32.299, which reads only its Vendor-Id there, and a document that says
+otherwise of an AVP than its origin does writes its own reading of it,
+which is the one checked where it reads the AVP. A block on a command never
+reaches another document's print of it: RFC 6733's rules on its STR bind
+no application's own Session-Termination-Request.
+
 ## The interpretations file
 
 A document's interpretations are written in `edits/interpretations/`, one
@@ -413,8 +433,9 @@ file per document named by its reference with the suffix `.dadx`:
 ([grammar.md](grammar.md#interpretations-files)); the suffix keeps the corpus
 loaders and `--with`, which read `*.dad`, from taking the file for a
 document. It holds a `; Interprets:` header naming the document as its
-`; Specification:` does, then the blocks, in the document's clause order, so
-a reviewer reads it beside the specification:
+`; Specification:` does (`3GPP TS 29.272`, `RFC 6733`), then the blocks,
+in the document's clause order, so a reviewer reads it beside the
+specification:
 
 ```dad
 ; Interprets: 3GPP TS 29.272
@@ -434,7 +455,9 @@ a reviewer reads it beside the specification:
   `; Application-ID:`, `; Command-Section:` and `; Request-Section:`,
   `; Section:`, `; Table:`),
   the quotes and the rules, and `; Versions:`, the range the quotes were
-  checked against. `; Application-ID:` names the application of the
+  checked against, which an RFC's file, with no version to name, leaves out
+  (a block naming one, or a 3GPP block naming none, is refused).
+  `; Application-ID:` names the application of the
   command's print: its header's id, or where the header names none, the
   one the application scope covering its clause gives it, as TS 29.212's
   Gx and Gxx prints of CC-Request take theirs. `; Command-Section:` names
@@ -458,9 +481,15 @@ the document's corrections:
   block whose clause sorts at or before its own, in the order written: a
   block reading clause 7.3.9 follows clause 7.3.8's, and one reading an
   information element's description follows its table.
-- Every quote must be within one paragraph or table cell of its clause once
-  whitespace is collapsed, as the extractor reads it; an RFC's quote within
-  one paragraph, its lines joined. A miss fails the document, naming the
+- Every quote must be within one paragraph or table cell of its clause, or
+  of a clause containing it (RFC 6733 clause 10 prints the symbols of clause
+  10.1's table), once whitespace is collapsed, as the extractor reads it;
+  an RFC's quote within one paragraph, its lines joined, a word its hyphen
+  breaks across a line
+  ("out-of-" over "order") joined whole, and a paragraph running on across
+  a page break, its running footer and header dropped, where its last line
+  before the break was filled to 72 columns and the next line keeps its
+  indent. A miss fails the document, naming the
   file and line of the quote:
   `edits/interpretations/TS29.272.dadx:435: imei-digits: clause 7.3.4 does
   not print 'It should consist of 16 digits, ...'`. A transcription has no
