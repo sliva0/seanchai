@@ -578,6 +578,18 @@ Communication-Failure-Information ::= < AVP header: 4300 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Cause-Type
+; Kind: values
+; Section: 6.4.5
+; Page: 44
+RADIO_NETWORK_LAYER = 0
+TRANSPORT_LAYER     = 1
+NAS                 = 2
+PROTOCOL            = 3
+MISCELLANEOUS       = 4
+
+
 ; Type: Grouped AVP
 ; Name: Number-Of-UE-Per-Location-Configuration
 ; Section: 6.4.11
@@ -610,6 +622,16 @@ MONTE                    = 0 ; O
 NIDD                     = 1 ; O
 Filtering                = 2 ; O
 "Extended Reference IDs" = 3 ; O
+
+
+; Type: Value Table
+; AVP: Connection-Action
+; Kind: values
+; Section: 6.4.18
+; Page: 47
+CONNECTION_ESTABLISHMENT = 0
+CONNECTION_RELEASE       = 1
+CONNECTION_UPDATE        = 2
 
 
 ; Type: Grouped AVP
@@ -671,3 +693,12 @@ Idle-Status-Indication ::= < AVP header: 4322 10415 >
         [ eDRX-Cycle-Length ]
         [ DL-Buffering-Suggested-Packet-Count ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Reachability-Cause
+; Kind: values
+; Section: 6.4.35
+; Page: 50
+CHANGE_TO_CONNECTED_MODE = 0
+REACHABLE_FOR_PAGING     = 1

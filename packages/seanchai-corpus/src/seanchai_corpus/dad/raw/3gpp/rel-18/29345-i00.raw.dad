@@ -715,6 +715,22 @@ Assistance-Info ::= < AVP header: 3802 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Discovery-Type
+; Kind: values
+; Section: 6.3.5
+; Page: 45
+ANNOUNCING_REQUEST_FOR_OPEN_PROSE_DIRECT_DISCOVERY                  = 0
+MONITORING_REQUEST_FOR_OPEN_PROSE_DIRECT_DISCOVERY                  = 1
+ANNOUNCING_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY            = 2
+MONITORING_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY            = 3
+DISCOVEREE_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY            = 4
+DISCOVERER_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY            = 5
+DISCOVERER_ANNOUNCING_REQUEST_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY = 6
+MONITORING_UPDATE_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY             = 7
+MONITORING_RESPONSE_FOR_RESTRICTED_PROSE_DIRECT_DISCOVERY           = 8
+
+
 ; Type: Grouped AVP
 ; Name: Match-Report
 ; Section: 6.3.12
@@ -826,6 +842,16 @@ Location-Update-Trigger ::= < AVP header: 3823 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Location-Update-Event-Type
+; Kind: values
+; Section: 6.3.43
+; Page: 51
+UE_AVAILABLE      = 0
+CHANGE_OF_AREA    = 1
+PERIODIC_LOCATION = 2
+
+
 ; Type: Grouped AVP
 ; Name: Change-Of-Area-Type
 ; Section: 6.3.44
@@ -835,6 +861,16 @@ Change-Of-Area-Type ::= < AVP header: 3825 10415 >
         { Report-Cardinality }
         [ Minimum-Interval-Time ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Location-Update-Event-Trigger
+; Kind: values
+; Section: 6.3.45
+; Page: 52
+UE_ENTRY    = 0
+UE_EXIT     = 1
+UE_PRESENCE = 2
 
 
 ; Type: Enumerated AVP
@@ -977,6 +1013,14 @@ Code-Sending-Security-Material ::= < AVP header: 3847 10415 >
         [ DUCK ]
         [ Encrypted-Bitmask ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: MIC-Check-Indicator
+; Kind: values
+; Section: 6.3.80
+; Page: 59
+MIC_CHECK_BY_PROSE_FUNCTION = 1
 
 
 ; Type: Grouped AVP

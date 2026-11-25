@@ -1157,12 +1157,14 @@ absent" beside one of its twelve codes in each answer, TS 29.172's
 DIAMETER_ERROR_UNREACHABLE_USER (4221) among them. Clause 5.2.2's report
 contents are read within Monitoring-Event-Report, as the document prints
 its body: the event a report carries is its Monitoring-Type, TS 29.336's
-Unsigned32, whose values the corpus does not read and the rules write as
-numbers, so a location report (2) carries its EPS-Location-Information, a
-communication failure's (5) its Communication-Failure-Information, and a
-reachability report (1, or 8 without an Idle-Status-Indication, its NOTE
-says) Reachability-Information REACHABLE_FOR_DATA (1). Connection-Action is
-an Unsigned32 too, its CONNECTION_ESTABLISHMENT written 0.
+Unsigned32, whose values clause 8.4.7 names, so a location report
+(LOCATION_REPORTING) carries its EPS-Location-Information, a communication
+failure's (COMMUNICATION_FAILURE) its Communication-Failure-Information, and
+a reachability report (UE_REACHABILITY, or UE_REACHABILITY_AND_IDLE_STATUS_
+INDICATION without an Idle-Status-Indication, its NOTE says)
+Reachability-Information REACHABLE_FOR_DATA, written 1 in a `values` rule.
+Connection-Action is an Unsigned32 too, clause 6.4.18 naming
+CONNECTION_ESTABLISHMENT.
 
 The text-only rules are mostly conditions on the node, a feature, the
 subscription or what a node needs to send ("if present in the subscription

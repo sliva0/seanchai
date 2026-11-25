@@ -1558,20 +1558,39 @@ def _answer_messages(sections: list[_DocSection]) -> list[ast.AnswerMessage]:
     return found
 
 
+# The integer types whose clause may list values as an enumerated one does.
+_INTEGER_TYPES = frozenset(
+    {
+        ast.DataType.UNSIGNED32,
+        ast.DataType.UNSIGNED64,
+        ast.DataType.INTEGER32,
+        ast.DataType.INTEGER64,
+    }
+)
+# A clause whose numbers are an integer's bits or flags, not its values: RFC
+# 6733 clause 8.17's Session-Binding, "This field is a bit mask", RFC 4004
+# clause 7.5's MIP-Feature-Vector, "Flag values currently defined".
+_FLAGS_RE = re.compile(r"\bbit ?mask\b|\bflag values\b", re.IGNORECASE)
+
+
 def _extract_definitions(
     sections: list[_DocSection],
     tables: tuple[ast.AvpTable, ...],
     warnings: list[str],
     quirks: sources.Quirks | None = None,
     commented: list[tuple[ast.Message | ast.GroupedAvp, _BodyNotes]] | None = None,
+    listed: list[ast.ValueTable] | None = None,
 ) -> tuple[list[ast.Message], list[ast.GroupedAvp | ast.EnumeratedAvp]]:
     """Messages, grouped and enumerated AVPs from the definition sections.
 
     A value list is a definition only when the AVP table types its section's AVP
-    as Enumerated, as in the docx extractor. A value list under another ` AVP`
-    section is dropped with a warning (RFC 8581 extending RFC 7683's
-    `OC-Report-Type`); one under a prose-named section is dropped silently (RFC
-    6733 §7.1.x lists Result-Code's values, and Result-Code is Unsigned32).
+    as Enumerated, as in the docx extractor. Under an ` AVP` section the table
+    types an integer it is that AVP's `values` table, appended to `listed`
+    (RFC 6733 clause 6.10's Inband-Security-Id, "NO_INBAND_SECURITY 0"); under
+    another ` AVP` section it is dropped with a warning (RFC 8581 extending RFC
+    7683's `OC-Report-Type`); one under a prose-named section is dropped
+    silently (RFC 6733 §7.1.x lists Result-Code's values, and Result-Code is
+    Unsigned32).
     """
     messages: list[ast.Message] = []
     definitions: list[ast.GroupedAvp | ast.EnumeratedAvp] = []
@@ -1580,6 +1599,12 @@ def _extract_definitions(
         for table in tables
         for row in table.rows
         if row.data_type is ast.DataType.ENUMERATED
+    }
+    integer_rows = {
+        row.name
+        for table in tables
+        for row in table.rows
+        if row.data_type in _INTEGER_TYPES
     }
     defined_enums: set[str] = set()
     for section in sections:
@@ -1700,6 +1725,25 @@ def _extract_definitions(
             else None
         )
         if not values and values_source is None:
+            continue
+        if (
+            row is None
+            and title["name"] in integer_rows
+            and values
+            and not any(_FLAGS_RE.search(text) for text in section.texts)
+        ):
+            if listed is not None:
+                listed.append(
+                    ast.ValueTable(
+                        avp=title["name"],
+                        kind=ast.ValueKind.VALUES,
+                        source=source,
+                        rows=tuple(
+                            ast.ValueRow(name=value.name, value=value.value)
+                            for value in values
+                        ),
+                    )
+                )
             continue
         if row is None or row.code is None:
             if title["avp_suffix"]:
@@ -2450,9 +2494,13 @@ def extract_with_comments(
                 )
             tables = tuple(completed)
         commented: list[tuple[ast.Message | ast.GroupedAvp, _BodyNotes]] = []
+        listed: list[ast.ValueTable] = []
         messages, definitions = _extract_definitions(
-            document_sections, tables, warnings, quirks, commented
+            document_sections, tables, warnings, quirks, commented, listed
         )
+        bit_tables = _bit_tables(document_sections)
+        # A clause naming its bits is read as their table, not a value list.
+        bitmasks = {(table.avp, table.source.section) for table in bit_tables}
         reused = (
             _prose_avp_origins(document_sections, tables, quirks)
             if quirks.enabled("prose-avp-origins")
@@ -2466,7 +2514,12 @@ def extract_with_comments(
             (
                 *definitions,
                 *_result_tables(document_sections),
-                *_bit_tables(document_sections),
+                *bit_tables,
+                *(
+                    table
+                    for table in listed
+                    if (table.avp, table.source.section) not in bitmasks
+                ),
                 *reused,
             ),
             key=lambda definition: ast.section_sort_key(definition.source.section),

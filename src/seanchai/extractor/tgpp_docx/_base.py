@@ -182,6 +182,10 @@ class _Collected:
     # heading. They cannot become definitions until the AVP table is known —
     # that is where their code comes from.
     pending_enums: list[tuple[_Section, str]] = field(default_factory=list)
+    # Every other AVP clause printing no body, with the name from the heading:
+    # one the AVP table types an integer may list its values as an enumerated
+    # clause does (`_resolve`).
+    pending_values: list[tuple[_Section, str]] = field(default_factory=list)
     # The document's own reference, which a re-used row may cite (TS 29.212's
     # Gxx and S9 tables list Gx's AVPs "from" TS 29.212).
     own_reference: str = ""

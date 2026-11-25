@@ -280,6 +280,16 @@ Device-Trigger-Recall-Replace = 0 ; O
 
 
 ; Type: Value Table
+; AVP: Trigger-Action
+; Kind: values
+; Section: 6.3.6
+; Page: 23
+TRIGGER = 0
+RECALL  = 1
+REPLACE = 2
+
+
+; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes
 ; Section: 7

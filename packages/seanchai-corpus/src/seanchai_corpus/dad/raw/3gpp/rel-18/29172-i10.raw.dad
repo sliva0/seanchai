@@ -437,6 +437,24 @@ Response-Time ::= < Enumerated AVP header: 2509 10415 >
         DELAY_TOLERANT = 1
 
 
+; Type: Value Table
+; AVP: Supported-GAD-Shapes
+; Kind: bits
+; Section: 7.4.12
+; Page: 34
+ellipsoidPoint                                                        = 0
+ellipsoidPointWithUncertaintyCircle                                   = 1
+ellipsoidPointWithUncertaintyEllipse                                  = 2
+polygon                                                               = 3
+ellipsoidPointWithAltitude                                            = 4
+ellipsoidPointWithAltitudeAndUncertaintyElipsoid                      = 5
+ellipsoidArc                                                          = 6
+highAccuracyEllipsoidPointWithUncertaintyEllipse                      = 7
+highAccuracyEllipsoidPointWithAltitudeAndUncertaintyEllipsoid         = 8
+highAccuracyEllipsoidPointWithScalableUncertaintyEllipse              = 9
+highAccuracyEllipsoidPointWithAltitudeAndScalableUncertaintyEllipsoid = 10
+
+
 ; Type: Enumerated AVP
 ; Name: LCS-Privacy-Check
 ; Section: 7.4.14

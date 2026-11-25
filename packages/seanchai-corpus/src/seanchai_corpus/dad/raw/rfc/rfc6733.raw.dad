@@ -364,6 +364,15 @@ Proxy-Info ::= < AVP header: 284 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Inband-Security-Id
+; Kind: values
+; Section: 6.10
+; Page: 84
+NO_INBAND_SECURITY = 0
+TLS                = 1
+
+
 ; Type: Grouped AVP
 ; Name: Vendor-Specific-Application-Id
 ; Section: 6.11

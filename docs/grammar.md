@@ -520,8 +520,10 @@ ODB-all-APN = 0 ; O
 - `values` name the values of an integer AVP that is no `Enumerated`, as a
   table in its clause prints them (TS 29.272 table 7.3.190-1's
   Group-Service-Id, TS 29.273 table 5.2.3.30/1's TWAN-S2a-Failure-Cause),
-  with no tail. The table need not hold every value the AVP takes: TS
-  29.272 leaves Group-Service-Id above 1000 to the home operator.
+  or its lines, with no `; Table:` (TS 29.336 clause 8.4.7's
+  Monitoring-Type), with no tail. The table need not hold every value the
+  AVP takes: TS 29.272 leaves Group-Service-Id above 1000 to the home
+  operator.
 
 Names are written as enum value names and marks as table marks; `-` is no
 mark. Descriptions are dropped. A row printing no name and number pair (TS

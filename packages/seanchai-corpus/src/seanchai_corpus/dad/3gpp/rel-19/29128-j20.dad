@@ -410,8 +410,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 "- Monitoring-Type set to either UE_REACHABILITY (1) or UE_REACHABILITY_AND_IDLE_STATUS_INDICATION (8), as received in the configuration request."
 "- Reachability-Information set to REACHABLE_FOR_DATA(1)"
 "NOTE: When the Monitoring-Type is UE_REACHABILITY_AND_IDLE_STATUS_INDICATION (8), absence of the Idle-Status-Indication AVP from the Monitoring-Event-Report AVP indicates that UE reachability is reported."
-    present-if Monitoring-Type = 1 or Monitoring-Type = 8 and not Idle-Status-Indication
-    values 1 if Monitoring-Type = 1 or Monitoring-Type = 8 and not Idle-Status-Indication
+    present-if Monitoring-Type = UE_REACHABILITY or Monitoring-Type = UE_REACHABILITY_AND_IDLE_STATUS_INDICATION and not Idle-Status-Indication
+    values 1 if Monitoring-Type = UE_REACHABILITY or Monitoring-Type = UE_REACHABILITY_AND_IDLE_STATUS_INDICATION and not Idle-Status-Indication
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#eps-location-information-event)
@@ -423,7 +423,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 "The following AVPs shall be present within the Monitoring-Event-Report AVP when the location event is reported:"
 "- Monitoring-Type set to LOCATION_REPORTING (2)"
 "- EPS-Location-Information"
-    present-if Monitoring-Type = 2
+    present-if Monitoring-Type = LOCATION_REPORTING
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#communication-failure-information-event)
@@ -435,7 +435,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 "The following AVPs shall be present within the Monitoring-Event-Report AVP when the Communication Failure event is reported"
 "- Monitoring-Type set to COMMUNICATION_FAILURE (5)"
 "- Communication-Failure-Information (see clause 6.4.3)"
-    present-if Monitoring-Type = 5
+    present-if Monitoring-Type = COMMUNICATION_FAILURE
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#pdn-connectivity-status-report-event)
@@ -729,7 +729,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 23
 ; Versions: 18.0.0..19.2.0
 "It shall be present if the request is for a T6a/b connection establishment."
-    present-if Connection-Action = 0
+    present-if Connection-Action = CONNECTION_ESTABLISHMENT
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-extended-pco)
@@ -751,7 +751,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 23
 ; Versions: 18.0.0..19.2.0
 "It shall be present if the request is for a T6a/b connection establishment and may be present if the request is for a T6a/b connection update."
-    present-if Connection-Action = 0
+    present-if Connection-Action = CONNECTION_ESTABLISHMENT
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-rat-type)
@@ -762,7 +762,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 23
 ; Versions: 18.0.0..19.2.0
 "It shall be present if the request is for a T6a/b connection establishment or for a T6a/b connection update."
-    present-if Connection-Action = 0
+    present-if Connection-Action = CONNECTION_ESTABLISHMENT
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-visited-plmn-id)
@@ -773,7 +773,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 23
 ; Versions: 18.0.0..19.2.0
 "It shall be present if the request is for a T6a/b connection establishment or for a T6a/b connection update."
-    present-if Connection-Action = 0
+    present-if Connection-Action = CONNECTION_ESTABLISHMENT
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-terminal-information)
@@ -806,7 +806,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 23
 ; Versions: 18.0.0..19.2.0
 "shall be present if the answer is for a T6a/b connection establishment."
-    present-if request/Connection-Action = 0 and Result-Code = DIAMETER_SUCCESS
+    present-if request/Connection-Action = CONNECTION_ESTABLISHMENT and Result-Code = DIAMETER_SUCCESS
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-extended-pco)
@@ -1523,6 +1523,18 @@ Communication-Failure-Information ::= < AVP header: 4300 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Cause-Type
+; Kind: values
+; Section: 6.4.5
+; Page: 45
+RADIO_NETWORK_LAYER = 0
+TRANSPORT_LAYER     = 1
+NAS                 = 2
+PROTOCOL            = 3
+MISCELLANEOUS       = 4
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#s1ap-cause-coding)
 ; AVP: S1AP-Cause
 ; Section: 6.4.6
@@ -1605,6 +1617,16 @@ MONTE                    = 0 ; O
 NIDD                     = 1 ; O
 Filtering                = 2 ; O
 "Extended Reference IDs" = 3 ; O
+
+
+; Type: Value Table
+; AVP: Connection-Action
+; Kind: values
+; Section: 6.4.18
+; Page: 48
+CONNECTION_ESTABLISHMENT = 0
+CONNECTION_RELEASE       = 1
+CONNECTION_UPDATE        = 2
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#service-selection-labels)
@@ -1729,6 +1751,15 @@ Idle-Status-Indication ::= < AVP header: 4322 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Reachability-Cause
+; Kind: values
+; Section: 6.4.35
+; Page: 51
+CHANGE_TO_CONNECTED_MODE = 0
+REACHABLE_FOR_PAGING     = 1
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#uplink-number-of-packets-allowed-octets)
 ; AVP: Uplink-Number-Of-Packets-Allowed
 ; Section: 6.4.37
@@ -1767,6 +1798,15 @@ Idle-Status-Indication ::= < AVP header: 4322 10415 >
 "It shall contain information of octets k+13 to k+20 as specified in figure 8.38-10 of"
 "TS 29.274 [33]."
     encoding element TS29.274 8.38 "APN Rate Control Status validity Time"
+
+
+; Type: Value Table
+; AVP: SF-Operation-Status
+; Kind: values
+; Section: 6.4.41
+; Page: 52
+IN_SF_MODE     = 0
+OUT_OF_SF_MODE = 1
 
 
 ; Type: Grouped AVP

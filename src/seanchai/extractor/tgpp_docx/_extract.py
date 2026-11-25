@@ -129,8 +129,19 @@ def extract_with_comments(
         elements = _element_tables(read, warnings, ast.spec_ref(specification), printed)
         results = _result_code_tables(read, elements)
         patcher.finish()
+        resolved = _resolve(collected, quirks, warnings)
+        # A clause's printed value table wins over its value lines.
+        tabled = {(table.avp, table.source.section) for table in value_tables}
+        value_tables = [
+            *value_tables,
+            *(
+                listed
+                for listed in resolved.listed_values
+                if (listed.avp, listed.source.section) not in tabled
+            ),
+        ]
         sections = _assemble(
-            _resolve(collected, quirks, warnings),
+            resolved,
             collected.reprints,
             value_tables,
             collected.answers,

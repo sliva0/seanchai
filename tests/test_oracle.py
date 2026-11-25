@@ -62,9 +62,9 @@ def test_the_corpus_reports_what_docs_oracle_md_lists(dictionary):
     rules = [finding.rule for finding in findings.values()]
     assert len(accepted) == len(aliases) == 36
     assert "stale-alias" not in rules
-    assert len(findings) - len(accepted) == 107
+    assert len(findings) - len(accepted) == 112
     assert rules.count("name-disagrees") == 70
-    assert sum(rule.startswith("value-") for rule in rules) == 18
+    assert sum(rule.startswith("value-") for rule in rules) == 23
     for specification, line in [
         (
             "ETSI TS 183 066",
@@ -106,7 +106,7 @@ def test_crosscheck_reports_without_failing_and_shows_accepted_renames(monkeypat
     assert result.exit_code == 0, result.output
     lines = result.output.splitlines()
     assert lines[-1] == (
-        "checked 81 files against the dictionary: 107 findings, 36 accepted renames"
+        "checked 81 files against the dictionary: 112 findings, 36 accepted renames"
     )
     assert any(
         line.startswith("skipped ") and "an older copy than the one checked" in line

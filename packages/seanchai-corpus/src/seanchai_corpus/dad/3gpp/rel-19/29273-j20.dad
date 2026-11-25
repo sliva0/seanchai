@@ -4758,6 +4758,15 @@ NSWO-Access-Authorization = 1
     bits only 0
 
 
+; Type: Value Table
+; AVP: ERP-Authorization
+; Kind: values
+; Section: 8.2.3.27
+; Page: 155
+ERP_NOT_AUTHORIZED = 0
+ERP_AUTHORIZED     = 1
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-mar-auth-session-state)
 ; AVP: Auth-Session-State
 ; Command: Multimedia-Auth-Request

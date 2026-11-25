@@ -4218,6 +4218,15 @@ Non-IP-PDN-Type-Indicator ::= < Enumerated AVP header: 1681 10415 >
     default FALSE
 
 
+; Type: Value Table
+; AVP: Non-IP-Data-Delivery-Mechanism
+; Kind: values
+; Section: 7.3.205
+; Page: 164
+SGi-BASED-DATA-DELIVERY  = 0
+SCEF-BASED-DATA-DELIVERY = 1
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#non-ip-data-delivery-mechanism-default)
 ; AVP: Non-IP-Data-Delivery-Mechanism
 ; Section: 7.3.205
@@ -4290,6 +4299,16 @@ V2X-Subscription-Data ::= < AVP header: 1688 10415 >
 "Allow V2X communication over PC5 as Pedestrian UE" = 1
 
 
+; Type: Value Table
+; AVP: PDN-Connection-Continuity
+; Kind: values
+; Section: 7.3.214
+; Page: 166
+MAINTAIN-PDN-CONNECTION                                = 0
+DISCONNECT-PDN-CONNECTION-WITH-REACTIVATION-REQUEST    = 1
+DISCONNECT-PDN-CONNECTION-WITHOUT-REACTIVATION-REQUEST = 2
+
+
 ; Type: Grouped AVP
 ; Name: eDRX-Cycle-Length
 ; Section: 7.3.215
@@ -4357,6 +4376,15 @@ RDS-Indicator ::= < Enumerated AVP header: 1697 10415 >
 ; Versions: 18.7.0..19.6.0
 "The default value when this AVP is not present is DISABLED (0)."
     default DISABLED
+
+
+; Type: Value Table
+; AVP: Aerial-UE-Subscription-Information
+; Kind: values
+; Section: 7.3.224
+; Page: 168
+AERIAL_UE_ALLOWED     = 0
+AERIAL_UE_NOT_ALLOWED = 1
 
 
 ; Type: Value Table

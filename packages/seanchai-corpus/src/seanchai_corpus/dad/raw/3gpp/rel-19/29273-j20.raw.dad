@@ -2547,6 +2547,15 @@ NSWO-Access-Authorization = 1
 "AAA Failure" = 0
 
 
+; Type: Value Table
+; AVP: ERP-Authorization
+; Kind: values
+; Section: 8.2.3.27
+; Page: 155
+ERP_NOT_AUTHORIZED = 0
+ERP_AUTHORIZED     = 1
+
+
 ; Type: Information Elements
 ; Section: 9.1.2.1.1
 ; Table: 9.1.2.1/1

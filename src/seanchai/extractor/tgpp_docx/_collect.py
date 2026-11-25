@@ -39,7 +39,7 @@ from ._commands import (
     _stated_applications,
     _table_message_row,
 )
-from ._enums import _ENUM_VALUE_RE, _extract_enumerated
+from ._enums import _ENUM_VALUE_RE, _extract_enumerated, _listed_values
 from ._origins import _prose_avp_origins, _references
 from ._registries import _REGISTRY_KINDS, _extract_registry
 from ._rules import (
@@ -55,6 +55,8 @@ from ._tables import _NAME_LABELS
 # and 7.2.155) or "is of type of Enumerated" (7.2.39B). "is of type
 # UTF8String. Enumerated in IMS charging" (7.2.102) is no such sentence.
 _ENUMERATED_TYPE_RE = re.compile(r"\btype (?:of )?enumerated\b", re.IGNORECASE)
+# The types whose values a clause may list as an enumerated clause does.
+_INTEGER_TYPES = frozenset({"Unsigned32", "Unsigned64", "Integer32", "Integer64"})
 
 
 @dataclass
@@ -75,6 +77,9 @@ class _Resolved:
     derived_reused: list[_ReusedTable] = field(default_factory=list)
     applications: list[ast.ApplicationScope] = field(default_factory=list)
     registries: list[ast.Registry] = field(default_factory=list)
+    # The values an integer AVP's clause lists as an enumerated clause does,
+    # `NAME (n)` a line (`_listed_values`).
+    listed_values: list[ast.ValueTable] = field(default_factory=list)
 
 
 def _collect(
@@ -313,6 +318,8 @@ def _collect(
                 section.paragraphs[0].text
             ):
                 collected.pending_enums.append((section, title["name"]))
+            elif section.paragraphs:
+                collected.pending_values.append((section, title["name"]))
     if quirks.enabled("prose-avp-origins"):
         _prose_avp_origins(collected, sections, quirks)
     collected.applications = _sibling_applications(collected.applications)
@@ -493,6 +500,23 @@ def _resolve(
         enumerated.append(
             _extract_enumerated(section, name, code, vendor or None, quirks, warnings)
         )
+    # An AVP the document's own AVP table types an integer, whose clause lists
+    # its values line by line as an enumerated clause does: TS 29.336 clause
+    # 8.4.7's Monitoring-Type, "is of type Unsigned32 ... The following values
+    # are defined:" and "UE_REACHABILITY (1)", TS 29.128 clause 6.4.18's
+    # Connection-Action. Only the clause's own value lines are read.
+    integer = {
+        row.name
+        for entry in collected.avp_tables
+        for row in entry.table.rows
+        if row.data_type is not None and row.data_type.value in _INTEGER_TYPES
+    }
+    listed = [
+        found
+        for section, name in collected.pending_values
+        if name in integer and name not in external
+        if (found := _listed_values(section, name, quirks)) is not None
+    ]
 
     return _Resolved(
         messages=collected.messages,
@@ -505,6 +529,7 @@ def _resolve(
         ],
         applications=collected.applications,
         derived_reused=derived,
+        listed_values=listed,
     )
 
 

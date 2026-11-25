@@ -386,3 +386,40 @@ def _value_first(match: re.Match, section: str) -> ast.EnumValue:
     raise ExtractionError(
         f"{section}: enum value label {match['label']!r} is not a value name"
     )
+
+
+# A clause saying its integer's values are bits, as TS 29.172 clause 7.4.12
+# says of Supported-GAD-Shapes: "shall contain a bitmask".
+_BITMASK_RE = re.compile(r"\bbit ?mask\b", re.IGNORECASE)
+
+
+def _listed_values(
+    section: _Section, name: str, quirks: sources.Quirks
+) -> ast.ValueTable | None:
+    """The values an integer AVP's clause lists line by line, `NAME (n)` as an
+    enumerated clause prints them, and in the shapes the document's quirks
+    declare for one (`_loose_enum_value`), as a `values` table, or a `bits`
+    table where the clause calls the AVP a bit mask; None for a clause listing
+    none. A value's description, a reserved note and the prose are not read:
+    a value table holds names and numbers."""
+    rows: list[ast.ValueRow] = []
+    for paragraph in section.paragraphs:
+        text = paragraph.text
+        if not text:
+            continue
+        if match := _ENUM_VALUE_RE.fullmatch(text):
+            found = ast.EnumValue(name=match["name"], value=int(match["value"]))
+        elif (found := _loose_enum_value(text, section.number, quirks)) is None:
+            continue
+        rows.append(ast.ValueRow(name=found.name, value=found.value))
+    if not rows:
+        return None
+    bitmask = any(
+        _BITMASK_RE.search(paragraph.text) for paragraph in section.paragraphs
+    )
+    return ast.ValueTable(
+        avp=name,
+        kind=ast.ValueKind.BITS if bitmask else ast.ValueKind.VALUES,
+        source=ast.SourceRef(section=section.number),
+        rows=tuple(rows),
+    )

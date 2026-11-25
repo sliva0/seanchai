@@ -695,6 +695,24 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
       * [ AVP ]
 
 
+; Type: Value Table
+; AVP: Monitoring-Type
+; Kind: values
+; Section: 8.4.7
+; Page: 56
+LOSS_OF_CONNECTIVITY                                      = 0
+UE_REACHABILITY                                           = 1
+LOCATION_REPORTING                                        = 2
+"CHANGE_OF_IMSI_IMEI(SV)_ASSOCIATION"                     = 3
+ROAMING_STATUS                                            = 4
+COMMUNICATION_FAILURE                                     = 5
+AVAILABILITY_AFTER_DDN_FAILURE                            = 6
+NUMBER_OF_UES_PRESENT_IN_A_GEOGRAPHICAL_AREA              = 7
+UE_REACHABILITY_AND_IDLE_STATUS_INDICATION                = 8
+AVAILABILITY_AFTER_DDN_FAILURE_AND_IDLE_STATUS_INDICATION = 9
+PDN_CONNECTIVITY_STATUS                                   = 10
+
+
 ; Type: Grouped AVP
 ; Name: UE-Reachability-Configuration
 ; Section: 8.4.9
@@ -726,6 +744,54 @@ Location-Information-Configuration ::= < AVP header: 3135 10415 >
         [ Accuracy ]
         [ Periodic-Time ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: MONTE-Location-Type
+; Kind: values
+; Section: 8.4.16
+; Page: 58
+CURRENT_LOCATION    = 0
+LAST_KNOWN_LOCATION = 1
+
+
+; Type: Value Table
+; AVP: Accuracy
+; Kind: values
+; Section: 8.4.17
+; Page: 58
+CGI-ECGI = 0
+eNB      = 1
+LA-TA-RA = 2
+PRA      = 3
+PLMN-ID  = 4
+
+
+; Type: Value Table
+; AVP: Association-Type
+; Kind: values
+; Section: 8.4.18
+; Page: 58
+IMEI-CHANGE   = 0
+IMEISV-CHANGE = 1
+
+
+; Type: Value Table
+; AVP: Roaming-Information
+; Kind: values
+; Section: 8.4.19
+; Page: 58
+SUBSCRIBER_ROAMING     = 0
+SUBSCRIBER_NOT_ROAMING = 1
+
+
+; Type: Value Table
+; AVP: Reachability-Information
+; Kind: values
+; Section: 8.4.20
+; Page: 59
+REACHABLE_FOR_SMS  = 0
+REACHABLE_FOR_DATA = 1
 
 
 ; Type: Grouped AVP
@@ -809,6 +875,15 @@ Communication-Pattern-Set ::= < AVP header: 3114 10415 >
         [ Traffic-Profile ]
         [ Battery-Indicator ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Periodic-Communication-Indicator
+; Kind: values
+; Section: 8.4.27
+; Page: 63
+PERIODICALLY = 0
+ON_DEMAND    = 1
 
 
 ; Type: Grouped AVP
@@ -934,6 +1009,16 @@ Roaming-status                                    = 5
 "PDN Connectivity Status"                         = 8
 
 
+; Type: Value Table
+; AVP: Event-Handling
+; Kind: values
+; Section: 8.4.43
+; Page: 68
+SUSPEND = 0
+RESUME  = 1
+CANCEL  = 2
+
+
 ; Type: Grouped AVP
 ; Name: NIDD-Authorization-Request
 ; Section: 8.4.44
@@ -964,6 +1049,16 @@ Service-Report ::= < AVP header: 3152 10415 >
         [ Service-Result ]
         [ Node-Type ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: Node-Type
+; Kind: values
+; Section: 8.4.48
+; Page: 69
+HSS  = 0
+MME  = 1
+SGSN = 2
 
 
 ; Type: Value Table
@@ -1024,6 +1119,19 @@ NIDD-Authorization-Update ::= < AVP header: 3161 10415 >
 
 
 ; Type: Value Table
+; AVP: Loss-Of-Connectivity-Reason
+; Kind: values
+; Section: 8.4.58
+; Page: 71
+UE_DETACHED_MME                 = 0
+UE_DETACHED_SGSN                = 1
+MAX_DETECTION_TIME_EXPIRED_MME  = 2
+MAX_DETECTION_TIME_EXPIRED_SGSN = 3
+UE_PURGED_MME                   = 4
+UE_PURGED_SGSN                  = 5
+
+
+; Type: Value Table
 ; AVP: CIA-Flags
 ; Kind: bits
 ; Section: 8.4.60
@@ -1081,6 +1189,15 @@ All-Monitoring-Events-Cancelled               = 1
 Change-Of-Authorized-Monitoring-Events        = 2
 All-Communication-Pattern-Cancelled           = 3
 All-Suggested-Network-Configuration-Cancelled = 4
+
+
+; Type: Value Table
+; AVP: Type-Of-External-Identifier
+; Kind: values
+; Section: 8.4.64
+; Page: 73
+EXTERNAL-UE-IDENTIFIER-TYPE    = 0
+EXTERNAL-GROUP-IDENTIFIER-TYPE = 1
 
 
 ; Type: Grouped AVP
@@ -1200,6 +1317,27 @@ PDN-Connectivity-Status-Report ::= < AVP header: 3181 10415 >
         [ Non-IP-Data-Delivery-Mechanism ]
      *2 [ Served-Party-IP-Address ]
       * [ AVP ]
+
+
+; Type: Value Table
+; AVP: PDN-Connectivity-Status-Type
+; Kind: values
+; Section: 8.4.78
+; Page: 78
+CREATED = 0
+DELETED = 1
+
+
+; Type: Value Table
+; AVP: Traffic-Profile
+; Kind: values
+; Section: 8.4.79
+; Page: 78
+SINGLE_TRANSMISSION_UL                  = 0
+SINGLE_TRANSMISSION_DL                  = 1
+DUAL_TRANSMISSION_UL_WITH_SUBSEQUENT_DL = 2
+DUAL_TRANSMISSION_DL_WITH_SUBSEQUENT_UL = 3
+MULTI_TRANSMISSION                      = 4
 
 
 ; Type: Grouped AVP

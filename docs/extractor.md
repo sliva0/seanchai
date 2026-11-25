@@ -343,6 +343,15 @@ table 7.3.190-1, Group-Service-Id) or "Cause value (decimal) | Cause Value |
 Meaning" (TS 29.273 tables 5.2.3.30/1 and 5.2.3.35/1), is a `values` table,
 where no other pass read it.
 
+An AVP the document's AVP table types an integer (Unsigned32, Unsigned64,
+Integer32, Integer64) whose clause lists its values as an enumerated clause
+does, a `NAME (n)` line each in the shapes the document's quirks declare for
+one, takes them as a `values` table with no `; Table:` (TS 29.336 clause
+8.4.7's Monitoring-Type, TS 29.128 clause 6.4.18's Connection-Action), or a
+`bits` table where the clause calls the AVP a bitmask (TS 29.172 clause
+7.4.12's Supported-GAD-Shapes). The descriptions under the values are not
+read. A table its clause prints wins.
+
 Columns are read by label. A full-width row is a note. A row naming no number
 (`1-31 None`) is a `;;` comment. A table with no rows left warns and makes no
 block. A features table's `void` row stays a row (`void = 18`).
@@ -643,7 +652,10 @@ It reads the same definitions as the docx extractor. Every file states
   body are skipped.
 - Enumerated values are read under a name-titled section when the local table
   types the name Enumerated. Value names are all-caps unless a quirk says
-  otherwise.
+  otherwise. Where it types the name an integer, the lines are a `values`
+  table (RFC 6733 clause 6.10's Inband-Security-Id, `NO_INBAND_SECURITY 0`),
+  unless the clause calls the AVP a bit mask or its numbers flag values (RFC
+  4004 clause 7.5's MIP-Feature-Vector).
 - Result codes are read in a clause titled `Result-Code AVP`, `Result Code AVP
   Values`, `Extension to the Result-Code AVP Values` or `Additional Result-Code
   AVP Values`, or under one, in shapes such as `DIAMETER_SUCCESS 2001` and

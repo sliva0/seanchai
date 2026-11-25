@@ -94,6 +94,9 @@ On the committed corpus these report:
 | TS 29.109's `DIAMETER_ERROR_IDENTITY_UNKNOWN` | the registry's `IMPI` |
 | bit 0 of TS 29.212's `Presence-Reporting-Area-Node`, `OCS` | `PCRF` |
 | bit 0 of RFC 5777's `Day-Of-Week-Mask` and `Month-Of-Year-Mask`, `SUNDAY` and `JANUARY` | value 0, which sets no bit; its other values are masks |
+| TS 29.336's `Monitoring-Type` 10, `PDN-Connectivity-Status-Type` 1 and `Traffic-Profile` 0 | a trailing space: `PDN_CONNECTIVITY_STATUS `, `DELETED `, `SINGLE_TRANSMISSION_UL ` |
+| TS 29.336's `Traffic-Profile` 1, `SINGLE_TRANSMISSION_DL` | `SINGLE_TRANSMISSION_D `, its `L` lost |
+| TS 29.336's `Monitoring-Type` 11, `SAT_SF_OPERATION_INFO`, a Release 19 value | absent |
 
 ## In the model
 
