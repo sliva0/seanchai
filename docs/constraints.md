@@ -1496,6 +1496,75 @@ MBMS Session Start procedure", which names no AVP; the routing, session and
 capabilities-exchange sentences; and the procedures' result codes, which
 are what a node answers with.
 
+## TS 29.154
+
+TS 29.154 V19.0.0 is read completely for Nt and Nta: the procedures of
+clauses 4.4 and A.4 for what they state of one message, clauses 5 and A.6's
+protocol, every AVP clause of 5.3 and A.6.3, the supported features of 5.4.2
+and A.6.4.2 and the commands' clauses 5.6.1 and A.6.6.1. Release 18's copy,
+V18.0.0, prints every sentence read and holds all 37 blocks. Nt's BTR and
+BTA print once under 16777348 and Nta's ECR, ECA, ERR and ERA under
+16777358. The document has no information-element tables; Nt's BTR is a
+transfer policy request or notification as its Transfer-Request-Type, an
+Unsigned32 clause 5.3.4 names the values of, says, 0 or 1.
+
+| | |
+|---|---|
+| AVP clauses (clauses 5.3 and A.6.3, not their General clauses) | 16 |
+| with something to declare | 3, in 3 blocks |
+| with nothing to declare | 13 |
+| procedure clauses (4.4.1, A.4.1, A.4.2) | 18 blocks |
+| clauses 5.2's and A.6.2's sessions, 5.4.2's and A.6.4.2's supported features, 5.6.1's and A.6.6.1's commands | 6, 4, 6 blocks |
+| blocks | 37: 30 within a command, 5 within a grouped AVP, 2 on an AVP wherever read |
+| readings | 43 |
+
+| Rules | |
+|---|---|
+| `encoding element` | 1: Network-Area-Info-List, TS 29.274's Presence Reporting Area Action from octet 9, as TS 29.212's Presence-Reporting-Area-Elements-List ([above](#elements)) |
+| `range` | 7: Auth-Session-State NO_STATE_MAINTAINED in each of the 6 commands, Event-Configuration's Monitoring-Type LOCATION_REPORTING |
+| `requires`, `present-if` | 6, 10 |
+| `absent` | 4: Vendor-Specific-Application-Id in each of Nta's 4 commands |
+| reading the request | 2: the BTA's Transfer-Policy and Reference-Id answering a transfer policy request |
+| `members` | 4, each `at-least-one`: a Transfer-Policy's Time-Window and Rating-Group, Event-Configuration's Location-Information-Configuration and its MONTE-Location-Type |
+| `unique` | 1: Transfer-Policy-Id within Transfer-Policy |
+| `text-only` | 11 |
+
+A transfer policy request's BTR carries the ASP's identity, a volume, the
+number of UEs and the time window, the volume the downlink's, the uplink's
+or both, or the total's, read as at least one of the three on CC-Total-
+Octets; a notification's its Reference-Id, Transfer-Policy-Id and
+Destination-Host; and the BTA answering a request with DIAMETER_SUCCESS its
+Transfer-Policy and Reference-Id (clause 4.4.1). The transfer policies of
+one BTA share its Reference-Id, so their Transfer-Policy-Ids differ (clause
+5.3.9). Clause 5.6.1's application identifier "in the Auth-Application-Id AVP
+within the Vendor-Specific-Application-Id grouped AVP" is read on the BTR and
+BTA through a path into it, RFC 6733's AVP, and clauses 5.4.2's and
+A.6.4.2's Supported-Features Vendor-Id in each command printing it, as TS
+29.336's are. Nta's commands carry no Vendor-Specific-Application-Id, which
+they admit through their `* [ AVP ]` (clause A.6.6.1), and the successful
+ECA its Event-Configuration-Status (A.4.1). Network-Area-Info-List, as TS
+29.212's Presence-Reporting-Area-Elements-List, holds the Presence Reporting
+Area Action from its octet 9: the entry those read.
+
+The text-only rules are mostly conditions on the node, a feature, what the
+PCRF holds or an earlier message ("if supported by the SCEF and PCRF
+respectively", "If the PCRF has at least one active IP-CAN session ... the
+PCEF/BBERF supports the NetLoc feature", "if available and local policy
+allows it", "If the PCRF receives NetLoc-Access-Support"), a Reference-Id
+unique per PLMN, which no message shows, and what no kind says: the BTA's
+PCRF-Address beside more than one Transfer-Policy, which no kind counts,
+and the ECR's Event-Configuration, a presence with no condition of an AVP
+the ABNF prints optional. Left unread: Transfer-Request-Type's values, which
+the clause does not say are all a sender may send; the tables' "Only ... is
+applicable" (Location-Information-Configuration's MONTE-Location-Type,
+Monitoring-Type's LOCATION_REPORTING), with no shall, and the latter read
+from clause A.4.1's shall; the sentences repeating the ABNF (the
+Time-Window's start and end times, the Event-Reports' final report); the
+header's Application-ID of clauses 5.1 and A.6.1, which no rule reads; the
+capabilities exchange of clauses 5.2 and A.6.2, RFC 6733's commands'; and
+the procedures' result codes (A.4.2's DIAMETER_ERROR_SCEF_REFERENCE_ID_
+UNKNOWN), which are what a node answers with.
+
 ## RFC 6733
 
 RFC 6733 is read for what it says of the base protocol's AVPs and its own

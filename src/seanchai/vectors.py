@@ -1037,10 +1037,13 @@ class _Builder:
         nodes: list[_Avp],
         maximal: bool,
         request: Sequence[_Avp] | None = None,
+        keep: frozenset[str] = frozenset(),
     ) -> None:
         """Mend what the predicates of `scope` say of `nodes`: drop an
         optional subject that may not be there, add one that must, give one
-        the value it must hold."""
+        the value it must hold. A subject in `keep`, which a predicate
+        outside the scope wants, stays where an `excludes` forbids its
+        siblings: they go instead."""
         optional = {m.name for m in scope.members if m.min_occurs == 0}
         for _ in range(8):
             broken = self.broken(scope, nodes, request)
@@ -1077,6 +1080,24 @@ class _Builder:
                     nodes.append(
                         self.avp(self.avps[member.avp], scope, member, False, ())
                     )
+                elif kind == "excludes" and name in keep:
+                    forbidden = {
+                        c.path[0]
+                        for conjunction in rule.conditions
+                        for c in conjunction
+                        if c.root is None
+                        and len(c.path) == 1
+                        and c.path[0] in optional
+                        and c.value is None
+                        and c.bit is None
+                        and not c.values
+                        and not c.negated
+                    }
+                    if not forbidden:
+                        raise _Unbuildable(
+                            f"{name} is wanted and a predicate forbids it"
+                        )
+                    nodes[:] = [n for n in nodes if n.avp.name not in forbidden]
                 elif name in optional:
                     nodes[:] = [n for n in nodes if n.avp.name != name]
                 elif not self.mend_inside(nodes, name, kind, rule, request):
@@ -1094,7 +1115,9 @@ class _Builder:
     ) -> bool:
         """Mend a required grouped AVP `name` of `nodes` that a predicate's
         paths into its own members break: add the members an alternative of
-        a `requires` wants present, or drop an optional member making an
+        a `requires` wants present, or give one the number it wants (TS
+        29.154's BTR, its Vendor-Specific-Application-Id holding Nt's
+        Auth-Application-Id), or drop an optional member making an
         alternative of an `excludes` or `absent-if` hold (TS 29.336's SIR,
         its User-Identifier holding exactly one identifier). Whether it
         changed anything."""
@@ -1115,6 +1138,18 @@ class _Builder:
                 and not condition.negated
             )
 
+        def numbered(condition: dictionary.Condition) -> bool:
+            # A member of the AVP itself holding a number, by a path from it.
+            return (
+                condition.root is None
+                and len(condition.path) == 2
+                and condition.path[0] == name
+                and isinstance(condition.value, int)
+                and condition.bit is None
+                and not condition.values
+                and not condition.negated
+            )
+
         if kind == "requires":
             for conjunction in rule.conditions:
                 wanted = [
@@ -1122,20 +1157,32 @@ class _Builder:
                     for c in conjunction
                     if self.condition(nodes, c, request) == c.negated
                 ]
-                if not wanted or not all(own(c) for c in wanted):
+                if not wanted or not all(own(c) or numbered(c) for c in wanted):
                     continue
                 members = [
                     next((m for m in inner.members if m.name == c.path[1]), None)
                     for c in wanted
                 ]
-                if any(m is None or m.avp is None for m in members):
+                found = [m.avp for m in members if m is not None and m.avp is not None]
+                if len(found) != len(members) or any(
+                    numbered(c) and self.avps[avp].data_type not in _FIXED
+                    for c, avp in zip(wanted, found, strict=True)
+                ):
                     continue
-                for member in members:
+                for c, member in zip(wanted, members, strict=True):
                     assert member is not None and member.avp is not None
-                    held.children.append(
-                        self.avp(self.avps[member.avp], inner, member, False, ())
+                    child = next(
+                        (n for n in held.children if n.avp.name == member.name),
+                        None,
                     )
-                self.satisfy(inner, held.children, False)
+                    if child is None:
+                        definition = self.avps[member.avp]
+                        child = self.avp(definition, inner, member, False, ())
+                        held.children.append(child)
+                    if isinstance(c.value, int):
+                        child.payload = _integer(child.avp.data_type, c.value)
+                wanted_names = frozenset(c.path[1] for c in wanted)
+                self.satisfy(inner, held.children, False, keep=wanted_names)
                 return True
             return False
         if kind in ("excludes", "absent-if"):

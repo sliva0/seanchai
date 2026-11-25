@@ -447,8 +447,10 @@ Values are valid for their type and for every constraint read of the AVP: a
 codec's layout (a PLMN identity is MCC 123, MNC 45), an element's, a length, a
 range, bits, a predicate's siblings, the members a grouped AVP must or may not
 hold, a required grouped AVP's own members a predicate of its command names
-through a path (TS 29.336's CIR, its User-Identifier holding an
-External-Identifier or an MSISDN and not both), a distinct value of a
+through a path, present or holding the number it asks (TS 29.336's CIR, its
+User-Identifier holding an External-Identifier or an MSISDN and not both, TS
+29.154's BTR, its Vendor-Specific-Application-Id holding Nt's
+Auth-Application-Id and so no Acct-Application-Id), a distinct value of a
 `unique` member in each repeated grouped AVP. A command a
 required member of which the corpus cannot complete is listed in `skipped` (TS
 29.154's ECR under `--policy hole`); an optional one is left out. A command

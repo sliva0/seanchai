@@ -2087,6 +2087,154 @@
   },
   "29154-i00": {
    "edits": {
+    "TS29.154.dadx#bta-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Nt application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the BT-Request/Answer commands.'"
+    },
+    "TS29.154.dadx#bta-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#bta-pcrf-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If more than one transfer policies are included in the BTA command, the PCRF shall also include the PCRF Id within the PCRF-Address AVP in the BTA command.'"
+    },
+    "TS29.154.dadx#bta-request-reference-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'When all existing transfer policies are retrieved, the PCRF shall determine one or more transfer policies based on the information received from the SCEF and other available information (e.g. network policy, congestion level (if available), load status estimation for the required time window and network area, existing transfer policies) and respond with a Background-Data-Transfer-Answer (BTA) command including the possible transfer policies within Transfer-Policy AVP (s) and a reference ID within Reference-Id AVP.'"
+    },
+    "TS29.154.dadx#bta-request-transfer-policy": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'When all existing transfer policies are retrieved, the PCRF shall determine one or more transfer policies based on the information received from the SCEF and other available information (e.g. network policy, congestion level (if available), load status estimation for the required time window and network area, existing transfer policies) and respond with a Background-Data-Transfer-Answer (BTA) command including the possible transfer policies within Transfer-Policy AVP (s) and a reference ID within Reference-Id AVP.'; 'The Transfer-Policy AVP(s) shall include the Transfer-Policy-Id AVP, the Time-Window AVP, the Rating-Group AVP, and may also include an Max-Requested-Bandwidth-DL AVP and/or an Max-Requested-Bandwidth-UL AVP.'"
+    },
+    "TS29.154.dadx#bta-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#btr-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Nt application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the BT-Request/Answer commands.'"
+    },
+    "TS29.154.dadx#btr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#btr-notification-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1).'; 'The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP.'"
+    },
+    "TS29.154.dadx#btr-notification-reference-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1).'; 'The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP.'"
+    },
+    "TS29.154.dadx#btr-notification-transfer-policy-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1).'; 'The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP.'"
+    },
+    "TS29.154.dadx#btr-request-asp-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-request-number-of-ues": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-request-time-window": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-request-volume": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#eca-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#eca-event-configuration-status": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'Once the PCRF receives the ECR command, the PCRF shall retrieve UE identities (MSISDN and optionally UE external identifier) for all UEs in the group associated with the External-Group-Identifier AVP from the SPR and respond with an Event-Configuration-Answer (ECA) command including the Event-Configuration-Status AVP.'"
+    },
+    "TS29.154.dadx#eca-final-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'If the PCRF has at least one active IP-CAN session for received UE identities and for such IP-CAN session the PCEF/BBERF supports the NetLoc feature as defined in clause 5.4.1 of 3GPP TS 29.212 [aa], the Event-Configuration-State AVP within the Event-Configuration-Status AVP shall indicate this is not a final report with bit 0 not set.'"
+    },
+    "TS29.154.dadx#eca-netloc-not-supported": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'For those UEs having active IP-CAN sessions but without the support of the NetLoc feature in the PCEF/BBERF, the PCRF shall also send Event-Reports AVP with NetLoc-Access-Support AVP set to the value NETLOC_ACCESS_NOT_SUPPORTED (0).'"
+    },
+    "TS29.154.dadx#eca-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#eca-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#ecr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#ecr-event-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'Based on the SCS/AS request to retrieve the location information for a group of UEs, the SCEF shall send an Event-Configuration-Request (ECR) command to the PCRF including the Event-Configuration AVP and the External-Group-Identifier AVP.'; 'The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP.'"
+    },
+    "TS29.154.dadx#ecr-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#ecr-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#era-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#era-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#err-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#err-event-reports": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.2: 'The Event-Reports AVP shall include Extended-SCEF-Reference-ID AVP and the following information for each UE: MSISDN AVP or External-Identifier AVP (if available and local policy allows it) and Access-Network-Reports AVP (if available).'"
+    },
+    "TS29.154.dadx#err-netloc-access-support": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.2: 'If the PCRF receives NetLoc-Access-Support AVP with the value NETLOC_ACCESS_NOT_SUPPORTED (0) from the PCEF/BBERF, it shall relay such AVP to the SCEF within the Access-Network-Reports AVP.'"
+    },
+    "TS29.154.dadx#err-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#event-configuration-location-reporting": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP.'"
+    },
+    "TS29.154.dadx#event-configuration-monte-location-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP.'"
+    },
+    "TS29.154.dadx#network-area-info-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.2: 'The Network-Area-Info-List AVP (AVP code 4201) is of type OctetString, it contains the network area information which is coded as specified in 3GPP TS 29.274 [6] in Presence Reporting Area Action IE, starting from octet 9.'"
+    },
+    "TS29.154.dadx#reference-id-unique": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.3: 'It is assigned by the PCRF and shall be globally unique per PLMN.'"
+    },
+    "TS29.154.dadx#transfer-policy-id-unique": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.9: 'It is assigned by the PCRF and is unique per Reference-Id.'"
+    },
     "TS29.154.py#time-window-rule-case": {
      "kind": "correction",
      "reason": "the clause 5.3.5 rule lower-cases the 'w'; its heading, table 5.3.1.1 and the Transfer-Policy and BTR bodies spell Time-Window"
@@ -2131,6 +2279,154 @@
   },
   "29154-j00": {
    "edits": {
+    "TS29.154.dadx#bta-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Nt application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the BT-Request/Answer commands.'"
+    },
+    "TS29.154.dadx#bta-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#bta-pcrf-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If more than one transfer policies are included in the BTA command, the PCRF shall also include the PCRF Id within the PCRF-Address AVP in the BTA command.'"
+    },
+    "TS29.154.dadx#bta-request-reference-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'When all existing transfer policies are retrieved, the PCRF shall determine one or more transfer policies based on the information received from the SCEF and other available information (e.g. network policy, congestion level (if available), load status estimation for the required time window and network area, existing transfer policies) and respond with a Background-Data-Transfer-Answer (BTA) command including the possible transfer policies within Transfer-Policy AVP (s) and a reference ID within Reference-Id AVP.'"
+    },
+    "TS29.154.dadx#bta-request-transfer-policy": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'When all existing transfer policies are retrieved, the PCRF shall determine one or more transfer policies based on the information received from the SCEF and other available information (e.g. network policy, congestion level (if available), load status estimation for the required time window and network area, existing transfer policies) and respond with a Background-Data-Transfer-Answer (BTA) command including the possible transfer policies within Transfer-Policy AVP (s) and a reference ID within Reference-Id AVP.'; 'The Transfer-Policy AVP(s) shall include the Transfer-Policy-Id AVP, the Time-Window AVP, the Rating-Group AVP, and may also include an Max-Requested-Bandwidth-DL AVP and/or an Max-Requested-Bandwidth-UL AVP.'"
+    },
+    "TS29.154.dadx#bta-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#btr-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Nt application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the BT-Request/Answer commands.'"
+    },
+    "TS29.154.dadx#btr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#btr-notification-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1).'; 'The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP.'"
+    },
+    "TS29.154.dadx#btr-notification-reference-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1).'; 'The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP.'"
+    },
+    "TS29.154.dadx#btr-notification-transfer-policy-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1).'; 'The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP.'"
+    },
+    "TS29.154.dadx#btr-request-asp-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-request-number-of-ues": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-request-time-window": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-request-volume": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP.'"
+    },
+    "TS29.154.dadx#btr-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#eca-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#eca-event-configuration-status": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'Once the PCRF receives the ECR command, the PCRF shall retrieve UE identities (MSISDN and optionally UE external identifier) for all UEs in the group associated with the External-Group-Identifier AVP from the SPR and respond with an Event-Configuration-Answer (ECA) command including the Event-Configuration-Status AVP.'"
+    },
+    "TS29.154.dadx#eca-final-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'If the PCRF has at least one active IP-CAN session for received UE identities and for such IP-CAN session the PCEF/BBERF supports the NetLoc feature as defined in clause 5.4.1 of 3GPP TS 29.212 [aa], the Event-Configuration-State AVP within the Event-Configuration-Status AVP shall indicate this is not a final report with bit 0 not set.'"
+    },
+    "TS29.154.dadx#eca-netloc-not-supported": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'For those UEs having active IP-CAN sessions but without the support of the NetLoc feature in the PCEF/BBERF, the PCRF shall also send Event-Reports AVP with NetLoc-Access-Support AVP set to the value NETLOC_ACCESS_NOT_SUPPORTED (0).'"
+    },
+    "TS29.154.dadx#eca-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#eca-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#ecr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#ecr-event-configuration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'Based on the SCS/AS request to retrieve the location information for a group of UEs, the SCEF shall send an Event-Configuration-Request (ECR) command to the PCRF including the Event-Configuration AVP and the External-Group-Identifier AVP.'; 'The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP.'"
+    },
+    "TS29.154.dadx#ecr-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.4.2: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively.'"
+    },
+    "TS29.154.dadx#ecr-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#era-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#era-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#err-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.2: 'In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15]).'"
+    },
+    "TS29.154.dadx#err-event-reports": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.2: 'The Event-Reports AVP shall include Extended-SCEF-Reference-ID AVP and the following information for each UE: MSISDN AVP or External-Identifier AVP (if available and local policy allows it) and Access-Network-Reports AVP (if available).'"
+    },
+    "TS29.154.dadx#err-netloc-access-support": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.2: 'If the PCRF receives NetLoc-Access-Support AVP with the value NETLOC_ACCESS_NOT_SUPPORTED (0) from the PCEF/BBERF, it shall relay such AVP to the SCEF within the Access-Network-Reports AVP.'"
+    },
+    "TS29.154.dadx#err-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.154.dadx#event-configuration-location-reporting": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP.'"
+    },
+    "TS29.154.dadx#event-configuration-monte-location-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause A.4.1: 'The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP.'"
+    },
+    "TS29.154.dadx#network-area-info-list-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.2: 'The Network-Area-Info-List AVP (AVP code 4201) is of type OctetString, it contains the network area information which is coded as specified in 3GPP TS 29.274 [6] in Presence Reporting Area Action IE, starting from octet 9.'"
+    },
+    "TS29.154.dadx#reference-id-unique": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.3: 'It is assigned by the PCRF and shall be globally unique per PLMN.'"
+    },
+    "TS29.154.dadx#transfer-policy-id-unique": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.9: 'It is assigned by the PCRF and is unique per Reference-Id.'"
+    },
     "TS29.154.py#time-window-rule-case": {
      "kind": "correction",
      "reason": "the clause 5.3.5 rule lower-cases the 'w'; its heading, table 5.3.1.1 and the Transfer-Policy and BTR bodies spell Time-Window"

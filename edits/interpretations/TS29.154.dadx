@@ -1,0 +1,416 @@
+; Interprets: 3GPP TS 29.154
+;; What TS 29.154's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order: Nt's procedures, protocol and AVPs (clauses 4 and 5), then
+;; Nta's (Annex A). Each command prints once, Nt's under 16777348 and Nta's
+;; under 16777358. A rule depending on a node, a feature, the procedure or
+;; an earlier message is `text-only`.
+
+
+;; Clause 4.4.1: the BTR's Transfer-Request-Type tells a transfer policy
+;; request (0) from a notification (1); the BTA answering a request is held
+;; to a success's answer.
+; Type: Interpreted Constraints
+; Id: btr-request-asp-identity
+; AVP: Application-Service-Provider-Identity
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP."
+    present-if Transfer-Request-Type = 0
+
+
+;; The volume is the downlink's, the uplink's or both, or the total's: at
+;; least one of the three, read on the total's.
+; Type: Interpreted Constraints
+; Id: btr-request-volume
+; AVP: CC-Total-Octets
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP."
+    present-if Transfer-Request-Type = 0 and not CC-Output-Octets and not CC-Input-Octets
+
+
+; Type: Interpreted Constraints
+; Id: btr-request-number-of-ues
+; AVP: Number-Of-UEs
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP."
+    present-if Transfer-Request-Type = 0
+
+
+; Type: Interpreted Constraints
+; Id: btr-request-time-window
+; AVP: Time-Window
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"Based on the SCS/AS request, the SCEF shall send the Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP with the value TRANSFER_POLICY_REQUEST(0), it shall also include the ASP identifier within the Application-Service-Provider-Identity AVP, volume of data per UE within the CC-Output-Octets AVP for downlink volume and/or the CC-Input-Octets AVP for uplink volume, or the CC-Total-Octets AVP for total volume regardless direction, expected number of UEs within the Number-Of-UEs AVP and desired time window within the Time-Window AVP."
+    present-if Transfer-Request-Type = 0
+
+
+; Type: Interpreted Constraints
+; Id: bta-request-transfer-policy
+; AVP: Transfer-Policy
+; Command: BT-Answer
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"When all existing transfer policies are retrieved, the PCRF shall determine one or more transfer policies based on the information received from the SCEF and other available information (e.g. network policy, congestion level (if available), load status estimation for the required time window and network area, existing transfer policies) and respond with a Background-Data-Transfer-Answer (BTA) command including the possible transfer policies within Transfer-Policy AVP (s) and a reference ID within Reference-Id AVP."
+    present-if request/Transfer-Request-Type = 0 and Result-Code = DIAMETER_SUCCESS
+"The Transfer-Policy AVP(s) shall include the Transfer-Policy-Id AVP, the Time-Window AVP, the Rating-Group AVP, and may also include an Max-Requested-Bandwidth-DL AVP and/or an Max-Requested-Bandwidth-UL AVP."
+    members at-least-one Time-Window
+    members at-least-one Rating-Group
+
+
+; Type: Interpreted Constraints
+; Id: bta-request-reference-id
+; AVP: Reference-Id
+; Command: BT-Answer
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"When all existing transfer policies are retrieved, the PCRF shall determine one or more transfer policies based on the information received from the SCEF and other available information (e.g. network policy, congestion level (if available), load status estimation for the required time window and network area, existing transfer policies) and respond with a Background-Data-Transfer-Answer (BTA) command including the possible transfer policies within Transfer-Policy AVP (s) and a reference ID within Reference-Id AVP."
+    present-if request/Transfer-Request-Type = 0 and Result-Code = DIAMETER_SUCCESS
+
+
+;; How many Transfer-Policy AVPs the BTA holds no kind counts.
+; Type: Interpreted Constraints
+; Id: bta-pcrf-address
+; AVP: PCRF-Address
+; Command: BT-Answer
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"If more than one transfer policies are included in the BTA command, the PCRF shall also include the PCRF Id within the PCRF-Address AVP in the BTA command."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: btr-notification-reference-id
+; AVP: Reference-Id
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1)."
+"The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP."
+    present-if Transfer-Request-Type = 1
+
+
+; Type: Interpreted Constraints
+; Id: btr-notification-transfer-policy-id
+; AVP: Transfer-Policy-Id
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1)."
+"The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP."
+    present-if Transfer-Request-Type = 1
+
+
+; Type: Interpreted Constraints
+; Id: btr-notification-destination-host
+; AVP: Destination-Host
+; Command: BT-Request
+; Section: 4.4.1
+; Versions: 18.0.0..19.0.0
+"If there is more than one transfer policy provided from the PCRF to the SCEF in the BTA command, when the SCEF receives the selected transfer policy from the SCS/AS, the SCEF shall send Background-Data-Transfer-Request (BTR) command to the PCRF including the Transfer-Request-Type AVP set to the value TRANSFER_POLICY_NOTIFICATION (1)."
+"The SCEF shall also include the reference ID in the Reference-Id AVP, the identity of the selected transfer policy within the Transfer-Policy-Id AVP and the destination PCRF Id within the Destination-Host AVP."
+    present-if Transfer-Request-Type = 1
+
+
+;; Clause 5.2: Nt's session is one exchange, in both commands.
+; Type: Interpreted Constraints
+; Id: btr-auth-session-state
+; AVP: Auth-Session-State
+; Command: BT-Request
+; Section: 5.2
+; Versions: 18.0.0..19.0.0
+"In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15])."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: bta-auth-session-state
+; AVP: Auth-Session-State
+; Command: BT-Answer
+; Section: 5.2
+; Versions: 18.0.0..19.0.0
+"In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15])."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: network-area-info-list-element
+; AVP: Network-Area-Info-List
+; Section: 5.3.2
+; Versions: 18.0.0..19.0.0
+"The Network-Area-Info-List AVP (AVP code 4201) is of type OctetString, it contains the network area information which is coded as specified in 3GPP TS 29.274 [6] in Presence Reporting Area Action IE, starting from octet 9."
+    encoding element TS29.274 8.108 "Presence Reporting Area Action"
+
+
+;; Whether another PLMN's PCRF assigned the same identifier no message
+;; shows.
+; Type: Interpreted Constraints
+; Id: reference-id-unique
+; AVP: Reference-Id
+; Section: 5.3.3
+; Versions: 18.0.0..19.0.0
+"It is assigned by the PCRF and shall be globally unique per PLMN."
+    text-only
+
+
+;; The transfer policies of one BTA share its Reference-Id.
+; Type: Interpreted Constraints
+; Id: transfer-policy-id-unique
+; AVP: Transfer-Policy-Id
+; Within: Transfer-Policy
+; Section: 5.3.9
+; Versions: 18.0.0..19.0.0
+"It is assigned by the PCRF and is unique per Reference-Id."
+    unique
+
+
+;; Clause 5.4.2: Nt's features are 3GPP's, in the BTR and BTA.
+; Type: Interpreted Constraints
+; Id: btr-supported-features-vendor
+; AVP: Supported-Features
+; Command: BT-Request
+; Section: 5.4.2
+; Versions: 18.0.0..19.0.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+"The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: bta-supported-features-vendor
+; AVP: Supported-Features
+; Command: BT-Answer
+; Section: 5.4.2
+; Versions: 18.0.0..19.0.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+"The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively."
+    text-only
+
+
+;; Clause 5.6.1: RFC 6733's Auth-Application-Id, read through a path into
+;; the Vendor-Specific-Application-Id the commands require.
+; Type: Interpreted Constraints
+; Id: btr-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: BT-Request
+; Section: 5.6.1
+; Versions: 18.0.0..19.0.0
+"The Nt application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the BT-Request/Answer commands."
+    requires Vendor-Specific-Application-Id/Auth-Application-Id = 16777348
+
+
+; Type: Interpreted Constraints
+; Id: bta-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: BT-Answer
+; Section: 5.6.1
+; Versions: 18.0.0..19.0.0
+"The Nt application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the BT-Request/Answer commands."
+    requires Vendor-Specific-Application-Id/Auth-Application-Id = 16777348
+
+
+;; Clause A.4.1: the ECR's Event-Configuration, which only the ECR carries,
+;; asks for a location report.
+; Type: Interpreted Constraints
+; Id: ecr-event-configuration
+; AVP: Event-Configuration
+; Command: EC-Request
+; Section: A.4.1
+; Versions: 18.0.0..19.0.0
+"Based on the SCS/AS request to retrieve the location information for a group of UEs, the SCEF shall send an Event-Configuration-Request (ECR) command to the PCRF including the Event-Configuration AVP and the External-Group-Identifier AVP."
+    text-only
+"The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP."
+    members at-least-one Location-Information-Configuration
+
+
+; Type: Interpreted Constraints
+; Id: event-configuration-location-reporting
+; AVP: Monitoring-Type
+; Within: Event-Configuration
+; Section: A.4.1
+; Versions: 18.0.0..19.0.0
+"The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP."
+    range 2
+
+
+; Type: Interpreted Constraints
+; Id: event-configuration-monte-location-type
+; AVP: Location-Information-Configuration
+; Within: Event-Configuration
+; Section: A.4.1
+; Versions: 18.0.0..19.0.0
+"The Event-Configuration AVP shall include Monitoring-Type AVP with the value LOCATION_REPORTING (2), SCEF-ID AVP, Extended-SCEF-Reference-ID AVP and MONTE-Location-Type AVP within Location-Information-Configuration AVP."
+    members at-least-one MONTE-Location-Type
+
+
+; Type: Interpreted Constraints
+; Id: eca-event-configuration-status
+; AVP: Event-Configuration-Status
+; Command: EC-Answer
+; Section: A.4.1
+; Versions: 18.0.0..19.0.0
+"Once the PCRF receives the ECR command, the PCRF shall retrieve UE identities (MSISDN and optionally UE external identifier) for all UEs in the group associated with the External-Group-Identifier AVP from the SPR and respond with an Event-Configuration-Answer (ECA) command including the Event-Configuration-Status AVP."
+    present-if Result-Code = DIAMETER_SUCCESS
+
+
+;; Whether the PCRF holds an IP-CAN session whose PCEF or BBERF supports
+;; NetLoc the ECA does not show.
+; Type: Interpreted Constraints
+; Id: eca-final-report
+; AVP: Event-Configuration-State
+; Within: Event-Configuration-Status
+; Section: A.4.1
+; Versions: 18.0.0..19.0.0
+"If the PCRF has at least one active IP-CAN session for received UE identities and for such IP-CAN session the PCEF/BBERF supports the NetLoc feature as defined in clause 5.4.1 of 3GPP TS 29.212 [aa], the Event-Configuration-State AVP within the Event-Configuration-Status AVP shall indicate this is not a final report with bit 0 not set."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: eca-netloc-not-supported
+; AVP: Event-Reports
+; Command: EC-Answer
+; Section: A.4.1
+; Versions: 18.0.0..19.0.0
+"For those UEs having active IP-CAN sessions but without the support of the NetLoc feature in the PCEF/BBERF, the PCRF shall also send Event-Reports AVP with NetLoc-Access-Support AVP set to the value NETLOC_ACCESS_NOT_SUPPORTED (0)."
+    text-only
+
+
+;; Clause A.4.2: what is available and local policy allows, and what the
+;; PCEF or BBERF reported, the ERR does not show.
+; Type: Interpreted Constraints
+; Id: err-event-reports
+; AVP: Event-Reports
+; Command: ER-Request
+; Section: A.4.2
+; Versions: 18.0.0..19.0.0
+"The Event-Reports AVP shall include Extended-SCEF-Reference-ID AVP and the following information for each UE: MSISDN AVP or External-Identifier AVP (if available and local policy allows it) and Access-Network-Reports AVP (if available)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: err-netloc-access-support
+; AVP: NetLoc-Access-Support
+; Within: Access-Network-Reports
+; Section: A.4.2
+; Versions: 18.0.0..19.0.0
+"If the PCRF receives NetLoc-Access-Support AVP with the value NETLOC_ACCESS_NOT_SUPPORTED (0) from the PCEF/BBERF, it shall relay such AVP to the SCEF within the Access-Network-Reports AVP."
+    text-only
+
+
+;; Clause A.6.2: Nta's session is one exchange, in each of its four
+;; commands.
+; Type: Interpreted Constraints
+; Id: ecr-auth-session-state
+; AVP: Auth-Session-State
+; Command: EC-Request
+; Section: A.6.2
+; Versions: 18.0.0..19.0.0
+"In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15])."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: eca-auth-session-state
+; AVP: Auth-Session-State
+; Command: EC-Answer
+; Section: A.6.2
+; Versions: 18.0.0..19.0.0
+"In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15])."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: err-auth-session-state
+; AVP: Auth-Session-State
+; Command: ER-Request
+; Section: A.6.2
+; Versions: 18.0.0..19.0.0
+"In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15])."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: era-auth-session-state
+; AVP: Auth-Session-State
+; Command: ER-Answer
+; Section: A.6.2
+; Versions: 18.0.0..19.0.0
+"In order to indicate that the session state is not to be maintained, the Diameter client and server shall include the Auth-Session-State AVP with the value set to NO_STATE_MAINTAINED (1), in the request and in the answer messages (see IETF RFC 6733 [15])."
+    range 1
+
+
+;; Clause A.6.4.2: Nta's features are 3GPP's, in the ECR and ECA, the
+;; commands printing Supported-Features.
+; Type: Interpreted Constraints
+; Id: ecr-supported-features-vendor
+; AVP: Supported-Features
+; Command: EC-Request
+; Section: A.6.4.2
+; Versions: 18.0.0..19.0.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+"The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: eca-supported-features-vendor
+; AVP: Supported-Features
+; Command: EC-Answer
+; Section: A.6.4.2
+; Versions: 18.0.0..19.0.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+"The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively."
+    text-only
+
+
+;; Clause A.6.6.1: no Nta command carries a Vendor-Specific-Application-Id,
+;; which each admits through its `* [ AVP ]`.
+; Type: Interpreted Constraints
+; Id: ecr-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: EC-Request
+; Section: A.6.6.1
+; Versions: 18.0.0..19.0.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: eca-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: EC-Answer
+; Section: A.6.6.1
+; Versions: 18.0.0..19.0.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: err-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: ER-Request
+; Section: A.6.6.1
+; Versions: 18.0.0..19.0.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: era-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: ER-Answer
+; Section: A.6.6.1
+; Versions: 18.0.0..19.0.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent

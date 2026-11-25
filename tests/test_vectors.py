@@ -769,3 +769,95 @@ def test_a_required_grouped_avp_is_mended_for_its_commands_rules(tmp_path):
     ids = {v.id for v in found.vectors}
     assert "16777998/CHR/negative/constraint-members/Ch-Id/6.2.1" not in ids
     assert "16777998/CHR/negative/constraint-excludes/Ch-Id/6.1.1" in ids
+
+
+# A request whose required grouped AVP holds a member of a given number, a
+# rule of the command on its member, beside a rule within the grouped AVP
+# keeping that member apart from its sibling, as TS 29.154's BTR holds Nt's
+# Auth-Application-Id in its Vendor-Specific-Application-Id.
+_NUMBERED = """\
+; Specification: 3GPP TS 29.997
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+
+
+; Type: Message
+; Name: Number-Request, NUR
+; Section: 6.1.1
+<Number-Request> ::= < Diameter Header: 9, REQ, PXY, 16777997 >
+        < Session-Id >
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        { Nu-Id }
+        *[ AVP ]
+
+
+; Type: Grouped AVP
+; Name: Nu-Id
+; Section: 6.2.1
+Nu-Id ::= < AVP header: 1 10415 >
+        [ Nu-Auth ]
+        [ Nu-Acct ]
+
+
+; Type: Interpreted Constraints
+; AVP: Nu-Id
+; Command: Number-Request
+; Section: 6.1.1
+; Versions: 19.0.0
+"It holds the application's number."
+    requires Nu-Id/Nu-Auth = 16777997
+
+
+; Type: Interpreted Constraints
+; AVP: Nu-Auth
+; Within: Nu-Id
+; Section: 6.2.1
+; Versions: 19.0.0
+"It holds one of the two."
+    excludes Nu-Acct
+
+
+; Type: AVP Table
+; Section: 6.2
+; Columns: Name   Code   Section   Type         Must
+Nu-Id             1      6.2.1     Grouped      M,V
+Nu-Auth           2      6.2.2     Unsigned32   M,V
+Nu-Acct           3      6.2.3     Unsigned32   M,V
+"""
+
+
+def test_a_required_grouped_avp_is_given_the_number_its_commands_rule_wants(
+    tmp_path,
+):
+    shutil.copy(CORPUS_DIR / "rfc" / "rfc6733.dad", tmp_path / "rfc6733.dad")
+    (tmp_path / "29997-j00.dad").write_text(_NUMBERED, "utf-8")
+    out = tmp_path / "v.json"
+    done = CliRunner().invoke(
+        main,
+        [
+            "vectors",
+            "--corpus",
+            str(tmp_path),
+            "--application",
+            "16777997",
+            "-o",
+            str(out),
+        ],
+    )
+    assert done.exit_code == 0, done.output
+    found = vectors.Vectors.model_validate_json(out.read_text("utf-8"))
+    built = {v.kind: v for v in found.vectors if v.kind != "negative"}
+
+    def held(vector: vectors.Vector) -> dict[str, str | None]:
+        (identity,) = (node for node in vector.tree if node.name == "Nu-Id")
+        return {child.name: child.data for child in identity.children}
+
+    # Both messages hold the number the command's rule wants; the maximal
+    # one keeps it and drops the sibling the grouped AVP's rule forbids.
+    assert set(built) == {"minimal", "maximal"}
+    assert held(built["minimal"]) == {"Nu-Auth": "0100030d"}
+    assert held(built["maximal"]) == {"Nu-Auth": "0100030d"}
