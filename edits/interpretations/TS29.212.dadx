@@ -2,8 +2,8 @@
 ;; What TS 29.212's clauses state in prose about an AVP's value or presence,
 ;; read by hand and pinned to the sentences read (docs/constraints.md), in
 ;; clause order: the procedure clauses for what they state of one message,
-;; then per application the AVP clauses, the re-used AVPs' descriptions and
-;; the clauses on result codes and messages. The document has no
+;; then per application, Gx, Gxx, Sd, St and S15, the AVP clauses, the
+;; re-used AVPs' descriptions and the clauses on result codes and messages. The document has no
 ;; information-element tables: its commands are their ABNF. A clause
 ;; pointing at another document for a layout is an `element`; a rule
 ;; depending on an earlier message, a feature, the node, the subscription,
@@ -12,7 +12,8 @@
 ;; The document prints CC-Request and CC-Answer, and RA-Request and
 ;; RA-Answer, for Gx, Gxx, Sd and S15, each with no application id in its
 ;; header: a block on a command names the print with `; Command-Section:`,
-;; Gx's in clauses 5.6.2 to 5.6.5. An AVP clause of clause 5.3 is Gx's, and
+;; Gx's in clauses 5.6.2 to 5.6.5, Gxx's in 5a.6, Sd's in 5b.6, St's in
+;; 5c.6 and S15's in E.6.6. An AVP clause of clause 5.3 is Gx's, and
 ;; its sentences on a command are read of Gx's.
 ;;
 ;; A PCC rule's Charging-Rule-Definition modifies the rule installed before
@@ -70,6 +71,45 @@
 ; Versions: 18.2.0..19.1.0
 "For 3GPP-EPS and 3GPP2 accesses, the PCEF shall provide the IP address(es) (Ipv4 or Ipv6, if available) of the SGW/AGW within the AN-GW-Address AVP."
     text-only
+
+
+;; Gxx, clause 4a.5.1: the CC-Request of a Gateway Control Session's
+;; establishment, Gxx's print of clause 5a.6.2.
+; Type: Interpreted Constraints
+; Id: gxx-ccr-initial-an-gw-address
+; AVP: AN-GW-Address
+; Command: CC-Request
+; Command-Section: 5a.6.2
+; Section: 4a.5.1
+; Versions: 18.2.0..19.1.0
+"The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP."
+    present-if CC-Request-Type = INITIAL_REQUEST
+
+
+;; An emergency session's BBERF without the IMSI sends the IMEI(SV)
+;; instead (clause 4a.5.12.1.1).
+; Type: Interpreted Constraints
+; Id: gxx-ccr-initial-subscription-id
+; AVP: Subscription-Id
+; Command: CC-Request
+; Command-Section: 5a.6.2
+; Section: 4a.5.1
+; Versions: 18.2.0..19.1.0
+"The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP."
+    text-only
+
+
+;; Sd, clause 4b.5.1.1: the TS-Request establishing a TDF session, Sd's
+;; print of clause 5b.6.2. Of the UE's IPv4 address and IPv6 prefix, one.
+; Type: Interpreted Constraints
+; Id: sd-tsr-framed-ip-address
+; AVP: Framed-IP-Address
+; Command: TS-Request
+; Command-Section: 5b.6.2
+; Section: 4b.5.1.1
+; Versions: 18.2.0..19.1.0
+"When establishing the session with the TDF, the PCRF shall send a TS-Request with the PDN information, if available, within the Called-Station-Id AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP. These parameters shall uniquely identify the session between the PCRF and the TDF."
+    present-if not Framed-IPv6-Prefix
 
 
 ;; Gx's AVP clauses, clause 5.3.
@@ -1338,3 +1378,196 @@
 ; Versions: 18.2.0..19.1.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+;; Gxx's AVP clauses, clause 5a.3; its re-used AVPs' descriptions repeat
+;; Gx's, which the blocks above read wherever the document reads the AVP.
+; Type: Interpreted Constraints
+; Id: qos-rule-install-charging-identifier
+; AVP: Access-Network-Charging-Identifier-Value
+; Within: QoS-Rule-Install
+; Section: 5a.3.1
+; Versions: 18.2.0..19.1.0
+"The charging identifier value for a QoS rule shall be the same as that for the corresponding PCC rule."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: qos-rule-report-content-version
+; AVP: Content-Version
+; Within: QoS-Rule-Report
+; Section: 5a.3.5
+; Versions: 18.2.0..19.1.0
+"If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the QoS-Rule-Definition AVP when the corresponding QoS rule was installed or modified."
+    text-only
+
+
+;; That the report holds only one QoS-Rule-Name has no form.
+; Type: Interpreted Constraints
+; Id: qos-rule-report-qos-rule-name
+; AVP: QoS-Rule-Name
+; Within: QoS-Rule-Report
+; Section: 5a.3.5
+; Versions: 18.2.0..19.1.0
+"If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included."
+    present-if Content-Version
+
+
+; Type: Interpreted Constraints
+; Id: session-linking-indicator-absence
+; AVP: Session-Linking-Indicator
+; Section: 5a.3.6
+; Versions: 18.2.0..19.1.0
+"The absence of this AVP in case 2b as defined in 3GPP TS 29.213 [8] shall indicate the value SESSION_LINKING_IMMEDIATE."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: gxx-cca-initial-supported-features
+; AVP: Supported-Features
+; Command: CC-Answer
+; Command-Section: 5a.6.3
+; Section: 5a.4.1
+; Versions: 18.2.0..19.1.0
+"If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-8 Gxx functionality, the PCRF shall not include the Supported-Features AVP in the CCA command."
+    text-only
+
+
+;; Sd's AVP clauses, clause 5b.3.
+; Type: Interpreted Constraints
+; Id: adc-rule-definition-sponsor-identity
+; AVP: Sponsor-Identity
+; Within: ADC-Rule-Definition
+; Section: 5b.3.3
+; Versions: 18.2.0..19.1.0
+"Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: adc-rule-definition-application-service-provider-identity
+; AVP: Application-Service-Provider-Identity
+; Within: ADC-Rule-Definition
+; Section: 5b.3.3
+; Versions: 18.2.0..19.1.0
+"Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: adc-rule-definition-mute-notification
+; AVP: Mute-Notification
+; Within: ADC-Rule-Definition
+; Section: 5b.3.3
+; Versions: 18.2.0..19.1.0
+"Mute-Notification status shall not be changed during the lifetime of the ADC rules."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: adc-rule-definition-traffic-steering
+; AVP: Traffic-Steering-Policy-Identifier-UL
+; Within: ADC-Rule-Definition
+; Section: 5b.3.3
+; Versions: 18.2.0..19.1.0
+"If the traffic steering policies are identical in both downlink and uplink directions, the values of the Traffic-Steering-Policy-Identifier-UL AVP and the Traffic-Steering-Policy-Identifier-DL AVP shall be identical."
+    text-only
+
+
+;; Sd's re-used AVPs, table 5b.4.0.1: an ADC rule's bandwidth limitation
+;; and its DSCP marking, the mask bits 7 to 2 of the second octet set.
+; Type: Interpreted Constraints
+; Id: adc-rule-definition-qos-information
+; AVP: QoS-Information
+; Within: ADC-Rule-Definition
+; Section: 5b.4.0
+; Table: 5b.4.0.1
+; Versions: 18.2.0..19.1.0
+"Defines the QoS information (bandwidth limitation) for the applications, detected by the TDF and sent from the PCRF to the TDF. Only the Max-Requested-Bandwidth-UL and the Max-Requested-Bandwidth-DL are used."
+    members only Max-Requested-Bandwidth-UL Max-Requested-Bandwidth-DL
+
+
+; Type: Interpreted Constraints
+; Id: adc-rule-definition-tos-traffic-class
+; AVP: ToS-Traffic-Class
+; Within: ADC-Rule-Definition
+; Section: 5b.4.0
+; Table: 5b.4.0.1
+; Versions: 18.2.0..19.1.0
+"The first octet contains the DSCP code and the second octet contains the mask field set to 11111100."
+    bits set 2 3 4 5 6 7
+    bits clear 0 1
+
+
+; Type: Interpreted Constraints
+; Id: sd-tsa-supported-features
+; AVP: Supported-Features
+; Command: TS-Answer
+; Command-Section: 5b.6.3
+; Request-Section: 5b.6.2
+; Section: 5b.4.1
+; Versions: 18.2.0..19.1.0
+"The following exceptions apply to the initial TSR/TSA command pair:"
+"If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP."
+    absent-if not request/Supported-Features
+
+
+;; Clause 5b.5.1, the Experimental-Result of every Sd answer.
+; Type: Interpreted Constraints
+; Id: sd-tsa-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: TS-Answer
+; Command-Section: 5b.6.3
+; Section: 5b.5.1
+; Versions: 18.2.0..19.1.0
+"The Vendor-ID AVP shall be set to 3GPP (10415)."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: sd-cca-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: CC-Answer
+; Command-Section: 5b.6.5
+; Section: 5b.5.1
+; Versions: 18.2.0..19.1.0
+"The Vendor-ID AVP shall be set to 3GPP (10415)."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: sd-raa-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: RA-Answer
+; Command-Section: 5b.6.7
+; Section: 5b.5.1
+; Versions: 18.2.0..19.1.0
+"The Vendor-ID AVP shall be set to 3GPP (10415)."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+;; St, clause 5c.4.2: the initial TS-Request carries Request-Type 0, "0
+;; (initial request)" (clause 5c.2).
+; Type: Interpreted Constraints
+; Id: st-tsa-supported-features
+; AVP: Supported-Features
+; Command: TS-Answer
+; Command-Section: 5c.6.3
+; Request-Section: 5c.6.2
+; Section: 5c.4.2
+; Versions: 18.2.0..19.1.0
+"The following exceptions apply to the initial TSR/TSA command pair:"
+"If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP."
+    absent-if request/Request-Type = 0 and not request/Supported-Features
+
+
+;; S15, clause E.6.4.2.
+; Type: Interpreted Constraints
+; Id: s15-cca-supported-features
+; AVP: Supported-Features
+; Command: CC-Answer
+; Command-Section: E.6.6.3
+; Section: E.6.4.2
+; Versions: 18.2.0..19.1.0
+"If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP."
+    text-only

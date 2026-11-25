@@ -1182,6 +1182,30 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.22: 'Otherwise, all the Charging-Rule-Name AVPs or Charging-Rule-Base-Name AVPs corresponding to PCC rules associated to the provided Access-Network-Charging-Identifier-Value shall be included.'"
     },
+    "TS29.212.dadx#adc-rule-definition-application-service-provider-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-mute-notification": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'Mute-Notification status shall not be changed during the lifetime of the ADC rules.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'Defines the QoS information (bandwidth limitation) for the applications, detected by the TDF and sent from the PCRF to the TDF. Only the Max-Requested-Bandwidth-UL and the Max-Requested-Bandwidth-DL are used.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-sponsor-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-tos-traffic-class": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'The first octet contains the DSCP code and the second octet contains the mask field set to 11111100.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-traffic-steering": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'If the traffic steering policies are identical in both downlink and uplink directions, the values of the Traffic-Steering-Policy-Identifier-UL AVP and the Traffic-Steering-Policy-Identifier-DL AVP shall be identical.'"
+    },
     "TS29.212.dadx#af-charging-identifier-reporting-level": {
      "kind": "interpret",
      "reason": "interpreted from table 5.4.0.1: 'This AVP may only be included in a Charging-Rule-definition AVP if the SERVICE_IDENTIFIER_LEVEL reporting is being selected with the Reporting-Level AVP.'"
@@ -1474,6 +1498,18 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.26: 'When the Extended-BW-NR feature is supported and the value to be transmitted exceeds 2^32-1, the Extended-GBR-UL AVP shall be used'"
     },
+    "TS29.212.dadx#gxx-cca-initial-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.4.1: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-8 Gxx functionality, the PCRF shall not include the Supported-Features AVP in the CCA command.'"
+    },
+    "TS29.212.dadx#gxx-ccr-initial-an-gw-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP.'"
+    },
+    "TS29.212.dadx#gxx-ccr-initial-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP.'"
+    },
     "TS29.212.dadx#henb-local-ip-address-family": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.95: 'The H(e)NB local IP address type may be Ipv4 or Ipv6.'"
@@ -1538,6 +1574,18 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.28: 'This value indicates that a QoS negotiation is allowed for the corresponding PCC rule request. This is the default value applicable if this AVP is not supplied.'"
     },
+    "TS29.212.dadx#qos-rule-install-charging-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.1: 'The charging identifier value for a QoS rule shall be the same as that for the corresponding PCC rule.'"
+    },
+    "TS29.212.dadx#qos-rule-report-content-version": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the QoS-Rule-Definition AVP when the corresponding QoS rule was installed or modified.'"
+    },
+    "TS29.212.dadx#qos-rule-report-qos-rule-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included.'"
+    },
     "TS29.212.dadx#qos-upgrade-absence": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.29: 'If no QoS-Upgrade AVP has been supplied for an IP CAN bearer, the default value QoS_UPGRADE_NOT_SUPPORTED is applicable.'"
@@ -1585,6 +1633,38 @@
     "TS29.212.dadx#rule-failure-code-an-gw-failed": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.38: 'This value shall not be used if the IP-CAN Session Modification procedure is initiated for PCC rule removal only.'"
+    },
+    "TS29.212.dadx#s15-cca-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.4.2: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP.'"
+    },
+    "TS29.212.dadx#sd-cca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-raa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-tsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-tsa-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.4.1: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
+    },
+    "TS29.212.dadx#sd-tsr-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.1.1: 'When establishing the session with the TDF, the PCRF shall send a TS-Request with the PDN information, if available, within the Called-Station-Id AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP. These parameters shall uniquely identify the session between the PCRF and the TDF.'"
+    },
+    "TS29.212.dadx#session-linking-indicator-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.6: 'The absence of this AVP in case 2b as defined in 3GPP TS 29.213 [8] shall indicate the value SESSION_LINKING_IMMEDIATE.'"
+    },
+    "TS29.212.dadx#st-tsa-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.4.2: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
     },
     "TS29.212.dadx#tdf-application-instance-identifier-deducible": {
      "kind": "interpret",
@@ -2018,6 +2098,30 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.22: 'Otherwise, all the Charging-Rule-Name AVPs or Charging-Rule-Base-Name AVPs corresponding to PCC rules associated to the provided Access-Network-Charging-Identifier-Value shall be included.'"
     },
+    "TS29.212.dadx#adc-rule-definition-application-service-provider-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-mute-notification": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'Mute-Notification status shall not be changed during the lifetime of the ADC rules.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'Defines the QoS information (bandwidth limitation) for the applications, detected by the TDF and sent from the PCRF to the TDF. Only the Max-Requested-Bandwidth-UL and the Max-Requested-Bandwidth-DL are used.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-sponsor-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-tos-traffic-class": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'The first octet contains the DSCP code and the second octet contains the mask field set to 11111100.'"
+    },
+    "TS29.212.dadx#adc-rule-definition-traffic-steering": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.3: 'If the traffic steering policies are identical in both downlink and uplink directions, the values of the Traffic-Steering-Policy-Identifier-UL AVP and the Traffic-Steering-Policy-Identifier-DL AVP shall be identical.'"
+    },
     "TS29.212.dadx#af-charging-identifier-reporting-level": {
      "kind": "interpret",
      "reason": "interpreted from table 5.4.0.1: 'This AVP may only be included in a Charging-Rule-definition AVP if the SERVICE_IDENTIFIER_LEVEL reporting is being selected with the Reporting-Level AVP.'"
@@ -2310,6 +2414,18 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.26: 'When the Extended-BW-NR feature is supported and the value to be transmitted exceeds 2^32-1, the Extended-GBR-UL AVP shall be used'"
     },
+    "TS29.212.dadx#gxx-cca-initial-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.4.1: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-8 Gxx functionality, the PCRF shall not include the Supported-Features AVP in the CCA command.'"
+    },
+    "TS29.212.dadx#gxx-ccr-initial-an-gw-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP.'"
+    },
+    "TS29.212.dadx#gxx-ccr-initial-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP.'"
+    },
     "TS29.212.dadx#henb-local-ip-address-family": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.95: 'The H(e)NB local IP address type may be Ipv4 or Ipv6.'"
@@ -2374,6 +2490,18 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.28: 'This value indicates that a QoS negotiation is allowed for the corresponding PCC rule request. This is the default value applicable if this AVP is not supplied.'"
     },
+    "TS29.212.dadx#qos-rule-install-charging-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.1: 'The charging identifier value for a QoS rule shall be the same as that for the corresponding PCC rule.'"
+    },
+    "TS29.212.dadx#qos-rule-report-content-version": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the QoS-Rule-Definition AVP when the corresponding QoS rule was installed or modified.'"
+    },
+    "TS29.212.dadx#qos-rule-report-qos-rule-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included.'"
+    },
     "TS29.212.dadx#qos-upgrade-absence": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.29: 'If no QoS-Upgrade AVP has been supplied for an IP CAN bearer, the default value QoS_UPGRADE_NOT_SUPPORTED is applicable.'"
@@ -2421,6 +2549,38 @@
     "TS29.212.dadx#rule-failure-code-an-gw-failed": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.38: 'This value shall not be used if the IP-CAN Session Modification procedure is initiated for PCC rule removal only.'"
+    },
+    "TS29.212.dadx#s15-cca-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.4.2: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP.'"
+    },
+    "TS29.212.dadx#sd-cca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-raa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-tsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-tsa-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.4.1: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
+    },
+    "TS29.212.dadx#sd-tsr-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.1.1: 'When establishing the session with the TDF, the PCRF shall send a TS-Request with the PDN information, if available, within the Called-Station-Id AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP. These parameters shall uniquely identify the session between the PCRF and the TDF.'"
+    },
+    "TS29.212.dadx#session-linking-indicator-absence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.6: 'The absence of this AVP in case 2b as defined in 3GPP TS 29.213 [8] shall indicate the value SESSION_LINKING_IMMEDIATE.'"
+    },
+    "TS29.212.dadx#st-tsa-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.4.2: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
     },
     "TS29.212.dadx#tdf-application-instance-identifier-deducible": {
      "kind": "interpret",

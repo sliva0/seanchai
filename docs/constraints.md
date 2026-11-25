@@ -650,30 +650,39 @@ non-3GPP access network technology type").
 
 ## TS 29.212
 
-TS 29.212 V19.1.0's Gx is read: every AVP clause of clause 5.3, the
-re-used AVPs' descriptions of table 5.4.0.1, clause 5.4.1's supported
-features, 5.4.2's Flow-Description and 5.5.1's Experimental-Result, and
-clause 4.5.1's IP-CAN session establishment for what it states of one
-message. Its Gxx, Sd, St and S15 clauses are not read yet. Release 18's
-copy, V18.2.0, prints every sentence read and holds all 117 blocks; the
-Release 11 copy, held for citations, is offered none.
+TS 29.212 V19.1.0 is read for each of its applications, Gx, Gxx, Sd, St and
+S15: every AVP clause of clauses 5.3, 5a.3, 5b.3, 5c.3 and E.6.3, the
+re-used AVPs' descriptions of tables 5.4.0.1, 5a.4.0.1, 5b.4.0.1, 5c.4.1.1
+and E.6.4.1.1, the supported-features and result-code clauses, 5.4.2's
+Flow-Description, and the procedure clauses for what they state of one
+message (4.5.1's IP-CAN session establishment, 4a.5.1's Gateway Control
+Session's, 4b.5.1.1's TDF session's). Release 18's copy, V18.2.0, prints
+every sentence read and holds all 137 blocks; the Release 11 copy, held for
+citations, is offered none. The re-used AVPs' tables of Gxx, Sd, St and S15
+mostly repeat Gx's descriptions, which a block on the AVP wherever read, or
+within the document's own grouped AVP, already reads.
 
 The document has no information-element tables, and prints CC-Request,
 CC-Answer, RA-Request and RA-Answer for Gx, Gxx, Sd and S15 with no
-application id in their headers: a block names Gx's print with
-`; Command-Section:`, clauses 5.6.2 to 5.6.5. A PCC rule's
+application id in their headers, and TS-Request and TS-Answer for Sd and
+St: a block names the print with `; Command-Section:`, Gx's in clauses
+5.6.2 to 5.6.5, Gxx's in 5a.6, Sd's in 5b.6, St's in 5c.6, S15's in E.6.6.
+A PCC rule's
 Charging-Rule-Definition modifies the one installed before it, keeping what
-it omits (clause 5.3.4), so a condition on its members is `text-only`.
+it omits (clause 5.3.4), and an ADC rule's ADC-Rule-Definition likewise
+(clause 5b.3.3), so a condition on their members is `text-only`.
 
 | | |
 |---|---|
 | AVP clauses (clause 5.3, not its General and Void clauses) | 130 |
 | with something to declare | 59, in 102 blocks |
 | with nothing to declare | 71 |
-| re-used AVPs' descriptions (table 5.4.0.1) | 7 blocks |
-| clauses 4.5.1, 5.4.1, 5.4.2 and 5.5.1 | 8 blocks |
-| blocks | 117: 51 on an AVP wherever read, 26 within a grouped AVP, 40 within a command |
-| readings | 148 |
+| Gxx's, Sd's, St's and S15's AVP clauses (5a.3, 5b.3, 5c.3, E.6.3) | 19, 4 with something to declare, in 8 blocks |
+| re-used AVPs' descriptions (tables 5.4.0.1, 5b.4.0.1) | 9 blocks |
+| supported features, Flow-Description, result codes (5.4.1, 5.4.2, 5.5.1, 5a.4.1, 5b.4.1, 5b.5.1, 5c.4.2, E.6.4.2) | 11 blocks |
+| procedure clauses (4.5.1, 4a.5.1, 4b.5.1.1) | 7 blocks |
+| blocks | 137: 52 on an AVP wherever read, 35 within a grouped AVP, 50 within a command |
+| readings | 168 |
 
 | Rules | |
 |---|---|
@@ -682,11 +691,12 @@ it omits (clause 5.3.4), so a condition on its members is `text-only`.
 | `length` | 1: ToS-Traffic-Class, 2 octets |
 | `range` | 2: Priority-Level 1 to 15, Routing-Filter's Flow-Direction BIDIRECTIONAL |
 | `exclude` | 1: Event-Trigger's obsolete values 8, 9, 10, 38 and 41 |
-| `requires`, `present-if`, `absent-if` | 3, 39, 2 |
-| reading the request | 1: the initial CCA's Supported-Features, beside the CCR's |
+| `requires`, `present-if`, `absent-if` | 6, 42, 4 |
+| reading the request | 3: the initial CCA's Supported-Features beside the CCR's, Sd's and St's TSA's none without the TSR's |
 | `default` | 4: QoS-Negotiation, Pre-emption-Capability, Pre-emption-Vulnerability, Usage-Monitoring-Level |
-| `members` | 6, `at-least-one`: TDF-Information's realm and host or address, Conditional-APN-Aggregate-Max-Bitrate's bandwidths and conditions, the Flow-Description and Flow-Direction of Application-Detection-Information's Flow-Information |
-| `text-only` | 77 |
+| `bits` | 2: `set` and `clear`, an ADC rule's ToS-Traffic-Class mask 11111100 |
+| `members` | 7: `at-least-one` 6 (TDF-Information's realm and host or address, Conditional-APN-Aggregate-Max-Bitrate's bandwidths and conditions, the Flow-Description and Flow-Direction of Application-Detection-Information's Flow-Information), `only` (an ADC rule's QoS-Information, its maximum bandwidths) |
+| `text-only` | 87 |
 
 Most checked rules are clause 5.3.7's: an event trigger a CCR reports, of
 any of its Event-Trigger AVPs, with the AVP the value's description says it
@@ -695,16 +705,23 @@ TAI_CHANGE's 3GPP-User-Location-Info, USAGE_REPORT's
 Usage-Monitoring-Information), 29 conditions. H(E)NB_LOCAL_IP_ADDRESS_CHANGE
 and 3GPP_PS_DATA_OFF_CHANGE are written 44 and 55, the first a value the
 corpus's Event-Trigger table lacks, the second a name beginning with a digit.
-A deletion's Packet-Filter-Information "only the Packet-Filter-Identifier"
-is read on the CCR as the AVP absent where it holds another member, a path
+Gxx's initial CCR carries the AN-GW-Address (clause 4a.5.1), Sd's TS-Request
+the UE's IPv4 address or IPv6 prefix (4b.5.1.1), and each Gx and Sd answer's
+Experimental-Result the 3GPP vendor (5.5.1, 5b.5.1). A deletion's
+Packet-Filter-Information "only the Packet-Filter-Identifier" is read on the
+CCR as the AVP absent where it holds another member, a path
 into it, since its own scope does not see the command's
 Packet-Filter-Operation.
 
 The text-only rules are mostly conditions on the node, the bearer binding,
 the subscription or an earlier message ("For GPRS scenarios where the
 bearer binding is performed by the PCRF", "If ... not been previously
-provided, its absence shall indicate"), the members of a
-Charging-Rule-Definition, and defaults resting on what was supplied before.
+provided, its absence shall indicate", "the PCRF supports Rel-8 Gxx
+functionality"), the members of a Charging-Rule-Definition or an
+ADC-Rule-Definition, Gxx's initial Subscription-Id, which an emergency
+session's BBERF without the IMSI replaces by the IMEI(SV) (clause
+4a.5.12.1.1), and defaults resting on what was supplied before. St's TSA is
+held to its request's Request-Type 0, "0 (initial request)" (clause 5c.2).
 The rest a single message could show but the format cannot say: which of a
 CCR's Charging-Rule-Reports are a lost bearer's, a text's start (an NBIFOM
 Routing-Rule-Identifier's "PCEF" or "PCRF"), digits as text where a
@@ -727,5 +744,11 @@ interface or a release, with no "shall" (Session-Release-Cause's values
 3GPP-EPS and Non-3GPP-EPS IP-CAN type values are applicable in this
 release", Max-PLR's "only applicable for PCC rule with QCI=1"); "is
 provided" and "may ... when" sentences (the NBIFOM event triggers' IP-CAN
-type, Quota-Consumption-Time beside a CC-Time); and the M-bit and vendor
-settings of table 5.4.0.1, which the AVP table's flags already state.
+type, Quota-Consumption-Time beside a CC-Time); the M-bit and vendor
+settings of table 5.4.0.1, which the AVP table's flags already state; and
+the Sd table's sentences on grouped AVPs Gx shares, which a scope of the
+grouped AVP would hold to both: Application-Detection-Information's
+Flow-Information, where "only Flow-Description AVP and Flow-Direction AVPs
+are used", and Usage-Monitoring-Level, where "Only SESSION_LEVEL (0) ... and
+ADC-Rule-Level (2) apply", against clause 5.3.61's default PCC_RULE_LEVEL,
+which the file reads wherever the AVP is read, Sd's too.
