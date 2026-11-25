@@ -34,14 +34,21 @@ override, and `apply` skips it.
 import dataclasses
 import importlib.util
 import re
-from collections.abc import Iterator, Sequence
+from collections.abc import Collection, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import pydantic
 
-from .._versions import VersionRange, applies, reviewed_release, spans
+from .._versions import (
+    VersionRange,
+    applies,
+    major,
+    release_bounds,
+    reviewed_release,
+    spans,
+)
 from . import ast, formatter
 from ._errors import CorrectionError
 from .interpretations import Interpretation
@@ -1601,28 +1608,38 @@ def in_release(
 
 
 def offered(
-    declarations: Sequence[Declaration], version: str | None
+    declarations: Sequence[Declaration],
+    version: str | None,
+    releases: Collection[int] | None = None,
 ) -> list[Interpretation]:
     """The interpretations another release reviewed that `version`'s copy may
-    take: none if one spans its release already, else those of the release
-    `_versions.reviewed_release` chooses among the interpretations, the
-    oldest above or the newest below. Each is a candidate only, to be held to
-    the copy's text (`check_quotes`) before its range is widened."""
-    interpretations = [
-        item for item in declarations if isinstance(item, Interpretation)
-    ]
-    if version is None or any(
-        spans(VersionRange.parse(item.versions), version) for item in interpretations
-    ):
+    take: each whose range does not span its release, whatever the others'
+    ranges, so that a block widened to one copy leaves the rest offered. With
+    `releases`, the releases of the document's other copies a block may be
+    widened to, a block is offered only where none of them lies between its
+    range and the copy's release: a range is one run of versions, and
+    widening it past a copy would claim a reading that copy was never held
+    to. Each is a candidate only, to be held to the copy's text
+    (`check_quotes`) before its range is widened."""
+    if version is None:
         return []
-    release = reviewed_release(
-        [VersionRange.parse(item.versions) for item in interpretations], version
-    )
-    return [
-        item
-        for item in interpretations
-        if applies(VersionRange.parse(item.versions), release)
-    ]
+    wanted = major(version)
+    found = []
+    for item in declarations:
+        if not isinstance(item, Interpretation):
+            continue
+        versions = VersionRange.parse(item.versions)
+        if spans(versions, version):
+            continue
+        first, last = release_bounds(versions)
+        if releases is not None and any(
+            (last is not None and last < other < wanted)
+            or (first is not None and wanted < other < first)
+            for other in releases
+        ):
+            continue
+        found.append(item)
+    return found
 
 
 def acceptances(declarations: Sequence[Declaration]) -> list[Accept]:

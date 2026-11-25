@@ -276,7 +276,10 @@ otherwise printed as `not widened, stale:`. A literal it cannot rewrite
 (outside the top-level `CORRECTIONS` statements, in a lambda, conditional or
 filtered comprehension, split by comments, or computed) is printed as
 `not widened, widen it by hand:`. Every block of an interpretations file is
-widened where it applied, its range being a line of its own.
+widened where it applied, its range being a line of its own: to each copy of
+a release the corpus holds whole whose clause prints its quotes, and with
+`--offer-cited` to a copy held only for citations too
+([constraints.md](constraints.md#the-interpretations-file)).
 
 ### A new release
 

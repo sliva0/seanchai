@@ -280,6 +280,12 @@ def _echo_catalog(catalog: Catalog, sources: Sequence[str]) -> None:
     " to cleanly.",
 )
 @click.option(
+    "--offer-cited",
+    is_flag=True,
+    help="With --expand-ranges, also offer the interpretations another release"
+    " reviewed to copies of a release the corpus holds only for citations.",
+)
+@click.option(
     "--unclaimed",
     type=click.Path(dir_okay=False, path_type=Path),
     default=_DEFAULT_UNCLAIMED,
@@ -303,6 +309,7 @@ def regenerate(
     add: tuple[str, ...],
     only: tuple[str, ...],
     expand_ranges: bool,
+    offer_cited: bool,
     unclaimed: Path,
     acknowledge_unclaimed: bool,
 ) -> None:
@@ -331,6 +338,11 @@ def regenerate(
     _require_extract()
     from .. import _regenerate as library
 
+    if offer_cited and not expand_ranges:
+        raise click.BadParameter(
+            "offers interpretations only with --expand-ranges",
+            param_hint="'--offer-cited'",
+        )
     if not manifest.is_file():
         raise click.ClickException(
             f"{manifest} does not exist: run `seanchai corpus download`,"
@@ -364,6 +376,7 @@ def regenerate(
             expand_ranges=expand_ranges,
             unclaimed=unclaimed,
             acknowledge_unclaimed=acknowledge_unclaimed,
+            offer_cited=offer_cited,
         )
     for reference, stale in sorted(report.stale_unclaimed.items()):
         for candidate in stale:

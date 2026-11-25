@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING, Literal
 
 from . import _correction_record, _ranges, linter
 from ._versions import RangeWarning, VersionRange
-from .corpus import TGPP2_RENDERING_RE, Corpus, CorpusError
+from .corpus import CORPUS_FILE, TGPP2_RENDERING_RE, Corpus, CorpusError, Rules
 from .dad import ast, corrections, formatter, interpretations, parser
 from .dad.corrections import CorrectionError
 from .dad.parser import DadParseError
@@ -141,6 +141,7 @@ def regenerate(
     expand_ranges: bool = False,
     unclaimed: Path | None = None,
     acknowledge_unclaimed: bool = False,
+    offer_cited: bool = False,
 ) -> Report:
     """Rebuild every committed specification (plus `add`) into `output`.
 
@@ -154,7 +155,9 @@ def regenerate(
 
     `expand_ranges` widens, in the edit files themselves, every declaration
     range a cleanly rebuilt specification's version falls outside
-    (`seanchai._ranges`).
+    (`seanchai._ranges`). The interpretations another release reviewed are
+    offered to a copy of a release the corpus holds whole, and with
+    `offer_cited` to a copy held only for citations too (`_Offering`).
 
     `transcriptions_dir` holds the hand transcriptions, each a source like a
     manifest record.
@@ -205,6 +208,8 @@ def regenerate(
             books=books,
             baseline=baseline,
             unclaimed=unclaimed if acknowledge_unclaimed else None,
+            whole=_whole_releases(corpus),
+            offer_cited=offer_cited,
         )
 
 
@@ -225,6 +230,8 @@ def _run(
     books: Corpus | None,
     baseline: Baseline | None,
     unclaimed: Path | None,
+    whole: frozenset[int] | None = None,
+    offer_cited: bool = False,
 ) -> Report:
     """`regenerate`'s run, building into `stage` and promoting it to `output`
     and the edit directories only when nothing failed. With `unclaimed`, the
@@ -240,7 +247,12 @@ def _run(
             report(refused)
     readable = [reference for reference in add if reference not in out_of_scope]
     moves = {_followed(key, listed, committed): key for key in committed}
-    for key in _selected(listed, committed, only, readable):
+    selected = _selected(listed, committed, only, readable)
+    if books is not None:
+        # Newest first within a document, so that a run going back widens a
+        # block release by release, each copy then the next one's neighbour.
+        selected.sort(key=lambda key: (key[0], -(_release(key[1]) or 0)))
+    for key in selected:
         outcome = _one(
             key[0],
             listed.get(key),
@@ -253,6 +265,7 @@ def _run(
             interpretations_dir,
             books,
             absent,
+            _offering(key, [*listed, *committed], whole, offer_cited),
         )
         stage.unstaged(outcome)
         previous = committed.get(moves.get(key, key))
@@ -392,6 +405,54 @@ def _followed(
     return later[0] if len(later) == 1 else key
 
 
+def _whole_releases(corpus: Path) -> frozenset[int] | None:
+    """The 3GPP releases `corpus` holds whole, as its `corpus.toml` names
+    them; None for a directory without one, where every copy counts."""
+    path = corpus / CORPUS_FILE
+    if not path.is_file():
+        return None
+    return frozenset(Rules.load(path).releases)
+
+
+@dataclass(frozen=True)
+class _Offering:
+    """Whether a copy takes the interpretations another release reviewed
+    (`corrections.offered`), and the releases of the document's other copies
+    that do. A copy of a 3GPP release the corpus holds only for citations
+    (TS 29.212's Release 11) takes none unless asked: its readings serve the
+    documents citing it, and widening a block to it would claim it held
+    there. A copy of no 3GPP release tree takes them, with no neighbours to
+    keep a range clear of."""
+
+    eligible: bool = True
+    releases: frozenset[int] | None = None
+
+
+def _offering(
+    key: _Key,
+    keys: Sequence[_Key],
+    whole: frozenset[int] | None,
+    offer_cited: bool,
+) -> _Offering:
+    def takes(release: int) -> bool:
+        return whole is None or offer_cited or release in whole
+
+    own = _release(key[1])
+    if own is None:
+        return _Offering()
+    return _Offering(
+        eligible=takes(own),
+        releases=frozenset(
+            release
+            for other in keys
+            if other[0] == key[0]
+            and (release := _release(other[1])) is not None
+            and release != own
+            and takes(release)
+        ),
+    )
+
+
 def _release(tree: str | None) -> int | None:
     """The release of a corpus subdirectory, as `3gpp/rel-19` names it."""
     match = None if tree is None else re.fullmatch(r"3gpp/rel-(\d+)", tree)
@@ -410,6 +471,7 @@ def _one(
     interpretations_dir: Path | None,
     books: Corpus | None,
     absent: frozenset[str] = frozenset(),
+    offering: _Offering | None = None,
 ) -> Outcome:
     if source is None and _source_of(reference) in absent:
         name = _source_of(reference)
@@ -448,6 +510,7 @@ def _one(
             outcome.warnings,
             outcome.unclaimed,
             adopted=outcome.adopted if books is not None else None,
+            offering=offering,
         )
     except (ExtractionError, CorrectionError, DadParseError, OSError) as error:
         outcome.status = "failed"
@@ -719,15 +782,17 @@ def _produce(
     warnings: list[str],
     unclaimed: list[Candidate] | None = None,
     adopted: list[str] | None = None,
+    offering: _Offering | None = None,
 ) -> tuple[str, str, ast.Specification]:
     """The raw and corrected texts for one source, and the corrected tree;
     `unclaimed` receives the tables no reading claimed.
 
-    With `adopted`, the interpretations another release reviewed are offered
-    to a copy of a release none of them spans (`corrections.offered`): each
-    whose quotes the copy prints is applied and its citation added to
-    `adopted`, for its range to be widened, and each it does not print is
-    reported as not carried. Without it they are only counted."""
+    The interpretations another release reviewed whose ranges do not span
+    the copy's release are offered to it, as `offering` allows
+    (`corrections.offered`). With `adopted`, each whose quotes the copy
+    prints is applied and its citation added to `adopted`, for its range to
+    be widened, and each it does not print is reported as not carried.
+    Without it those whose quotes the copy prints are only counted."""
     comments = formatter.Comments()
     found: list[Candidate] = []
     if source.transcribed:
@@ -771,19 +836,28 @@ def _produce(
         versions = VersionRange.parse(edit.versions)
         if warning := versions.warning(spec.version, f"correction {edit.cited}"):
             warnings.append(warning)
-    offered = corrections.offered(module, spec.version)
-    if offered and adopted is None:
-        warnings.append(
-            f"{len(offered)} interpretation(s) another release reviewed are not"
-            " applied to this copy; --expand-ranges tries their quotes on it"
-        )
-        offered = []
+    offering = offering or _Offering()
+    offered = (
+        corrections.offered(module, spec.version, offering.releases)
+        if offering.eligible
+        else []
+    )
     interpreted = [
         edit for edit in declared if isinstance(edit, corrections.Interpretation)
     ]
     if interpreted or offered:
         texts, pages = _clauses(source, sources_dir, [*interpreted, *offered])
         interpretations.check_quotes(interpreted, texts)
+        if adopted is None:
+            # Counted, not carried: one the copy does not print stays out of
+            # it without a word, as a reviewed release's would.
+            if printed := _held(offered, texts, []):
+                warnings.append(
+                    f"{len(printed)} interpretation(s) another release reviewed,"
+                    " whose quotes this copy prints, are not applied to it;"
+                    " --expand-ranges carries them"
+                )
+            offered = []
         trying = {id(edit) for edit in _held(offered, texts, warnings)}
         chosen = {id(edit) for edit in declared} | trying
         # In module order, each interpretation on its clause's page here.

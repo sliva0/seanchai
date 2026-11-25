@@ -635,8 +635,9 @@ def _interpret(
 
 def test_an_interpretation_applies_only_in_a_release_its_range_spans():
     """Release 18, which the correction's range spans, takes no Release 19
-    interpretation; they are offered to it, and to Release 17 too, until one
-    of the module's ranges spans the release."""
+    interpretation; each is offered to it, and to Release 17 too, while its
+    own range does not span the release, whatever the others' ranges, and
+    not past a copy the document has between."""
     correction = corrections.Correction(
         id="spelling",
         target=corrections.definition("Example-Number"),
@@ -654,7 +655,18 @@ def test_an_interpretation_applies_only_in_a_release_its_range_spans():
     assert corrections.offered(module, "17.0.0") == [_interpret()]
     assert corrections.offered(module, "19.0.0") == []
     widened = _interpret(id="reviewed", versions="18.1.0..19.0.0")
-    assert corrections.offered([*module, widened], "18.1.0") == []
+    assert corrections.offered([*module, widened], "18.1.0") == [_interpret()]
+    assert corrections.offered([*module, widened], "17.0.0") == [
+        _interpret(),
+        widened,
+    ]
+    # With a Release 18 copy between, only the block already reaching it is
+    # offered to Release 17; a Release 20 copy is no neighbour of either.
+    assert corrections.offered([*module, widened], "17.0.0", {18, 19, 20}) == [widened]
+    assert corrections.offered([*module, widened], "20.0.0", {17, 18, 19}) == [
+        _interpret(),
+        widened,
+    ]
     assert corrections.in_release([*module, widened], "18.1.0") == [
         correction,
         widened,

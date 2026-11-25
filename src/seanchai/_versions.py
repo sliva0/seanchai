@@ -84,15 +84,16 @@ class VersionRange:
         return f"{self.first or '*'}..{self.last or '*'}"
 
 
-def _major(version: str) -> int:
+def major(version: str) -> int:
+    """A version's major number, its 3GPP release: 19 of `19.6.0`."""
     return int(version.split(".", 1)[0])
 
 
-def _releases(versions: VersionRange) -> tuple[int | None, int | None]:
+def release_bounds(versions: VersionRange) -> tuple[int | None, int | None]:
     """The majors `versions` spans, either bound None for open."""
     return (
-        None if versions.first is None else _major(versions.first),
-        None if versions.last is None else _major(versions.last),
+        None if versions.first is None else major(versions.first),
+        None if versions.last is None else major(versions.last),
     )
 
 
@@ -115,10 +116,10 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
     """
     if version is None:
         return None
-    wanted = _major(version)
+    wanted = major(version)
     spans = [
         (first, first if last is None else last)
-        for first, last in (_releases(versions) for versions in ranges)
+        for first, last in (release_bounds(versions) for versions in ranges)
         if (first, last) != (None, None)
     ]
     if not spans:
@@ -138,7 +139,7 @@ def reviewed_release(ranges: list[VersionRange], version: str | None) -> int | N
 def spans(versions: VersionRange, version: str | None) -> bool:
     """Whether `versions` reaches `version`'s release: an interpretation's
     test, which no other release's declarations stand in for."""
-    return version is None or applies(versions, _major(version))
+    return version is None or applies(versions, major(version))
 
 
 def applies(versions: VersionRange, release: int | None) -> bool:
@@ -146,5 +147,5 @@ def applies(versions: VersionRange, release: int | None) -> bool:
     `reviewed_release`; None applies everything)."""
     if release is None:
         return True
-    first, last = _releases(versions)
+    first, last = release_bounds(versions)
     return (first is None or first <= release) and (last is None or release <= last)

@@ -990,3 +990,87 @@ def test_a_table_no_reading_claims_fails_until_acknowledged(
     assert stale.stale_unclaimed == {"TS29.999": [candidate]}
     run(acknowledge_unclaimed=True)
     assert Baseline.load(baseline).documents == {}
+
+
+def test_interpretations_are_offered_to_the_copies_of_whole_releases():
+    """A copy of a release the corpus holds only for citations takes no
+    other release's interpretations unless asked, and a copy's neighbours
+    are the document's other copies that do."""
+    keys = [
+        ("TS29.999", "3gpp/rel-11"),
+        ("TS29.999", "3gpp/rel-18"),
+        ("TS29.999", "3gpp/rel-19"),
+        ("TS29.998", "3gpp/rel-17"),
+    ]
+    whole = frozenset({18, 19})
+    offering = _regenerate._offering
+    assert offering(keys[0], keys, whole, False) == _regenerate._Offering(
+        eligible=False, releases=frozenset({18, 19})
+    )
+    assert offering(keys[1], keys, whole, False) == _regenerate._Offering(
+        eligible=True, releases=frozenset({19})
+    )
+    assert offering(keys[1], keys, whole, True) == _regenerate._Offering(
+        eligible=True, releases=frozenset({11, 19})
+    )
+    # No corpus.toml: every copy counts; no release tree: no neighbours.
+    assert offering(keys[0], keys, None, False).eligible
+    assert offering(("RFC6733", None), keys, whole, False) == _regenerate._Offering()
+
+
+def test_expanding_ranges_reads_a_documents_copies_newest_first(tmp_path, monkeypatch):
+    """So that a run going back widens a block to each older copy in turn,
+    each the next one's neighbour."""
+    order = []
+
+    def recorded(reference, source, *_, **__):
+        order.append((reference, source.tree))
+        return _regenerate.Outcome(reference, "failed", error="recorded")
+
+    monkeypatch.setattr(_regenerate, "_one", recorded)
+    sources = {
+        (reference, tree): _regenerate._Source(
+            reference=reference,
+            document=tmp_path / "x.docx",
+            pdf=None,
+            link="https://example.test/",
+            tree=tree,
+        )
+        for reference, tree in [
+            ("TS29.999", "3gpp/rel-11"),
+            ("TS29.999", "3gpp/rel-19"),
+            ("TS29.999", "3gpp/rel-18"),
+            ("TS29.998", "3gpp/rel-18"),
+        ]
+    }
+    monkeypatch.setattr(_regenerate, "_sources", lambda _: sources)
+    monkeypatch.setattr(_regenerate.Corpus, "load", lambda *_, **__: object())
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text("{}")
+
+    def run(**options):
+        order.clear()
+        _regenerate.regenerate(
+            manifest,
+            corpus,
+            corpus,
+            sources_dir=None,
+            corrections_dir=None,
+            add=["TS29.998", "TS29.999"],
+            **options,
+        )
+        return list(order)
+
+    assert run(expand_ranges=True) == [
+        ("TS29.998", "3gpp/rel-18"),
+        ("TS29.999", "3gpp/rel-19"),
+        ("TS29.999", "3gpp/rel-18"),
+        ("TS29.999", "3gpp/rel-11"),
+    ]
+    assert run()[1:] == [
+        ("TS29.999", "3gpp/rel-11"),
+        ("TS29.999", "3gpp/rel-18"),
+        ("TS29.999", "3gpp/rel-19"),
+    ]

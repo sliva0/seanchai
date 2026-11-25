@@ -424,15 +424,20 @@ the document's corrections:
   command's or the grouped AVP's printed body, and no other block for the
   same AVP, scope and clause.
 - A block applies only to copies of the releases its range spans, since
-  whether a clause prints a sentence is a fact of each copy. Another
-  release's are offered: `regenerate` counts them in a warning, and with
-  `--expand-ranges`, on a copy of a release no block of the file spans, it
-  holds the quotes of each of the nearest reviewed release's (the oldest
-  above, else the newest below) to the copy's text. Each it finds is merged
-  and its `; Versions:` line widened to the copy in the file; each it does
-  not is reported as `not carried:` with the sentence the clause lacks, and
-  stays out. Release 18's copy holds 152 of TS 29.272's 157; the five it
-  does not read sentences Release 19 added.
+  whether a clause prints a sentence is a fact of each copy. Every block
+  whose range does not span a copy's release is offered to it, whatever the
+  other blocks' ranges, unless a copy of the document in another release
+  the corpus holds lies between the two, which the widened range would
+  claim without the block being held to it. `regenerate` counts those
+  whose quotes the copy prints in a warning, and with `--expand-ranges`
+  merges each and widens its `; Versions:` line to the copy in the file;
+  each whose quotes it does not print is reported as `not carried:` with
+  the sentence the clause lacks, and stays out. Such a run reads a
+  document's copies newest first, so that going back widens a block one
+  release at a time. A copy of a release the corpus holds only for
+  citations (TS 29.212's Release 11) is offered nothing unless the run is
+  given `--offer-cited`. Release 18's copy holds 152 of TS 29.272's 157;
+  the five it does not read sentences Release 19 added.
 - `corrections.json` records each block by its citation, kind `interpret`,
   with its clause and quotes
   ([corrections.md](corrections.md#the-corrections-record)).
