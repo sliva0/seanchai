@@ -1,13 +1,205 @@
 ; Interprets: 3GPP TS 32.299
 ;; What TS 32.299's clauses state in prose about an AVP's value or presence,
 ;; read by hand and pinned to the sentences read (docs/constraints.md), in
-;; clause order: clause 7.1's Diameter AVPs, then clause 7.2's 3GPP
-;; specific AVPs. The commands' information-element tables of clauses 6.2
-;; and 6.4 already state each member's category (OM, OC, M, O), which no
-;; block restates. Rf's commands are printed once under 3, Ro's once under 4.
+;; clause order: clause 6's procedures, then clause 7.1's Diameter AVPs and
+;; clause 7.2's 3GPP specific AVPs. The commands' information-element tables
+;; of clauses 6.2 and 6.4 already state each member's category (OM, OC, M,
+;; O), which no block restates. Rf's commands are printed once under 3, Ro's
+;; once under 4.
 ;; A clause pointing at another document for a layout is an `element`; a
 ;; rule depending on an earlier message, the charging domain, the node, the
 ;; SIP signalling or the operator's configuration is `text-only`.
+
+
+;; Clause 6's procedures: what an answer carries in the flows of clauses
+;; 6.1.1 and 6.1.2 (Rf) and 6.3.3 to 6.3.5 (Ro), the answer's record or
+;; request type that of the request it answers, held to a success's answer
+;; where the step says nothing of an error's.
+; Type: Interpreted Constraints
+; Id: aca-event-record-type
+; AVP: Accounting-Record-Type
+; Command: Accounting-Answer
+; Section: 6.1.1
+; Versions: 18.0.0..19.0.0
+"The CDF returns Accounting-Answer message with Accounting-Record-Type AVP set to EVENT_RECORD to the Network Element in order to inform that charging information was received."
+    values 1 if request/Accounting-Record-Type = EVENT_RECORD and Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints
+; Id: aca-session-record-type
+; AVP: Accounting-Record-Type
+; Command: Accounting-Answer
+; Section: 6.1.2
+; Versions: 18.0.0..19.0.0
+"The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to START_RECORD to the Network Element"
+    values 2 if request/Accounting-Record-Type = START_RECORD and Result-Code = DIAMETER_SUCCESS
+"The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to INTERIM_RECORD to the Network Element."
+    values 3 if request/Accounting-Record-Type = INTERIM_RECORD and Result-Code = DIAMETER_SUCCESS
+"The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to STOP_RECORD to the Network Element."
+    values 4 if request/Accounting-Record-Type = STOP_RECORD and Result-Code = DIAMETER_SUCCESS
+
+
+;; The direct debiting answer authorizes the service; the refund's carries
+;; "the related result code", whatever it is.
+; Type: Interpreted Constraints
+; Id: cca-iec-request-type
+; AVP: CC-Request-Type
+; Command: Credit-Control-Answer
+; Section: 6.3.3
+; Versions: 18.0.0..19.0.0
+"The OCS returns CCA message with CC-Request-Type AVP set to EVENT_REQUEST to the Network Element in order to authorize the service execution"
+    values 4 if request/CC-Request-Type = EVENT_REQUEST and Result-Code = DIAMETER_SUCCESS
+"The Requested-Action AVP (RA) is set to REFUND-ACCOUNT."
+"The OCS returns CCA message with CC-Request-Type AVP set to EVENT_REQUEST and the related result code."
+    values 4 if request/CC-Request-Type = EVENT_REQUEST and request/Requested-Action = REFUND_ACCOUNT
+
+
+; Type: Interpreted Constraints
+; Id: cca-ecur-request-type
+; AVP: CC-Request-Type
+; Command: Credit-Control-Answer
+; Section: 6.3.4
+; Versions: 18.0.0..19.0.0
+"Once the reservation has been made, the OCS returns CCA message with CC-Request-Type set to INITIAL_REQUEST to the Network Element in order to authorize the service execution"
+    values 1 if request/CC-Request-Type = INITIAL_REQUEST and Result-Code = DIAMETER_SUCCESS
+"The OCS acknowledges the reception of the CCR message by sending CCA message with CC-Request-Type AVP indicating TERMINATION_REQUEST"
+    values 3 if request/CC-Request-Type = TERMINATION_REQUEST and Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints
+; Id: cca-scur-request-type
+; AVP: CC-Request-Type
+; Command: Credit-Control-Answer
+; Section: 6.3.5
+; Versions: 18.0.0..19.0.0
+"Once the reservation has been made, the OCS returns CCA message with CC-Request-Type set to INITIAL_REQUEST to the Network Element in order to authorize the service execution"
+    values 1 if request/CC-Request-Type = INITIAL_REQUEST and Result-Code = DIAMETER_SUCCESS
+"Once the deduction and reservation have been made, the OCS returns CCA message with CC-Request-Type set to UPDATE_REQUEST to the Network Element"
+    values 2 if request/CC-Request-Type = UPDATE_REQUEST and Result-Code = DIAMETER_SUCCESS
+"The OCS acknowledges the reception of the CCR message by sending CCA message with CC-Request-Type AVP indicating TERMINATION_REQUEST"
+    values 3 if request/CC-Request-Type = TERMINATION_REQUEST and Result-Code = DIAMETER_SUCCESS
+
+
+;; The client's configuration, which no message carries.
+; Type: Interpreted Constraints
+; Id: quota-holding-time-absent
+; AVP: Quota-Holding-Time
+; Section: 6.5.1.1
+; Versions: 18.0.0..19.0.0
+"Alternatively, if this AVP is not present, a locally configurable default value in the client shall be used."
+    text-only
+
+
+;; RFC 4006's grouped AVP, its own members read through paths from it:
+;; Restriction-Filter-Rule, Filter-Id and Redirect-Server beside
+;; Final-Unit-Action.
+; Type: Interpreted Constraints
+; Id: final-unit-indication-terminate
+; AVP: Final-Unit-Indication
+; Section: 6.5.3
+; Versions: 18.0.0..19.0.0
+"The Final-Unit-Indication AVP with Final-Unit-Action TERMINATE does not include any other information."
+    excludes Final-Unit-Action = TERMINATE and Restriction-Filter-Rule or Final-Unit-Action = TERMINATE and Filter-Id or Final-Unit-Action = TERMINATE and Redirect-Server
+
+
+;; After an earlier CCA's final units are consumed.
+; Type: Interpreted Constraints
+; Id: terminate-action-used-service-unit
+; AVP: Used-Service-Unit
+; Within: Multiple-Services-Credit-Control
+; Section: 6.5.3
+; Versions: 18.0.0..19.0.0
+"The Network Element shall send CCR message with CC-Request-Type AVP set to the value UPDATE_REQUEST and report the Used-Service-Unit AVP for the service that has terminated, as defined in RFC 4006 [402]."
+    text-only
+
+
+;; A CCA's Multiple-Services-Credit-Control: a `default` within it would
+;; hold to Offline-Charging's too, whose absent Quota-Consumption-Time is
+;; the Offline-Charging AVP's own (clause 7.2.121).
+; Type: Interpreted Constraints
+; Id: quota-consumption-time-absent
+; AVP: Quota-Consumption-Time
+; Within: Multiple-Services-Credit-Control
+; Section: 6.5.4
+; Versions: 18.0.0..19.0.0
+"If a Quota-Consumption-Time AVP value of zero is provided, or if no Quota-Consumption-Time AVP is present in the CCA, the quota is consumed continuously from the point at which it is granted."
+    text-only
+
+
+;; TS 29.229's grouped AVP, its Vendor-Id read through a path from it,
+;; wherever the document reads it.
+; Type: Interpreted Constraints
+; Id: supported-features-vendor
+; AVP: Supported-Features
+; Section: 6.5.10.3
+; Versions: 18.0.0..19.0.0
+"The value 10415 (3GPP) is used as Vendor-Id, and the Feature-List-ID and Feature-List are defined per middle tier TS."
+    requires Vendor-Id = 10415
+
+
+;; The initial request is read as an ACR[Start]: whether an ACR[Event] is one
+;; the clause does not say. Whether the server supports the mechanism the
+;; answer does not show. The request's Supported-Features, which the ACR's
+;; ABNF leaves to its * [ AVP ], no rule reads: an answer with
+;; DIAMETER_ERROR_FEATURE_UNSUPPORTED answers a request holding one.
+; Type: Interpreted Constraints
+; Id: aca-supported-features
+; AVP: Supported-Features
+; Command: Accounting-Answer
+; Section: 6.5.10.3
+; Versions: 18.0.0..19.0.0
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which does not include any Supported-Features AVP, the server shall include in the answer, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service."
+    text-only
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
+"If all features indicated in the Supported-Features AVP are supported, and the process for online or offline charging is successful, a successful answer with the Result-Code AVP set to DIAMETER_SUCCESS is returned and includes, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service."
+    text-only
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
+"If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server."
+    present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED and request/Accounting-Record-Type = START_RECORD
+
+
+;; Whether the request held a Supported-Features, which the ACR's ABNF leaves
+;; to its * [ AVP ], no rule reads; and a Failed-AVP holding it no path
+;; reaches.
+; Type: Interpreted Constraints
+; Id: aca-supported-features-failed-avp
+; AVP: Failed-AVP
+; Command: Accounting-Answer
+; Section: 6.5.10.3
+; Versions: 18.0.0..19.0.0
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
+"If Supported-Features AVP is not supported by the server, the answer is returned, as per 'M' bit set rule, with the Result-Code AVP set to DIAMETER_AVP_UNSUPPORTED and a Failed-AVP AVP containing at least one Supported-Features AVP as received in the request."
+    text-only
+
+
+;; The initial request is read as a CCR[Initial]: whether a CCR[Event] is one
+;; the clause does not say. As the ACA's.
+; Type: Interpreted Constraints
+; Id: cca-supported-features
+; AVP: Supported-Features
+; Command: Credit-Control-Answer
+; Section: 6.5.10.3
+; Versions: 18.0.0..19.0.0
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which does not include any Supported-Features AVP, the server shall include in the answer, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service."
+    text-only
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
+"If all features indicated in the Supported-Features AVP are supported, and the process for online or offline charging is successful, a successful answer with the Result-Code AVP set to DIAMETER_SUCCESS is returned and includes, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service."
+    text-only
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
+"If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server."
+    present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED and request/CC-Request-Type = INITIAL_REQUEST
+
+
+;; As the ACA's.
+; Type: Interpreted Constraints
+; Id: cca-supported-features-failed-avp
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 6.5.10.3
+; Versions: 18.0.0..19.0.0
+"Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
+"If Supported-Features AVP is not supported by the server, the answer is returned, as per 'M' bit set rule, with the Result-Code AVP set to DIAMETER_AVP_UNSUPPORTED and a Failed-AVP AVP containing at least one Supported-Features AVP as received in the request."
+    text-only
 
 
 ;; Rf's commands are RFC 6733's accounting application's.
@@ -524,3 +716,224 @@
 ; Versions: 18.0.0..19.0.0
 "This AVP is only present if different from the Called-Party-Address AVP."
     text-only
+
+
+;; A NOTE, which states no requirement.
+; Type: Interpreted Constraints
+; Id: sdp-media-component-charging-id
+; AVP: SDP-Media-Component
+; Section: 7.2.180
+; Versions: 18.0.0..19.0.0
+"NOTE: When populating the SDP-Media-Component, either the 3GPP-Charging-ID or the Access-Network-Charging-Identifier-Value should be present but not both."
+    text-only
+
+
+;; What an interface uses, as Authorised-QoS's "This AVP is not used": a
+;; `; Within:` scope holds in Ro's commands and Rf's alike.
+; Type: Interpreted Constraints
+; Id: service-information-subscription-id-rf
+; AVP: Subscription-Id
+; Within: Service-Information
+; Section: 7.2.192
+; Versions: 18.0.0..19.0.0
+"The Subscription-Id AVP in Service-Information AVP is only used on the Rf interface."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sgw-change-default
+; AVP: SGW-Change
+; Section: 7.2.200
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means this ACR[Start] is not due to an inter serving node change."
+    default ACR_Start_NOT_due_to_SGW_Change
+
+
+; Type: Interpreted Constraints
+; Id: sm-device-trigger-indicator-default
+; AVP: SM-Device-Trigger-Indicator
+; Section: 7.2.205A
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means the Short Message is not related to Device Trigger"
+    default "Not DeviceTrigger"
+
+
+;; The charged scenario, which the message does not carry.
+; Type: Interpreted Constraints
+; Id: sm-discharge-time-scenario
+; AVP: SM-Discharge-Time
+; Section: 7.2.206
+; Versions: 18.0.0..19.0.0
+"It is only used in scenarios in which the delivery of the Delivery-Report (more properly the Status-Report) is being charged."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sm-status-length
+; AVP: SM-Status
+; Section: 7.2.209
+; Versions: 18.0.0..19.0.0
+"The OctetString is of length 1 octet and contains status information about the delivery of an SM."
+    length 1 octets
+
+
+; Type: Interpreted Constraints
+; Id: sm-user-data-header-coding
+; AVP: SM-User-Data-Header
+; Section: 7.2.210
+; Versions: 18.0.0..19.0.0
+"Encoding is as described in TS 23.040 [216]."
+    encoding element TS23.040 9.2.3.24 "User-Data-Header"
+
+
+; Type: Interpreted Constraints
+; Id: sm-service-type-request
+; AVP: SM-Service-Type
+; Within: SMS-Information
+; Section: 7.2.213
+; Versions: 18.0.0..19.0.0
+"The SM-Service-Type AVP shall be present if the SM-Message-Type AVP has value 2, SM Service Request."
+    present-if SM-Message-Type = "SM Service Request"
+
+
+;; The AS's SIP response, which the message does not carry.
+; Type: Interpreted Constraints
+; Id: status-as-code-presence
+; AVP: Status-AS-Code
+; Section: 7.2.215A
+; Versions: 18.0.0..19.0.0
+"If AS responds SIP 200 OK, this AVP isn't present in Application-Server-Information AVP."
+    text-only
+
+
+;; As Authorised-QoS's.
+; Type: Interpreted Constraints
+; Id: subscriber-role-not-used
+; AVP: Subscriber-Role
+; Section: 7.2.218
+; Versions: 18.0.0..19.0.0
+"This AVP is not used."
+    text-only
+
+
+;; What an absent AVP means, where that is no value.
+; Type: Interpreted Constraints
+; Id: time-indicator-absent
+; AVP: Time-Indicator
+; Section: 7.2.226A
+; Versions: 18.0.0..19.0.0
+"Absence of this field indicates that the announcement is to be played before the IMS session is allowed to continue."
+    text-only
+
+
+;; An order of the AVPs by the SIP signalling, and a text value standing for
+;; a value the SIP request did not give: no kind says either.
+; Type: Interpreted Constraints
+; Id: transit-ioi-list-order
+; AVP: Transit-IOI-List
+; Section: 7.2.233B
+; Versions: 18.0.0..19.0.0
+"Multiple occurrences of this AVP shall be in chronological order, i.e. the value in the SIP request is listed first."
+    text-only
+"If only a value for the SIP response is available, the Transit-IOI-List for the SIP request shall be included with the value \"unknown\"."
+    text-only
+
+
+;; NOTEs, which state no requirement, on the values one Trigger holds.
+; Type: Interpreted Constraints
+; Id: trigger-type-notes
+; AVP: Trigger-Type
+; Within: Trigger
+; Section: 7.2.236
+; Versions: 18.0.0..19.0.0
+"NOTE 1: This should not be used in conjunction with enumerated values 10 to 23."
+    text-only
+"NOTE 2: This should not be used in conjunction with enumerated values 30 to 36."
+    text-only
+"NOTE 3: The threshold and the granularity of threshold are operator configurable. This should not be used in conjunction with value 50."
+    text-only
+
+
+;; Whether the user enters the cell or leaves it is what the presence of
+;; User-CSG-Information tells, so the sentence states no rule a message can
+;; break.
+; Type: Interpreted Constraints
+; Id: ccr-csg-trigger-user-csg-information
+; AVP: User-CSG-Information
+; Within: PS-Information
+; Section: 7.2.236
+; Versions: 18.0.0..19.0.0
+"When used in a CCR, at entry to a CSG cell, the User-CSG-Information AVP shall be provided with the event report."
+    text-only
+"When used in a CCR, at entry to a hybrid cell where the user is a member, the User-CSG-Information AVP shall be provided with the event report."
+    text-only
+"When used in a CCR, at entry to a hybrid cell where the user is not a member, the User-CSG-Information AVP shall be provided with the event report."
+    text-only
+
+
+;; A CCR reporting CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA (73) in
+;; any Multiple-Services-Credit-Control's Trigger carries the area's
+;; identifier and status in the PS-Information, read through paths from the
+;; command.
+; Type: Interpreted Constraints
+; Id: ccr-pra-trigger-pra-information
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 7.2.236
+; Versions: 18.0.0..19.0.0
+"When used in a CCR, the Presence-Reporting-Area-Identifier AVP and Presence-Reporting-Area-Status AVP shall be provided in the Presence-Reporting-Area-Information AVP with the event report."
+    excludes Multiple-Services-Credit-Control/Trigger/Trigger-Type = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA and not Service-Information/PS-Information/Presence-Reporting-Area-Information/Presence-Reporting-Area-Identifier or Multiple-Services-Credit-Control/Trigger/Trigger-Type = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA and not Service-Information/PS-Information/Presence-Reporting-Area-Information/Presence-Reporting-Area-Status
+
+
+; Type: Interpreted Constraints
+; Id: uni-pdu-cp-only-flag-default
+; AVP: UNI-PDU-CP-Only-Flag
+; Section: 7.2.238A
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means both user plane and control plane can be used in UNI for PDU transfer, i.e. S1-U and S11-U respectively from S-GW, when Control Plane CIoT EPS Optimization is enabled."
+    default UNI-PDU-both-UP-CP
+
+
+; Type: Interpreted Constraints
+; Id: vlr-number-tbcd
+; AVP: VLR-Number
+; Section: 7.2.242B
+; Versions: 18.0.0..19.0.0
+"It is encoded as a TBCD-string."
+"This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+;; A text's form chosen by a sibling's value, Variable-Part-Type's: no kind
+;; says it.
+; Type: Interpreted Constraints
+; Id: variable-part-value-form
+; AVP: Variable-Part-Value
+; Within: Variable-Part
+; Section: 7.2.242aD
+; Table: 7.2.242aD.1
+; Versions: 18.0.0..19.0.0
+"String of digits, which shall be announced as a single number, up to 10 digits."
+"String of digits, which shall be announced as individual digits, up to 24 digits."
+"A string of digits in the form HHMM."
+"A string of digits in the form of YYYYMMDD."
+"A string of digits in the form of AAAAAABB, where AAAAAA is the integral part and BB is the decimal part."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: wlan-operator-name-twan
+; AVP: WLAN-Operator-Name
+; Section: 7.2.252
+; Versions: 18.0.0..19.0.0
+"The WLAN-Operator-Name AVP (AVP code 1307) is of type UTF8String and holds the Name of the trusted or untrusted WLAN Operator, as specified in subclause 19. 8 of 3GPP TS 23.003 [224]."
+    encoding element TS23.003 19.8 "TWAN Operator Name"
+
+
+; Type: Interpreted Constraints
+; Id: nr-cgi-ncgi
+; AVP: Nr-Cgi
+; Section: 7.2.254
+; Versions: 18.0.0..19.0.0
+"The Nr-Cgi AVP (AVP code 1325) is of type UTF8String and includes NR Global Cell Identity, with the format as specified in clause 19.6A of TS 23.003 [224]."
+    encoding element TS23.003 19.6A "NCGI"

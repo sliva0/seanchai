@@ -536,6 +536,7 @@ _GBA = ("TS33.220", "19.1.0")
 _NAS_5GS = ("TS24.501", "19.8.0")
 _CAP = ("TS29.078", "19.0.0")
 _GI = ("TS29.061", "19.1.0")
+_SMS = ("TS23.040", "19.0.0")
 
 
 def _network_name(clause: str, attribute: str, field: str) -> Element:
@@ -1880,6 +1881,70 @@ REGISTRY: tuple[Element, ...] = (
         (),
         Depth.FULL,
         valid="a 32-bit charging identifier: every value of the Unsigned32",
+    ),
+    Element(
+        "TS23.040",
+        "9.2.3.24",
+        "User-Data-Header",
+        "the header of an SM's TP-User-Data: its length, then information"
+        " elements, each an identifier, a length and its data",
+        (
+            _source(
+                _SMS,
+                "9.2.3.24",
+                "'Length of User Data Header 1 octet', each information element"
+                " 'Information-Element-Identifier 1 octet', 'Length of"
+                " Information-Element 1 octet' and '0 to \"n\" octets' of data",
+            ),
+        ),
+        (Octets(1, None),),
+        Depth.LENGTH,
+        "whether the AVP carries the Length of User Data Header octet before"
+        " the information elements neither document says, so the lengths"
+        " the header's fields give are not checked; an identifier the"
+        " clause reserves is skipped by the receiver, not refused",
+        example=bytes([0x05, 0x00, 0x03, 0x01, 0x02, 0x01]),
+    ),
+    Element(
+        "TS23.003",
+        "19.8",
+        "TWAN Operator Name",
+        "the name of a TWAN operator that is no mobile operator, a realm",
+        (
+            _source(
+                _NUMBERING,
+                "19.8",
+                "'encoded as a realm in the form of an Internet domain name',"
+                " labels of 'the alphabetic characters (A-Z and a-z), digits"
+                " (0-9) and the hyphen (-)', each beginning and ending 'with"
+                " either an alphabetic character or a digit'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "no shape of the registry reads a domain name's labels, their"
+        " characters and how each begins and ends",
+    ),
+    Element(
+        "TS23.003",
+        "19.6A",
+        "NCGI",
+        "an NR Cell Global Identity: a PLMN identity and a 36-bit NR cell identity",
+        (
+            _source(
+                _NUMBERING,
+                "19.6A",
+                "'composed of the concatenation of the PLMN Identifier"
+                " (PLMN-Id) and the NR Cell Identity (NCI)', the NCI 'of fixed"
+                " length of 36 bits' and 'coded using full hexadecimal"
+                " representation'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the clause gives the NCGI as a PLMN identity and 36 bits, and"
+        " neither it nor TS 32.299 clause 7.2.254 says how a UTF8String"
+        " spells them",
     ),
 )
 

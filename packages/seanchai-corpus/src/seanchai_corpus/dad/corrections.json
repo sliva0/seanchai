@@ -12982,9 +12982,25 @@
   },
   "32299-i00": {
    "edits": {
+    "TS32.299.dadx#aca-event-record-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.1: 'The CDF returns Accounting-Answer message with Accounting-Record-Type AVP set to EVENT_RECORD to the Network Element in order to inform that charging information was received.'"
+    },
     "TS32.299.dadx#aca-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#aca-session-record-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.2: 'The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to START_RECORD to the Network Element'; 'The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to INTERIM_RECORD to the Network Element.'; 'The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to STOP_RECORD to the Network Element.'"
+    },
+    "TS32.299.dadx#aca-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which does not include any Supported-Features AVP, the server shall include in the answer, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If all features indicated in the Supported-Features AVP are supported, and the process for online or offline charging is successful, a successful answer with the Result-Code AVP set to DIAMETER_SUCCESS is returned and includes, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server.'"
+    },
+    "TS32.299.dadx#aca-supported-features-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If Supported-Features AVP is not supported by the server, the answer is returned, as per 'M' bit set rule, with the Result-Code AVP set to DIAMETER_AVP_UNSUPPORTED and a Failed-AVP AVP containing at least one Supported-Features AVP as received in the request.'"
     },
     "TS32.299.dadx#acct-application-id-rf": {
      "kind": "interpret",
@@ -13026,17 +13042,45 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.33: 'In case no P-Asserted-Identity is known, this AVP list shall include one item with the value \"unknown\".'"
     },
+    "TS32.299.dadx#cca-ecur-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.4: 'Once the reservation has been made, the OCS returns CCA message with CC-Request-Type set to INITIAL_REQUEST to the Network Element in order to authorize the service execution'; 'The OCS acknowledges the reception of the CCR message by sending CCA message with CC-Request-Type AVP indicating TERMINATION_REQUEST'"
+    },
     "TS32.299.dadx#cca-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#cca-iec-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.3: 'The OCS returns CCA message with CC-Request-Type AVP set to EVENT_REQUEST to the Network Element in order to authorize the service execution'; 'The Requested-Action AVP (RA) is set to REFUND-ACCOUNT.'; 'The OCS returns CCA message with CC-Request-Type AVP set to EVENT_REQUEST and the related result code.'"
     },
     "TS32.299.dadx#cca-rating-failed-failed-avp": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.11: 'This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating.'; 'The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable.'"
     },
+    "TS32.299.dadx#cca-scur-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.5: 'Once the reservation has been made, the OCS returns CCA message with CC-Request-Type set to INITIAL_REQUEST to the Network Element in order to authorize the service execution'; 'Once the deduction and reservation have been made, the OCS returns CCA message with CC-Request-Type set to UPDATE_REQUEST to the Network Element'; 'The OCS acknowledges the reception of the CCR message by sending CCA message with CC-Request-Type AVP indicating TERMINATION_REQUEST'"
+    },
+    "TS32.299.dadx#cca-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which does not include any Supported-Features AVP, the server shall include in the answer, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If all features indicated in the Supported-Features AVP are supported, and the process for online or offline charging is successful, a successful answer with the Result-Code AVP set to DIAMETER_SUCCESS is returned and includes, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server.'"
+    },
+    "TS32.299.dadx#cca-supported-features-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If Supported-Features AVP is not supported by the server, the answer is returned, as per 'M' bit set rule, with the Result-Code AVP set to DIAMETER_AVP_UNSUPPORTED and a Failed-AVP AVP containing at least one Supported-Features AVP as received in the request.'"
+    },
+    "TS32.299.dadx#ccr-csg-trigger-user-csg-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.236: 'When used in a CCR, at entry to a CSG cell, the User-CSG-Information AVP shall be provided with the event report.'; 'When used in a CCR, at entry to a hybrid cell where the user is a member, the User-CSG-Information AVP shall be provided with the event report.'; 'When used in a CCR, at entry to a hybrid cell where the user is not a member, the User-CSG-Information AVP shall be provided with the event report.'"
+    },
     "TS32.299.dadx#ccr-pdp-context-type-initial": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.138: 'This AVP shall only be present in the CCR[Initial].'"
+    },
+    "TS32.299.dadx#ccr-pra-trigger-pra-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.236: 'When used in a CCR, the Presence-Reporting-Area-Identifier AVP and Presence-Reporting-Area-Status AVP shall be provided in the Presence-Reporting-Area-Information AVP with the event report.'"
     },
     "TS32.299.dadx#ccr-quota-holding-time": {
      "kind": "interpret",
@@ -13065,6 +13109,10 @@
     "TS32.299.dadx#envelope-reporting-absent": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.61: 'If this AVP is not included in the CCA[Initial] then the client shall not report the individual envelopes.'"
+    },
+    "TS32.299.dadx#final-unit-indication-terminate": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.3: 'The Final-Unit-Indication AVP with Final-Unit-Action TERMINATE does not include any other information.'"
     },
     "TS32.299.dadx#forwarding-pending-default": {
      "kind": "interpret",
@@ -13102,6 +13150,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.111B: 'It is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
     },
+    "TS32.299.dadx#nr-cgi-ncgi": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.254: 'The Nr-Cgi AVP (AVP code 1325) is of type UTF8String and includes NR Global Cell Identity, with the format as specified in clause 19.6A of TS 23.003 [224].'"
+    },
     "TS32.299.dadx#offline-charging-multiple-services-credit-control": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.121: 'The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP.'"
@@ -13121,6 +13173,14 @@
     "TS32.299.dadx#ps-append-free-format-data-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.155: 'If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session.'"
+    },
+    "TS32.299.dadx#quota-consumption-time-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.4: 'If a Quota-Consumption-Time AVP value of zero is provided, or if no Quota-Consumption-Time AVP is present in the CCA, the quota is consumed continuously from the point at which it is granted.'"
+    },
+    "TS32.299.dadx#quota-holding-time-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.1.1: 'Alternatively, if this AVP is not present, a locally configurable default value in the client shall be used.'"
     },
     "TS32.299.dadx#rating-condition-change-trigger": {
      "kind": "interpret",
@@ -13166,9 +13226,73 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.176: 'This AVP is only present if different from the Called-Party-Address AVP.'"
     },
+    "TS32.299.dadx#sdp-media-component-charging-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.180: 'NOTE: When populating the SDP-Media-Component, either the 3GPP-Charging-ID or the Access-Network-Charging-Identifier-Value should be present but not both.'"
+    },
     "TS32.299.dadx#service-context-id-format": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.12: 'As a minimum, \"Release\".\"service-context\" \"@\" \"domain\" shall be used.'"
+    },
+    "TS32.299.dadx#service-information-subscription-id-rf": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.192: 'The Subscription-Id AVP in Service-Information AVP is only used on the Rf interface.'"
+    },
+    "TS32.299.dadx#sgw-change-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.200: 'If this AVP is not present, this means this ACR[Start] is not due to an inter serving node change.'"
+    },
+    "TS32.299.dadx#sm-device-trigger-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.205A: 'If this AVP is not present, this means the Short Message is not related to Device Trigger'"
+    },
+    "TS32.299.dadx#sm-discharge-time-scenario": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.206: 'It is only used in scenarios in which the delivery of the Delivery-Report (more properly the Status-Report) is being charged.'"
+    },
+    "TS32.299.dadx#sm-service-type-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.213: 'The SM-Service-Type AVP shall be present if the SM-Message-Type AVP has value 2, SM Service Request.'"
+    },
+    "TS32.299.dadx#sm-status-length": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.209: 'The OctetString is of length 1 octet and contains status information about the delivery of an SM.'"
+    },
+    "TS32.299.dadx#sm-user-data-header-coding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.210: 'Encoding is as described in TS 23.040 [216].'"
+    },
+    "TS32.299.dadx#status-as-code-presence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.215A: 'If AS responds SIP 200 OK, this AVP isn't present in Application-Server-Information AVP.'"
+    },
+    "TS32.299.dadx#subscriber-role-not-used": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.218: 'This AVP is not used.'"
+    },
+    "TS32.299.dadx#supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'The value 10415 (3GPP) is used as Vendor-Id, and the Feature-List-ID and Feature-List are defined per middle tier TS.'"
+    },
+    "TS32.299.dadx#terminate-action-used-service-unit": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.3: 'The Network Element shall send CCR message with CC-Request-Type AVP set to the value UPDATE_REQUEST and report the Used-Service-Unit AVP for the service that has terminated, as defined in RFC 4006 [402].'"
+    },
+    "TS32.299.dadx#time-indicator-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.226A: 'Absence of this field indicates that the announcement is to be played before the IMS session is allowed to continue.'"
+    },
+    "TS32.299.dadx#transit-ioi-list-order": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.233B: 'Multiple occurrences of this AVP shall be in chronological order, i.e. the value in the SIP request is listed first.'; 'If only a value for the SIP response is available, the Transit-IOI-List for the SIP request shall be included with the value \"unknown\".'"
+    },
+    "TS32.299.dadx#trigger-type-notes": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.236: 'NOTE 1: This should not be used in conjunction with enumerated values 10 to 23.'; 'NOTE 2: This should not be used in conjunction with enumerated values 30 to 36.'; 'NOTE 3: The threshold and the granularity of threshold are operator configurable. This should not be used in conjunction with value 50.'"
+    },
+    "TS32.299.dadx#uni-pdu-cp-only-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.238A: 'If this AVP is not present, this means both user plane and control plane can be used in UNI for PDU transfer, i.e. S1-U and S11-U respectively from S-GW, when Control Plane CIoT EPS Optimization is enabled.'"
     },
     "TS32.299.dadx#used-service-unit-reporting-reason": {
      "kind": "interpret",
@@ -13178,9 +13302,21 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.17: 'For PS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded hexadecimal.'; 'For IMS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded decimal.'"
     },
+    "TS32.299.dadx#variable-part-value-form": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.242aD.1: 'String of digits, which shall be announced as a single number, up to 10 digits.'; 'String of digits, which shall be announced as individual digits, up to 24 digits.'; 'A string of digits in the form HHMM.'; 'A string of digits in the form of YYYYMMDD.'; 'A string of digits in the form of AAAAAABB, where AAAAAA is the integral part and BB is the decimal part.'"
+    },
     "TS32.299.dadx#vendor-specific-application-id-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.16: 'The Vendor-Id AVP (AVP code 266), as part of the grouped Vendor-Specific-Application-Id AVP, shall contain the value of 10415, which is the IANA registered value for '3GPP' in TS 29.230 [206].'"
+    },
+    "TS32.299.dadx#vlr-number-tbcd": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.242B: 'It is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
+    },
+    "TS32.299.dadx#wlan-operator-name-twan": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.252: 'The WLAN-Operator-Name AVP (AVP code 1307) is of type UTF8String and holds the Name of the trusted or untrusted WLAN Operator, as specified in subclause 19. 8 of 3GPP TS 23.003 [224].'"
     },
     "TS32.299.py#acct-multi-session-id-type": {
      "kind": "correction",
@@ -13690,7 +13826,7 @@
      "targets": [
       [
        "sections",
-       27
+       41
       ]
      ]
     },
@@ -13702,7 +13838,7 @@
      "targets": [
       [
        "sections",
-       271
+       305
       ]
      ]
     },
@@ -13802,7 +13938,7 @@
      "targets": [
       [
        "sections",
-       10,
+       12,
        "rows",
        463
       ]
@@ -13844,7 +13980,7 @@
      "targets": [
       [
        "sections",
-       31
+       45
       ]
      ]
     },
@@ -14312,9 +14448,25 @@
   },
   "32299-j00": {
    "edits": {
+    "TS32.299.dadx#aca-event-record-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.1: 'The CDF returns Accounting-Answer message with Accounting-Record-Type AVP set to EVENT_RECORD to the Network Element in order to inform that charging information was received.'"
+    },
     "TS32.299.dadx#aca-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#aca-session-record-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.2: 'The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to START_RECORD to the Network Element'; 'The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to INTERIM_RECORD to the Network Element.'; 'The CDF returns Accounting-Answer (ACA) message with Accounting-Record-Type set to STOP_RECORD to the Network Element.'"
+    },
+    "TS32.299.dadx#aca-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which does not include any Supported-Features AVP, the server shall include in the answer, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If all features indicated in the Supported-Features AVP are supported, and the process for online or offline charging is successful, a successful answer with the Result-Code AVP set to DIAMETER_SUCCESS is returned and includes, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server.'"
+    },
+    "TS32.299.dadx#aca-supported-features-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If Supported-Features AVP is not supported by the server, the answer is returned, as per 'M' bit set rule, with the Result-Code AVP set to DIAMETER_AVP_UNSUPPORTED and a Failed-AVP AVP containing at least one Supported-Features AVP as received in the request.'"
     },
     "TS32.299.dadx#acct-application-id-rf": {
      "kind": "interpret",
@@ -14356,17 +14508,45 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.33: 'In case no P-Asserted-Identity is known, this AVP list shall include one item with the value \"unknown\".'"
     },
+    "TS32.299.dadx#cca-ecur-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.4: 'Once the reservation has been made, the OCS returns CCA message with CC-Request-Type set to INITIAL_REQUEST to the Network Element in order to authorize the service execution'; 'The OCS acknowledges the reception of the CCR message by sending CCA message with CC-Request-Type AVP indicating TERMINATION_REQUEST'"
+    },
     "TS32.299.dadx#cca-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#cca-iec-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.3: 'The OCS returns CCA message with CC-Request-Type AVP set to EVENT_REQUEST to the Network Element in order to authorize the service execution'; 'The Requested-Action AVP (RA) is set to REFUND-ACCOUNT.'; 'The OCS returns CCA message with CC-Request-Type AVP set to EVENT_REQUEST and the related result code.'"
     },
     "TS32.299.dadx#cca-rating-failed-failed-avp": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.11: 'This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating.'; 'The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable.'"
     },
+    "TS32.299.dadx#cca-scur-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.5: 'Once the reservation has been made, the OCS returns CCA message with CC-Request-Type set to INITIAL_REQUEST to the Network Element in order to authorize the service execution'; 'Once the deduction and reservation have been made, the OCS returns CCA message with CC-Request-Type set to UPDATE_REQUEST to the Network Element'; 'The OCS acknowledges the reception of the CCR message by sending CCA message with CC-Request-Type AVP indicating TERMINATION_REQUEST'"
+    },
+    "TS32.299.dadx#cca-supported-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which does not include any Supported-Features AVP, the server shall include in the answer, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If all features indicated in the Supported-Features AVP are supported, and the process for online or offline charging is successful, a successful answer with the Result-Code AVP set to DIAMETER_SUCCESS is returned and includes, if supported, Supported-Features AVPs identifying the complete set of features supported by the server for this domain / subsystem / service.'; 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server.'"
+    },
+    "TS32.299.dadx#cca-supported-features-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:'; 'If Supported-Features AVP is not supported by the server, the answer is returned, as per 'M' bit set rule, with the Result-Code AVP set to DIAMETER_AVP_UNSUPPORTED and a Failed-AVP AVP containing at least one Supported-Features AVP as received in the request.'"
+    },
+    "TS32.299.dadx#ccr-csg-trigger-user-csg-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.236: 'When used in a CCR, at entry to a CSG cell, the User-CSG-Information AVP shall be provided with the event report.'; 'When used in a CCR, at entry to a hybrid cell where the user is a member, the User-CSG-Information AVP shall be provided with the event report.'; 'When used in a CCR, at entry to a hybrid cell where the user is not a member, the User-CSG-Information AVP shall be provided with the event report.'"
+    },
     "TS32.299.dadx#ccr-pdp-context-type-initial": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.138: 'This AVP shall only be present in the CCR[Initial].'"
+    },
+    "TS32.299.dadx#ccr-pra-trigger-pra-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.236: 'When used in a CCR, the Presence-Reporting-Area-Identifier AVP and Presence-Reporting-Area-Status AVP shall be provided in the Presence-Reporting-Area-Information AVP with the event report.'"
     },
     "TS32.299.dadx#ccr-quota-holding-time": {
      "kind": "interpret",
@@ -14395,6 +14575,10 @@
     "TS32.299.dadx#envelope-reporting-absent": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.61: 'If this AVP is not included in the CCA[Initial] then the client shall not report the individual envelopes.'"
+    },
+    "TS32.299.dadx#final-unit-indication-terminate": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.3: 'The Final-Unit-Indication AVP with Final-Unit-Action TERMINATE does not include any other information.'"
     },
     "TS32.299.dadx#forwarding-pending-default": {
      "kind": "interpret",
@@ -14432,6 +14616,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.111B: 'It is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
     },
+    "TS32.299.dadx#nr-cgi-ncgi": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.254: 'The Nr-Cgi AVP (AVP code 1325) is of type UTF8String and includes NR Global Cell Identity, with the format as specified in clause 19.6A of TS 23.003 [224].'"
+    },
     "TS32.299.dadx#offline-charging-multiple-services-credit-control": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.121: 'The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP.'"
@@ -14451,6 +14639,14 @@
     "TS32.299.dadx#ps-append-free-format-data-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.155: 'If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session.'"
+    },
+    "TS32.299.dadx#quota-consumption-time-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.4: 'If a Quota-Consumption-Time AVP value of zero is provided, or if no Quota-Consumption-Time AVP is present in the CCA, the quota is consumed continuously from the point at which it is granted.'"
+    },
+    "TS32.299.dadx#quota-holding-time-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.1.1: 'Alternatively, if this AVP is not present, a locally configurable default value in the client shall be used.'"
     },
     "TS32.299.dadx#rating-condition-change-trigger": {
      "kind": "interpret",
@@ -14496,9 +14692,73 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.2.176: 'This AVP is only present if different from the Called-Party-Address AVP.'"
     },
+    "TS32.299.dadx#sdp-media-component-charging-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.180: 'NOTE: When populating the SDP-Media-Component, either the 3GPP-Charging-ID or the Access-Network-Charging-Identifier-Value should be present but not both.'"
+    },
     "TS32.299.dadx#service-context-id-format": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.12: 'As a minimum, \"Release\".\"service-context\" \"@\" \"domain\" shall be used.'"
+    },
+    "TS32.299.dadx#service-information-subscription-id-rf": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.192: 'The Subscription-Id AVP in Service-Information AVP is only used on the Rf interface.'"
+    },
+    "TS32.299.dadx#sgw-change-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.200: 'If this AVP is not present, this means this ACR[Start] is not due to an inter serving node change.'"
+    },
+    "TS32.299.dadx#sm-device-trigger-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.205A: 'If this AVP is not present, this means the Short Message is not related to Device Trigger'"
+    },
+    "TS32.299.dadx#sm-discharge-time-scenario": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.206: 'It is only used in scenarios in which the delivery of the Delivery-Report (more properly the Status-Report) is being charged.'"
+    },
+    "TS32.299.dadx#sm-service-type-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.213: 'The SM-Service-Type AVP shall be present if the SM-Message-Type AVP has value 2, SM Service Request.'"
+    },
+    "TS32.299.dadx#sm-status-length": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.209: 'The OctetString is of length 1 octet and contains status information about the delivery of an SM.'"
+    },
+    "TS32.299.dadx#sm-user-data-header-coding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.210: 'Encoding is as described in TS 23.040 [216].'"
+    },
+    "TS32.299.dadx#status-as-code-presence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.215A: 'If AS responds SIP 200 OK, this AVP isn't present in Application-Server-Information AVP.'"
+    },
+    "TS32.299.dadx#subscriber-role-not-used": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.218: 'This AVP is not used.'"
+    },
+    "TS32.299.dadx#supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.10.3: 'The value 10415 (3GPP) is used as Vendor-Id, and the Feature-List-ID and Feature-List are defined per middle tier TS.'"
+    },
+    "TS32.299.dadx#terminate-action-used-service-unit": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5.3: 'The Network Element shall send CCR message with CC-Request-Type AVP set to the value UPDATE_REQUEST and report the Used-Service-Unit AVP for the service that has terminated, as defined in RFC 4006 [402].'"
+    },
+    "TS32.299.dadx#time-indicator-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.226A: 'Absence of this field indicates that the announcement is to be played before the IMS session is allowed to continue.'"
+    },
+    "TS32.299.dadx#transit-ioi-list-order": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.233B: 'Multiple occurrences of this AVP shall be in chronological order, i.e. the value in the SIP request is listed first.'; 'If only a value for the SIP response is available, the Transit-IOI-List for the SIP request shall be included with the value \"unknown\".'"
+    },
+    "TS32.299.dadx#trigger-type-notes": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.236: 'NOTE 1: This should not be used in conjunction with enumerated values 10 to 23.'; 'NOTE 2: This should not be used in conjunction with enumerated values 30 to 36.'; 'NOTE 3: The threshold and the granularity of threshold are operator configurable. This should not be used in conjunction with value 50.'"
+    },
+    "TS32.299.dadx#uni-pdu-cp-only-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.238A: 'If this AVP is not present, this means both user plane and control plane can be used in UNI for PDU transfer, i.e. S1-U and S11-U respectively from S-GW, when Control Plane CIoT EPS Optimization is enabled.'"
     },
     "TS32.299.dadx#used-service-unit-reporting-reason": {
      "kind": "interpret",
@@ -14508,9 +14768,21 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.17: 'For PS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded hexadecimal.'; 'For IMS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded decimal.'"
     },
+    "TS32.299.dadx#variable-part-value-form": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.2.242aD.1: 'String of digits, which shall be announced as a single number, up to 10 digits.'; 'String of digits, which shall be announced as individual digits, up to 24 digits.'; 'A string of digits in the form HHMM.'; 'A string of digits in the form of YYYYMMDD.'; 'A string of digits in the form of AAAAAABB, where AAAAAA is the integral part and BB is the decimal part.'"
+    },
     "TS32.299.dadx#vendor-specific-application-id-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.1.16: 'The Vendor-Id AVP (AVP code 266), as part of the grouped Vendor-Specific-Application-Id AVP, shall contain the value of 10415, which is the IANA registered value for '3GPP' in TS 29.230 [206].'"
+    },
+    "TS32.299.dadx#vlr-number-tbcd": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.242B: 'It is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
+    },
+    "TS32.299.dadx#wlan-operator-name-twan": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.252: 'The WLAN-Operator-Name AVP (AVP code 1307) is of type UTF8String and holds the Name of the trusted or untrusted WLAN Operator, as specified in subclause 19. 8 of 3GPP TS 23.003 [224].'"
     },
     "TS32.299.py#acct-multi-session-id-type": {
      "kind": "correction",
@@ -15020,7 +15292,7 @@
      "targets": [
       [
        "sections",
-       27
+       41
       ]
      ]
     },
@@ -15032,7 +15304,7 @@
      "targets": [
       [
        "sections",
-       271
+       305
       ]
      ]
     },
@@ -15132,7 +15404,7 @@
      "targets": [
       [
        "sections",
-       10,
+       12,
        "rows",
        463
       ]
@@ -15174,7 +15446,7 @@
      "targets": [
       [
        "sections",
-       31
+       45
       ]
      ]
     },
