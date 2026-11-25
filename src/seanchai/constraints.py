@@ -19,6 +19,7 @@ docs/constraints.md#elements each element's.
 from __future__ import annotations
 
 import dataclasses
+import ipaddress
 import re
 from collections.abc import Mapping, Sequence
 from typing import NamedTuple
@@ -52,6 +53,9 @@ _TEXT = frozenset(
     }
 )
 
+# An IPFilterRule's text, or an OctetString holding one.
+_FILTER = frozenset({ast.DataType.IP_FILTER_RULE, ast.DataType.OCTET_STRING})
+
 # The data types a codec can describe the payload of. An `element` is any.
 CODEC_TYPES: dict[ast.Codec, frozenset[ast.DataType]] = {
     ast.Codec.E164_TBCD: frozenset({ast.DataType.OCTET_STRING}),
@@ -64,6 +68,8 @@ CODEC_TYPES: dict[ast.Codec, frozenset[ast.DataType]] = {
     ast.Codec.EPC_PLMN_DOMAIN: _TEXT,
     ast.Codec.TIME_ZONE: _TEXT,
     ast.Codec.MAC_ADDRESS: _TEXT,
+    ast.Codec.IP_FILTER: _FILTER,
+    ast.Codec.IP_FILTER_OUT: _FILTER,
     ast.Codec.IP_ADDRESS: frozenset({ast.DataType.ADDRESS}),
     ast.Codec.ELEMENT: frozenset(ast.DataType),
 }
@@ -139,6 +145,75 @@ _TIME_ZONE = re.compile(r"[+-][0-9]+")
 _MAC_ADDRESS = re.compile(r"[0-9A-F]{2}(?:-[0-9A-F]{2}){5}")
 
 
+def _ip_filter_address(token: str) -> str | None:
+    """Why `token` is no IPFilterRule address: `any`, `assigned`, or an IPv4
+    or IPv6 number with an optional mask width valid for its version."""
+    if token in ("any", "assigned"):
+        return None
+    number, slash, bits = token.partition("/")
+    if "%" in number:
+        return f"{token!r} is no address, 'any' or 'assigned'"
+    try:
+        address = ipaddress.ip_address(number)
+    except ValueError:
+        return f"{token!r} is no address, 'any' or 'assigned'"
+    if slash:
+        width = 32 if address.version == 4 else 128
+        if not bits.isdigit() or not 0 <= int(bits) <= width:
+            return f"{token!r} has no mask width 0 to {width}"
+    return None
+
+
+def _ip_filter_ports(token: str) -> bool:
+    """Whether `token` is a list of ports and port ranges, 0 to 65535."""
+    for part in token.split(","):
+        low, dash, high = part.partition("-")
+        if not low.isdigit() or (dash and not high.isdigit()):
+            return False
+        if int(low) > 65535 or (dash and not int(low) <= int(high) <= 65535):
+            return False
+    return True
+
+
+def _ip_filter_problem(text: str, out_only: bool) -> str | None:
+    """Why `text` is no IPFilterRule (RFC 6733 clause 4.3.1) as the
+    documents restrict it: `permit`, a direction (`out` where `out_only`),
+    a protocol number or `ip`, `from` a source and `to` a destination, each
+    an address and optional ports, no options and no `!`."""
+    if "!" in text:
+        return "the invert modifier '!' is used"
+    tokens = text.split()
+    if not tokens or tokens[0] != "permit":
+        return "the action is not 'permit'"
+    if len(tokens) < 2 or tokens[1] not in (("out",) if out_only else ("in", "out")):
+        return (
+            "the direction is not 'out'" if out_only else "no direction 'in' or 'out'"
+        )
+    if len(tokens) < 3 or not (
+        tokens[2] == "ip" or (tokens[2].isdigit() and int(tokens[2]) <= 255)
+    ):
+        return "no protocol number or 'ip'"
+    position = 3
+    for keyword in ("from", "to"):
+        if len(tokens) <= position or tokens[position] != keyword:
+            return f"no '{keyword}'"
+        if len(tokens) <= position + 1:
+            return f"no address after '{keyword}'"
+        problem = _ip_filter_address(tokens[position + 1])
+        if problem is not None:
+            return problem
+        position += 2
+        if position < len(tokens) and tokens[position] != "to":
+            if not _ip_filter_ports(tokens[position]):
+                if keyword == "to":
+                    return "options are used"
+                return f"{tokens[position]!r} are no ports"
+            position += 1
+    if position != len(tokens):
+        return "options are used"
+    return None
+
+
 def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
     """Why `payload` is not laid out as `codec` says, or None if it is, or
     if `codec` is an `element`, whose layout `element_problem` checks."""
@@ -194,6 +269,8 @@ def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
         case ast.Codec.MAC_ADDRESS:
             ok = _MAC_ADDRESS.fullmatch(text)
             return None if ok else "not six upper-case hexadecimal octets joined by '-'"
+        case ast.Codec.IP_FILTER | ast.Codec.IP_FILTER_OUT:
+            return _ip_filter_problem(text, codec is ast.Codec.IP_FILTER_OUT)
     raise AssertionError(codec)
 
 

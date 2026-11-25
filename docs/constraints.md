@@ -169,6 +169,8 @@ name. A layout no clause states is not here.
 | `ip-address` | an Address of family 1 (IPv4, 4 octets) or 2 (IPv6, 16) | RFC 6733 clause 4.3.1, as TS 29.272 clauses 7.3.98 and 7.3.109 restrict it |
 | `time-zone` | a sign and decimal digits, the offset from UTC in 15 minutes: `+8` | TS 29.272 clause 7.3.163 |
 | `mac-address` | a 6-octet MAC address as text, each octet two upper-case hexadecimal digits, joined by dashes: `00-10-A4-23-19-C0` | TS 29.273 clauses 5.2.3.23 and 5.2.3.30 |
+| `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports and port ranges; no options, no `!` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it |
+| `ip-filter-out` | an `ip-filter` of the direction `out`: `permit out 17 from 192.0.2.10/32 5060 to assigned` | TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2 |
 | `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
 A clause pointing at another document without stating a layout ("Octets are
@@ -318,6 +320,15 @@ TS 29.273's 6 name 6 entries, of which 4 check something:
 | MIP-FA-RK | TS 33.402 9.2.1.2.2 FA-RK | TS 33.402 V19.0.0 9.2.1.2.2 | 20 octets | full | a key: any value |
 | MIP-FA-RK-SPI | TS 33.402 9.2.1.2.2 FA-RK-SPI | TS 33.402 V19.0.0 9.2.1.2.2 | nothing | none | a derived index: the clause steps it clear of the other active SPIs and of the top of the range, which a single message cannot show |
 | WLCP-Key | TS 33.402 A.3 WLCP key | TS 33.402 V19.0.0 A.3; TS 33.402 V19.0.0 A.1; TS 33.220 V19.1.0 B.2.0 | 32 octets | full | a key: any value |
+
+TS 29.212's 4 name 4 entries, all of which check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| RAN-NAS-Release-Cause | TS 29.274 8.103 RAN/NAS Cause | TS 29.274 V19.6.0 8.103 | at least 2 octets | partial | that a Diameter or IKEv2 cause takes two octets is not checked: no shape ties a length to a field's value; the protocol types 6 to 15 are spare, not refused, since the clause does not say they are not sent, and the cause type and value take any value |
+| Presence-Reporting-Area-Elements-List | TS 29.274 8.108 Presence Reporting Area Action | TS 29.274 V19.6.0 8.108 | at least 6 octets | partial | that the elements' octets add up to the counts is not checked: no shape sums them; the spare bits of octets 10 to 14 are the ones TS 29.274 clause 8.1 says are sent as 0 and not evaluated by the receiver, and each count's own bits bound it at 15 or 63 |
+| Presence-Reporting-Area-Identifier | TS 29.274 8.109 PRA Identifier | TS 29.274 V19.6.0 8.109; TS 23.003 V19.8.0 19.10 | 3 octets | full | the identifier takes any value, its most significant bit telling a UE-dedicated area from a core network predefined one |
+| Framed-IPv6-Prefix | RFC 3162 2.3 Framed-IPv6-Prefix | RFC 3162 (August 2001) 2.3 | 2 to 18 octets; octet 1 (Reserved) 00000000; octet 2 (Prefix-Length) 00000000 to 10000000 | partial | that the bits beyond the prefix length are zero is not checked: no shape reads a length from a field |
 
 
 ## Reading them
@@ -636,3 +647,85 @@ the detailed-behaviour clauses' result codes, which are what a node answers
 with, not a condition on an AVP; and the C rows saying only what an AVP
 holds when present ("If present, this IE shall contain the untrusted
 non-3GPP access network technology type").
+
+## TS 29.212
+
+TS 29.212 V19.1.0's Gx is read: every AVP clause of clause 5.3, the
+re-used AVPs' descriptions of table 5.4.0.1, clause 5.4.1's supported
+features, 5.4.2's Flow-Description and 5.5.1's Experimental-Result, and
+clause 4.5.1's IP-CAN session establishment for what it states of one
+message. Its Gxx, Sd, St and S15 clauses are not read yet. Release 18's
+copy, V18.2.0, prints every sentence read and holds all 117 blocks; the
+Release 11 copy, held for citations, is offered none.
+
+The document has no information-element tables, and prints CC-Request,
+CC-Answer, RA-Request and RA-Answer for Gx, Gxx, Sd and S15 with no
+application id in their headers: a block names Gx's print with
+`; Command-Section:`, clauses 5.6.2 to 5.6.5. A PCC rule's
+Charging-Rule-Definition modifies the one installed before it, keeping what
+it omits (clause 5.3.4), so a condition on its members is `text-only`.
+
+| | |
+|---|---|
+| AVP clauses (clause 5.3, not its General and Void clauses) | 130 |
+| with something to declare | 59, in 102 blocks |
+| with nothing to declare | 71 |
+| re-used AVPs' descriptions (table 5.4.0.1) | 7 blocks |
+| clauses 4.5.1, 5.4.1, 5.4.2 and 5.5.1 | 8 blocks |
+| blocks | 117: 51 on an AVP wherever read, 26 within a grouped AVP, 40 within a command |
+| readings | 148 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 11: `ip-address` 6 (AN-GW-Address, CoA-IP-Address, Routing-IP-Address, TDF-IP-Address, HeNB-Local-IP-Address, UE-Local-IP-Address), `ip-filter-out` 4 (TFT-Filter, Packet-Filter-Content, Flow-Description wherever read and in Routing-Filter), `ip-filter` (Tunnel-Header-Filter) |
+| `encoding element` | 4, naming 4 entries of the registry, all checked ([above](#elements)) |
+| `length` | 1: ToS-Traffic-Class, 2 octets |
+| `range` | 2: Priority-Level 1 to 15, Routing-Filter's Flow-Direction BIDIRECTIONAL |
+| `exclude` | 1: Event-Trigger's obsolete values 8, 9, 10, 38 and 41 |
+| `requires`, `present-if`, `absent-if` | 3, 39, 2 |
+| reading the request | 1: the initial CCA's Supported-Features, beside the CCR's |
+| `default` | 4: QoS-Negotiation, Pre-emption-Capability, Pre-emption-Vulnerability, Usage-Monitoring-Level |
+| `members` | 6, `at-least-one`: TDF-Information's realm and host or address, Conditional-APN-Aggregate-Max-Bitrate's bandwidths and conditions, the Flow-Description and Flow-Direction of Application-Detection-Information's Flow-Information |
+| `text-only` | 77 |
+
+Most checked rules are clause 5.3.7's: an event trigger a CCR reports, of
+any of its Event-Trigger AVPs, with the AVP the value's description says it
+is sent with (SGSN_CHANGE's 3GPP-SGSN-Address or 3GPP-SGSN-IPv6-Address,
+TAI_CHANGE's 3GPP-User-Location-Info, USAGE_REPORT's
+Usage-Monitoring-Information), 29 conditions. H(E)NB_LOCAL_IP_ADDRESS_CHANGE
+and 3GPP_PS_DATA_OFF_CHANGE are written 44 and 55, the first a value the
+corpus's Event-Trigger table lacks, the second a name beginning with a digit.
+A deletion's Packet-Filter-Information "only the Packet-Filter-Identifier"
+is read on the CCR as the AVP absent where it holds another member, a path
+into it, since its own scope does not see the command's
+Packet-Filter-Operation.
+
+The text-only rules are mostly conditions on the node, the bearer binding,
+the subscription or an earlier message ("For GPRS scenarios where the
+bearer binding is performed by the PCRF", "If ... not been previously
+provided, its absence shall indicate"), the members of a
+Charging-Rule-Definition, and defaults resting on what was supplied before.
+The rest a single message could show but the format cannot say: which of a
+CCR's Charging-Rule-Reports are a lost bearer's, a text's start (an NBIFOM
+Routing-Rule-Identifier's "PCEF" or "PCRF"), digits as text where a
+sibling's type says IMEISV, User-Equipment-Info-Extension's members, which
+RFC 8506 defines and this document does not print, Granted-Service-Unit's
+and Used-Service-Unit's re-used members, which a `members` rule cannot name
+beside the Monitoring-Time their `* [ AVP ]` admits, non-GBR QCIs, which
+are TS 23.203's, and Max-PLR-DL's and Max-PLR-UL's range 0 to 1000, which
+the clauses read of an Unsigned32 and table 5.3.0.1, as the corpus prints
+it, types Float32. Clause 5.3.27's "The Event-Trigger AVP with value
+IP-CAN-CHANGE shall be provided together with the IP-CAN-Type AVP" is
+text-only, since clause 5.3.7's NBIFOM event triggers carry an IP-CAN-Type
+too; clause 5.3.53's unconditional "shall include the Flow-Direction AVP"
+is, beside its sentence excusing a Flow-Information holding only a
+Packet-Filter-Identifier; and clause 5.3.40 names Extended-APN-AMBR-DL for
+the uplink, citing 5.3.135's Extended-APN-AMBR-UL. Left unread: the
+sentences saying a value or an AVP is "applicable" or "not applicable" to an
+interface or a release, with no "shall" (Session-Release-Cause's values
+"to be used by Sd only", Charging-Rule-Install's IP-CAN-Type "Only the
+3GPP-EPS and Non-3GPP-EPS IP-CAN type values are applicable in this
+release", Max-PLR's "only applicable for PCC rule with QCI=1"); "is
+provided" and "may ... when" sentences (the NBIFOM event triggers' IP-CAN
+type, Quota-Consumption-Time beside a CC-Time); and the M-bit and vendor
+settings of table 5.4.0.1, which the AVP table's flags already state.

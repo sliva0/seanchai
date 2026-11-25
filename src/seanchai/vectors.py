@@ -188,6 +188,8 @@ _CODEC = {
     ast.Codec.EPC_PLMN_DOMAIN: b"epc.mnc045.mcc123.3gppnetwork.org",
     ast.Codec.TIME_ZONE: b"+8",
     ast.Codec.MAC_ADDRESS: b"00-10-A4-23-19-C0",
+    ast.Codec.IP_FILTER: b"permit in 17 from assigned to 192.0.2.10/32 5060",
+    ast.Codec.IP_FILTER_OUT: b"permit out 17 from 192.0.2.10/32 5060 to assigned",
     ast.Codec.IP_ADDRESS: b"\x00\x01\xc0\x00\x02\x01",
 }
 # What breaks a codec's layout without changing its length.
@@ -202,6 +204,8 @@ _BROKEN_CODEC = {
     ast.Codec.EPC_PLMN_DOMAIN: lambda good: b"x" * len(good),
     ast.Codec.TIME_ZONE: lambda good: b"x" * len(good),
     ast.Codec.MAC_ADDRESS: lambda good: good.lower(),
+    ast.Codec.IP_FILTER: lambda good: b"deny  " + good[6:],
+    ast.Codec.IP_FILTER_OUT: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_ADDRESS: lambda good: b"\x00\x03" + good[2:],
 }
 
@@ -2210,6 +2214,13 @@ class _Negatives:
             ):
                 # The run's change breaks a rule on a path into it.
                 return False
+            if any(
+                self.builder.broken(self.builder.scope_of(node.avp), node.children)
+                for node, _, _ in self.each_grouped(message)
+                if node.children is not nodes
+            ):
+                # Making a condition on a path hold broke a grouped AVP's own.
+                return False
         self.emit(
             message,
             f"constraint-{rule.kind}/{name}/{each.section}",
@@ -2447,6 +2458,13 @@ class _Negatives:
             bit = self.builder.values.bit(node.avp, condition.bit)
             number = None if bit is None else 1 << bit
         if number is None or node.avp.data_type not in _FIXED:
+            return False
+        if (
+            condition.value is not None
+            and node.avp.data_type is ast.DataType.ENUMERATED
+            and number not in {v.value for v in node.avp.values if v.kind == "value"}
+        ):
+            # A number the AVP's values do not name, which a checker reports.
             return False
         node.payload = _integer(node.avp.data_type, number)
         return True

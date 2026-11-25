@@ -254,7 +254,7 @@
               "name": "constant.language.unit.dad"
             },
             {
-              "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-address|time-zone|mac-address|element)(?=\\s|$)",
+              "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-filter-out|ip-filter|ip-address|time-zone|mac-address|element)(?=\\s|$)",
               "name": "support.type.codec.dad"
             },
             {

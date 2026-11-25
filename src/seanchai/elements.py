@@ -1632,6 +1632,106 @@ REGISTRY: tuple[Element, ...] = (
         "a key: any value",
         example=bytes(range(32)),
     ),
+    Element(
+        "TS29.274",
+        "8.103",
+        "RAN/NAS Cause",
+        "the RAN/NAS Cause information element from its octet 5: the protocol"
+        " and cause types, then the cause value",
+        (
+            _source(
+                _GTPV2,
+                "8.103",
+                "figure 8.103-1: octet 5 Protocol Type (bits 8-5) and Cause"
+                " Type (bits 4-1), octets 6 to m the Cause Value, one octet for"
+                " an S1AP, EMM or ESM cause, two for a Diameter or IKEv2 one;"
+                " octets (m+1) to (n+4) present only if explicitly specified",
+            ),
+        ),
+        (Octets(2, None),),
+        Depth.PARTIAL,
+        "that a Diameter or IKEv2 cause takes two octets is not checked: no"
+        " shape ties a length to a field's value; the protocol types 6 to 15"
+        " are spare, not refused, since the clause does not say they are not"
+        " sent, and the cause type and value take any value",
+        example=b"\x10\x05",
+    ),
+    Element(
+        "TS29.274",
+        "8.108",
+        "Presence Reporting Area Action",
+        "the Presence Reporting Area Action information element from its"
+        " octet 9: the counts of the elements composing the area, then the"
+        " elements",
+        (
+            _source(
+                _GTPV2,
+                "8.108",
+                "figure 8.108-1: octets 9 to 14 the numbers of TAIs, RAIs,"
+                " macro eNodeBs, home eNodeBs, ECGIs, SAIs and CGIs, octets 15"
+                " on the elements, then the number of extended macro eNodeBs"
+                " and their IDs",
+            ),
+        ),
+        (Octets(6, None),),
+        Depth.PARTIAL,
+        "that the elements' octets add up to the counts is not checked: no"
+        " shape sums them; the spare bits of octets 10 to 14 are the ones TS"
+        " 29.274 clause 8.1 says are sent as 0 and not evaluated by the"
+        " receiver, and each count's own bits bound it at 15 or 63",
+        example=bytes(6),
+    ),
+    Element(
+        "TS29.274",
+        "8.109",
+        "PRA Identifier",
+        "the PRA Identifier of the Presence Reporting Area Information"
+        " information element, its octets 5 to 7",
+        (
+            _source(
+                _GTPV2,
+                "8.109",
+                "figure 8.109-1, octets 5 to 7 'PRA Identifier', 'encoded using"
+                " full hexadecimal representation (binary, not ASCII encoding)'",
+            ),
+            _source(
+                _NUMBERING,
+                "19.10",
+                "'The PRA ID shall be encoded as an integer on 3 octets'",
+            ),
+        ),
+        (Octets(3, 3),),
+        Depth.FULL,
+        "the identifier takes any value, its most significant bit telling a"
+        " UE-dedicated area from a core network predefined one",
+        example=b"\x00\x00\x01",
+    ),
+    Element(
+        "RFC3162",
+        "2.3",
+        "Framed-IPv6-Prefix",
+        "the Framed-IPv6-Prefix attribute's value: a reserved octet, the"
+        " prefix length and the prefix",
+        (
+            Source(
+                "RFC3162",
+                "(August 2001)",
+                "2.3",
+                "Reserved 'always set to zero', Prefix-Length 'At least 0 and no"
+                " larger than 128', Prefix 'up to 16 octets in length', the"
+                " attribute's Length 'At least 4 and no larger than 20'",
+            ),
+        ),
+        (
+            Octets(2, 18),
+            Field("Reserved", 1, 8, 1, _SPARE_ZERO),
+            Field("Prefix-Length", 2, 8, 1, ((0, 128),)),
+        ),
+        Depth.PARTIAL,
+        "that the bits beyond the prefix length are zero is not checked: no"
+        " shape reads a length from a field",
+        example=b"\x00\x40\x20\x01\x0d\xb8\x00\x00\x00\x00",
+    ),
 )
 
 _BY_KEY = {element.key: element for element in REGISTRY}

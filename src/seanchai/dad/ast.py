@@ -1452,6 +1452,14 @@ class Codec(enum.StrEnum):
     - `mac-address`: a 6-octet MAC address as text, each octet two
       upper-case hexadecimal digits, separated by dashes,
       `00-10-A4-23-19-C0` (TS 29.273 clauses 5.2.3.23 and 5.2.3.30).
+    - `ip-filter`: an IPFilterRule (RFC 6733 clause 4.3.1) as TS 29.212
+      restricts it: the action `permit`, a direction `in` or `out`, a
+      protocol number or `ip`, `from` a source and `to` a destination, each
+      `any`, `assigned` or an IPv4 or IPv6 number with an optional mask
+      width, and optional ports, a list of ports and port ranges; no options
+      and no `!` (TS 29.212 clause 5.3.34).
+    - `ip-filter-out`: an `ip-filter` of the direction `out` (TS 29.212
+      clauses 5.3.13, 5.3.54 and 5.4.2).
     - `element`: an information element another document defines, carried
       whole: `document`, and the `clause` and `element` name where the
       clause gives them. Checked no further than a length rule states.
@@ -1468,6 +1476,8 @@ class Codec(enum.StrEnum):
     IP_ADDRESS = "ip-address"
     TIME_ZONE = "time-zone"
     MAC_ADDRESS = "mac-address"
+    IP_FILTER = "ip-filter"
+    IP_FILTER_OUT = "ip-filter-out"
     ELEMENT = "element"
 
 

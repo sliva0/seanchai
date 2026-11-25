@@ -495,6 +495,148 @@ local function labels_ok(text)
     and not text:find("..", 1, true)
 end
 
+-- An IPv4 number in dotted-quad form.
+local function ipv4_ok(text)
+  local parts = { text:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$") }
+  if #parts ~= 4 then
+    return false
+  end
+  for _, part in ipairs(parts) do
+    if #part > 3 or (#part > 1 and part:sub(1, 1) == "0") or tonumber(part) > 255 then
+      return false
+    end
+  end
+  return true
+end
+
+-- How many 16-bit groups a run of IPv6 groups holds, a dotted IPv4 number
+-- ending it counting two; nil for no such run.
+local function ipv6_groups(run, last)
+  if run == "" then
+    return 0
+  end
+  local count = 0
+  local groups = {}
+  for group in (run .. ":"):gmatch("([^:]*):") do
+    groups[#groups + 1] = group
+  end
+  for index, group in ipairs(groups) do
+    if last and index == #groups and group:find(".", 1, true) then
+      if not ipv4_ok(group) then
+        return nil
+      end
+      count = count + 2
+    elseif group:match("^%x%x?%x?%x?$") then
+      count = count + 1
+    else
+      return nil
+    end
+  end
+  return count
+end
+
+-- An IPv6 number in canonical form: eight groups, or fewer around one "::".
+local function ipv6_ok(text)
+  local head, tail = text:match("^(.-)::(.*)$")
+  if head then
+    if tail:find("::", 1, true) then
+      return false
+    end
+    local before, after = ipv6_groups(head, false), ipv6_groups(tail, true)
+    return before ~= nil and after ~= nil and before + after <= 7
+  end
+  return ipv6_groups(text, true) == 8
+end
+
+-- Why `token` is no IPFilterRule address: "any", "assigned", or an IPv4 or
+-- IPv6 number with an optional mask width valid for its version.
+local function ip_filter_address(token)
+  if token == "any" or token == "assigned" then
+    return nil
+  end
+  local number, bits = token:match("^([^/]*)/(.*)$")
+  number = number or token
+  local width
+  if ipv4_ok(number) then
+    width = 32
+  elseif ipv6_ok(number) then
+    width = 128
+  else
+    return string.format("'%s' is no address, 'any' or 'assigned'", token)
+  end
+  if bits and not (bits:match("^%d+$") and tonumber(bits) <= width) then
+    return string.format("'%s' has no mask width 0 to %d", token, width)
+  end
+  return nil
+end
+
+-- Whether `token` is a list of ports and port ranges, 0 to 65535.
+local function ip_filter_ports(token)
+  for part in (token .. ","):gmatch("([^,]*),") do
+    local low, high = part:match("^(%d+)%-(%d+)$")
+    if low then
+      if tonumber(low) > tonumber(high) or tonumber(high) > 65535 then
+        return false
+      end
+    elseif not (part:match("^%d+$") and tonumber(part) <= 65535) then
+      return false
+    end
+  end
+  return true
+end
+
+-- Why `text` is no IPFilterRule (RFC 6733 clause 4.3.1) as the documents
+-- restrict it: "permit", a direction ("out" where `out_only`), a protocol
+-- number or "ip", "from" a source and "to" a destination, each an address
+-- and optional ports, no options and no "!".
+local function ip_filter_problem(text, out_only)
+  if text:find("!", 1, true) then
+    return "the invert modifier '!' is used"
+  end
+  local tokens = {}
+  for token in text:gmatch("%S+") do
+    tokens[#tokens + 1] = token
+  end
+  if tokens[1] ~= "permit" then
+    return "the action is not 'permit'"
+  end
+  if not (tokens[2] == "out" or (tokens[2] == "in" and not out_only)) then
+    return out_only and "the direction is not 'out'" or "no direction 'in' or 'out'"
+  end
+  local protocol = tokens[3]
+  if not (protocol == "ip" or (protocol and protocol:match("^%d+$")
+    and tonumber(protocol) <= 255)) then
+    return "no protocol number or 'ip'"
+  end
+  local position = 4
+  for _, keyword in ipairs({ "from", "to" }) do
+    if tokens[position] ~= keyword then
+      return string.format("no '%s'", keyword)
+    end
+    if not tokens[position + 1] then
+      return string.format("no address after '%s'", keyword)
+    end
+    local problem = ip_filter_address(tokens[position + 1])
+    if problem then
+      return problem
+    end
+    position = position + 2
+    if tokens[position] and tokens[position] ~= "to" then
+      if not ip_filter_ports(tokens[position]) then
+        if keyword == "to" then
+          return "options are used"
+        end
+        return string.format("'%s' are no ports", tokens[position])
+      end
+      position = position + 1
+    end
+  end
+  if tokens[position] then
+    return "options are used"
+  end
+  return nil
+end
+
 local function codec_problem(codec, s)
   if codec == "e164-tbcd" then
     if #s < 1 or #s > 8 then
@@ -558,6 +700,8 @@ local function codec_problem(codec, s)
     if not s:match("^" .. octet .. ("%-" .. octet):rep(5) .. "$") then
       return "not six upper-case hexadecimal octets joined by '-'"
     end
+  elseif codec == "ip-filter" or codec == "ip-filter-out" then
+    return ip_filter_problem(s, codec == "ip-filter-out")
   end
   return nil
 end

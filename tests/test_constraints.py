@@ -108,6 +108,54 @@ VECTORS = [
     pytest.param(Codec.MAC_ADDRESS, b"00-10-a4-23-19-c0", False, id="mac-lower"),
     pytest.param(Codec.MAC_ADDRESS, b"00:10:A4:23:19:C0", False, id="mac-colons"),
     pytest.param(Codec.MAC_ADDRESS, b"00-10-A4-23-19", False, id="mac-short"),
+    pytest.param(
+        Codec.IP_FILTER_OUT,
+        b"permit out 17 from 192.0.2.10/32 5060 to assigned",
+        True,
+        id="filter-out",
+    ),
+    pytest.param(
+        Codec.IP_FILTER_OUT,
+        b"permit out ip from 2001:db8::/32 to any 1-1023,8080",
+        True,
+        id="filter-ipv6-ports",
+    ),
+    pytest.param(
+        Codec.IP_FILTER_OUT, b"permit in ip from any to any", False, id="filter-in"
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"permit in ip from any to assigned", True, id="filter-in-ok"
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"deny in ip from any to assigned", False, id="filter-deny"
+    ),
+    pytest.param(
+        Codec.IP_FILTER,
+        b"permit out ip from any to assigned frag",
+        False,
+        id="filter-option",
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"permit out ip from !192.0.2.1 to any", False, id="filter-not"
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"permit out 256 from any to any", False, id="filter-protocol"
+    ),
+    pytest.param(
+        Codec.IP_FILTER,
+        b"permit out ip from 192.0.2.1/33 to any",
+        False,
+        id="filter-mask",
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"permit out ip from 01.2.3.4 to any", False, id="filter-zero"
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"permit out ip from 1::2::3 to any", False, id="filter-ipv6"
+    ),
+    pytest.param(
+        Codec.IP_FILTER, b"permit out ip from any to any 70000", False, id="filter-port"
+    ),
     pytest.param(Codec.ELEMENT, b"\xff\xff", True, id="element-unchecked"),
 ]
 
