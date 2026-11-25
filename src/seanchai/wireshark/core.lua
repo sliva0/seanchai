@@ -709,6 +709,13 @@ local function codec_problem(codec, s)
     if not s:match("^" .. octet .. ("%-" .. octet):rep(5) .. "$") then
       return "not six upper-case hexadecimal octets joined by '-'"
     end
+  elseif codec == "session-id" then
+    -- RFC 6733 clause 8.8: the sender's DiameterIdentity, then ";" and any
+    -- text, or nothing.
+    local problem = identity_problem(s:match("^[^;]*"))
+    if problem then
+      return "not begun by its sender's: " .. problem
+    end
   elseif codec == "ip-filter" or codec == "ip-filter-out"
     or codec == "ip-filter-flow" then
     return ip_filter_problem(s, codec == "ip-filter-out", codec == "ip-filter-flow")

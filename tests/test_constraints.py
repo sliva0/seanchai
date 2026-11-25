@@ -109,6 +109,24 @@ VECTORS = [
     pytest.param(Codec.MAC_ADDRESS, b"00:10:A4:23:19:C0", False, id="mac-colons"),
     pytest.param(Codec.MAC_ADDRESS, b"00-10-A4-23-19", False, id="mac-short"),
     pytest.param(
+        Codec.SESSION_ID, b"accesspoint7.example.com;1876543210;523", True, id="session"
+    ),
+    pytest.param(
+        Codec.SESSION_ID,
+        b"accesspoint7.example.com;1876543210;523;mobile@200.1.1.88",
+        True,
+        id="session-optional",
+    ),
+    pytest.param(Codec.SESSION_ID, b"aaa.example.com", True, id="session-identity"),
+    pytest.param(Codec.SESSION_ID, b";1876543210;523", False, id="session-no-sender"),
+    pytest.param(
+        Codec.SESSION_ID, b"aaa_1.example.com;1", False, id="session-underscore"
+    ),
+    pytest.param(Codec.SESSION_ID, b"-aaa.example.com;1", False, id="session-hyphen"),
+    pytest.param(
+        Codec.SESSION_ID, b"aaa..example.com;1", False, id="session-empty-label"
+    ),
+    pytest.param(
         Codec.IP_FILTER_OUT,
         b"permit out 17 from 192.0.2.10/32 5060 to assigned",
         True,

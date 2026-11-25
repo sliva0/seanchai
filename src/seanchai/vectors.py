@@ -188,6 +188,7 @@ _CODEC = {
     ast.Codec.EPC_PLMN_DOMAIN: b"epc.mnc045.mcc123.3gppnetwork.org",
     ast.Codec.TIME_ZONE: b"+8",
     ast.Codec.MAC_ADDRESS: b"00-10-A4-23-19-C0",
+    ast.Codec.SESSION_ID: b"aaa.example.com;1876543210;523",
     ast.Codec.IP_FILTER: b"permit in 17 from assigned to 192.0.2.10/32 5060",
     ast.Codec.IP_FILTER_OUT: b"permit out 17 from 192.0.2.10/32 5060 to assigned",
     ast.Codec.IP_FILTER_FLOW: b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060",
@@ -205,6 +206,7 @@ _BROKEN_CODEC = {
     ast.Codec.EPC_PLMN_DOMAIN: lambda good: b"x" * len(good),
     ast.Codec.TIME_ZONE: lambda good: b"x" * len(good),
     ast.Codec.MAC_ADDRESS: lambda good: good.lower(),
+    ast.Codec.SESSION_ID: lambda good: b"-" + good[1:],
     ast.Codec.IP_FILTER: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_FILTER_OUT: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_FILTER_FLOW: lambda good: b"deny  " + good[6:],
@@ -1606,6 +1608,15 @@ class _Negatives:
             if test(node):
                 yield message, node, scope
 
+    def compared(self, node: _Avp, scope: _Scope) -> bool:
+        """Whether an `equals` rule holds `node` to another AVP's value."""
+        return any(
+            rule.kind == "equals"
+            for rule in self.builder.rules_for(
+                node.avp, scope, node.member.name if node.member else node.avp.name
+            )
+        )
+
     def keeps_rules(self, node: _Avp, scope: _Scope, payload: bytes) -> bool:
         rules = _value_rules(
             self.builder.rules_for(
@@ -1687,12 +1698,13 @@ class _Negatives:
                 "note",
             )
             break
-        # UTF-8 that is not.
+        # UTF-8 that is not, in an AVP no rule holds to another's value,
+        # which the broken octets would break too.
         for message, node, scope in self.first(
             lambda n: n.avp.data_type is ast.DataType.UTF8_STRING
         ):
             payload = b"\xff" + (node.payload or b"")[1:]
-            if not self.keeps_rules(node, scope, payload):
+            if not self.keeps_rules(node, scope, payload) or self.compared(node, scope):
                 continue
             node.payload = payload
             self.emit(

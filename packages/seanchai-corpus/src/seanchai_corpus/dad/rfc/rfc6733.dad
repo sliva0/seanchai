@@ -360,6 +360,32 @@ Vendor-Id                        266    5.3.3     Unsigned32         M      V
 Vendor-Specific-Application-Id   260    6.11      Grouped            M      V
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-host-ip-address-per-address)
+; AVP: Host-IP-Address
+; Command: Capabilities-Exchange-Request
+; Section: 5.3.1
+; Page: 62
+"When Diameter is run over SCTP [RFC4960] or DTLS/SCTP [RFC6083], which allow for connections to span multiple interfaces and multiple IP addresses, the Capabilities-Exchange-Request message MUST contain one Host-IP-Address AVP for each potential IP address that MAY be locally used when transmitting Diameter messages."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-host-ip-address-per-address)
+; AVP: Host-IP-Address
+; Command: Capabilities-Exchange-Answer
+; Section: 5.3.2
+; Page: 63
+"When Diameter is run over SCTP [RFC4960] or DTLS/SCTP [RFC6083], which allow connections to span multiple interfaces, hence, multiple IP addresses, the Capabilities-Exchange-Answer message MUST contain one Host-IP-Address AVP for each potential IP address that MAY be locally used when transmitting Diameter messages."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#supported-vendor-id-not-zero)
+; AVP: Supported-Vendor-Id
+; Section: 5.3.6
+; Page: 64
+"The value of this AVP MUST NOT be set to zero."
+    exclude 0
+
+
 ; Type: Enumerated AVP
 ; Name: Disconnect-Cause
 ; Section: 5.4.3
@@ -368,6 +394,265 @@ Disconnect-Cause ::= < Enumerated AVP header: 273 >
         REBOOTING                  = 0
         BUSY                       = 1
         DO_NOT_WANT_TO_TALK_TO_YOU = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-destination-realm-not-proxiable)
+; AVP: Destination-Realm
+; Command: Capabilities-Exchange-Request
+; Section: 6.1
+; Page: 74
+"A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-destination-host-not-proxiable)
+; AVP: Destination-Host
+; Command: Capabilities-Exchange-Request
+; Section: 6.1
+; Page: 74
+"A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-destination-realm-not-proxiable)
+; AVP: Destination-Realm
+; Command: Disconnect-Peer-Request
+; Section: 6.1
+; Page: 74
+"A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-destination-host-not-proxiable)
+; AVP: Destination-Host
+; Command: Disconnect-Peer-Request
+; Section: 6.1
+; Page: 74
+"A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-destination-realm-not-proxiable)
+; AVP: Destination-Realm
+; Command: Device-Watchdog-Request
+; Section: 6.1
+; Page: 74
+"A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-destination-host-not-proxiable)
+; AVP: Destination-Host
+; Command: Device-Watchdog-Request
+; Section: 6.1
+; Page: 74
+"A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-session-id-the-requests)
+; AVP: Session-Id
+; Command: Re-Auth-Answer
+; Section: 6.2
+; Page: 80
+"If the Session-Id is present in the request, it MUST be included in the answer."
+    equals request/Session-Id
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-session-id-the-requests)
+; AVP: Session-Id
+; Command: Abort-Session-Answer
+; Section: 6.2
+; Page: 80
+"If the Session-Id is present in the request, it MUST be included in the answer."
+    equals request/Session-Id
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-session-id-the-requests)
+; AVP: Session-Id
+; Command: Session-Termination-Answer
+; Section: 6.2
+; Page: 80
+"If the Session-Id is present in the request, it MUST be included in the answer."
+    equals request/Session-Id
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-proxy-info-the-requests)
+; AVP: Proxy-Info
+; Command: Re-Auth-Answer
+; Section: 6.2
+; Page: 80
+"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
+    present-if request/Proxy-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-proxy-info-the-requests)
+; AVP: Proxy-Info
+; Command: Abort-Session-Answer
+; Section: 6.2
+; Page: 80
+"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
+    present-if request/Proxy-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-proxy-info-the-requests)
+; AVP: Proxy-Info
+; Command: Session-Termination-Answer
+; Section: 6.2
+; Page: 80
+"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
+    present-if request/Proxy-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-proxy-info-the-requests)
+; AVP: Proxy-Info
+; Command: Accounting-Answer
+; Section: 6.2
+; Page: 80
+"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
+    present-if request/Proxy-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#destination-host-agent-initiated)
+; AVP: Destination-Host
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-destination-host-absent)
+; AVP: Destination-Host
+; Command: Capabilities-Exchange-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-destination-host-absent)
+; AVP: Destination-Host
+; Command: Disconnect-Peer-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-destination-host-absent)
+; AVP: Destination-Host
+; Command: Device-Watchdog-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-destination-host-absent)
+; AVP: Destination-Host
+; Command: Re-Auth-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-destination-host-absent)
+; AVP: Destination-Host
+; Command: Abort-Session-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-destination-host-absent)
+; AVP: Destination-Host
+; Command: Session-Termination-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-destination-host-absent)
+; AVP: Destination-Host
+; Command: Accounting-Answer
+; Section: 6.5
+; Page: 82
+"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Capabilities-Exchange-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Disconnect-Peer-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Device-Watchdog-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Re-Auth-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Abort-Session-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Session-Termination-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-destination-realm-absent)
+; AVP: Destination-Realm
+; Command: Accounting-Answer
+; Section: 6.6
+; Page: 82
+"The Destination-Realm AVP MUST NOT be present in answer messages."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#route-record-the-peers-origin-host)
+; AVP: Route-Record
+; Section: 6.7.1
+; Page: 83
+"The identity added in this AVP MUST be the same as the one received in the Origin-Host of the Capabilities Exchange message."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -380,6 +665,22 @@ Proxy-Info ::= < AVP header: 284 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#auth-application-id-the-headers)
+; AVP: Auth-Application-Id
+; Section: 6.8
+; Page: 83
+"If present in a message other than CER and CEA, the value of the Auth-Application-Id AVP MUST match the Application Id present in the Diameter message header."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#acct-application-id-the-headers)
+; AVP: Acct-Application-Id
+; Section: 6.9
+; Page: 84
+"If present in a message other than CER and CEA, the value of the Acct-Application-Id AVP MUST match the Application Id present in the Diameter message header."
+    text-only
+
+
 ; Type: Value Table
 ; AVP: Inband-Security-Id
 ; Kind: values
@@ -387,6 +688,15 @@ Proxy-Info ::= < AVP header: 284 >
 ; Page: 84
 NO_INBAND_SECURITY = 0
 TLS                = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#inband-security-id-default)
+; AVP: Inband-Security-Id
+; Section: 6.10
+; Page: 84
+"NO_INBAND_SECURITY 0"
+"This peer does not support TLS/TCP and DTLS/SCTP. This is the default value, if the AVP is omitted."
+    default NO_INBAND_SECURITY
 
 
 ; Type: Grouped AVP
@@ -397,6 +707,33 @@ Vendor-Specific-Application-Id ::= < AVP header: 260 >
         { Vendor-Id }
         [ Auth-Application-Id ]
         [ Acct-Application-Id ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#vendor-specific-application-id-one-application)
+; AVP: Vendor-Specific-Application-Id
+; Section: 6.11
+; Page: 84
+"A Vendor-Specific-Application-Id AVP MUST contain exactly one of either Auth-Application-Id or Acct-Application-Id."
+    members at-least-one Auth-Application-Id Acct-Application-Id
+"It MUST also match the Application Id present in the Diameter header except when used in a CER or CEA message."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#vendor-specific-application-id-not-both)
+; AVP: Auth-Application-Id
+; Within: Vendor-Specific-Application-Id
+; Section: 6.11
+; Page: 84
+"A Vendor-Specific-Application-Id AVP MUST contain exactly one of either Auth-Application-Id or Acct-Application-Id."
+    excludes Acct-Application-Id
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#redirect-host-redirect-indication)
+; AVP: Redirect-Host
+; Section: 6.12
+; Page: 85
+"One or more instances of this AVP MUST be present if the answer message's 'E' bit is set and the Result-Code AVP is set to DIAMETER_REDIRECT_INDICATION."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -411,6 +748,14 @@ Redirect-Host-Usage ::= < Enumerated AVP header: 261 >
         ALL_APPLICATION       = 4
         ALL_HOST              = 5
         ALL_USER              = 6
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#redirect-max-cache-time-redirect-indication)
+; AVP: Redirect-Max-Cache-Time
+; Section: 6.14
+; Page: 87
+"This AVP MUST be present in answer messages whose 'E' bit is set, whose Result-Code AVP is set to DIAMETER_REDIRECT_INDICATION, and whose Redirect-Host-Usage AVP set to a non-zero value."
+    text-only
 
 
 ; Type: Value Table
@@ -453,6 +798,183 @@ DIAMETER_INVALID_AVP_BIT_COMBO     = 5016 ; 7.1.5
 DIAMETER_NO_COMMON_SECURITY        = 5017 ; 7.1.5
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#error-reporting-host-another-host)
+; AVP: Error-Reporting-Host
+; Section: 7.1
+; Page: 89
+"A non-successful Result-Code AVP (one containing a non-2xxx value other than DIAMETER_REDIRECT_INDICATION) MUST include the Error-Reporting-Host AVP if the host setting the Result-Code AVP is different from the identity encoded in the Origin-Host AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Capabilities-Exchange-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Disconnect-Peer-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Device-Watchdog-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Re-Auth-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Abort-Session-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Session-Termination-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-failed-avp-with-the-error)
+; AVP: Failed-AVP
+; Command: Accounting-Answer
+; Section: 7.1.5
+; Page: 92
+"DIAMETER_AVP_UNSUPPORTED 5001"
+"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
+"DIAMETER_INVALID_AVP_VALUE 5004"
+"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
+"DIAMETER_CONTRADICTING_AVPS 5007"
+"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
+"DIAMETER_AVP_NOT_ALLOWED 5008"
+"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
+"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
+"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
+"DIAMETER_INVALID_AVP_LENGTH 5014"
+"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#error-reporting-host-a-failure)
+; AVP: Error-Reporting-Host
+; Section: 7.4
+; Page: 96
+"This AVP contains the identity of the Diameter host that sent the Result-Code AVP to a value other than 2001 (Success), only if the host setting the Result-Code is different from the one encoded in the Origin-Host AVP. This AVP is intended to be used for troubleshooting purposes, and it MUST be set when the Result-Code AVP indicates a failure."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Failed-AVP
 ; Section: 7.5
@@ -470,6 +992,22 @@ Experimental-Result ::= < AVP header: 297 >
         { Experimental-Result-Code }
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#authorization-lifetime-extendable)
+; AVP: Authorization-Lifetime
+; Section: 8
+; Page: 98
+"When a Diameter server authorizes a user to implement network resources for a finite amount of time, and it is willing to extend the authorization via a future request, it MUST add the Authorization- Lifetime AVP to the answer message."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#auth-session-state-not-in-re-authorization)
+; AVP: Auth-Session-State
+; Section: 8
+; Page: 98
+"Note that the value NO_STATE_MAINTAINED MUST NOT be set in subsequent re-authorization requests and answers."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Auth-Request-Type
 ; Section: 8.7
@@ -478,6 +1016,26 @@ Auth-Request-Type ::= < Enumerated AVP header: 274 >
         AUTHENTICATE_ONLY      = 1
         AUTHORIZE_ONLY         = 2
         AUTHORIZE_AUTHENTICATE = 3
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#session-id-the-senders-identity)
+; AVP: Session-Id
+; Section: 8.8
+; Page: 116
+"The Session-Id MUST begin with the sender's identity encoded in the DiameterIdentity type (see Section 4.3.1). The remainder of the Session-Id is delimited by a \";\" character"
+    encoding session-id
+"All messages pertaining to a specific session MUST include only one Session-Id AVP, and the same value MUST be used throughout the life of a session."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#authorization-lifetime-not-above-the-timeout)
+; AVP: Authorization-Lifetime
+; Section: 8.9
+; Page: 117
+"If both this AVP and the Session-Timeout AVP are present in a message, the value of the latter MUST NOT be smaller than the Authorization-Lifetime AVP."
+    text-only
+"The server MUST return a value that is equal to, or smaller than, the one provided by the client."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -498,6 +1056,22 @@ Re-Auth-Request-Type ::= < Enumerated AVP header: 285 >
         AUTHORIZE_AUTHENTICATE = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#re-auth-request-type-with-a-lifetime)
+; AVP: Re-Auth-Request-Type
+; Section: 8.12
+; Page: 118
+"If the answer message contains an Authorization-Lifetime AVP with a positive value, the Re-Auth-Request-Type AVP MUST be present in an answer message."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#session-timeout-not-below-the-lifetime)
+; AVP: Session-Timeout
+; Section: 8.13
+; Page: 119
+"When both the Session-Timeout and the Authorization-Lifetime AVPs are present in an answer message, the former MUST be equal to or greater than the value of the latter."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Termination-Cause
 ; Section: 8.15
@@ -515,6 +1089,14 @@ Termination-Cause ::= < Enumerated AVP header: 295 >
         DIAMETER_SESSION_TIMEOUT      = 8 ;; supplied: (RFC6733.py#termination-cause-values)
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#origin-state-id-higher-after-a-reset)
+; AVP: Origin-State-Id
+; Section: 8.16
+; Page: 120
+"A Diameter entity issuing this AVP MUST create a higher value for this AVP each time its state is reset."
+    text-only
+
+
 ; Type: Value Table
 ; AVP: Session-Binding
 ; Kind: bits
@@ -523,6 +1105,16 @@ Termination-Cause ::= < Enumerated AVP header: 295 >
 RE_AUTH    = 0
 STR        = 1
 ACCOUNTING = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#destination-host-session-binding)
+; AVP: Destination-Host
+; Section: 8.17
+; Page: 120
+"When set, future re-auth messages for this session MUST NOT include the Destination-Host AVP."
+"When set, the STR message for this session MUST NOT include the Destination-Host AVP."
+"When set, all accounting messages for this session MUST NOT include the Destination-Host AVP."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -536,6 +1128,41 @@ Session-Server-Failover ::= < Enumerated AVP header: 271 >
         TRY_AGAIN_ALLOW_SERVICE = 3
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#class-in-later-messages)
+; AVP: Class
+; Section: 8.20
+; Page: 122
+"When one or more Class AVPs are present in application-specific authorization answer messages, they MUST be present in subsequent re-authorization, session termination and accounting messages."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#acr-user-name-available)
+; AVP: User-Name
+; Command: Accounting-Request
+; Section: 9.5
+; Page: 125
+"In all accounting records, the Session-Id AVP MUST be present; the User-Name AVP MUST be present if it is available to the Diameter client."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#acr-accounting-record-type-the-service)
+; AVP: Accounting-Record-Type
+; Command: Accounting-Request
+; Section: 9.5
+; Page: 125
+"If the accounted service is a one-time event, meaning that the start and stop of the event are simultaneous, then the Accounting-Record-Type AVP MUST be present and set to the value EVENT_RECORD."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-session-id-the-requests)
+; AVP: Session-Id
+; Command: Accounting-Answer
+; Section: 9.7.2
+; Page: 128
+"The Accounting-Answer command contains the same Session-Id as the corresponding request."
+    equals request/Session-Id
+
+
 ; Type: Enumerated AVP
 ; Name: Accounting-Record-Type
 ; Section: 9.8.1
@@ -547,6 +1174,22 @@ Accounting-Record-Type ::= < Enumerated AVP header: 480 >
         STOP_RECORD    = 4
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#acct-multi-session-id-the-session-id-format)
+; AVP: Acct-Multi-Session-Id
+; Section: 9.8.5
+; Page: 131
+"The Acct-Multi-Session-Id AVP (AVP Code 50) is of type UTF8String, following the format specified in Section 8.8."
+    encoding session-id
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#accounting-sub-session-id-increasing)
+; AVP: Accounting-Sub-Session-Id
+; Section: 9.8.6
+; Page: 131
+"The combination of the Session-Id and this AVP MUST be unique per sub-session, and the value of this AVP MUST be monotonically increased by one for all new sub-sessions."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Accounting-Realtime-Required
 ; Section: 9.8.7
@@ -555,3 +1198,3213 @@ Accounting-Realtime-Required ::= < Enumerated AVP header: 483 >
         DELIVER_AND_GRANT = 1
         GRANT_AND_STORE   = 2
         GRANT_AND_LOSE    = 3
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-class-table-absent)
+; AVP: Class
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-error-message-table-absent)
+; AVP: Error-Message
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-proxy-info-table-absent)
+; AVP: Proxy-Info
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-result-code-table-absent)
+; AVP: Result-Code
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-route-record-table-absent)
+; AVP: Route-Record
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-session-id-table-absent)
+; AVP: Session-Id
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cer-user-name-table-absent)
+; AVP: User-Name
+; Command: Capabilities-Exchange-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-class-table-absent)
+; AVP: Class
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-proxy-info-table-absent)
+; AVP: Proxy-Info
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-route-record-table-absent)
+; AVP: Route-Record
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-session-id-table-absent)
+; AVP: Session-Id
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-user-name-table-absent)
+; AVP: User-Name
+; Command: Capabilities-Exchange-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-class-table-absent)
+; AVP: Class
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-error-message-table-absent)
+; AVP: Error-Message
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-origin-state-id-table-absent)
+; AVP: Origin-State-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Origin-State-Id |0-1|0-1|0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-product-name-table-absent)
+; AVP: Product-Name
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-proxy-info-table-absent)
+; AVP: Proxy-Info
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-result-code-table-absent)
+; AVP: Result-Code
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-route-record-table-absent)
+; AVP: Route-Record
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-session-id-table-absent)
+; AVP: Session-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-user-name-table-absent)
+; AVP: User-Name
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpr-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Disconnect-Peer-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-class-table-absent)
+; AVP: Class
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-origin-state-id-table-absent)
+; AVP: Origin-State-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Origin-State-Id |0-1|0-1|0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-product-name-table-absent)
+; AVP: Product-Name
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-proxy-info-table-absent)
+; AVP: Proxy-Info
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-route-record-table-absent)
+; AVP: Route-Record
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-session-id-table-absent)
+; AVP: Session-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-user-name-table-absent)
+; AVP: User-Name
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Disconnect-Peer-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-class-table-absent)
+; AVP: Class
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-error-message-table-absent)
+; AVP: Error-Message
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-product-name-table-absent)
+; AVP: Product-Name
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-proxy-info-table-absent)
+; AVP: Proxy-Info
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-result-code-table-absent)
+; AVP: Result-Code
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-route-record-table-absent)
+; AVP: Route-Record
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-session-id-table-absent)
+; AVP: Session-Id
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-user-name-table-absent)
+; AVP: User-Name
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwr-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Device-Watchdog-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-class-table-absent)
+; AVP: Class
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-product-name-table-absent)
+; AVP: Product-Name
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-proxy-info-table-absent)
+; AVP: Proxy-Info
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-route-record-table-absent)
+; AVP: Route-Record
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-session-id-table-absent)
+; AVP: Session-Id
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-user-name-table-absent)
+; AVP: User-Name
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Device-Watchdog-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-class-table-absent)
+; AVP: Class
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-error-message-table-absent)
+; AVP: Error-Message
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-product-name-table-absent)
+; AVP: Product-Name
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-result-code-table-absent)
+; AVP: Result-Code
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#rar-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Re-Auth-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-class-table-absent)
+; AVP: Class
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-product-name-table-absent)
+; AVP: Product-Name
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-route-record-table-absent)
+; AVP: Route-Record
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Re-Auth-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-class-table-absent)
+; AVP: Class
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-error-message-table-absent)
+; AVP: Error-Message
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-product-name-table-absent)
+; AVP: Product-Name
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-result-code-table-absent)
+; AVP: Result-Code
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asr-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Abort-Session-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-class-table-absent)
+; AVP: Class
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-product-name-table-absent)
+; AVP: Product-Name
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-route-record-table-absent)
+; AVP: Route-Record
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Abort-Session-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-error-message-table-absent)
+; AVP: Error-Message
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-product-name-table-absent)
+; AVP: Product-Name
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-result-code-table-absent)
+; AVP: Result-Code
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#str-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Session-Termination-Request
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-accounting-realtime-required-table-absent)
+; AVP: Accounting-Realtime-Required
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-acct-application-id-table-absent)
+; AVP: Acct-Application-Id
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-auth-application-id-table-absent)
+; AVP: Auth-Application-Id
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-auth-grace-period-table-absent)
+; AVP: Auth-Grace-Period
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-auth-request-type-table-absent)
+; AVP: Auth-Request-Type
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-auth-session-state-table-absent)
+; AVP: Auth-Session-State
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-authorization-lifetime-table-absent)
+; AVP: Authorization-Lifetime
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-disconnect-cause-table-absent)
+; AVP: Disconnect-Cause
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-firmware-revision-table-absent)
+; AVP: Firmware-Revision
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-host-ip-address-table-absent)
+; AVP: Host-IP-Address
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-product-name-table-absent)
+; AVP: Product-Name
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-route-record-table-absent)
+; AVP: Route-Record
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-session-binding-table-absent)
+; AVP: Session-Binding
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-session-server-failover-table-absent)
+; AVP: Session-Server-Failover
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-supported-vendor-id-table-absent)
+; AVP: Supported-Vendor-Id
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-termination-cause-table-absent)
+; AVP: Termination-Cause
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-vendor-id-table-absent)
+; AVP: Vendor-Id
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-vendor-specific-application-id-table-absent)
+; AVP: Vendor-Specific-Application-Id
+; Command: Session-Termination-Answer
+; Section: 10.1
+; Page: 133
+"0 The AVP MUST NOT be present in the message."
+"Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |"
+    absent

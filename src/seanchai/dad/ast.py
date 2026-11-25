@@ -1465,6 +1465,9 @@ class Codec(enum.StrEnum):
     - `ip-filter-flow`: an `ip-filter` describing one flow as TS 29.214
       clause 5.3.8 restricts it further: no `assigned`, and the source
       port, where given, one port, no list or range.
+    - `session-id`: a Session-Id's text, the sender's DiameterIdentity
+      first, then nothing or a `;` and any text (RFC 6733 clauses 8.8 and
+      9.8.5), `aaa.example.com;1876543210;523`.
     - `element`: an information element another document defines, carried
       whole: `document`, and the `clause` and `element` name where the
       clause gives them. Checked no further than a length rule states.
@@ -1484,6 +1487,7 @@ class Codec(enum.StrEnum):
     IP_FILTER = "ip-filter"
     IP_FILTER_OUT = "ip-filter-out"
     IP_FILTER_FLOW = "ip-filter-flow"
+    SESSION_ID = "session-id"
     ELEMENT = "element"
 
 

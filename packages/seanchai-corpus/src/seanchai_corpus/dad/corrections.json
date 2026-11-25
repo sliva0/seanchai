@@ -19132,6 +19132,1538 @@
   },
   "rfc6733": {
    "edits": {
+    "RFC6733.dadx#aca-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#aca-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#aca-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#aca-proxy-info-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request.'"
+    },
+    "RFC6733.dadx#aca-session-id-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.7.2: 'The Accounting-Answer command contains the same Session-Id as the corresponding request.'"
+    },
+    "RFC6733.dadx#accounting-sub-session-id-increasing": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.8.6: 'The combination of the Session-Id and this AVP MUST be unique per sub-session, and the value of this AVP MUST be monotonically increased by one for all new sub-sessions.'"
+    },
+    "RFC6733.dadx#acct-application-id-the-headers": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.9: 'If present in a message other than CER and CEA, the value of the Acct-Application-Id AVP MUST match the Application Id present in the Diameter message header.'"
+    },
+    "RFC6733.dadx#acct-multi-session-id-the-session-id-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.8.5: 'The Acct-Multi-Session-Id AVP (AVP Code 50) is of type UTF8String, following the format specified in Section 8.8.'"
+    },
+    "RFC6733.dadx#acr-accounting-record-type-the-service": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.5: 'If the accounted service is a one-time event, meaning that the start and stop of the event are simultaneous, then the Accounting-Record-Type AVP MUST be present and set to the value EVENT_RECORD.'"
+    },
+    "RFC6733.dadx#acr-user-name-available": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.5: 'In all accounting records, the Session-Id AVP MUST be present; the User-Name AVP MUST be present if it is available to the Diameter client.'"
+    },
+    "RFC6733.dadx#asa-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asa-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asa-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#asa-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asa-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#asa-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#asa-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#asa-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#asa-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-proxy-info-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request.'"
+    },
+    "RFC6733.dadx#asa-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#asa-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-session-id-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'If the Session-Id is present in the request, it MUST be included in the answer.'"
+    },
+    "RFC6733.dadx#asa-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asa-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#asa-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asa-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asr-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asr-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asr-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asr-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#asr-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#asr-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#asr-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#asr-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#asr-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#asr-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asr-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |'"
+    },
+    "RFC6733.dadx#asr-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#asr-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#asr-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#asr-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#auth-application-id-the-headers": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.8: 'If present in a message other than CER and CEA, the value of the Auth-Application-Id AVP MUST match the Application Id present in the Diameter message header.'"
+    },
+    "RFC6733.dadx#auth-session-state-not-in-re-authorization": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8: 'Note that the value NO_STATE_MAINTAINED MUST NOT be set in subsequent re-authorization requests and answers.'"
+    },
+    "RFC6733.dadx#authorization-lifetime-extendable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8: 'When a Diameter server authorizes a user to implement network resources for a finite amount of time, and it is willing to extend the authorization via a future request, it MUST add the Authorization- Lifetime AVP to the answer message.'"
+    },
+    "RFC6733.dadx#authorization-lifetime-not-above-the-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.9: 'If both this AVP and the Session-Timeout AVP are present in a message, the value of the latter MUST NOT be smaller than the Authorization-Lifetime AVP.'; 'The server MUST return a value that is equal to, or smaller than, the one provided by the client.'"
+    },
+    "RFC6733.dadx#cea-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cea-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cea-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cea-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#cea-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#cea-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#cea-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#cea-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#cea-host-ip-address-per-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.2: 'When Diameter is run over SCTP [RFC4960] or DTLS/SCTP [RFC6083], which allow connections to span multiple interfaces, hence, multiple IP addresses, the Capabilities-Exchange-Answer message MUST contain one Host-IP-Address AVP for each potential IP address that MAY be locally used when transmitting Diameter messages.'"
+    },
+    "RFC6733.dadx#cea-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-proxy-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |'"
+    },
+    "RFC6733.dadx#cea-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#cea-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#cea-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cea-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#cea-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-session-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |'"
+    },
+    "RFC6733.dadx#cea-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cea-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cea-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#cea-user-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#cer-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cer-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cer-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cer-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#cer-destination-host-not-proxiable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs.'"
+    },
+    "RFC6733.dadx#cer-destination-realm-not-proxiable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs.'"
+    },
+    "RFC6733.dadx#cer-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#cer-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#cer-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#cer-host-ip-address-per-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.1: 'When Diameter is run over SCTP [RFC4960] or DTLS/SCTP [RFC6083], which allow for connections to span multiple interfaces and multiple IP addresses, the Capabilities-Exchange-Request message MUST contain one Host-IP-Address AVP for each potential IP address that MAY be locally used when transmitting Diameter messages.'"
+    },
+    "RFC6733.dadx#cer-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-proxy-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |'"
+    },
+    "RFC6733.dadx#cer-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#cer-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#cer-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cer-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |'"
+    },
+    "RFC6733.dadx#cer-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#cer-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-session-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |'"
+    },
+    "RFC6733.dadx#cer-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#cer-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#cer-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#cer-user-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#class-in-later-messages": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.20: 'When one or more Class AVPs are present in application-specific authorization answer messages, they MUST be present in subsequent re-authorization, session termination and accounting messages.'"
+    },
+    "RFC6733.dadx#destination-host-agent-initiated": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#destination-host-session-binding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.17: 'When set, future re-auth messages for this session MUST NOT include the Destination-Host AVP.'; 'When set, the STR message for this session MUST NOT include the Destination-Host AVP.'; 'When set, all accounting messages for this session MUST NOT include the Destination-Host AVP.'"
+    },
+    "RFC6733.dadx#dpa-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpa-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpa-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dpa-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpa-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dpa-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#dpa-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#dpa-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dpa-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#dpa-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-origin-state-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Origin-State-Id |0-1|0-1|0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#dpa-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-proxy-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dpa-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#dpa-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dpa-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpa-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#dpa-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-session-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |'"
+    },
+    "RFC6733.dadx#dpa-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpa-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dpa-user-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#dpa-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpa-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpr-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpr-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpr-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dpr-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpr-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dpr-destination-host-not-proxiable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs.'"
+    },
+    "RFC6733.dadx#dpr-destination-realm-not-proxiable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs.'"
+    },
+    "RFC6733.dadx#dpr-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dpr-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dpr-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dpr-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-origin-state-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Origin-State-Id |0-1|0-1|0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#dpr-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-proxy-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dpr-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#dpr-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dpr-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpr-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |'"
+    },
+    "RFC6733.dadx#dpr-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#dpr-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-session-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |'"
+    },
+    "RFC6733.dadx#dpr-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dpr-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dpr-user-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#dpr-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dpr-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwa-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwa-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwa-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dwa-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwa-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dwa-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#dwa-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#dwa-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dwa-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#dwa-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-proxy-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dwa-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#dwa-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dwa-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwa-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#dwa-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-session-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |'"
+    },
+    "RFC6733.dadx#dwa-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwa-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dwa-user-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#dwa-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwa-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwr-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwr-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwr-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dwr-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwr-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dwr-destination-host-not-proxiable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs.'"
+    },
+    "RFC6733.dadx#dwr-destination-realm-not-proxiable": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A request that is not able to be proxied (such as a CER) MUST NOT contain either Destination-Realm or Destination-Host AVPs.'"
+    },
+    "RFC6733.dadx#dwr-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dwr-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dwr-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dwr-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-proxy-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Proxy-Info |0 |0 |0 |0 |0 |0 |0+ |0+ |0+ |0+ |0+ |0+ |'"
+    },
+    "RFC6733.dadx#dwr-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#dwr-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#dwr-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwr-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |'"
+    },
+    "RFC6733.dadx#dwr-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#dwr-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-session-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Id |0 |0 |0 |0 |0 |0 |1 |1 |1 |1 |1 |1 |'"
+    },
+    "RFC6733.dadx#dwr-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#dwr-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#dwr-user-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Name |0 |0 |0 |0 |0 |0 |0-1|0-1|0-1|0-1|0-1|0-1|'"
+    },
+    "RFC6733.dadx#dwr-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#dwr-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#error-reporting-host-a-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4: 'This AVP contains the identity of the Diameter host that sent the Result-Code AVP to a value other than 2001 (Success), only if the host setting the Result-Code is different from the one encoded in the Origin-Host AVP. This AVP is intended to be used for troubleshooting purposes, and it MUST be set when the Result-Code AVP indicates a failure.'"
+    },
+    "RFC6733.dadx#error-reporting-host-another-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1: 'A non-successful Result-Code AVP (one containing a non-2xxx value other than DIAMETER_REDIRECT_INDICATION) MUST include the Error-Reporting-Host AVP if the host setting the Result-Code AVP is different from the identity encoded in the Origin-Host AVP.'"
+    },
+    "RFC6733.dadx#inband-security-id-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.10: 'NO_INBAND_SECURITY 0'; 'This peer does not support TLS/TCP and DTLS/SCTP. This is the default value, if the AVP is omitted.'"
+    },
+    "RFC6733.dadx#origin-state-id-higher-after-a-reset": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.16: 'A Diameter entity issuing this AVP MUST create a higher value for this AVP each time its state is reset.'"
+    },
+    "RFC6733.dadx#raa-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#raa-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#raa-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#raa-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#raa-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#raa-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#raa-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#raa-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#raa-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-proxy-info-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request.'"
+    },
+    "RFC6733.dadx#raa-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#raa-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-session-id-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'If the Session-Id is present in the request, it MUST be included in the answer.'"
+    },
+    "RFC6733.dadx#raa-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#raa-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#raa-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#raa-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#rar-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#rar-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0+ |0+ |'"
+    },
+    "RFC6733.dadx#rar-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#rar-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#rar-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#rar-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#rar-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#rar-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#rar-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |'"
+    },
+    "RFC6733.dadx#rar-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#rar-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#rar-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#rar-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#re-auth-request-type-with-a-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.12: 'If the answer message contains an Authorization-Lifetime AVP with a positive value, the Re-Auth-Request-Type AVP MUST be present in an answer message.'"
+    },
+    "RFC6733.dadx#redirect-host-redirect-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.12: 'One or more instances of this AVP MUST be present if the answer message's 'E' bit is set and the Result-Code AVP is set to DIAMETER_REDIRECT_INDICATION.'"
+    },
+    "RFC6733.dadx#redirect-max-cache-time-redirect-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.14: 'This AVP MUST be present in answer messages whose 'E' bit is set, whose Result-Code AVP is set to DIAMETER_REDIRECT_INDICATION, and whose Redirect-Host-Usage AVP set to a non-zero value.'"
+    },
+    "RFC6733.dadx#route-record-the-peers-origin-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.7.1: 'The identity added in this AVP MUST be the same as the one received in the Origin-Host of the Capabilities Exchange message.'"
+    },
+    "RFC6733.dadx#session-id-the-senders-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.8: 'The Session-Id MUST begin with the sender's identity encoded in the DiameterIdentity type (see Section 4.3.1). The remainder of the Session-Id is delimited by a \";\" character'; 'All messages pertaining to a specific session MUST include only one Session-Id AVP, and the same value MUST be used throughout the life of a session.'"
+    },
+    "RFC6733.dadx#session-timeout-not-below-the-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.13: 'When both the Session-Timeout and the Authorization-Lifetime AVPs are present in an answer message, the former MUST be equal to or greater than the value of the latter.'"
+    },
+    "RFC6733.dadx#sta-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#sta-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#sta-auth-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Application-Id |0+ |0+ |0 |0 |0 |0 |1 |0 |1 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#sta-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#sta-destination-host-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.5: 'This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#sta-destination-realm-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.6: 'The Destination-Realm AVP MUST NOT be present in answer messages.'"
+    },
+    "RFC6733.dadx#sta-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-failed-avp-with-the-error": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'DIAMETER_AVP_UNSUPPORTED 5001'; 'A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure.'; 'DIAMETER_INVALID_AVP_VALUE 5004'; 'A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP.'; 'DIAMETER_CONTRADICTING_AVPS 5007'; 'The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other.'; 'DIAMETER_AVP_NOT_ALLOWED 5008'; 'The Failed-AVP AVP MUST be included and contain a copy of the offending AVP.'; 'DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009'; 'The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences.'; 'DIAMETER_INVALID_AVP_LENGTH 5014'; 'DIAMETER_INVALID_AVP_BIT_COMBO 5016'"
+    },
+    "RFC6733.dadx#sta-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-proxy-info-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request.'"
+    },
+    "RFC6733.dadx#sta-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |0 |'"
+    },
+    "RFC6733.dadx#sta-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-session-id-the-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'If the Session-Id is present in the request, it MUST be included in the answer.'"
+    },
+    "RFC6733.dadx#sta-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#sta-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |1 |0 |'"
+    },
+    "RFC6733.dadx#sta-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#sta-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#str-accounting-realtime-required-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Accounting-Realtime-|0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Required | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#str-acct-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Application-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim- |0 |0 |0 |0 |0 |0 |0-1|0 |0 |0 |0 |0 | Interval | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#str-auth-grace-period-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Grace-Period |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Request-Type |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-auth-session-state-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Auth-Session-State |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-authorization-lifetime-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Authorization- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Lifetime | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#str-disconnect-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Disconnect-Cause |0 |0 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#str-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host|0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#str-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP |0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#str-firmware-revision-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Firmware-Revision |0-1|0-1|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-host-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Host-IP-Address |1+ |1+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out|0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-product-name-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Product-Name |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type|0 |0 |0 |0 |0 |0 |1 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host |0 |0 |0 |0 |0 |0 |0 |0+ |0 |0+ |0 |0+ |'"
+    },
+    "RFC6733.dadx#str-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1|'"
+    },
+    "RFC6733.dadx#str-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache- |0 |0 |0 |0 |0 |0 |0 |0-1|0 |0-1|0 |0-1| Time | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#str-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |0 |1 |'"
+    },
+    "RFC6733.dadx#str-session-binding-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Binding |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-session-server-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Server- |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Failover | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#str-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-supported-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Supported-Vendor-Id |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-vendor-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Id |1 |1 |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 |'"
+    },
+    "RFC6733.dadx#str-vendor-specific-application-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Vendor-Specific- |0+ |0+ |0 |0 |0 |0 |0 |0 |0 |0 |0 |0 | Application-Id | | | | | | | | | | | | |'"
+    },
+    "RFC6733.dadx#supported-vendor-id-not-zero": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.6: 'The value of this AVP MUST NOT be set to zero.'"
+    },
+    "RFC6733.dadx#vendor-specific-application-id-not-both": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11: 'A Vendor-Specific-Application-Id AVP MUST contain exactly one of either Auth-Application-Id or Acct-Application-Id.'"
+    },
+    "RFC6733.dadx#vendor-specific-application-id-one-application": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11: 'A Vendor-Specific-Application-Id AVP MUST contain exactly one of either Auth-Application-Id or Acct-Application-Id.'; 'It MUST also match the Application Id present in the Diameter header except when used in a CER or CEA message.'"
+    },
     "RFC6733.py#application-id-accounting": {
      "kind": "insert",
      "reason": "clause 9.3: under the split accounting model 'The accounting message will carry the Application Id of the Diameter base accounting application', 3 in clause 2.4; the ACR/ACA headers print none. Under the coupled model the same commands carry the using application's id"

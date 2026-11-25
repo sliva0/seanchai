@@ -68,6 +68,7 @@ CODEC_TYPES: dict[ast.Codec, frozenset[ast.DataType]] = {
     ast.Codec.EPC_PLMN_DOMAIN: _TEXT,
     ast.Codec.TIME_ZONE: _TEXT,
     ast.Codec.MAC_ADDRESS: _TEXT,
+    ast.Codec.SESSION_ID: _TEXT,
     ast.Codec.IP_FILTER: _FILTER,
     ast.Codec.IP_FILTER_OUT: _FILTER,
     ast.Codec.IP_FILTER_FLOW: _FILTER,
@@ -144,6 +145,28 @@ _PLMN_DOMAIN = re.compile(r"mnc[0-9]{2,3}\.mcc[0-9]{3}\.3gppnetwork\.org", re.I)
 _EPC_PLMN_DOMAIN = re.compile(r"epc\." + _PLMN_DOMAIN.pattern, re.I)
 _TIME_ZONE = re.compile(r"[+-][0-9]+")
 _MAC_ADDRESS = re.compile(r"[0-9A-F]{2}(?:-[0-9A-F]{2}){5}")
+# A host name's characters, RFC 6733 clause 4.3.1's DiameterIdentity being an
+# FQDN in ASCII form, an IDN by its A-labels.
+_HOST_CHARACTERS = re.compile(r"[A-Za-z0-9.-]+")
+
+
+def _identity_problem(text: str) -> str | None:
+    """Why `text` is no DiameterIdentity (RFC 6733 clause 4.3.1), as the
+    Wireshark plugin's `identity_problem` says; None if it is one."""
+    if not text:
+        return "an empty DiameterIdentity"
+    if len(text) > 255:
+        return "a DiameterIdentity over 255 octets"
+    if not _HOST_CHARACTERS.fullmatch(text):
+        return "a character no host name holds"
+    for label in text.removesuffix(".").split("."):
+        if not label:
+            return "an empty label"
+        if len(label) > 63:
+            return "a label over 63 octets"
+        if label.startswith("-") or label.endswith("-"):
+            return "a label starting or ending in a hyphen"
+    return None
 
 
 def _ip_filter_address(token: str, assigned: bool = True) -> str | None:
@@ -276,6 +299,9 @@ def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
         case ast.Codec.MAC_ADDRESS:
             ok = _MAC_ADDRESS.fullmatch(text)
             return None if ok else "not six upper-case hexadecimal octets joined by '-'"
+        case ast.Codec.SESSION_ID:
+            problem = _identity_problem(text.partition(";")[0])
+            return None if problem is None else f"not begun by its sender's: {problem}"
         case ast.Codec.IP_FILTER | ast.Codec.IP_FILTER_OUT | ast.Codec.IP_FILTER_FLOW:
             return _ip_filter_problem(
                 text,

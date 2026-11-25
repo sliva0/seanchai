@@ -177,6 +177,7 @@ name. A layout no clause states is not here.
 | `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports and port ranges; no options, no `!` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it |
 | `ip-filter-out` | an `ip-filter` of the direction `out`: `permit out 17 from 192.0.2.10/32 5060 to assigned` | TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2 |
 | `ip-filter-flow` | an `ip-filter` describing one IP flow: no `assigned`, and the source port, where given, one port, no list or range: `permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060` | RFC 6733 clause 4.3.1, as TS 29.214 clause 5.3.8 restricts it |
+| `session-id` | a Session-Id's text: the sender's DiameterIdentity (a host name in ASCII, its labels of letters, digits and inner hyphens, at most 63 octets each and 255 in all), then nothing or a `;` and any text: `aaa.example.com;1876543210;523` | RFC 6733 clauses 8.8 and 9.8.5 |
 | `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
 A clause pointing at another document without stating a layout ("Octets are
@@ -1232,3 +1233,80 @@ routing clause 6.1.6; the procedures' result codes, which are what a node
 answers with; Cause-Type's and the other Unsigned32 AVPs' value lists,
 which the clauses do not say are all a sender may send; and Annex A's
 overload control and Annex B's DRMP.
+
+## RFC 6733
+
+RFC 6733 is read for what it says of the base protocol's AVPs and its own
+commands: sections 3 to 9, and section 10.1's occurrence table. The base
+protocol's AVPs are read by every application, so a block with no scope says
+only what the RFC says of the AVP wherever it is sent; what it says of a
+message is read on its own prints of CER/CEA, DWR/DWA, DPR/DPA, RAR/RAA,
+STR/STA, ASR/ASA and ACR/ACA, which no application's own print of a command
+shares ([Precedence](#precedence)). An RFC has one edition, so no block names
+`; Versions:`.
+
+| | |
+|---|---|
+| sections 5.3 to 9.8 (capabilities, routing, errors, sessions, accounting) | 62 blocks |
+| section 10.1's table, each "0" cell of an AVP the command's body admits only through `* [ AVP ]` | 321 blocks |
+| blocks | 383: 360 within a command, 1 within a grouped AVP, 22 on an AVP wherever read |
+| readings | 386 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 2: `session-id` (Session-Id, Acct-Multi-Session-Id) |
+| `exclude` | 1: Supported-Vendor-Id 0 |
+| `default` | 1: Inband-Security-Id NO_INBAND_SECURITY |
+| `members` | 1: `at-least-one`, Vendor-Specific-Application-Id's Auth- and Acct-Application-Id |
+| `excludes` | 1: the two within Vendor-Specific-Application-Id, exactly one of them |
+| `present-if` | 11: Proxy-Info in RAA, ASA, STA and ACA after the request's, Failed-AVP with the seven permanent failures whose clause requires one, in each of the seven answers |
+| `equals` | 4: Session-Id in RAA, ASA, STA (section 6.2) and ACA (9.7.2), the request's |
+| `absent` | 341: Destination-Host and Destination-Realm in the seven answers (sections 6.5, 6.6) and in CER, DPR and DWR, which cannot be proxied (6.1), and table 10.1's other "0" cells |
+| reading the request | 8: the answers' Session-Id and Proxy-Info |
+| `text-only` | 24 |
+
+The header's fields and flags (sections 3 and 7.2: the version, the R, P, E
+and T bits, a protocol error's E bit, the P bit an answer shares with its
+request) are what the Wireshark plugin checks of the header
+([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)), and no block
+reads them; nor sections 4.2 and 4.3.1's data formats, which the plugin
+checks by type. A Session-Id begins with its sender's DiameterIdentity,
+the `session-id` codec, whatever follows its first `;`. An answer with the E
+bit set conforms to section 7.2's `<answer-message>`, not to its command's
+CCF, and no block's scope names the answer-message: Redirect-Host and
+Redirect-Max-Cache-Time with DIAMETER_REDIRECT_INDICATION (sections 6.12,
+6.14) are `text-only`, and the answers' Failed-AVP rules hold of an answer
+without the E bit.
+
+The text-only rules are conditions on the transport (Host-IP-Address per
+address over SCTP), the node (an unsolicited agent-initiated request's
+Destination-Host, which host set a Result-Code for Error-Reporting-Host, a
+server's intent to extend an authorization), the session or an earlier
+message (Route-Record against the peer's CER, Auth-Session-State in a
+re-authorization, Origin-State-Id rising, Session-Binding's bits on later
+messages, Class carried on, a sub-session's identifier rising, the service an
+ACR accounts), two values compared (Session-Timeout and
+Authorization-Lifetime, an answer's Authorization-Lifetime and its request's),
+the header's Application-ID, which no rule reads (Auth-Application-Id,
+Acct-Application-Id and Vendor-Specific-Application-Id "MUST match the
+Application Id present in the Diameter message header", sections 6.8, 6.9,
+6.11), and the applications' auth answers (Re-Auth-Request-Type beside a
+positive Authorization-Lifetime, section 8.12), which no block of this file
+is scoped to.
+
+The document disagrees with itself where the corpus reads around it: table
+10.1 gives Inband-Security-Id "0" in CER and CEA, whose bodies print
+`* [ Inband-Security-Id ]` (sections 5.3.1, 5.3.2) and whose clause 6.10
+calls its use there "NOT RECOMMENDED", so no block reads the cells; and the
+table gives the RAR Acct-Interim-Interval and Accounting-Realtime-Required
+"0-1", which its body admits only through `* [ AVP ]`. Left unread: section
+10.2's accounting table, whose requirements it calls "guidelines, which may
+be expanded, and/or overridden by application-specific requirements";
+DIAMETER_MISSING_AVP's Failed-AVP, which "SHOULD be included"; clause 7.1.3's
+"these errors MUST only be used in answer messages whose 'E' bit is set",
+which the plugin checks as the E bit's; the "MUST" sentences of what a node
+does on receipt (routing, loop detection, failover, the state machines of
+sections 5.6, 8.1 and 8.2); clause 7.6's Result-Code or Experimental-Result,
+which the base protocol's answers' bodies already require; and the IANA
+section's assignments.
+
