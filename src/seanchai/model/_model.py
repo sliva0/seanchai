@@ -920,7 +920,8 @@ class Model(_Resolver):
         conflict (`Reached.conflicts`).
 
         Each entry's `value_tables` are those its readings carry where met,
-        and those the document of what is walked prints for its names,
+        those the document of what is walked prints for its names and the
+        defining reading's result codes, which a reading's own set aside,
         without another application's feature lists: `Feature-List` numbers
         other features on each interface. Holes, placeholders and the
         wildcard reach no identity; `walk` yields them.
@@ -985,11 +986,23 @@ class Model(_Resolver):
             readings = met[identity]
             for name in dict.fromkeys(avp.name for avp in readings):
                 tables[identity].update(dict.fromkeys(printed.get(name, ())))
+            # A document's result codes add to the defining document's,
+            # which its reading sets aside (TS 29.212's clause 5.5 over RFC
+            # 6733's 7.1): an answer may carry any of them.
+            definition = self.definition(identity)
+            if definition is not None:
+                tables[identity].update(
+                    dict.fromkeys(
+                        table
+                        for table in definition.value_tables
+                        if table.kind is ast.ValueKind.RESULT_CODES
+                    )
+                )
             found.append(
                 Reached(
                     vendor_id=identity[0],
                     code=identity[1],
-                    definition=self.definition(identity),
+                    definition=definition,
                     readings=tuple(
                         Met(avp, tuple(paths)) for avp, paths in readings.items()
                     ),

@@ -16,8 +16,10 @@ commands or error answers reach, at any depth, whichever document defines
 it. Cx's commands reach RFC 6733's `Destination-Host`, which no table of TS
 29.229 lists. An entry holds the defining document's reading, every distinct
 reading met with the member paths it is met at, the value tables met with it,
-and `conflicts`, the fields in which those readings disagree. `Member.avp`
-stays the reading at each member.
+the defining reading's result codes, which a reading listing codes of its own
+sets aside (TS 29.212's Result-Code carries its clause 5.5 in place of RFC
+6733's 7.1, which Gx's answers carry too), and `conflicts`, the fields in
+which those readings disagree. `Member.avp` stays the reading at each member.
 
 ```python
 import seanchai
@@ -267,9 +269,10 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
 - `value_tables[]` holds the tables of every reading the selection reaches and
   those the application's document prints for the names it reaches, as
   `Model.reached` gives them: S6a holds RFC 6733's result codes and TS 29.273's
-  `Emergency-Services` bits. A features table is kept only for the
-  applications whose feature list it numbers, since `Feature-List` means
-  other features on each interface; `applications` names them, and `avp_ids`
+  `Emergency-Services` bits, and Gx RFC 6733's codes beside TS 29.212's
+  own. A features table is kept only for the applications whose feature
+  list it numbers, since `Feature-List` means other features on each
+  interface; `applications` names them, and `avp_ids`
   the readings carrying the table. Without `--application`, the documents'
   own tables are all kept. A row has `name`, `value`, a result code's own
   `section`, and a feature's `mark` (the M/O column).

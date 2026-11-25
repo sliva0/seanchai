@@ -107,6 +107,21 @@ def test_an_application_holds_the_tables_of_every_reading_it_reaches(s6a_and_cx)
     } <= tables
 
 
+def test_an_application_holds_the_result_codes_its_document_adds_to(built):
+    """TS 29.212 prints Result-Code values of its own (clause 5.5), which its
+    reading of the AVP carries in place of RFC 6733's: Gx's dictionary holds
+    both, since its answers may carry any, and a Wireshark plugin of Gx alone
+    knows DIAMETER_SUCCESS."""
+    gx = build(built, application_ids=(16777238,))
+    codes = {
+        (table.reference, table.section): {row.value for row in table.rows}
+        for table in gx.value_tables
+        if table.kind is ast.ValueKind.RESULT_CODES and table.vendor_id == 0
+    }
+    assert 2001 in codes[("RFC6733", "7.1")]
+    assert ("TS29.212", "5.5") in codes
+
+
 def test_a_re_used_bit_table_names_the_reading_and_application_carrying_it(
     s6a_and_cx,
 ):
