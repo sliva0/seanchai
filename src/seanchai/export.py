@@ -56,6 +56,7 @@ from .export_schema import (
     ConstraintReading,
     ConstraintReference,
     ConstraintRule,
+    ConstraintValueRange,
     Document,
     DocumentSummary,
     ElementIdentity,
@@ -696,6 +697,12 @@ def _condition(each: ast.Condition) -> ConstraintCondition:
         path=each.path,
         value=_reference(value) if isinstance(value, ast.Reference) else value,
         bit=each.bit,
+        values=tuple(
+            ConstraintValueRange(low=listed.low, high=listed.high)
+            if isinstance(listed, ast.ValueRange)
+            else listed
+            for listed in each.values
+        ),
         negated=each.negated,
     )
 

@@ -44,6 +44,7 @@ __all__ = [
     "ConstraintReading",
     "ConstraintReference",
     "ConstraintRule",
+    "ConstraintValueRange",
     "Correction",
     "CrossRelease",
     "Document",
@@ -380,14 +381,23 @@ class ConstraintReference(_Model):
     path: tuple[str, ...]
 
 
+class ConstraintValueRange(_Model):
+    """A range in a condition's `values`, `low` and `high` included."""
+
+    low: int
+    high: int
+
+
 class ConstraintCondition(ConstraintReference):
     """A predicate's condition: the AVP `root` and `path` name present,
     holding `value` (a number, a name, or the value of the AVP a
-    `ConstraintReference` names), or with `bit` set, a number or a name; with
-    `negated`, not so."""
+    `ConstraintReference` names), holding one of `values` (each a number, a
+    name or a `ConstraintValueRange`), or with `bit` set, a number or a name;
+    with `negated`, not so."""
 
     value: int | str | ConstraintReference | None = None
     bit: int | str | None = None
+    values: tuple[int | str | ConstraintValueRange, ...] = ()
     negated: bool = False
 
 

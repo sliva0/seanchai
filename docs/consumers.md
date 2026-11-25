@@ -308,9 +308,12 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   it names, `root` null for a sibling or `request` for a member of the
   request the answer answers, printed at the constraint's
   `request_section`; it has `value` (a number, a name, or a reference,
-  `root` and `path`, to the AVP whose value it tests against) or `bit`, or
-  neither for presence, and `negated`, true where it must not hold. A
-  reference is the same `root` and `path`.
+  `root` and `path`, to the AVP whose value it tests against), `values`
+  (an `in` list, one of whose values it holds: each a number, a name, or a
+  range `{"low": 5000, "high": 5999}` of the numbers from `low` to `high`,
+  empty for any other test) or `bit`, or none of them for presence, and
+  `negated`, true where it must not hold. A reference is the same `root`
+  and `path`.
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included: the copy of
   the document printing an error answer that its base resolved to.

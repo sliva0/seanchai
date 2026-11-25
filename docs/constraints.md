@@ -101,11 +101,15 @@ A predicate's conditions, and a `values` rule's, are alternatives (`or`), each
 one or more conditions that must all hold (`and`, which binds tighter; there
 are no parentheses), each on a sibling in the block's `; Command:` or
 `; Within:` grouped AVP: present, holding a value (a number, or a name its
-values or result codes give it), or with a bit set (a number, or its bit
-table's name), or with `not` none of these (`present-if MIP6-Agent-Info and
-not MIP6-Agent-Info/MIP-Home-Agent-Host`). A condition resting on a value
-that cannot be read is unknown, and so is what it decides: `not` of an
-unknown is unknown, an `and` of a false one is false. Several predicates in one
+values or result codes give it), holding one of several (`Result-Code in
+DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH`, names, numbers and ranges such
+as `5000..5999`, which holds as the `or` of each value's `=` would), or with
+a bit set (a number, or its bit table's name), or with `not` none of these
+(`present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host`,
+`absent-if not Result-Code in DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS`).
+A condition resting on a value that cannot be read is unknown, and so is
+what it decides: `not` of an unknown is unknown, an `and` of a false one is
+false. Several predicates in one
 block must all hold. `absent-if` and `excludes` say the same of a presence
 condition, read from the other side; the kinds follow the clause's wording.
 Without a scope the rules hold wherever the document reads the AVP, and a

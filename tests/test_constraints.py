@@ -644,3 +644,51 @@ def test_check_reads_a_rule_on_the_request_alone_against_the_request():
     assert constraints.check(both, b"x", DataType.OCTET_STRING, request=[]) == (
         constraints.Check(None)
     )
+
+
+def _flags(*values: int | None) -> list[constraints.Avp]:
+    """Example-Flags AVPs of these values, None for one whose value cannot
+    be read, its names ONE and TWO."""
+    return [
+        constraints.Avp(
+            "Example-Flags",
+            None if value is None else DataType.UNSIGNED32,
+            b"" if value is None else struct.pack("!I", value),
+            values={"ONE": 1, "TWO": 2},
+        )
+        for value in values
+    ]
+
+
+@pytest.mark.parametrize(
+    ("listed", "chained"),
+    [
+        (
+            "excludes Example-Flags in ONE, 3, 7..9",
+            "excludes Example-Flags = ONE or Example-Flags = 3 or Example-Flags = 7"
+            " or Example-Flags = 8 or Example-Flags = 9",
+        ),
+        (
+            "excludes not Example-Flags in TWO, 4 and Example-Flags",
+            "excludes not Example-Flags = TWO and not Example-Flags = 4"
+            " and Example-Flags",
+        ),
+        (
+            "excludes Example-Flags in SIX, 3",
+            "excludes Example-Flags = SIX or Example-Flags = 3",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "values",
+    [(), (1,), (2,), (3,), (8,), (10,), (None,), (None, 3), (2, 4), (4, 9)],
+)
+def test_an_in_condition_holds_as_the_chain_of_its_values_does(listed, chained, values):
+    """`Foo in A, B` is `Foo = A or Foo = B`, a range each number in it, a
+    name no table gives and an AVP whose value is not read unknown alike,
+    and of several AVPs any one meeting it does."""
+    run = [constraints.Avp("Example", DataType.UNSIGNED32, struct.pack("!I", 1))]
+    run += _flags(*values)
+    one = constraints.holds(_answer_rule(listed), "Example", run, [])
+    other = constraints.holds(_answer_rule(chained), "Example", run, [])
+    assert one.holds == other.holds

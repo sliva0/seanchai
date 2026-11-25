@@ -575,6 +575,18 @@ def _terms(rule: dictionary.Rule) -> list[dictionary.Condition]:
     return [each for conjunction in rule.conditions for each in conjunction]
 
 
+def _listed_holds(
+    value: int, avp: dictionary.Avp, condition: dictionary.Condition, values: _Values
+) -> bool:
+    """Whether `value` is one of an `in` condition's values or ranges."""
+    return any(
+        listed.low <= value <= listed.high
+        if isinstance(listed, dictionary.ValueRange)
+        else value == values.number(avp, listed)
+        for listed in condition.values
+    )
+
+
 def _positive(condition: dictionary.Condition) -> dictionary.Condition:
     """`condition` without its `not`."""
     return condition.model_copy(update={"negated": False})
@@ -889,6 +901,11 @@ class _Builder:
                             and (
                                 c.bit is None or self.values.bit(avp, c.bit) is not None
                             )
+                            and all(
+                                isinstance(listed, dictionary.ValueRange)
+                                or self.values.number(avp, listed) is not None
+                                for listed in c.values
+                            )
                             for c in _terms(rule)
                         ):
                             yield name, each, rule
@@ -920,11 +937,15 @@ class _Builder:
         if isinstance(condition.value, dictionary.Reference):
             others = {n.payload for n in self.reached(nodes, condition.value, request)}
             return any(n.payload in others for n in found)
-        if condition.value is None and condition.bit is None:
+        if condition.value is None and condition.bit is None and not condition.values:
             return True
         for held in found:
             value = constraints.integer_value(held.avp.data_type, held.payload or b"")
             if value is None:
+                continue
+            if condition.values:
+                if _listed_holds(value, held.avp, condition, self.values):
+                    return True
                 continue
             if condition.value is not None:
                 if value == self.values.number(held.avp, condition.value):
@@ -1318,6 +1339,8 @@ class _Negatives:
     command: dictionary.Command
     scope: _Scope
     built: dict[bool, _Message]
+    # How many `in` lists `make_hold` has met, choosing each one's value.
+    _turn: int = 0
 
     @property
     def builder(self) -> _Builder:
@@ -2488,9 +2511,19 @@ class _Negatives:
         node = self.sibling(nodes, condition.avp, scope)
         if node is None:
             return False
-        if condition.value is None and condition.bit is None:
+        if condition.value is None and condition.bit is None and not condition.values:
             return True
-        if condition.value is not None:
+        if condition.values:
+            # One of the list's values, a later one each time a list is met,
+            # so that the vectors cover more than its first.
+            listed = condition.values[self._turn % len(condition.values)]
+            self._turn += 1
+            number = (
+                listed.low
+                if isinstance(listed, dictionary.ValueRange)
+                else self.builder.values.number(node.avp, listed)
+            )
+        elif condition.value is not None:
             number = self.builder.values.number(node.avp, condition.value)
         else:
             bit = self.builder.values.bit(node.avp, condition.bit)
@@ -2498,7 +2531,7 @@ class _Negatives:
         if number is None or node.avp.data_type not in _FIXED:
             return False
         if (
-            condition.value is not None
+            (condition.value is not None or condition.values)
             and node.avp.data_type is ast.DataType.ENUMERATED
             and number not in {v.value for v in node.avp.values if v.kind == "value"}
         ):
@@ -2533,7 +2566,7 @@ class _Negatives:
         member = next((m for m in scope.members if m.name == condition.avp), None)
         if member is None:
             return False
-        if condition.value is None and condition.bit is None:
+        if condition.value is None and condition.bit is None and not condition.values:
             if member.min_occurs:
                 return False
             nodes[:] = [n for n in nodes if n.avp.name != condition.avp]
@@ -2543,8 +2576,7 @@ class _Negatives:
             return True
         if node.avp.data_type not in _FIXED:
             return False
-        if condition.value is not None:
-            number = self.builder.values.number(node.avp, condition.value)
+        if condition.value is not None or condition.values:
             if node.avp.name == "Result-Code":
                 # Another code a document names, and no protocol error, which
                 # the E bit would have to go with.
@@ -2561,11 +2593,15 @@ class _Negatives:
                 ] or (
                     [0, 1] if node.avp.data_type is not ast.DataType.ENUMERATED else []
                 )
-            # Another value, one the AVP's own rules allow.
+            # Another value, none the condition names, one the AVP's own
+            # rules allow.
+            named = condition.model_copy(
+                update={"values": condition.values or (condition.value,), "value": None}
+            )
             others = [
                 value
                 for value in candidates
-                if value != number
+                if not _listed_holds(value, node.avp, named, self.builder.values)
                 and self.keeps_rules(node, scope, _integer(node.avp.data_type, value))
             ]
             if not others:
@@ -2630,6 +2666,17 @@ def _rule_text(rule: dictionary.Rule) -> str:
                 else ""
             )
             + (f" bit {c.bit}" if c.bit is not None else "")
+            + (
+                " in "
+                + ", ".join(
+                    f"{v.low}..{v.high}"
+                    if isinstance(v, dictionary.ValueRange)
+                    else str(v)
+                    for v in c.values
+                )
+                if c.values
+                else ""
+            )
             for c in conjunction
         )
         for conjunction in rule.conditions

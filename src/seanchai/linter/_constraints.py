@@ -621,6 +621,23 @@ def _constraints(
             if condition.avp not in held:
                 continue
             known = fact(condition.avp)
+            if condition.values:
+                # Each listed value, as `=` would test it.
+                if known.data_type is not None and known.data_type not in _INTEGERS:
+                    found(
+                        "constraint-type-mismatch",
+                        block,
+                        f"a condition tests the values of {condition.avp}, of"
+                        f" type {known.data_type}",
+                    )
+                elif known.values is not None:
+                    for listed in condition.values:
+                        if isinstance(listed, str) and listed not in known.values:
+                            found(
+                                "constraint-value-unknown",
+                                block,
+                                f"{condition.avp} names no value {listed!r}",
+                            )
             if condition.value is not None and not isinstance(
                 condition.value, ast.Reference
             ):

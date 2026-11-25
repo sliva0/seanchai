@@ -708,7 +708,8 @@ versions      = version-bound [".." version-bound]
 version-bound = version / "*"
 reading       = 1*(quote-line NL) 1*(rule-line NL)
 quote-line    = DQUOTE 1*(name-char / SP) DQUOTE   ; as inline-text, escaped
-rule-line     = 4SP rule
+rule-line     = 4SP rule        ; wrapped after an in-list's commas:
+                                ; NL 8SP and the rest, read as one line
 rule          = length / range / exclude / encoding / predicate / default
               / bits / members / "unique" / values / equals / "absent"
               / "text-only"
@@ -729,7 +730,9 @@ predicate     = predicate-kind SP conditions
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
 conditions    = conjunction *(" or " conjunction)
 conjunction   = condition *(" and " condition)
-condition     = ["not "] path [" = " (value-ref / rooted) / " bit " value-ref]
+condition     = ["not "] path [" = " (value-ref / rooted) / " bit " value-ref
+                / " in " listed *(", " listed)]
+listed        = integer ".." integer / value-ref
 path          = [root "/"] avp-name *("/" avp-name)
 rooted        = root "/" avp-name *("/" avp-name)
 root          = "request"
@@ -817,8 +820,16 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   `excludes` (none holds when it is present). A condition is a sibling's
   presence, or the request's member's, its value, a number or a name its
   values or result codes give it, or the value of a member of the request
-  (`Result-Code = request/Result-Code`, octet for octet), or a bit, by
-  number or by its bit table's name. Of the request's members of a name,
+  (`Result-Code = request/Result-Code`, octet for octet), one of several
+  values, numbers, names or ranges of numbers (`Result-Code in
+  DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS, 5000..5999`), which holds as
+  the `=` of each joined by `or` would, a range's each number among them,
+  or a bit, by number or by its bit table's name. The list runs to the
+  next ` and `, ` or ` or the line's end, a value listed once and none
+  inside a listed range; `not` before such a condition says it holds of
+  none. A rule the formatter finds past 80 columns is wrapped after a comma
+  of such a list, its next line indented eight spaces, and read as one
+  line. Of the request's members of a name,
   any one meeting it does. A name is spelt as its table spells it, quoted
   where it is no `avp-name` (`Event-Trigger =
   "H(E)NB_LOCAL_IP_ADDRESS_CHANGE"`) or is digits only, which would read as

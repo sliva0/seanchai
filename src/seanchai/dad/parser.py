@@ -1121,11 +1121,41 @@ _VALUES_RE = re.compile(
 # starts at a root, so that a bare name stays a value's.
 _PATH = r"(?:(?:request)/)?[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9][A-Za-z0-9_-]*)*"
 _ROOTED = r"(?:request)/[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9][A-Za-z0-9_-]*)*"
+# One of the values an `in` condition lists: a range of numbers, a number or
+# a name.
+_LISTED = rf"-?[0-9]+\.\.-?[0-9]+|{_NAME_OR_NUMBER}"
 _CONDITION_RE = re.compile(
     rf"(?P<not>not )?(?P<path>{_PATH})"
-    rf"(?: = (?P<value>{_ROOTED}|{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
+    rf"(?: = (?P<value>{_ROOTED}|{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER})"
+    rf"| in (?P<listed>(?:{_LISTED})(?:, (?:{_LISTED}))*))?"
 )
+_LISTED_RE = re.compile(_LISTED)
+_RANGE_ITEM_RE = re.compile(r"(?P<low>-?[0-9]+)\.\.(?P<high>-?[0-9]+)")
 _EQUALS_RE = re.compile(rf"^equals (?P<path>{_PATH})$")
+
+
+# A rule line the formatter wraps goes on in lines indented past it.
+_CONTINUED = " " * 8
+
+
+def _continued(
+    body: list[tuple[int, str]],
+) -> tuple[list[tuple[int, str]], dict[int, int]]:
+    """An interpreted-constraints body with each rule line's continuations,
+    lines indented past it (`_CONTINUED`), joined to it with a space, and the
+    position in the joined body of each line read."""
+    joined: list[tuple[int, str]] = []
+    owners: dict[int, int] = {}
+    for lineno, line in body:
+        if line.startswith(_CONTINUED) and line.strip() and joined:
+            first, text = joined[-1]
+            if not text.startswith(" "):
+                raise DadParseError(lineno, "a continued line follows no rule")
+            joined[-1] = (first, f"{text} {line.strip()}")
+        else:
+            joined.append((lineno, line))
+        owners[lineno] = len(joined) - 1
+    return joined, owners
 
 
 def _bound(text: str | None) -> int | None:
@@ -1164,6 +1194,23 @@ def _value(text: str | None) -> int | str | ast.Reference | None:
     return _name_or_number(text)
 
 
+def _listed(text: str | None) -> tuple[int | str | ast.ValueRange, ...]:
+    """The values an `in` condition lists, in order: `A, 3, 5000..5999`."""
+    if text is None:
+        return ()
+    found: list[int | str | ast.ValueRange] = []
+    for match in _LISTED_RE.finditer(text):
+        if bounds := _RANGE_ITEM_RE.fullmatch(match[0]):
+            found.append(
+                ast.ValueRange(low=int(bounds["low"]), high=int(bounds["high"]))
+            )
+        else:
+            value = _name_or_number(match[0])
+            assert value is not None
+            found.append(value)
+    return tuple(found)
+
+
 def _conditions(text: str, lineno: int) -> tuple[tuple[ast.Condition, ...], ...]:
     """Alternatives joined by ` or `, each conditions joined by ` and `, which
     binds tighter, each read at its own position so a quoted name may hold
@@ -1183,6 +1230,7 @@ def _conditions(text: str, lineno: int) -> tuple[tuple[ast.Condition, ...], ...]
                     path=path.path,
                     value=_value(match["value"]),
                     bit=_name_or_number(match["bit"]),
+                    values=_listed(match["listed"]),
                     negated=match["not"] is not None,
                 )
             )
@@ -1636,6 +1684,7 @@ def _parse_interpretations(
                 f" {seen[identifier.value]} too",
             )
         seen[identifier.value] = block.start
+        body, owners = _continued(body)
         with _validated(block.start):
             read = _parse_interpreted_constraints(directives, body, block.start)
         with _validated(identifier.lineno):
@@ -1650,7 +1699,7 @@ def _parse_interpretations(
                 " blocks follow the document's clause order",
             )
         sections.append(parsed)
-        for position, (lineno, _) in enumerate(body):
+        for lineno, position in owners.items():
             layout.paths[lineno] = (*path, "body", position)
         layout.ends.append((*path, "body", len(body)))
     with _validated(interprets.lineno):
@@ -1722,10 +1771,13 @@ def _parse(blocks: list[_Block]) -> tuple[ast.Specification, _Layout]:
             raise DadParseError(
                 section_type.lineno, f"unknown section type {section_type.value!r}"
             )
+        owners = {lineno: position for position, (lineno, _) in enumerate(body)}
+        if section_type.value == "Interpreted Constraints":
+            body, owners = _continued(body)
         with _validated(block.start):
             sections.append(parser(directives, body, block.start))
         field, rules = _BODIES[section_type.value]
-        for position, (lineno, _) in enumerate(body):
+        for lineno, position in owners.items():
             item = position - rules
             layout.paths[lineno] = path if item < 0 else (*path, field, item)
         layout.ends.append((*path, field, len(body) - rules) if field else path)

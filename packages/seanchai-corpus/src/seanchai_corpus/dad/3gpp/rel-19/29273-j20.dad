@@ -1927,7 +1927,7 @@ MSISDN                                      Subscription-Id                     
 ; Page: 27
 ; Versions: 18.6.0..19.2.0
 "It shall only be included if NBM is authorized for use, the non-3GPP access network was decided to be trusted, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    requires Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH
     absent-if Emergency-Services bit Emergency-Indication
 
 
@@ -1941,7 +1941,7 @@ MSISDN                                      Subscription-Id                     
 ; Page: 27
 ; Versions: 18.6.0..19.2.0
 "It shall only be included if NBM is authorized for use, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    requires Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH
     absent-if Emergency-Services bit Emergency-Indication
 
 
@@ -1955,7 +1955,7 @@ MSISDN                                      Subscription-Id                     
 ; Page: 27
 ; Versions: 18.6.0..19.2.0
 "This information element shall only be sent if EPC Access is authorized, the Emergency-Indication bit of the Emergency-Services AVP is not set in the Authentication and Authorization Answer and the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    requires Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH
     absent-if Emergency-Services bit Emergency-Indication
 
 
@@ -1969,7 +1969,7 @@ MSISDN                                      Subscription-Id                     
 ; Page: 27
 ; Versions: 18.6.0..19.2.0
 "This information element shall only be sent if EPC Access is authorized and if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    requires Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-dea-mobile-node-identifier)
@@ -1982,7 +1982,7 @@ MSISDN                                      Subscription-Id                     
 ; Page: 27
 ; Versions: 18.6.0..19.2.0
 "This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    requires Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH
 "If this IE contains an identity based on IMSI, this IE shall not include the leading digit prepended in front of the IMSI used to differentiate between authentication schemes."
     text-only
 
@@ -2064,7 +2064,7 @@ MSISDN                                      Subscription-Id                     
 ; Page: 27
 ; Versions: 18.6.0..19.2.0
 "This information element shall only be sent if the Result-Code AVP is set to either: - DIAMETER_SUCCESS or - DIAMETER_MULTI_ROUND_AUTH, and TWAN-S2a-Connectivity-Indicator is set in DEA-Flags."
-    requires Result-Code = DIAMETER_SUCCESS or Result-Code = DIAMETER_MULTI_ROUND_AUTH
+    requires Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH
 "This AVP shall be included if the subscriber and equipment trace has been activated for the user in the HSS and signalling based activation is used to download the trace activation from the HSS to the non-3GPP access network."
     text-only
 "Only the Trace-Data AVP shall be included to the Trace-Info AVP"

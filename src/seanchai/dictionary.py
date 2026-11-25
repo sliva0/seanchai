@@ -59,6 +59,7 @@ __all__ = [
     "TwoReadingsError",
     "UndefinedBlock",
     "Value",
+    "ValueRange",
     "ValueRow",
     "ValueTable",
     "Vendor",
@@ -164,14 +165,24 @@ class Reference(_Model):
         return self.path[-1]
 
 
+class ValueRange(_Model):
+    """A range in a condition's `values`, `low` and `high` included."""
+
+    low: int
+    high: int
+
+
 class Condition(Reference):
     """A predicate's condition on the AVP `root` and `path` name: present
-    (`value` and `bit` null), holding `value` (a number, the name its values
-    give it, or the value of the AVP a `Reference` names), or with `bit` set
-    (a number, or its bit table's name); with `negated`, not so."""
+    (`value` and `bit` null, `values` empty), holding `value` (a number, the
+    name its values give it, or the value of the AVP a `Reference` names),
+    holding one of `values` (each a number, a name, or a `ValueRange`), or
+    with `bit` set (a number, or its bit table's name); with `negated`, not
+    so."""
 
     value: int | str | Reference | None
     bit: int | str | None
+    values: tuple[int | str | ValueRange, ...]
     negated: bool
 
 
@@ -916,6 +927,12 @@ def _condition(each: ast.Condition) -> Condition:
         path=each.path,
         value=_reference(value) if isinstance(value, ast.Reference) else value,
         bit=each.bit,
+        values=tuple(
+            ValueRange(low=listed.low, high=listed.high)
+            if isinstance(listed, ast.ValueRange)
+            else listed
+            for listed in each.values
+        ),
         negated=each.negated,
     )
 

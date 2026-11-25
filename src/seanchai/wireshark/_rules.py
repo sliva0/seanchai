@@ -785,7 +785,8 @@ def _condition(
     needed: set[str] | None,
     names: _Names,
 ) -> str | None:
-    """A condition as `{avp=, t=, v=}` (a value), `{avp=, t=, b=}` (a bit),
+    """A condition as `{avp=, t=, v=}` (a value), `{avp=, t=, vs={...}}` and
+    `rs={{low,high},...}` (one of several values), `{avp=, t=, b=}` (a bit),
     `{avp=, t=, r={...}}` (the value of another AVP) or `{avp=, t=}`
     (present), with `q=true` for the request's and `n=true` for one negated;
     None where its names or its value do not resolve."""
@@ -799,6 +800,23 @@ def _condition(
         if other is None:
             return None
         test = f"r={other}"
+    elif condition.values:
+        numbers = [
+            names.value(reading, condition.avp, listed)
+            for listed in condition.values
+            if not isinstance(listed, dictionary.ValueRange)
+        ]
+        ranges = [
+            f"{{{listed.low},{listed.high}}}"
+            for listed in condition.values
+            if isinstance(listed, dictionary.ValueRange)
+        ]
+        test = (
+            None
+            if None in numbers
+            else f"vs={{{','.join(map(str, numbers))}}}"
+            + (f",rs={{{','.join(ranges)}}}" if ranges else "")
+        )
     elif condition.value is not None:
         number = names.value(reading, condition.avp, condition.value)
         test = None if number is None else f"v={number}"
@@ -833,6 +851,12 @@ def _ast_condition(condition: dictionary.Condition) -> ast.Condition:
         if isinstance(value, dictionary.Reference)
         else value,
         bit=condition.bit,
+        values=tuple(
+            ast.ValueRange(low=listed.low, high=listed.high)
+            if isinstance(listed, dictionary.ValueRange)
+            else listed
+            for listed in condition.values
+        ),
         negated=condition.negated,
     )
 

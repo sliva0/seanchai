@@ -1059,7 +1059,7 @@
 ; Section: 5.3.91
 ; Versions: 18.2.0..19.1.0
 "Also, the corresponding Event-Trigger (APPLICATION_START or APPLICATION_STOP) shall be provided to PCRF."
-    requires Event-Trigger = APPLICATION_START or Event-Trigger = APPLICATION_STOP
+    requires Event-Trigger in APPLICATION_START, APPLICATION_STOP
 
 
 ; Type: Interpreted Constraints

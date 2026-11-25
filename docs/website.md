@@ -192,7 +192,10 @@ and in its raw mirror alike, each describing its own file's lines. Every
   element registry has no entry for the element
   ([constraints.md](constraints.md#elements)); and `request_target`, where
   the request its rules read is printed, for a block scoped to an answer
-  whose rules read one (`root` `request` on a condition or reference).
+  whose rules read one (`root` `request` on a condition or reference). A
+  condition carries `value`, `bit`, or `values`, an `in` list's numbers,
+  names and ranges `{"low", "high"}`, as the dictionary's does
+  ([consumers.md](consumers.md#the-dictionary)).
   A clause nothing printed stands in, as a simple-typed AVP's, reads
   "Interpreted Constraints IMEI" in `sections`.
 

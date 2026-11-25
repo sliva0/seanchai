@@ -985,7 +985,9 @@ end
 
 -- Whether a predicate's condition holds of a run's AVPs: true, false, or nil
 -- where a value it tests cannot be read. A value read from another AVP (`r`)
--- holds where the two have the same octets.
+-- holds where the two have the same octets; one of several (`vs`, numbers,
+-- and `rs`, ranges `{low, high}`) where any of them is met, as an "or" of
+-- tests of each would.
 local function condition_holds(ctx, held, condition)
   local list = term_data(ctx, held, condition)
   if #list == 0 then
@@ -1001,7 +1003,7 @@ local function condition_holds(ctx, held, condition)
     end
     return false
   end
-  if condition.v == nil and condition.b == nil then
+  if condition.v == nil and condition.b == nil and condition.vs == nil then
     return true
   end
   local reading = ctx.rules.avps[condition.l or condition.avp]
@@ -1010,6 +1012,17 @@ local function condition_holds(ctx, held, condition)
     local value = reading and integer_value(reading.type, data)
     if value == nil then
       unknown = true
+    elseif condition.vs ~= nil then
+      for _, each in ipairs(condition.vs) do
+        if value == each then
+          return true
+        end
+      end
+      for _, range in ipairs(condition.rs or {}) do
+        if value >= range[1] and value <= range[2] then
+          return true
+        end
+      end
     elseif condition.v ~= nil then
       if value == condition.v then
         return true

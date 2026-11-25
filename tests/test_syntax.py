@@ -257,6 +257,14 @@ _SCOPED = [
     # A value's name may begin with a digit; one of digits only is quoted.
     ("    absent-if ACME-Kind = 3GPP", "3GPP_ACME", "variable.other.avp"),
     ("    absent-if ACME-Kind = 3GPP", '"16"', "string.quoted.double.mark"),
+    ("    excludes ACME-Code in", "in", "keyword.operator.condition"),
+    ("    excludes ACME-Code in", "2000", "constant.numeric"),
+    ("    excludes ACME-Code in", "..", "keyword.operator", "2000"),
+    ("    excludes ACME-Code in", ",", "punctuation.separator.comma"),
+    # A wrapped rule goes on in a line indented eight spaces.
+    ('        "16", 4000', '"16"', "string.quoted.double.mark"),
+    ('        "16", 4000', "4000", "constant.numeric"),
+    ('        "16", 4000', "..", "keyword.operator"),
     ("    default 0", "0", "constant.numeric"),
     ("    encoding element TS29.002", "element", "support.type.codec"),
     ("    encoding element TS29.002", "17.7.8", "constant.other.section"),
@@ -299,6 +307,10 @@ _SCOPED_DADX = [
     ("    length 1..15", "the octets", "comment.line.double-semicolon"),
     ("; Versions: 1.0.0", "..", "keyword.operator.range"),
     ("; Command-Section:", "6.1.1", "constant.other.section"),
+    ("    absent-if ACME-Code in", "in", "keyword.operator.condition"),
+    ("        5000..5999", "or", "keyword.operator.condition"),
+    ("        5000..5999", "ACME-Flags", "variable.other.avp"),
+    ("        5000..5999", "5000", "constant.numeric"),
 ]
 
 

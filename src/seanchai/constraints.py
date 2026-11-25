@@ -432,13 +432,29 @@ def _condition_holds(
     if isinstance(condition.value, ast.Reference):
         others = {avp.payload for avp in _reached(condition.value, scope, request)}
         return any(avp.payload in others for avp in found)
-    if condition.value is None and condition.bit is None:
+    if condition.value is None and condition.bit is None and not condition.values:
         return True
     unknown = False
     for avp in found:
         value = (
             None if avp.data_type is None else integer_value(avp.data_type, avp.payload)
         )
+        if condition.values:
+            # As `Foo = A or Foo = B` would hold: any listed value met is
+            # enough, and one not read leaves the rest unknown.
+            for listed in condition.values:
+                if isinstance(listed, ast.ValueRange):
+                    if value is None:
+                        unknown = True
+                    elif listed.low <= value <= listed.high:
+                        return True
+                    continue
+                wanted = _number(listed, avp.values)
+                if value is None or wanted is None:
+                    unknown = True
+                elif value == wanted:
+                    return True
+            continue
         wanted = (
             _number(condition.value, avp.values)
             if condition.value is not None

@@ -115,6 +115,7 @@ __all__ = [
     "Unsigned24",
     "Unsigned32",
     "ValueKind",
+    "ValueRange",
     "ValueRef",
     "ValueRow",
     "ValueTable",
@@ -1597,22 +1598,57 @@ class Reference(Node):
         return self.path[-1]
 
 
+class ValueRange(Node):
+    """`5000..5999` in an `in` condition's list: the integers from `low` to
+    `high`, both included."""
+
+    low: int
+    high: int
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> ValueRange:
+        if self.high < self.low:
+            raise ValueError(f"range {self.low}..{self.high} is reversed")
+        return self
+
+
 class Condition(Reference):
     """What a predicate tests of an AVP the block's command or grouped AVP
     holds, or with `root` of one the request holds: that it is present
     (`Foo`), that it holds a value (`Foo = 1`, `Foo = TRUE`, or the value of
-    an AVP of the request, `Foo = request/Foo`), or that a bit is set (`Foo
-    bit 3`, `Foo bit "Trace Data Withdrawal"`); `negated`, that it does not
-    (`not Foo`)."""
+    an AVP of the request, `Foo = request/Foo`), one of several (`values`,
+    `Foo in 1, TRUE, 5000..5999`, which holds as `Foo = 1 or Foo = TRUE or`
+    each number of the range would), or that a bit is set (`Foo bit 3`, `Foo
+    bit "Trace Data Withdrawal"`); `negated`, that it does not (`not Foo`,
+    `not Foo in 1, 2`)."""
 
     value: ValueRef | Reference | None = None
     bit: ValueRef | None = None
+    values: tuple[ValueRef | ValueRange, ...] = ()
     negated: bool = False
 
     @pydantic.model_validator(mode="after")
     def _one_test(self) -> Condition:
-        if self.value is not None and self.bit is not None:
-            raise ValueError(f"{self.avp}: a condition tests a value or a bit")
+        tests = (self.value is not None) + (self.bit is not None) + bool(self.values)
+        if tests > 1:
+            raise ValueError(
+                f"{self.avp}: a condition tests a value, one of several or a bit"
+            )
+        if len(set(self.values)) != len(self.values):
+            raise ValueError(f"{self.avp}: a condition lists a value once")
+        ranges = [each for each in self.values if isinstance(each, ValueRange)]
+        for index, each in enumerate(ranges):
+            for other in ranges[index + 1 :]:
+                if each.low <= other.high and other.low <= each.high:
+                    raise ValueError(
+                        f"{self.avp}: ranges {each.low}..{each.high} and"
+                        f" {other.low}..{other.high} overlap"
+                    )
+            for number in self.values:
+                if isinstance(number, int) and each.low <= number <= each.high:
+                    raise ValueError(
+                        f"{self.avp}: {number} is in range {each.low}..{each.high}"
+                    )
         if isinstance(self.bit, int) and self.bit < 0:
             raise ValueError(f"{self.avp}: bit {self.bit} is negative")
         if isinstance(self.value, Reference) and self.value.root is None:

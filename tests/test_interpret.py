@@ -902,6 +902,46 @@ def test_a_quote_is_held_to_its_clause_and_its_page_read_from_the_copy():
     assert interpretations.paged(item, None) is item
 
 
+def test_an_in_list_reads_and_wraps_at_its_commas():
+    """A condition testing one AVP for several values, numbers, names and
+    ranges, wrapped past 80 columns after a comma, eight spaces in, and
+    read back whole; a value listed twice, or inside a listed range, is
+    refused."""
+    rule = (
+        "    absent-if Example-Result/Example-Code in DIAMETER_ERROR_ONE,"
+        ' DIAMETER_ERROR_TWO, 3GPP_X, "16", 5000..5999 or not Example-Kind in 1, 2'
+    )
+    text = _dadx(_written('"Q."', rule))
+    tree, _ = interpretations.parse(text)
+    (_, read) = tree.sections[0].body
+    assert isinstance(read, ast.PredicateRule)
+    (codes,), (kind,) = read.conditions
+    assert codes.values == (
+        "DIAMETER_ERROR_ONE",
+        "DIAMETER_ERROR_TWO",
+        "3GPP_X",
+        "16",
+        ast.ValueRange(low=5000, high=5999),
+    )
+    assert (kind.values, kind.negated) == ((1, 2), True)
+    written = formatter.format_interpretations(tree)
+    assert (
+        "    absent-if Example-Result/Example-Code in DIAMETER_ERROR_ONE,\n"
+        '        DIAMETER_ERROR_TWO, 3GPP_X, "16", 5000..5999 or not Example-Kind'
+        " in 1, 2\n"
+    ) in written
+    assert interpretations.parse(written)[0] == tree
+    for listed, fact in (
+        ("1, 2, 1", "lists a value once"),
+        ("1, 0..5", "is in range"),
+        ("0..5, 4..9", "overlap"),
+    ):
+        with pytest.raises(parser.DadParseError, match=fact):
+            interpretations.parse(
+                _dadx(_written('"Q."', f"    requires Foo in {listed}"))
+            )
+
+
 def test_a_quote_may_be_what_a_clause_above_prints_for_its_subclauses():
     """RFC 6733 clause 10 gives the symbols clause 10.1's table uses: a
     block reading the table quotes both, and a block reading clause 10

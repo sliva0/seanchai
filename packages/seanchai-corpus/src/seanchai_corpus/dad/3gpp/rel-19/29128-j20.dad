@@ -1412,7 +1412,17 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_SERVICE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_INVALID_EPS_BEARER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNREACHABLE_USER
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+        DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
+        DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED,
+        DIAMETER_ERROR_USER_UNKNOWN, DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
+        DIAMETER_ERROR_INVALID_EPS_BEARER,
+        DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE,
+        DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
+        DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
+        DIAMETER_ERROR_UNREACHABLE_USER
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cia-result-code-absent-with-experimental-result)
@@ -1422,7 +1432,17 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_SERVICE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_INVALID_EPS_BEARER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNREACHABLE_USER
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+        DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
+        DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED,
+        DIAMETER_ERROR_USER_UNKNOWN, DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
+        DIAMETER_ERROR_INVALID_EPS_BEARER,
+        DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE,
+        DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
+        DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
+        DIAMETER_ERROR_UNREACHABLE_USER
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-result-code-absent-with-experimental-result)
@@ -1432,7 +1452,17 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_SERVICE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_INVALID_EPS_BEARER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNREACHABLE_USER
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+        DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
+        DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED,
+        DIAMETER_ERROR_USER_UNKNOWN, DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
+        DIAMETER_ERROR_INVALID_EPS_BEARER,
+        DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE,
+        DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
+        DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
+        DIAMETER_ERROR_UNREACHABLE_USER
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#oda-result-code-absent-with-experimental-result)
@@ -1442,7 +1472,17 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_SERVICE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_INVALID_EPS_BEARER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNREACHABLE_USER
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+        DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
+        DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED,
+        DIAMETER_ERROR_USER_UNKNOWN, DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
+        DIAMETER_ERROR_INVALID_EPS_BEARER,
+        DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE,
+        DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
+        DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
+        DIAMETER_ERROR_UNREACHABLE_USER
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-result-code-absent-with-experimental-result)
@@ -1452,7 +1492,17 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNAUTHORIZED_SERVICE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_OPERATION_NOT_ALLOWED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_INVALID_EPS_BEARER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNREACHABLE_USER
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+        DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
+        DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
+        DIAMETER_ERROR_REQUESTED_LOCATION_NOT_SERVED,
+        DIAMETER_ERROR_USER_UNKNOWN, DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
+        DIAMETER_ERROR_INVALID_EPS_BEARER,
+        DIAMETER_ERROR_NIDD_CONFIGURATION_NOT_AVAILABLE,
+        DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
+        DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
+        DIAMETER_ERROR_UNREACHABLE_USER
 
 
 ; Type: Grouped AVP

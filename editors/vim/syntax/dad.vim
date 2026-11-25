@@ -8,7 +8,7 @@ endif
 " Defined first, so that every token defined after it wins where both
 " match: the names in an interpreted constraint's rule, of a member, a sibling
 " or a value.
-syn match dadConstraintName "\%(^    \S\+ .\{-}\)\@<=[A-Za-z0-9][A-Za-z0-9_-]*" contained
+syn match dadConstraintName "\%(^    \S\+ .\{-}\|^        .\{-}\)\@<=[A-Za-z0-9][A-Za-z0-9_-]*" contained
 
 " Table-row tokens are matched one by one: a cell's vocabulary depends on the
 " `; Columns:` line, which a regex highlighter cannot track, and the
@@ -107,11 +107,15 @@ syn match dadQuote #^"\%([^"\\]\|\\["\\]\)*"# contained
 " `dadConstraintRule`).
 syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadConstraintNumber,dadQuotedCell,dadComment
 syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>" contained
+" A rule line the formatter wraps goes on in lines indented eight spaces,
+" after a comma of an `in` list: no AVP rule (a bracket), no enum value
+" (`NAME = n`) and no comment.
+syn match dadConstraintContinued #^        \%([0-9*]*\s*[[{<;]\)\@!\%(\%("\%([^"\\]\|\\["\\]\)*"\|[A-Za-z0-9][A-Za-z0-9_-]*\)\s*=\s\)\@!\S.*$# contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintWord,dadConstraintOp,dadListComma,dadConstraintNumber,dadQuotedCell,dadComment
 " A path's root, the request an answer answers, and the `/` between its
 " names.
 syn match dadConstraintRoot "\s\@1<=request\ze/" contained
 syn match dadConstraintPath "/" contained
-syn match dadConstraintWord "\s\zs\%(or\|and\|not\|if\|bit\|at-most-one\|at-least-one\|set\|clear\|only\)\ze\s" contained
+syn match dadConstraintWord "\s\zs\%(or\|and\|not\|if\|bit\|in\|at-most-one\|at-least-one\|set\|clear\|only\)\ze\s" contained
 syn match dadConstraintOp "\.\.\|\%(\s\|\.\.\)\@2<=\*\|\s\@1<==\ze\s" contained
 " A codec after `encoding`, a length's unit after its bounds.
 syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-filter-out\|ip-filter-flow\|ip-filter\|ip-address\|time-zone\|mac-address\|element\)\ze\%(\s\|$\)" contained

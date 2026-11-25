@@ -1268,7 +1268,8 @@
 "invalid Short Message Entity address"
 "user not Service Centre/SCS-AS user"
     present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE
-    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = UNKNOWN_SERVICE_CENTRE or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = SC-CONGESTION or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = INVALID_SME-ADDRESS or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = USER_NOT_SC-USER
+    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause in UNKNOWN_SERVICE_CENTRE,
+        SC-CONGESTION, INVALID_SME-ADDRESS, USER_NOT_SC-USER
 
 
 ;; The interface the answer crosses, which it does not carry.
@@ -1380,7 +1381,8 @@
 "UE error"
 "mobile equipment not equipped to support the mobile terminated short message service"
     present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE
-    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = MEMORY_CAPACITY_EXCEEDED or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = EQUIPMENT_PROTOCOL_ERROR or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = EQUIPMENT_NOT_SM-EQUIPPED
+    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause in MEMORY_CAPACITY_EXCEEDED,
+        EQUIPMENT_PROTOCOL_ERROR, EQUIPMENT_NOT_SM-EQUIPPED
 
 
 ;; Two times compared: no kind says it.
@@ -1532,7 +1534,12 @@
 ; Section: 7.3.1
 ; Versions: 18.2.0..19.3.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_ABSENT_USER, DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS,
+        DIAMETER_ERROR_FACILITY_NOT_SUPPORTED, DIAMETER_ERROR_ILLEGAL_USER,
+        DIAMETER_ERROR_ILLEGAL_EQUIPMENT, DIAMETER_ERROR_SM_DELIVERY_FAILURE,
+        DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED, DIAMETER_ERROR_SERVICE_BARRED,
+        DIAMETER_ERROR_MWD_LIST_FULL
 
 
 ; Type: Interpreted Constraints
@@ -1542,7 +1549,12 @@
 ; Section: 7.3.1
 ; Versions: 18.2.0..19.3.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_ABSENT_USER, DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS,
+        DIAMETER_ERROR_FACILITY_NOT_SUPPORTED, DIAMETER_ERROR_ILLEGAL_USER,
+        DIAMETER_ERROR_ILLEGAL_EQUIPMENT, DIAMETER_ERROR_SM_DELIVERY_FAILURE,
+        DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED, DIAMETER_ERROR_SERVICE_BARRED,
+        DIAMETER_ERROR_MWD_LIST_FULL
 
 
 ; Type: Interpreted Constraints
@@ -1552,7 +1564,12 @@
 ; Section: 7.3.1
 ; Versions: 18.2.0..19.3.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_ABSENT_USER, DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS,
+        DIAMETER_ERROR_FACILITY_NOT_SUPPORTED, DIAMETER_ERROR_ILLEGAL_USER,
+        DIAMETER_ERROR_ILLEGAL_EQUIPMENT, DIAMETER_ERROR_SM_DELIVERY_FAILURE,
+        DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED, DIAMETER_ERROR_SERVICE_BARRED,
+        DIAMETER_ERROR_MWD_LIST_FULL
 
 
 ; Type: Interpreted Constraints
@@ -1562,7 +1579,12 @@
 ; Section: 7.3.1
 ; Versions: 18.2.0..19.3.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_ABSENT_USER, DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS,
+        DIAMETER_ERROR_FACILITY_NOT_SUPPORTED, DIAMETER_ERROR_ILLEGAL_USER,
+        DIAMETER_ERROR_ILLEGAL_EQUIPMENT, DIAMETER_ERROR_SM_DELIVERY_FAILURE,
+        DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED, DIAMETER_ERROR_SERVICE_BARRED,
+        DIAMETER_ERROR_MWD_LIST_FULL
 
 
 ; Type: Interpreted Constraints
@@ -1572,4 +1594,9 @@
 ; Section: 7.3.1
 ; Versions: 18.2.0..19.3.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_ABSENT_USER, DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS,
+        DIAMETER_ERROR_FACILITY_NOT_SUPPORTED, DIAMETER_ERROR_ILLEGAL_USER,
+        DIAMETER_ERROR_ILLEGAL_EQUIPMENT, DIAMETER_ERROR_SM_DELIVERY_FAILURE,
+        DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED, DIAMETER_ERROR_SERVICE_BARRED,
+        DIAMETER_ERROR_MWD_LIST_FULL

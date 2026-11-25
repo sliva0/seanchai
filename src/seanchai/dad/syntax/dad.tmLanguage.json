@@ -18,6 +18,7 @@
     { "include": "#constraint-quote" },
     { "include": "#constraint-element" },
     { "include": "#constraint-rule" },
+    { "include": "#constraint-continued" },
     { "include": "#enum-value" },
     { "include": "#table-row" }
   ],
@@ -242,66 +243,75 @@
       "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|members|unique|values|equals|absent|text-only)\\b(.*?)(\\s*;;.*)?$",
       "captures": {
         "2": { "name": "keyword.control.constraint.dad" },
-        "3": {
-          "patterns": [
-            {
-              "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
-              "name": "string.quoted.double.mark.dad"
-            },
-            {
-              "comment": "A length's unit, after its bounds.",
-              "match": "(?<=\\d |\\* )(octets|digits|characters)$",
-              "name": "constant.language.unit.dad"
-            },
-            {
-              "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-filter-out|ip-filter-flow|ip-filter|ip-address|time-zone|mac-address|element)(?=\\s|$)",
-              "name": "support.type.codec.dad"
-            },
-            {
-              "match": "(?<=\\s)(or|and|not|if|bit|at-most-one|at-least-one|set|clear|only)(?=\\s)",
-              "name": "keyword.operator.condition.dad"
-            },
-            {
-              "comment": "A condition's `=`, a bounds' `..` and an open bound's `*`.",
-              "match": "(?<=\\s)=(?=\\s)|\\.\\.|(?<=\\s|\\.\\.)\\*(?=\\s|\\.\\.|$)",
-              "name": "keyword.operator.dad"
-            },
-            {
-              "match": "(?<=\\s)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$)",
-              "name": "entity.name.tag.spec-ref.dad"
-            },
-            {
-              "match": "(?<=\\s)(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=\\s|$)",
-              "name": "constant.other.section.dad"
-            },
-            {
-              "match": "-?\\b\\d+\\b",
-              "name": "constant.numeric.dad"
-            },
-            {
-              "comment": "Between the values of `exclude` and `values`.",
-              "match": ",",
-              "name": "punctuation.separator.comma.dad"
-            },
-            {
-              "comment": "A path's root: the request an answer answers.",
-              "match": "(?<=\\s)request(?=/)",
-              "name": "keyword.other.root.dad"
-            },
-            {
-              "comment": "Between the names of a path.",
-              "match": "/",
-              "name": "punctuation.separator.path.dad"
-            },
-            {
-              "comment": "A member or a sibling, a value's or a bit's name.",
-              "match": "[A-Za-z0-9][A-Za-z0-9_-]*",
-              "name": "variable.other.avp.dad"
-            }
-          ]
-        },
+        "3": { "patterns": [{ "include": "#constraint-terms" }] },
         "4": { "patterns": [{ "include": "#comment" }] }
       }
+    },
+    "constraint-continued": {
+      "comment": "A rule line the formatter wraps goes on in lines indented eight spaces, after a comma of an `in` list: no AVP rule, which opens with a bracket, no enum value, which reads `NAME = n`, and no comment.",
+      "match": "^(        )(?![0-9*]*\\s*[\\[{<;])(?!(?:\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"|[A-Za-z0-9][A-Za-z0-9_-]*)\\s*=\\s)(\\S.*?)(\\s*;;.*)?$",
+      "captures": {
+        "2": { "patterns": [{ "include": "#constraint-terms" }] },
+        "3": { "patterns": [{ "include": "#comment" }] }
+      }
+    },
+    "constraint-terms": {
+      "patterns": [
+        {
+          "match": "\"(?:[^\"\\\\]|\\\\[\"\\\\])*\"",
+          "name": "string.quoted.double.mark.dad"
+        },
+        {
+          "comment": "A length's unit, after its bounds.",
+          "match": "(?<=\\d |\\* )(octets|digits|characters)$",
+          "name": "constant.language.unit.dad"
+        },
+        {
+          "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-filter-out|ip-filter-flow|ip-filter|ip-address|time-zone|mac-address|element)(?=\\s|$)",
+          "name": "support.type.codec.dad"
+        },
+        {
+          "match": "(?<=\\s)(or|and|not|if|bit|in|at-most-one|at-least-one|set|clear|only)(?=\\s)",
+          "name": "keyword.operator.condition.dad"
+        },
+        {
+          "comment": "A condition's `=`, a bounds' `..` and an open bound's `*`.",
+          "match": "(?<=\\s)=(?=\\s)|\\.\\.|(?<=\\s|\\.\\.)\\*(?=\\s|\\.\\.|$)",
+          "name": "keyword.operator.dad"
+        },
+        {
+          "match": "(?<=\\s)(?:TS\\d{2}\\.\\d{3}|RFC\\d+|ETSI-(?:TS|ES)\\d{3}\\.\\d{3}(?:-\\d+)?|3GPP2-[A-Z]\\.[A-Z]\\d{4}(?:-\\d{3})?|OMA(?:-[A-Za-z0-9_]+)+|oneM2M-TS-\\d{4}|Private-[A-Za-z0-9][A-Za-z0-9_.-]*)(?=\\s|$)",
+          "name": "entity.name.tag.spec-ref.dad"
+        },
+        {
+          "match": "(?<=\\s)(?:\\d+[A-Za-z]*|[A-Za-z])(?:\\.\\d+[A-Za-z]*)+(?=\\s|$)",
+          "name": "constant.other.section.dad"
+        },
+        {
+          "match": "-?\\b\\d+\\b",
+          "name": "constant.numeric.dad"
+        },
+        {
+          "comment": "Between the values of `exclude`, `values` and an `in` list.",
+          "match": ",",
+          "name": "punctuation.separator.comma.dad"
+        },
+        {
+          "comment": "A path's root: the request an answer answers.",
+          "match": "(?<=\\s)request(?=/)",
+          "name": "keyword.other.root.dad"
+        },
+        {
+          "comment": "Between the names of a path.",
+          "match": "/",
+          "name": "punctuation.separator.path.dad"
+        },
+        {
+          "comment": "A member or a sibling, a value's or a bit's name.",
+          "match": "[A-Za-z0-9][A-Za-z0-9_-]*",
+          "name": "variable.other.avp.dad"
+        }
+      ]
     },
     "enum-value": {
       "match": "^(\\s*)([A-Za-z0-9][A-Za-z0-9_-]*|\"(?:[^\"\\\\]|\\\\[\"\\\\])*\")(\\s*)(=)\\s*(\\d+)(\\s+; [^;].*?)?(\\s*;;.*)?$",

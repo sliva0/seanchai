@@ -676,10 +676,23 @@ def reference(reference: ast.Reference) -> str:
     return names if reference.root is None else f"{reference.root}/{names}"
 
 
-def condition(each: ast.Condition) -> str:
-    """A condition as a rule prints it: `request/Foo = 1`, `not Foo`."""
+# Where an `in` list may be wrapped, between two of its values.
+_LIST_BREAK = "\x00"
+
+
+def _listed(value: int | str | ast.ValueRange) -> str:
+    if isinstance(value, ast.ValueRange):
+        return f"{value.low}..{value.high}"
+    return _value_ref(value)
+
+
+def condition(each: ast.Condition, separator: str = ", ") -> str:
+    """A condition as a rule prints it: `request/Foo = 1`, `not Foo`,
+    `Foo in 1, 2`, its list's values joined by `separator`."""
     if isinstance(each.value, ast.Reference):
         test = f"{reference(each)} = {reference(each.value)}"
+    elif each.values:
+        test = f"{reference(each)} in {separator.join(map(_listed, each.values))}"
     elif each.value is not None:
         test = f"{reference(each)} = {_value_ref(each.value)}"
     elif each.bit is not None:
@@ -689,17 +702,19 @@ def condition(each: ast.Condition) -> str:
     return f"not {test}" if each.negated else test
 
 
-def conditions(alternatives: Sequence[Sequence[ast.Condition]]) -> str:
+def conditions(
+    alternatives: Sequence[Sequence[ast.Condition]], separator: str = ", "
+) -> str:
     """Alternatives as a rule prints them: `A and B or C`."""
     return " or ".join(
-        " and ".join(condition(each) for each in conjunction)
+        " and ".join(condition(each, separator) for each in conjunction)
         for conjunction in alternatives
     )
 
 
-def constraint_rule(rule: ast.ConstraintRule) -> str:
+def constraint_rule(rule: ast.ConstraintRule, separator: str = ", ") -> str:
     """A rule as an interpreted-constraints body prints it, without its
-    indentation."""
+    indentation, an `in` list's values joined by `separator`."""
     match rule:
         case ast.LengthRule():
             return f"length {_bounds(rule.low, rule.high)} {rule.unit}"
@@ -714,7 +729,7 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
                 parts.append(_quoted(rule.element))
             return " ".join(parts)
         case ast.PredicateRule():
-            return f"{rule.kind} {conditions(rule.conditions)}"
+            return f"{rule.kind} {conditions(rule.conditions, separator)}"
         case ast.DefaultRule():
             return f"default {_value_ref(rule.value)}"
         case ast.BitsRule():
@@ -727,7 +742,7 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
             return "absent"
         case ast.ValuesRule():
             values = ", ".join(str(value) for value in rule.values)
-            return f"values {values} if {conditions(rule.conditions)}"
+            return f"values {values} if {conditions(rule.conditions, separator)}"
         case ast.EqualsRule():
             return f"equals {reference(rule.reference)}"
         case ast.TextOnly():
@@ -736,6 +751,27 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
 
 # A rule line's indentation, setting it off from the quotes it was read from.
 _RULE_INDENT = "    "
+# A wrapped rule line's continuations, indented past it, and the width an
+# `in` list is wrapped to.
+_CONTINUED = " " * 8
+_RULE_WIDTH = 80
+
+
+def rule_lines(rule: ast.ConstraintRule) -> list[str]:
+    """A rule as an interpreted-constraints body prints it, indented: one
+    line, or where an `in` list carries it past 80 columns, as many as its
+    values fill, each but the last ending in a comma and each after the
+    first indented past the rule (`_CONTINUED`)."""
+    pieces = (_RULE_INDENT + constraint_rule(rule, _LIST_BREAK)).split(_LIST_BREAK)
+    lines: list[str] = []
+    current = pieces[0]
+    for piece in pieces[1:]:
+        if len(current) + len(", ") + len(piece) <= _RULE_WIDTH:
+            current += ", " + piece
+        else:
+            lines.append(current + ",")
+            current = _CONTINUED + piece
+    return [*lines, current]
 
 
 def _format_interpreted_constraints(
@@ -746,7 +782,7 @@ def _format_interpreted_constraints(
         text = (
             _quoted(item.text)
             if isinstance(item, ast.Quote)
-            else _RULE_INDENT + constraint_rule(item)
+            else "\n".join(rule_lines(item))
         )
         lines.extend(notes.line(text, (*path, "body", index)))
     lines.extend(notes.standing_at((*path, "body", len(block.body))))

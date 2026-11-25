@@ -356,7 +356,54 @@ def _value_text(value: dictionary.Value) -> str:
 
 def _rule_text(rule: dictionary.Rule) -> str:
     return json.dumps(
-        rule.model_dump(mode="json", exclude_defaults=True), sort_keys=True
+        _alike(rule).model_dump(mode="json", exclude_defaults=True), sort_keys=True
+    )
+
+
+def _alike(rule: dictionary.Rule) -> dictionary.Rule:
+    """`rule` with the alternatives that each test one AVP for a value
+    (`Foo = 1 or Foo = 2`, `Foo in 1, 2`) merged into one `in` alternative
+    per path, its values sorted, so that two spellings of one rule compare
+    alike."""
+    if not rule.conditions:
+        return rule
+    merged: dict[tuple[Any, ...], list[Any]] = {}
+    kept: list[tuple[dictionary.Condition, ...]] = []
+    for conjunction in rule.conditions:
+        (only, *more) = conjunction
+        tested = only.values or (
+            (only.value,)
+            if only.value is not None
+            and not isinstance(only.value, dictionary.Reference)
+            else ()
+        )
+        if more or only.negated or not tested:
+            kept.append(conjunction)
+            continue
+        merged.setdefault((only.root, only.path), []).extend(tested)
+    for (root, path), values in merged.items():
+        unique = {json.dumps(_plain(value), sort_keys=True): value for value in values}
+        kept.append(
+            (
+                dictionary.Condition(
+                    root=root,
+                    path=path,
+                    value=None,
+                    bit=None,
+                    values=tuple(unique[key] for key in sorted(unique)),
+                    negated=False,
+                ),
+            )
+        )
+    kept.sort(key=lambda each: json.dumps([_plain(c) for c in each], sort_keys=True))
+    return rule.model_copy(update={"conditions": tuple(kept)})
+
+
+def _plain(value: Any) -> Any:
+    return (
+        value.model_dump(mode="json")
+        if isinstance(value, pydantic.BaseModel)
+        else value
     )
 
 
