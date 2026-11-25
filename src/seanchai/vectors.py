@@ -1975,6 +1975,9 @@ class _Negatives:
 
     def constraints(self) -> None:
         done: set[tuple[str, str, str]] = set()
+        # A value rule of an AVP the full message holds that no payload
+        # breaks alone: listed in `skipped` once every holder is tried.
+        missed: dict[tuple[str, str, str], str] = {}
         message = self.full()
         for node, scope in list(self.each_node(message)):
             name = node.member.name if node.member else node.avp.name
@@ -1990,6 +1993,8 @@ class _Negatives:
                             continue
                         payload = self.breaking(node, scope, rule)
                         if payload is None:
+                            kind = "element" if _element_of(rule) else rule.kind
+                            missed[key] = f"constraint-{kind}/{name}/{each.section}"
                             continue
                         done.add(key)
                         trial = message.copy()
@@ -2011,6 +2016,11 @@ class _Negatives:
                             f"constraint-{kind}",
                             "note",
                         )
+        for key, what in missed.items():
+            if key not in done:
+                self.skip(
+                    what, "no value of the AVP breaks it and keeps its other rules"
+                )
         self.predicate_vectors()
         self.request_vectors()
         self.grouped_vectors()
@@ -2351,14 +2361,21 @@ class _Negatives:
     def predicate_vectors(self) -> None:
         """One vector per predicate the plugin checks, of the command's own
         scope and of each grouped AVP's the full message holds: the subject
-        placed, or not, against its conditions."""
+        placed, or not, against its conditions. One no vector breaks is
+        listed in `skipped`, with why."""
         done: set[tuple[str, str, str]] = set()
         for name, each, rule in self.builder.predicates(self.scope):
             if _reads_request(rule):
                 continue  # `request_vectors`
             message = self.full()
-            self.predicate_vector(message, message.nodes, self.scope, name, each, rule)
+            why = self.predicate_vector(
+                message, message.nodes, self.scope, name, each, rule
+            )
+            if why is not None:
+                self.skip(f"constraint-{rule.kind}/{name}/{each.section}", why)
         full = self.full()
+        # Of a grouped AVP's, why the last occurrence tried could not.
+        missed: dict[tuple[str, str, str], str] = {}
         for index, (node, _scope, _run) in enumerate(self.each_grouped(full)):
             inner = self.builder.scope_of(node.avp)
             for name, each, rule in self.builder.predicates(inner):
@@ -2368,10 +2385,16 @@ class _Negatives:
                     continue
                 message = full.copy()
                 target, _, _ = list(self.each_grouped(message))[index]
-                if self.predicate_vector(
+                why = self.predicate_vector(
                     message, target.children, inner, name, each, rule
-                ):
+                )
+                if why is None:
                     done.add(key)
+                else:
+                    missed[key] = why
+        for (section, name, kind), why in missed.items():
+            if (section, name, kind) not in done:
+                self.skip(f"constraint-{kind}/{name}/{section}", why)
 
     def predicate_vector(
         self,
@@ -2381,35 +2404,41 @@ class _Negatives:
         name: str,
         each: dictionary.Constraint,
         rule: dictionary.Rule,
-    ) -> bool:
+    ) -> str | None:
         """Break `rule` on `name` in `nodes`, the run of `message` `scope`
-        reads, and nothing else, and emit the vector; False where it cannot."""
+        reads, and nothing else, and emit the vector; why not where it
+        cannot."""
         top = nodes is message.nodes
         if rule.kind == "absent":
-            if not top or not self.add_absent(message, name, each):
-                return False
+            if not top:
+                return "an absent rule within a grouped AVP is broken by no vector"
+            if not self.add_absent(message, name, each):
+                return "the AVP it keeps out cannot be added breaking nothing else"
         elif rule.kind == "values":
             if not self.break_values(nodes, scope, name, rule):
-                return False
+                return "no value it forbids keeps the message's other rules"
             if not top and self.builder.broken(
                 self.scope, message.nodes, message.asked
             ):
-                return False
+                return "breaking it breaks a predicate on a path into it"
         else:
             member = next((m for m in scope.members if m.name == name), None)
             if member is None:
-                return False  # only `* [ AVP ]` admits it
+                return "the body admits the AVP only through * [ AVP ]"
             subject = [n for n in nodes if n.avp.name == name]
             if rule.kind in ("absent-if", "excludes", "present-if"):
                 if not all(self.make_hold(nodes, c, scope) for c in rule.conditions[0]):
-                    return False
+                    return "its conditions cannot be made to hold"
                 if rule.kind == "present-if":
                     if member.min_occurs:
-                        return False
+                        return "the AVP is required, so never absent"
                     nodes[:] = [n for n in nodes if n.avp.name != name]
-                elif not subject:
+                elif not any(n.avp.name == name for n in nodes):
+                    # Making a condition on a path into the subject hold
+                    # placed it (TS 29.272's AMBR, excluded with both its
+                    # bandwidths 0).
                     if member.avp is None:
-                        return False
+                        return "the corpus cannot complete the AVP"
                     nodes.append(
                         self.builder.avp(
                             self.builder.avps[member.avp], scope, member, False, ()
@@ -2418,7 +2447,7 @@ class _Negatives:
             else:  # requires
                 if not subject:
                     if member.avp is None:
-                        return False
+                        return "the corpus cannot complete the AVP"
                     nodes.append(
                         self.builder.avp(
                             self.builder.avps[member.avp], scope, member, False, ()
@@ -2428,30 +2457,28 @@ class _Negatives:
                     any(self.make_fail(nodes, c, scope) for c in conjunction)
                     for conjunction in rule.conditions
                 ):
-                    return False
+                    return "its conditions cannot be made to fail"
             broken = self.builder.broken(scope, nodes)
             if [(n, k) for n, k, _ in broken] != [(name, rule.kind)]:
-                return False
+                return "breaking it breaks another predicate too"
             if not self.counts_hold(nodes, scope):
-                return False
+                return "breaking it breaks the body's occurrences"
             if not top and (
                 self.builder.broken(self.scope, message.nodes, message.asked)
                 or not self.counts_hold(message.nodes)
             ):
-                # The run's change breaks a rule on a path into it.
-                return False
+                return "breaking it breaks a rule on a path into its grouped AVP"
             if any(
                 self.builder.broken(self.builder.scope_of(node.avp), node.children)
                 for node, _, _ in self.each_grouped(message)
                 if node.children is not nodes
             ):
-                # Making a condition on a path hold broke a grouped AVP's own.
-                return False
+                return "making its conditions hold breaks a grouped AVP's own rule"
         if not self.all_members_hold(message):
             # Adding the subject broke a `members` rule on the grouped AVP
             # holding it: TS 32.299's Multiple-Services-Credit-Control within
             # Offline-Charging, given a Reporting-Reason.
-            return False
+            return "placing the AVP breaks a members rule on the AVP holding it"
         self.emit(
             message,
             f"constraint-{rule.kind}/{name}/{each.section}",
@@ -2459,7 +2486,7 @@ class _Negatives:
             f"constraint-{rule.kind}",
             "note",
         )
-        return True
+        return None
 
     def add_absent(
         self, message: _Message, name: str, each: dictionary.Constraint

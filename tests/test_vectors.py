@@ -136,6 +136,20 @@ def test_a_command_requiring_what_the_corpus_cannot_complete_is_skipped(built):
     }
 
 
+def test_a_rule_no_negative_breaks_alone_is_skipped_with_why(s6a):
+    """TS 29.272 clause 7.3.35 holds SCEF-ID and SCEF-Realm to the same
+    siblings, so no vector breaks one's rule and not the other's: it is
+    listed, not dropped. A condition on a path into the subject places it
+    once: a Subscription-Data's AMBR, excluded with both its bandwidths 0."""
+    skipped = {(s.command, s.what): s.reason for s in s6a.skipped}
+    assert skipped[("16777251/ULA", "constraint-requires/SCEF-ID/7.3.35")] == (
+        "breaking it breaks another predicate too"
+    )
+    assert all(s.reason for s in s6a.skipped)
+    negative = {v.id for v in s6a.vectors if v.kind == "negative"}
+    assert "16777251/ULA/negative/constraint-excludes/AMBR/7.3.2" in negative
+
+
 def test_a_rule_on_an_avp_only_the_wildcard_admits_builds_it(built):
     """TS 32.299's CCA leaves Supported-Features to its `* [ AVP ]`, and
     clause 6.5.10.3 wants one in an answer to an initial request with

@@ -443,7 +443,10 @@ path to it too. A grouped AVP's `members` rule is broken only where emptying
 it keeps its command's predicates on paths into it, which TS 29.336's SIR,
 CIR, CIA, RIR and NIR do not. Nothing inside a `Failed-AVP` is broken, since
 RFC 6733 section 7.5 lets it hold the failed AVP as received and a checker
-holds it to its `1* { AVP }` alone.
+holds it to its `1* { AVP }` alone. Any other interpreted rule no negative
+breaks alone is listed in `skipped` with why: no value of the AVP breaks it
+and keeps its other rules, breaking it breaks another predicate too, its
+conditions cannot be made to hold, and the like.
 
 An answer whose rules read the request it answers is sent with that request,
 `request` in the vector, the pair sharing Hop-by-Hop and End-to-End
