@@ -353,6 +353,15 @@ TS 32.299's 6 name 6 entries, of which 3 check something:
 | WLAN-Operator-Name | TS 23.003 19.8 TWAN Operator Name | TS 23.003 V19.8.0 19.8 | nothing | none | no shape of the registry reads a domain name's labels, their characters and how each begins and ends |
 | Nr-Cgi | TS 23.003 19.6A NCGI | TS 23.003 V19.8.0 19.6A | nothing | none | the clause gives the NCGI as a PLMN identity and 36 bits, and neither it nor TS 32.299 clause 7.2.254 says how a UTF8String spells them |
 
+TS 29.338's 9 name 4 entries, of which 3 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| SM-RP-SMEA | TS 23.040 9.1.2.5 Address fields | TS 23.040 V19.0.0 9.1.2.5 | 2 to 12 octets | length | the Type-of-Address is not checked: a receiver reads its reserved values as Unknown, and the octets the clause draws are a figure; that the Address-Length counts the Address-Value's semi-octets is not checked: no shape ties a length to a field |
+| MME-Absent-User-Diagnostic-SM, MSC-, SGSN-, SMSF-3GPP-, SMSF-Non-3GPP- and Absent-User-Diagnostic-SM | TS 23.040 3.3.2 Reason for absence | TS 23.040 V19.0.0 3.3.2 | an integer 0 to 255 | full | the values 14 to 255 the table reserves are not refused, since it does not say they are not sent |
+| SM-RP-UI | TS 23.040 9.2.2 TPDU | TS 23.040 V19.0.0 9.2.2; TS 23.040 V19.0.0 9.2.3.1 | at least 1 octet | length | the PDU's type and fields are not checked: what a TP-MTI value means turns on the direction, which the AVP does not carry, and a receiver reads the reserved one as an SMS-DELIVER |
+| HSS-ID | TS 23.003 5.3 HSS-ID | TS 23.003 V19.8.0 5.3 | nothing | none | no shape of the registry bounds a text's digits |
+
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
@@ -980,3 +989,111 @@ procedures answer with, which are what a node answers, not a condition on
 an AVP; and clause 6.3.7.1's Tariff-Change-Usage "not used directly within
 the Multiple-Services-Credit-Control AVP", which the command's struck member
 already says.
+
+## TS 29.338
+
+TS 29.338 V19.3.0 is read completely for S6c and SGd/Gdd: clause 4's common
+aspects, every AVP clause of clauses 5.3.3 and 6.3.3, every C row of the
+information-element tables of clauses 5.2.1.1, 5.2.2.1, 5.2.3.1, 6.2.1.1,
+6.2.2.1 and 6.2.3.1 and the M and O rows stating a condition, the commands'
+clauses 5.3.2.2 and 6.3.2.2, clause 7's result codes, and the procedure
+clauses for what they state of one message. Release 18's copy, V18.2.0,
+holds 134 of the 139 blocks V19.3.0 holds and one of its own: it prints no
+MPS-Priority sentence in clause 5.2.1.3 and no Serving-Node Alert rows or
+their NOTE in table 5.2.3.1-2, and its MWD-Status table ends at bit 4, read
+in a block whose quote only it prints. S6c's commands print once under
+16777312 and SGd's under 16777313; ALR and ALA serve SGd and Gdd too under
+S6c's application (clause 6.3.2.2), so the tables of clauses 5.2.2.1 and
+6.2.3.1 both describe the one print.
+
+| | |
+|---|---|
+| AVP clauses (clauses 5.3.3 and 6.3.3, not their General clauses) | 57 |
+| with something to declare | 22, in 39 blocks |
+| with nothing to declare | 35 |
+| information-element C rows | 40, of which 35 state a condition |
+| the tables' blocks (clauses 5.2.1.1 to 6.2.3.1), M and O rows and each answer's Result among them | 43 |
+| clause 4's common aspects (4.5, 4.9), 5.2.1.3's HSS, 5.3.2.2's and 6.3.2.2's commands, 7.3.1's result codes | 30, 10, 3, 10, 5 blocks |
+| blocks | 140 in the file, V19.3.0 holding 139 and V18.2.0 135: 101 within a command, 16 within a grouped AVP, 23 on an AVP wherever read |
+| readings | 150 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 4: `e164-tbcd` (SC-Address, SMS-GMSC-Address, SMSF-3GPP-Number, SMSF-Non-3GPP-Number) |
+| `encoding element` | 9, naming 4 entries of the registry; 8 rules checked, 1 not ([above](#elements)) |
+| `length` | 1: SM-RP-UI, at most 200 octets |
+| `range` | 12: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands, Feature-List-ID 1 for S6c and SGd |
+| `requires`, `present-if`, `absent-if`, `excludes` | 38, 7, 9, 7 |
+| `absent` | 30: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in each of the 10 commands |
+| reading the request | 3: the SRA's Serving-Node in a success's answer to a request without SM-Delivery-Not-Intended and holding the IP-SM-GW number for one with an SMSMI-Correlation-ID, the TFA's Requested-Retransmission-Time only after a Maximum-Retransmission-Time |
+| `bits` | 6, each `only`: a flags AVP's NOTE that undefined bits are cleared, MWD-Status's once per release |
+| `members` | 2: `at-least-one`, Serving-Node's and Additional-Serving-Node's numbers |
+| `text-only` | 34 |
+
+Clause 4.5's "shall include ... the Auth-Session-State AVP set to the value
+NO_STATE_MAINTAINED (1)" and "Neither the Authorization-Lifetime AVP nor the
+Session-Timeout AVP shall be present" are read in each of the ten commands,
+the two AVPs RFC 6733 defines admitted through each body's `* [ AVP ]`, and
+clauses 5.3.2.2's and 6.3.2.2's "The Vendor-Specific-Application-Id AVP shall
+not be included in any command sent by Diameter nodes supporting
+applications defined in this specification" as `absent` in each, an AVP the
+ABNF prints only, its NOTE says, for agents not complying with RFC 6733.
+Serving-Node's and Additional-Serving-Node's "The following combinations are
+allowed" (clauses 5.3.3.6 and 5.3.3.7) are read member by member: one of the
+numbers present, and each member only beside the others of its
+combination; combination b's condition is the HSS's, so its members are
+allowed whatever it. Each answer's Result row holds the Experimental-Result
+to the 3GPP vendor, and clause 7.3.1's "the Result-Code AVP shall be absent"
+beside one of its ten codes is read in each answer as TS 29.329's clause 6.2
+is. An SRR's or ALR's or RDR's SMSMI-Correlation-ID holds the destination's
+SIP-URI and neither the originating one nor the HSS-ID, an OFR's all three
+and a TFR's the two SIP-URIs, read through paths from the command, whose
+SMSMI-Correlation-ID other commands fill otherwise; a TFA's
+Requested-Retransmission-Time "may only be present if" the answer reports
+DIAMETER_ERROR_ABSENT_USER and the request held a Maximum-Retransmission-Time.
+The SM-Delivery-Failure-Cause an OFA or TFA carries with
+DIAMETER_ERROR_SM_DELIVERY_FAILURE holds one of the causes its table names,
+clause 6.3.3.6's values; the TFA's "UE error" is EQUIPMENT_PROTOCOL_ERROR,
+MAP's equipmentProtocolError, which clause 6.3.3.6's NOTE says the values
+follow.
+
+The text-only rules are mostly conditions on the node, a feature, the
+subscription, what the HSS stores or an earlier message ("shall be present
+when the MSISDN exists", "if the SMS-GMSC supports receiving of the two
+numbers from the HSS", "when given by the MME and stored in the HSS", "if
+the feature \"SMSF-Support\" is not supported", "shall be present when the
+request is sent to a MME", "If allowed by local policy"). A row whose
+condition is partly the node's keeps the part a message shows where that
+part alone holds of every message the row allows: an SRR without an MSISDN
+carries a User-Name, and an SRA's Serving-Node is held to a success's answer
+to a request without SM-Delivery-Not-Intended, whose answer "may" lack it.
+The rest a single message could show but no kind says: two AVPs' contents
+differing (an Additional-Serving-Node not repeating the Serving-Node, the
+RDA's Alert MSISDN differing from the request's), two times compared (the
+Requested-Retransmission-Time within the Maximum-Retransmission-Time), and
+SM-Delivery-Timer's and SM-Delivery-Start-Time's "should be included", a
+presence with no condition of an AVP the ABNF prints optional. The SRA's
+"only one serving node address" without the GPRS indicator is text-only,
+since an HSS answering an SMS-GMSC without SMSF-Support may carry an SMSF's
+address in Additional-Serving-Node (clause 5.3.3.13).
+
+The document is wrong in places the corpus reads around: clause 5.2.1.3
+names DIAMETER_SUCCESS DIAMETER_SUCCESSFUL and DIAMETER_ERROR_SERVICE_BARRED
+DIAMETER_ SERVICE _ERROR_BARRED, in sentences no block reads; clause
+6.3.3.10 types SM-Delivery-Timer Integer where table 6.3.3.1/1 types it
+Unsigned32, which the corpus keeps, no rule reading its value; clause
+5.3.3.6's body prints an IP-SM-GW-Realm no allowed combination names,
+read `text-only`; and clause 5.3.3.11's heading names
+SGSN-Absent-User-Diagnostic-SM SGSN-Absent-Subscriber-Diagnostic-SM. Left
+unread: the C rows saying only what an AVP holds when present ("This
+information element shall contain the RP-Message Type Indicator") and the
+"may" rows (Absent-User-Diagnostic-SM "may be present when
+Experimental-Result-Code is set to DIAMETER_ERROR_ABSENT_USER"); clause
+4.7's Capabilities-Exchange AVPs, which are RFC 6733's commands' and this
+file does not print; the routing clauses 5.3.1 and 6.3.1, which say what a
+node that can obtain an address puts in Destination-Host; the procedures'
+result codes, which are what a node answers with; the sentences repeating
+a table row (clause 6.2.2.3's SMS-GMSC address beside a
+Maximum-Retransmission-Time), read at the row; Feature-List's SMSF-Support
+description, which the SRA's NOTE rows read; and Annex A's DRMP, an
+operator's priority.

@@ -1946,6 +1946,97 @@ REGISTRY: tuple[Element, ...] = (
         " neither it nor TS 32.299 clause 7.2.254 says how a UTF8String"
         " spells them",
     ),
+    Element(
+        "TS23.040",
+        "9.1.2.5",
+        "Address fields",
+        "an SM-TL address field: an Address-Length octet, a Type-of-Address"
+        " octet and the Address-Value",
+        (
+            _source(
+                _SMS,
+                "9.1.2.5",
+                "'an Address-Length field of one octet, a Type-of-Address field"
+                " of one octet, and one Address-Value field of variable"
+                " length', 'The maximum length of the full address field"
+                " (Address-Length, Type-of-Address and Address-Value) is 12"
+                " octets'",
+            ),
+        ),
+        (Octets(2, 12),),
+        Depth.LENGTH,
+        "the Type-of-Address is not checked: a receiver reads its reserved"
+        " values as Unknown, and the octets the clause draws are a figure;"
+        " that the Address-Length counts the Address-Value's semi-octets is"
+        " not checked: no shape ties a length to a field",
+        example=bytes([0x0B, 0x91, 0x21, 0x43, 0x65, 0x87, 0x09, 0xF1]),
+    ),
+    Element(
+        "TS23.040",
+        "3.3.2",
+        "Reason for absence",
+        "the diagnostic of an absent user, a reason for absence",
+        (
+            _source(
+                _SMS,
+                "3.3.2",
+                "table 1a, 'Assignment of values to reasons for absence (values"
+                " must be in the range of 0 to 255', 0 to 13, 'All other"
+                " integer values are reserved.'",
+            ),
+        ),
+        (Integer(0, 255),),
+        Depth.FULL,
+        "the values 14 to 255 the table reserves are not refused, since it"
+        " does not say they are not sent",
+    ),
+    Element(
+        "TS23.040",
+        "9.2.2",
+        "TPDU",
+        "an SM-TL protocol data unit, the TP-Message-Type-Indicator in its first octet",
+        (
+            _source(
+                _SMS,
+                "9.2.2",
+                "'The SM-TL comprises the following six PDUs'",
+            ),
+            _source(
+                _SMS,
+                "9.2.3.1",
+                "the TP-MTI in 'bits no 0 and 1 of the first octet of all"
+                " PDUs', '1 1 Reserved', 'If an MS receives a TPDU with a"
+                ' "Reserved" value in the TP-MTI it shall process the message'
+                ' as if it were an "SMS-DELIVER"\'',
+            ),
+        ),
+        (Octets(1, None),),
+        Depth.LENGTH,
+        "the PDU's type and fields are not checked: what a TP-MTI value"
+        " means turns on the direction, which the AVP does not carry, and a"
+        " receiver reads the reserved one as an SMS-DELIVER",
+        example=bytes([0x04, 0x0B, 0x91, 0x21, 0x43, 0x65, 0x87, 0x09, 0xF1]),
+    ),
+    Element(
+        "TS23.003",
+        "5.3",
+        "HSS-ID",
+        "the identity of an HSS for SMS: decimal digits, an MCC, an MNC and an index",
+        (
+            _source(
+                _NUMBERING,
+                "5.3",
+                "'The HSS-ID shall consist of decimal digits (0 through 9) only"
+                " and be composed of the MCC consisting of three digits, the MNC"
+                " consisting of two or three digits and an index consisting of"
+                " one to several digits. The number of digits in the HSS-ID"
+                " shall not exceed 15.'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "no shape of the registry bounds a text's digits",
+    ),
 )
 
 _BY_KEY = {element.key: element for element in REGISTRY}

@@ -1,0 +1,1575 @@
+; Interprets: 3GPP TS 29.338
+;; What TS 29.338's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order: clause 4's common aspects, S6c's procedures, commands and
+;; AVPs (clause 5), SGd's and Gdd's (clause 6) and the result codes (clause
+;; 7). S6c's commands are printed once under 16777312, SGd's once under
+;; 16777313; ALR and ALA serve SGd too, under S6c's application (clause
+;; 6.3.2.2), so clauses 5.2.2.1 and 6.2.3.1 both describe them. A rule
+;; depending on a node, a feature, the subscription, the HSS's data or an
+;; earlier message is `text-only`.
+
+
+;; Clause 4.5, the use of sessions, in each command of S6c and SGd; the
+;; two AVPs RFC 6733 defines are admitted through each body's * [ AVP ].
+; Type: Interpreted Constraints
+; Id: srr-auth-session-state
+; AVP: Auth-Session-State
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: srr-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: srr-no-session-timeout
+; AVP: Session-Timeout
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sra-auth-session-state
+; AVP: Auth-Session-State
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: sra-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sra-no-session-timeout
+; AVP: Session-Timeout
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: alr-auth-session-state
+; AVP: Auth-Session-State
+; Command: Alert-Service-Centre-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: alr-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Alert-Service-Centre-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: alr-no-session-timeout
+; AVP: Session-Timeout
+; Command: Alert-Service-Centre-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ala-auth-session-state
+; AVP: Auth-Session-State
+; Command: Alert-Service-Centre-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: ala-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Alert-Service-Centre-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ala-no-session-timeout
+; AVP: Session-Timeout
+; Command: Alert-Service-Centre-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: rdr-auth-session-state
+; AVP: Auth-Session-State
+; Command: Report-SM-Delivery-Status-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: rdr-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Report-SM-Delivery-Status-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: rdr-no-session-timeout
+; AVP: Session-Timeout
+; Command: Report-SM-Delivery-Status-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: rda-auth-session-state
+; AVP: Auth-Session-State
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: rda-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: rda-no-session-timeout
+; AVP: Session-Timeout
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ofr-auth-session-state
+; AVP: Auth-Session-State
+; Command: MO-Forward-Short-Message-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: ofr-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: MO-Forward-Short-Message-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ofr-no-session-timeout
+; AVP: Session-Timeout
+; Command: MO-Forward-Short-Message-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ofa-auth-session-state
+; AVP: Auth-Session-State
+; Command: MO-Forward-Short-Message-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: ofa-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: MO-Forward-Short-Message-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ofa-no-session-timeout
+; AVP: Session-Timeout
+; Command: MO-Forward-Short-Message-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: tfr-auth-session-state
+; AVP: Auth-Session-State
+; Command: MT-Forward-Short-Message-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: tfr-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: MT-Forward-Short-Message-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: tfr-no-session-timeout
+; AVP: Session-Timeout
+; Command: MT-Forward-Short-Message-Request
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: tfa-auth-session-state
+; AVP: Auth-Session-State
+; Command: MT-Forward-Short-Message-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20]."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: tfa-no-authorization-lifetime
+; AVP: Authorization-Lifetime
+; Command: MT-Forward-Short-Message-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: tfa-no-session-timeout
+; AVP: Session-Timeout
+; Command: MT-Forward-Short-Message-Answer
+; Section: 4.5
+; Versions: 18.2.0..19.3.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+;; Every feature of S6c and SGd is 3GPP's, in each command carrying the
+;; AVP; RFC 6733's Vendor-Id, which this file does not hold, read through a
+;; path into it.
+; Type: Interpreted Constraints
+; Id: srr-supported-features-vendor
+; AVP: Supported-Features
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: sra-supported-features-vendor
+; AVP: Supported-Features
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: alr-supported-features-vendor
+; AVP: Supported-Features
+; Command: Alert-Service-Centre-Request
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: ala-supported-features-vendor
+; AVP: Supported-Features
+; Command: Alert-Service-Centre-Answer
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: rdr-supported-features-vendor
+; AVP: Supported-Features
+; Command: Report-SM-Delivery-Status-Request
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: rda-supported-features-vendor
+; AVP: Supported-Features
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: ofr-supported-features-vendor
+; AVP: Supported-Features
+; Command: MO-Forward-Short-Message-Request
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: ofa-supported-features-vendor
+; AVP: Supported-Features
+; Command: MO-Forward-Short-Message-Answer
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: tfr-supported-features-vendor
+; AVP: Supported-Features
+; Command: MT-Forward-Short-Message-Request
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: tfa-supported-features-vendor
+; AVP: Supported-Features
+; Command: MT-Forward-Short-Message-Answer
+; Section: 4.9
+; Versions: 18.2.0..19.3.0
+"On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+;; Clause 5.2.1.1's tables. Whether the user has an MSISDN the request does
+;; not say; without the MSISDN it carries the IMSI or the HSS-ID.
+; Type: Interpreted Constraints
+; Id: srr-msisdn
+; AVP: MSISDN
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1-1
+; Versions: 18.2.0..19.3.0
+"This information element shall be present when the MSISDN exists and shall contain the MSISDN of the user."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: srr-user-name
+; AVP: User-Name
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1-1
+; Versions: 18.2.0..19.3.0
+"This information element shall be present when the MSISDN does not exist"
+    present-if not MSISDN
+
+
+;; The grouped AVP's members, read through paths from the command, whose
+;; SMSMI-Correlation-ID other commands fill otherwise.
+; Type: Interpreted Constraints
+; Id: srr-smsmi-correlation-id
+; AVP: SMSMI-Correlation-ID
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1-1
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the SIP-URI of the (MSISDN-less) destination user. The SIP-URI of the originating user and the HSS-ID shall be absent from this information element."
+    requires SMSMI-Correlation-ID/Destination-SIP-URI
+    absent-if SMSMI-Correlation-ID/Originating-SIP-URI or SMSMI-Correlation-ID/HSS-ID
+
+
+;; The SMS-GMSC's capability.
+; Type: Interpreted Constraints
+; Id: srr-sm-rp-smea
+; AVP: SM-RP-SMEA
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1-1
+; Versions: 18.2.0..19.3.0
+"This information element shall be present if the SMS-GMSC supports receiving of the two numbers from the HSS."
+    text-only
+
+
+;; Each answer's Result row: the S6c and SGd errors are 3GPP's.
+; Type: Interpreted Constraints
+; Id: sra-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"Experimental-Result AVP shall be used for S6c errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+;; The UNRI is the HSS's, and which node the answer goes to it does not say.
+; Type: Interpreted Constraints
+; Id: sra-user-name
+; AVP: User-Name
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall be present in a successful answer."
+    present-if Result-Code = DIAMETER_SUCCESS
+"This information element shall be present in an answer from the HSS to the IP-SM-GW, if an Absent User result is returned and the UNRI is not set."
+    text-only
+
+
+;; Held to a request without SM-Delivery-Not-Intended, whose answer "may" lack it.
+; Type: Interpreted Constraints
+; Id: sra-serving-node
+; AVP: Serving-Node
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"If the \"SM-Delivery-Not-Intended\" Information Element was present in the request, this information element may be absent. This information element shall be present in a successful answer."
+    present-if Result-Code = DIAMETER_SUCCESS and not request/SM-Delivery-Not-Intended
+
+
+;; Whether the VLR used an LMSI the answer does not show.
+; Type: Interpreted Constraints
+; Id: sra-lmsi
+; AVP: LMSI
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"The HSS shall include the LMSI in a successful response, if the VLR has used the LMSI and if there is the ISDN number of an MSC in the answer."
+    text-only
+
+
+;; Two AVPs' contents differing: no kind says it.
+; Type: Interpreted Constraints
+; Id: sra-additional-serving-node
+; AVP: Additional-Serving-Node
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"It shall not contain information delivered in the Serving Node information element."
+    text-only
+
+
+;; What the HSS stores.
+; Type: Interpreted Constraints
+; Id: sra-user-identifier
+; AVP: User-Identifier
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the MSISDN stored in the HSS, when available."
+    text-only
+
+
+;; What the HSS stores.
+; Type: Interpreted Constraints
+; Id: sra-mme-absent-user-diagnostic-sm
+; AVP: MME-Absent-User-Diagnostic-SM
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the reason of the absence of the user when given by the MME and stored in the HSS"
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sra-msc-absent-user-diagnostic-sm
+; AVP: MSC-Absent-User-Diagnostic-SM
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the reason of the absence of the user when given by the MSC and stored in the HSS"
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sra-sgsn-absent-user-diagnostic-sm
+; AVP: SGSN-Absent-User-Diagnostic-SM
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the reason of the absence of the user when given by the SGSN and stored in the HSS"
+    text-only
+
+
+;; Whether an SMSF is registered, and the SMS-GMSC's support of a feature,
+;; neither message shows.
+; Type: Interpreted Constraints
+; Id: sra-smsf-3gpp-address
+; AVP: SMSF-3GPP-Address
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"If the \"SM-Delivery-Not-Intended\" Information Element was not present in the request, this information element shall contain the identity of the registered SMSF for 3GPP access."
+    text-only
+"NOTE: If the feature \"SMSF-Support\" is not supported by the SMS-GMSC, IP-SM-GW, or SMS Router, the AVPs SMSF-3GPP-Address, SMSF-Non-3GPP-Address, SMSF-3GPP-Absent-User-Diagnostic and SMSF-Non-3GPP-Absent-User-Diagnostic shall not be present."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sra-smsf-non-3gpp-address
+; AVP: SMSF-Non-3GPP-Address
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"If the \"SM-Delivery-Not-Intended\" Information Element was not present in the request, this information element shall contain the identity of the registered SMSF or Non-3GPP access."
+    text-only
+"NOTE: If the feature \"SMSF-Support\" is not supported by the SMS-GMSC, IP-SM-GW, or SMS Router, the AVPs SMSF-3GPP-Address, SMSF-Non-3GPP-Address, SMSF-3GPP-Absent-User-Diagnostic and SMSF-Non-3GPP-Absent-User-Diagnostic shall not be present."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sra-smsf-3gpp-absent-user-diagnostic-sm
+; AVP: SMSF-3GPP-Absent-User-Diagnostic-SM
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the reason of the absence of the user when given by the SMSF registered for 3GPP access."
+    text-only
+"NOTE: If the feature \"SMSF-Support\" is not supported by the SMS-GMSC, IP-SM-GW, or SMS Router, the AVPs SMSF-3GPP-Address, SMSF-Non-3GPP-Address, SMSF-3GPP-Absent-User-Diagnostic and SMSF-Non-3GPP-Absent-User-Diagnostic shall not be present."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sra-smsf-non-3gpp-absent-user-diagnostic-sm
+; AVP: SMSF-Non-3GPP-Absent-User-Diagnostic-SM
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the reason of the absence of the user when given by the SMSF registered for Non-3GPP access."
+    text-only
+"NOTE: If the feature \"SMSF-Support\" is not supported by the SMS-GMSC, IP-SM-GW, or SMS Router, the AVPs SMSF-3GPP-Address, SMSF-Non-3GPP-Address, SMSF-3GPP-Absent-User-Diagnostic and SMSF-Non-3GPP-Absent-User-Diagnostic shall not be present."
+    text-only
+
+
+;; Clause 5.2.1.3, the HSS's answer: the IP-SM-GW number is Serving-Node's,
+;; read where the answer carries one.
+; Type: Interpreted Constraints
+; Id: sra-smsmi-ip-sm-gw-number
+; AVP: Serving-Node
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.3
+; Versions: 18.2.0..19.3.0
+"In the context of MSISDN-less SMS delivery in IMS (see 3GPP TS 23.204 [17]), if the HSS receives an SMSMI correlation ID, the HSS shall return the IP-SM-GW number and shall not forward the request to an IP-SM-GW."
+    excludes request/SMSMI-Correlation-ID and not Serving-Node/IP-SM-GW-Number
+
+
+;; The HSS may carry an SMSF's address in Additional-Serving-Node for an
+;; SMS-GMSC without SMSF-Support (clause 5.3.3.13), whatever the GPRS indicator.
+; Type: Interpreted Constraints
+; Id: sra-only-one-serving-node
+; AVP: Additional-Serving-Node
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.3
+; Versions: 18.2.0..19.3.0
+"if the GPRS indicator is not set, only one serving node address shall be returned according to the SM transfer option where MME is considered as a MSC."
+    text-only
+
+
+;; The local policy and the subscription.
+; Type: Interpreted Constraints
+; Id: sra-mps-priority
+; AVP: MPS-Priority
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.3
+; Versions: 19.3.0
+"If allowed by local policy, the HSS shall handle the request with priority, shall include the MPS-Priority AVP in the Send Routing Info for SM answer"
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: alr-smsmi-correlation-id
+; AVP: SMSMI-Correlation-ID
+; Command: Alert-Service-Centre-Request
+; Section: 5.2.2.1
+; Table: 5.2.2.1-1
+; Versions: 18.2.0..19.3.0
+"This information shall contain the SIP-URI of the destination user which is stored in the Message Waiting Data list in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]). The HSS-ID and the Originating SIP-URI shall be absent."
+    requires SMSMI-Correlation-ID/Destination-SIP-URI
+    absent-if SMSMI-Correlation-ID/HSS-ID or SMSMI-Correlation-ID/Originating-SIP-URI
+
+
+;; What the HSS has available.
+; Type: Interpreted Constraints
+; Id: alr-maximum-ue-availability-time
+; AVP: Maximum-UE-Availability-Time
+; Command: Alert-Service-Centre-Request
+; Section: 5.2.2.1
+; Table: 5.2.2.1-1
+; Versions: 18.2.0..19.3.0
+"This information element shall be included, if available."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: ala-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: Alert-Service-Centre-Answer
+; Section: 5.2.2.1
+; Table: 5.2.2.1-2
+; Versions: 18.2.0..19.3.0
+"The Experimental-Result AVP shall be used for S6c errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: rdr-smsmi-correlation-id
+; AVP: SMSMI-Correlation-ID
+; Command: Report-SM-Delivery-Status-Request
+; Section: 5.2.3.1
+; Table: 5.2.3.1-1
+; Versions: 18.2.0..19.3.0
+"In a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), this information element shall contain the SIP-URI of the (MSISDN-less) destination user. The originating SIP-URI and the HSS-ID shall be absent from this information element."
+    requires SMSMI-Correlation-ID/Destination-SIP-URI
+    absent-if SMSMI-Correlation-ID/Originating-SIP-URI or SMSMI-Correlation-ID/HSS-ID
+
+
+;; The grouped AVP's members, read through paths from the command; the
+;; diagnostic is the SMS-GMSC's when it has one.
+; Type: Interpreted Constraints
+; Id: rdr-sm-delivery-outcome
+; AVP: SM-Delivery-Outcome
+; Command: Report-SM-Delivery-Status-Request
+; Section: 5.2.3.1
+; Table: 5.2.3.1-1
+; Versions: 18.2.0..19.3.0
+"At least one cause shall be present."
+    requires SM-Delivery-Outcome/MSC-SM-Delivery-Outcome or SM-Delivery-Outcome/MME-SM-Delivery-Outcome or SM-Delivery-Outcome/SGSN-SM-Delivery-Outcome or SM-Delivery-Outcome/IP-SM-GW-SM-Delivery-Outcome or SM-Delivery-Outcome/SMSF-3GPP-SM-Delivery-Outcome or SM-Delivery-Outcome/SMSF-Non-3GPP-SM-Delivery-Outcome
+"A cause originated from a MSC and a cause originated from a MME shall not be both present."
+    excludes SM-Delivery-Outcome/MSC-SM-Delivery-Outcome and SM-Delivery-Outcome/MME-SM-Delivery-Outcome
+"When the cause is Absent User, the Absent User Diagnostic, if available, shall be associated to the cause."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: rda-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Versions: 18.2.0..19.3.0
+"The Experimental-Result AVP shall be used for S6c errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+;; The MSISDN the HSS stores, and two values differing, which no kind says.
+; Type: Interpreted Constraints
+; Id: rda-user-identifier
+; AVP: User-Identifier
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the Alert MSISDN of the user if it is different from the MSISDN received in the request."
+    text-only
+
+
+;; Two AVPs' contents differing: no kind says it.
+; Type: Interpreted Constraints
+; Id: rda-additional-serving-node
+; AVP: Additional-Serving-Node
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Versions: 19.3.0
+"It shall not contain information delivered in the Serving Node Alert information element."
+    text-only
+
+
+;; The SMS-GMSC's support of a feature.
+; Type: Interpreted Constraints
+; Id: rda-smsf-3gpp-address
+; AVP: SMSF-3GPP-Address
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Versions: 19.3.0
+"NOTE: If the feature \"SMSF-Support\" is not supported by the SMS-GMSC, IP-SM-GW, or SMS Router, the AVPs SMSF-3GPP-Address and SMSF-Non-3GPP-Address shall not be present."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: rda-smsf-non-3gpp-address
+; AVP: SMSF-Non-3GPP-Address
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Versions: 19.3.0
+"NOTE: If the feature \"SMSF-Support\" is not supported by the SMS-GMSC, IP-SM-GW, or SMS Router, the AVPs SMSF-3GPP-Address and SMSF-Non-3GPP-Address shall not be present."
+    text-only
+
+
+;; Clause 5.3.2.2, in each S6c command, whose ABNF prints the AVP only, its
+;; NOTE says, for agents not complying with RFC 6733.
+; Type: Interpreted Constraints
+; Id: srr-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sra-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: alr-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: Alert-Service-Centre-Request
+; Section: 5.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ala-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: Alert-Service-Centre-Answer
+; Section: 5.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: rdr-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: Report-SM-Delivery-Status-Request
+; Section: 5.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: rda-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sm-rp-smea-address
+; AVP: SM-RP-SMEA
+; Section: 5.3.3.3
+; Versions: 18.2.0..19.3.0
+"It shall be formatted according to the formatting rules of the address fields described in 3GPP TS 23.040 [3]."
+    encoding element TS23.040 9.1.2.5 "Address fields"
+
+
+; Type: Interpreted Constraints
+; Id: srr-flags-undefined-bits
+; AVP: SRR-Flags
+; Section: 5.3.3.4
+; Table: 5.3.3.4/1
+; Versions: 18.2.0..19.3.0
+"NOTE 1: Bits not defined in this table shall be cleared by the sending entity and discarded by the receiving entity."
+    bits only 0 1 2
+
+
+;; The combinations clause 5.3.3.6 allows, read member by member: every one
+;; holds one of the four numbers, and each member only beside the others of
+;; its combination. Combination b's condition is the HSS's, which the AVP
+;; does not show, so its members are allowed whatever it.
+; Type: Interpreted Constraints
+; Id: serving-node-number
+; AVP: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"a) SGSN-Number"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+"d) MSC-Number"
+"f) IP-SM-GW-Number"
+    members at-least-one SGSN-Number MME-Number-for-MT-SMS MSC-Number IP-SM-GW-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-sgsn-number
+; AVP: SGSN-Number
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"a) SGSN-Number"
+"b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])"
+    excludes MME-Name or MME-Realm or MME-Number-for-MT-SMS or MSC-Number or IP-SM-GW-Number or IP-SM-GW-Name or IP-SM-GW-Realm or IP-SM-GW-SBI-Support-Indicator
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-sgsn-name
+; AVP: SGSN-Name
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])"
+    requires SGSN-Realm and SGSN-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-sgsn-realm
+; AVP: SGSN-Realm
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9])"
+    requires SGSN-Name and SGSN-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-mme-name
+; AVP: MME-Name
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+"e) MSC-Number & MME-Name & MME-Realm"
+    requires MME-Realm and MME-Number-for-MT-SMS or MME-Realm and MSC-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-mme-realm
+; AVP: MME-Realm
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+"e) MSC-Number & MME-Name & MME-Realm"
+    requires MME-Name
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-mme-number
+; AVP: MME-Number-for-MT-SMS
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+    requires MME-Name and MME-Realm
+    excludes MSC-Number or IP-SM-GW-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-msc-number
+; AVP: MSC-Number
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"d) MSC-Number"
+"e) MSC-Number & MME-Name & MME-Realm"
+    excludes IP-SM-GW-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-ip-sm-gw-name
+; AVP: IP-SM-GW-Name
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"g) IP-SM-GW-Number & IP-SM-GW-Name"
+"i) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-SBI-Support-Indicator"
+    requires IP-SM-GW-Number
+
+
+; Type: Interpreted Constraints
+; Id: serving-node-ip-sm-gw-sbi
+; AVP: IP-SM-GW-SBI-Support-Indicator
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"h) IP-SM-GW-Number & IP-SM-GW-SBI-Support-Indicator"
+"i) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-SBI-Support-Indicator"
+    requires IP-SM-GW-Number
+
+
+;; The body prints IP-SM-GW-Realm, which no combination names: whether the
+;; list leaves it out or the body adds it the clause does not say.
+; Type: Interpreted Constraints
+; Id: serving-node-ip-sm-gw-realm
+; AVP: IP-SM-GW-Realm
+; Within: Serving-Node
+; Section: 5.3.3.6
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"f) IP-SM-GW-Number"
+"g) IP-SM-GW-Number & IP-SM-GW-Name"
+"h) IP-SM-GW-Number & IP-SM-GW-SBI-Support-Indicator"
+"i) IP-SM-GW-Number & IP-SM-GW-Name & IP-SM-GW-SBI-Support-Indicator"
+    text-only
+
+
+;; As Serving-Node's, its five combinations.
+; Type: Interpreted Constraints
+; Id: additional-serving-node-number
+; AVP: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"a) SGSN-Number"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+"d) MSC-Number"
+    members at-least-one SGSN-Number MME-Number-for-MT-SMS MSC-Number
+
+
+; Type: Interpreted Constraints
+; Id: additional-serving-node-sgsn-number
+; AVP: SGSN-Number
+; Within: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"a) SGSN-Number"
+"b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9]"
+    excludes MME-Name or MME-Realm or MME-Number-for-MT-SMS or MSC-Number
+
+
+; Type: Interpreted Constraints
+; Id: additional-serving-node-sgsn-name
+; AVP: SGSN-Name
+; Within: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9]"
+    requires SGSN-Realm and SGSN-Number
+
+
+; Type: Interpreted Constraints
+; Id: additional-serving-node-sgsn-realm
+; AVP: SGSN-Realm
+; Within: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"b) SGSN-Name & SGSN-Realm & SGSN-Number if the HSS supports the \"Gdd in SGSN\" feature and has received the \"Gdd in SGSN\" indication over S6a or Gr interface from the SGSN (cf. 3GPP TS 29.272 [4] and 3GPP TS 29.002 [9]"
+    requires SGSN-Name and SGSN-Number
+
+
+; Type: Interpreted Constraints
+; Id: additional-serving-node-mme-name
+; AVP: MME-Name
+; Within: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+"e) MSC-Number & MME-Name & MME-Realm"
+    requires MME-Realm and MME-Number-for-MT-SMS or MME-Realm and MSC-Number
+
+
+; Type: Interpreted Constraints
+; Id: additional-serving-node-mme-realm
+; AVP: MME-Realm
+; Within: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+"e) MSC-Number & MME-Name & MME-Realm"
+    requires MME-Name
+
+
+; Type: Interpreted Constraints
+; Id: additional-serving-node-mme-number
+; AVP: MME-Number-for-MT-SMS
+; Within: Additional-Serving-Node
+; Section: 5.3.3.7
+; Versions: 18.2.0..19.3.0
+"The following combinations are allowed:"
+"c) MME-Name & MME-Realm & MME-Number-for-MT-SMS"
+    requires MME-Name and MME-Realm
+    excludes MSC-Number
+
+
+;; Release 19's table, bits 0 to 5, its bit 5 MNR5GN3G-Set's row quoted.
+; Type: Interpreted Constraints
+; Id: mwd-status-undefined-bits
+; AVP: MWD-Status
+; Section: 5.3.3.8
+; Table: 5.3.3.8/1
+; Versions: 19.3.0
+"This bit, when set, shall indicate that the HSS/UDM is waiting for a reachability notification / registration from 5G non-3GPP serving nodes"
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME."
+    bits only 0 1 2 3 4 5
+
+
+;; Release 18's table, V18.2.0, bits 0 to 4, its bit 4 MNR5G-Set waiting for
+;; every 5G serving node.
+; Type: Interpreted Constraints
+; Id: mwd-status-undefined-bits-rel18
+; AVP: MWD-Status
+; Section: 5.3.3.8
+; Table: 5.3.3.8/1
+; Versions: 18.2.0
+"This bit, when set, shall indicate that the HSS/UDM is waiting for a reachability notification / registration from 5G serving nodes."
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME."
+    bits only 0 1 2 3 4
+
+
+; Type: Interpreted Constraints
+; Id: mme-absent-user-diagnostic-sm-values
+; AVP: MME-Absent-User-Diagnostic-SM
+; Section: 5.3.3.9
+; Versions: 18.2.0..19.3.0
+"The values are defined in 3GPP TS 23.040 [3] clause 3.3.2."
+    encoding element TS23.040 3.3.2 "Reason for absence"
+
+
+; Type: Interpreted Constraints
+; Id: msc-absent-user-diagnostic-sm-values
+; AVP: MSC-Absent-User-Diagnostic-SM
+; Section: 5.3.3.10
+; Versions: 18.2.0..19.3.0
+"The values are defined in 3GPP TS 23.040 [3] clause 3.3.2."
+    encoding element TS23.040 3.3.2 "Reason for absence"
+
+
+; Type: Interpreted Constraints
+; Id: sgsn-absent-user-diagnostic-sm-values
+; AVP: SGSN-Absent-User-Diagnostic-SM
+; Section: 5.3.3.11
+; Versions: 18.2.0..19.3.0
+"The values are defined in 3GPP TS 23.040 [3] clause 3.3.2."
+    encoding element TS23.040 3.3.2 "Reason for absence"
+
+
+;; S6c's clause and SGd's (6.3.3.8) alike, so the reading holds wherever the
+;; document reads the AVP.
+; Type: Interpreted Constraints
+; Id: s6c-feature-list-id
+; AVP: Feature-List-ID
+; Section: 5.3.3.12
+; Versions: 18.2.0..19.3.0
+"For this release, the Feature-List-ID AVP value shall be set to 1."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: absent-user-diagnostic-sm-values
+; AVP: Absent-User-Diagnostic-SM
+; Section: 5.3.3.20
+; Versions: 18.2.0..19.3.0
+"The values are defined in 3GPP TS 23.040 [3] clause 3.3.2."
+    encoding element TS23.040 3.3.2 "Reason for absence"
+
+
+; Type: Interpreted Constraints
+; Id: rdr-flags-undefined-bits
+; AVP: RDR-Flags
+; Section: 5.3.3.21
+; Table: 5.3.3.21/1
+; Versions: 18.2.0..19.3.0
+"NOTE 1: Bits not defined in this table shall be cleared by the sending entity and discarded by the receiving entity."
+    bits only 0
+
+
+; Type: Interpreted Constraints
+; Id: sms-gmsc-alert-event-undefined-bits
+; AVP: SMS-GMSC-Alert-Event
+; Section: 5.3.3.23
+; Table: 5.3.3.23/1
+; Versions: 18.2.0..19.3.0
+"NOTE 1: Bits not defined in this table shall be cleared by the sending entity and discarded by the receiving entity."
+    bits only 0 1
+
+
+; Type: Interpreted Constraints
+; Id: smsf-3gpp-absent-user-diagnostic-sm-values
+; AVP: SMSF-3GPP-Absent-User-Diagnostic-SM
+; Section: 5.3.3.25
+; Versions: 18.2.0..19.3.0
+"The values are defined in 3GPP TS 23.040 [3] clause 3.3.2."
+    encoding element TS23.040 3.3.2 "Reason for absence"
+
+
+; Type: Interpreted Constraints
+; Id: smsf-non-3gpp-absent-user-diagnostic-sm-values
+; AVP: SMSF-Non-3GPP-Absent-User-Diagnostic-SM
+; Section: 5.3.3.26
+; Versions: 18.2.0..19.3.0
+"The values are defined in 3GPP TS 23.040 [3] clause 3.3.2."
+    encoding element TS23.040 3.3.2 "Reason for absence"
+
+
+; Type: Interpreted Constraints
+; Id: smsf-3gpp-number-tbcd
+; AVP: SMSF-3GPP-Number
+; Section: 5.3.3.29
+; Versions: 18.2.0..19.3.0
+"This AVP contains an SMSF-3GPP-Number in international number format as described in ITU-T Rec E.164 [13] and shall be encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints
+; Id: smsf-non-3gpp-number-tbcd
+; AVP: SMSF-Non-3GPP-Number
+; Section: 5.3.3.30
+; Versions: 18.2.0..19.3.0
+"This AVP contains an SMSF-Non-3GPP-Number in international number format as described in ITU-T Rec E.164 [13] and shall be encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+;; Clause 6.2.1.1's tables.
+; Type: Interpreted Constraints
+; Id: ofr-smsmi-correlation-id
+; AVP: SMSMI-Correlation-ID
+; Command: MO-Forward-Short-Message-Request
+; Section: 6.2.1.1
+; Table: 6.2.1.1/1
+; Versions: 18.2.0..19.3.0
+"When present, this information element shall contain an HSS-ID identifying the destination user's HSS, a Destination SIP-URI identifying the MSISDN-less destination user, and an Originating SIP-URI identifying the MSISDN-less originating user."
+    requires SMSMI-Correlation-ID/HSS-ID and SMSMI-Correlation-ID/Destination-SIP-URI and SMSMI-Correlation-ID/Originating-SIP-URI
+
+
+; Type: Interpreted Constraints
+; Id: ofr-sm-delivery-outcome
+; AVP: SM-Delivery-Outcome
+; Command: MO-Forward-Short-Message-Request
+; Section: 6.2.1.1
+; Table: 6.2.1.1/1
+; Versions: 18.2.0..19.3.0
+"This information element shall be present if the SMSMI Correlation ID is present and shall contain the IP-SM-GW SM Delivery Outcome with the causes for setting the message waiting data in the HSS."
+    present-if SMSMI-Correlation-ID
+    requires SM-Delivery-Outcome/IP-SM-GW-SM-Delivery-Outcome
+
+
+; Type: Interpreted Constraints
+; Id: ofa-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: MO-Forward-Short-Message-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Versions: 18.2.0..19.3.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+;; The four causes are clause 6.3.3.6's UNKNOWN_SERVICE_CENTRE (3),
+;; SC-CONGESTION (4), INVALID_SME-ADDRESS (5) and USER_NOT_SC-USER (6), read
+;; through a path from the command.
+; Type: Interpreted Constraints
+; Id: ofa-sm-delivery-failure-cause
+; AVP: SM-Delivery-Failure-Cause
+; Command: MO-Forward-Short-Message-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Versions: 18.2.0..19.3.0
+"If the Experimental-Result-Code is set to DIAMETER_ERROR_SM_DELIVERY_FAILURE, this information element shall be present and indicate one of the following:"
+"unknown Service Centre/MTC-IWF address"
+"Service Centre/MTC-IWF congestion"
+"invalid Short Message Entity address"
+"user not Service Centre/SCS-AS user"
+    present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE
+    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = UNKNOWN_SERVICE_CENTRE or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = SC-CONGESTION or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = INVALID_SME-ADDRESS or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = USER_NOT_SC-USER
+
+
+;; The interface the answer crosses, which it does not carry.
+; Type: Interpreted Constraints
+; Id: ofa-external-identifier
+; AVP: External-Identifier
+; Command: MO-Forward-Short-Message-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Versions: 18.2.0..19.3.0
+"Shall be present when the answer is sent over T4 to the SMS-IWMSC for charging."
+    text-only
+
+
+;; Clause 6.2.2.1's tables.
+; Type: Interpreted Constraints
+; Id: tfr-smsmi-correlation-id
+; AVP: SMSMI-Correlation-ID
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Versions: 18.2.0..19.3.0
+"When present, this information element shall contain the Destination SIP-URI identifying the (MSISDN-less) destination user and the Originating SIP-URI identifying the (MSISDN-less) originating user. The HSS-ID shall be absent from this information element."
+    requires SMSMI-Correlation-ID/Destination-SIP-URI and SMSMI-Correlation-ID/Originating-SIP-URI
+    absent-if SMSMI-Correlation-ID/HSS-ID
+
+
+;; The node the request is sent to, which it does not carry.
+; Type: Interpreted Constraints
+; Id: tfr-mme-number-for-mt-sms
+; AVP: MME-Number-for-MT-SMS
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Versions: 18.2.0..19.3.0
+"This Information Element contains the ISDN number of the MME (see 3GPP TS 23.003 [3]) and shall be present when the request is sent to a MME."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: tfr-sgsn-number
+; AVP: SGSN-Number
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Versions: 18.2.0..19.3.0
+"This Information Element contains the ISDN number of the SGSN (see 3GPP TS 23.003 [3]) and shall be present when the request is sent to a SGSN."
+    text-only
+
+
+;; A presence with no condition, of an AVP the ABNF prints optional: no
+;; predicate states it.
+; Type: Interpreted Constraints
+; Id: tfr-sm-delivery-timer
+; AVP: SM-Delivery-Timer
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Versions: 18.2.0..19.3.0
+"This information element should be included."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: tfr-sm-delivery-start-time
+; AVP: SM-Delivery-Start-Time
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Versions: 18.2.0..19.3.0
+"This information element should be included."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: tfr-sms-gmsc-address
+; AVP: SMS-GMSC-Address
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Versions: 18.2.0..19.3.0
+"This IE shall be present if the Maximum Retransmission Time IE is present in the message."
+    present-if Maximum-Retransmission-Time
+
+
+; Type: Interpreted Constraints
+; Id: tfa-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2.1/2
+; Versions: 18.2.0..19.3.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+;; The three causes are clause 6.3.3.6's MEMORY_CAPACITY_EXCEEDED (0),
+;; EQUIPMENT_PROTOCOL_ERROR (1), MAP's equipmentProtocolError the UE error is
+;; (clause 6.3.3.6's NOTE), and EQUIPMENT_NOT_SM-EQUIPPED (2).
+; Type: Interpreted Constraints
+; Id: tfa-sm-delivery-failure-cause
+; AVP: SM-Delivery-Failure-Cause
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2.1/2
+; Versions: 18.2.0..19.3.0
+"If Experimental-Result-Code is set to DIAMETER_ERROR_SM_DELIVERY_FAILURE, this information element shall be present and indicate one of the following:"
+"memory capacity exceeded in the mobile equipment"
+"UE error"
+"mobile equipment not equipped to support the mobile terminated short message service"
+    present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE
+    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = MEMORY_CAPACITY_EXCEEDED or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = EQUIPMENT_PROTOCOL_ERROR or SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause = EQUIPMENT_NOT_SM-EQUIPPED
+
+
+;; Two times compared: no kind says it.
+; Type: Interpreted Constraints
+; Id: tfa-requested-retransmission-time
+; AVP: Requested-Retransmission-Time
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2.1/2
+; Versions: 18.2.0..19.3.0
+"This information element may only be present if the Experimental-Result-Code is set to DIAMETER_ERROR_ABSENT_USER and if the Maximum Retransmission Time information element is present in the MT Forward Short Message Request."
+    requires Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER and request/Maximum-Retransmission-Time
+"The Requested Retransmission Time shall not exceed the Maximum Retransmission Time received from the SMS-GMSC."
+    text-only
+
+
+;; Whether the SMS Router sends the answer it does not carry; TS 29.336's
+;; grouped AVP's User-Name read through a path from the command.
+; Type: Interpreted Constraints
+; Id: tfa-user-identifier
+; AVP: User-Identifier
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2.1/2
+; Versions: 18.2.0..19.3.0
+"This IE shall be present in the message from the SMS Router to the SMS-GMSC, if the Requested Retransmission Time IE is present in the message."
+    text-only
+"When present, this information shall contain an MT Correlation ID (encoded in the User-Name AVP)."
+    requires User-Identifier/User-Name
+
+
+;; Clause 6.2.3.1's tables. What the node has available.
+; Type: Interpreted Constraints
+; Id: alr-new-serving-node
+; AVP: Serving-Node
+; Command: Alert-Service-Centre-Request
+; Section: 6.2.3.1
+; Table: 6.2.3.1-1
+; Versions: 18.2.0..19.3.0
+"This IE shall be present if available and if the SMS-GMSC Alert Event indicates that the UE has moved under the coverage of another MME or SGSN."
+    text-only
+
+
+;; Clause 6.3.2.2, in each SGd command; ALR and ALA are S6c's (5.3.2.2).
+; Type: Interpreted Constraints
+; Id: ofr-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: MO-Forward-Short-Message-Request
+; Section: 6.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ofa-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: MO-Forward-Short-Message-Answer
+; Section: 6.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: tfr-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: tfa-no-vendor-specific-application-id
+; AVP: Vendor-Specific-Application-Id
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.3.2.2
+; Versions: 18.2.0..19.3.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: sc-address-tbcd
+; AVP: SC-Address
+; Section: 6.3.3.2
+; Versions: 18.2.0..19.3.0
+"The SC-Address AVP is of type OctetString and it shall contain the E.164 number of the SMS-SC or MTC-IWF, in international number format as described in ITU-T Recommendation E.164 [13] and encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints
+; Id: sm-rp-ui-tpdu
+; AVP: SM-RP-UI
+; Section: 6.3.3.3
+; Versions: 18.2.0..19.3.0
+"The SM-RP-UI is of type OctetString and it shall contain a short message transfer protocol data unit (TPDU) which is defined in 3GPP TS 23.040 [3] and represents the user data field carried by the short message service relay sub-layer protocol."
+    encoding element TS23.040 9.2.2 "TPDU"
+"Its maximum length is of 200 octets."
+    length *..200 octets
+
+
+; Type: Interpreted Constraints
+; Id: tfr-flags-undefined-bits
+; AVP: TFR-Flags
+; Section: 6.3.3.4
+; Table: 6.3.3.4/1
+; Versions: 18.2.0..19.3.0
+"NOTE 1: Bits not defined in this table shall be cleared by the sending entity and discarded by the receiving entity."
+    bits only 0
+
+
+; Type: Interpreted Constraints
+; Id: sgd-feature-list-id
+; AVP: Feature-List-ID
+; Section: 6.3.3.8
+; Versions: 18.2.0..19.3.0
+"For this release, the Feature-List-ID AVP value shall be set to 1."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: hss-id-composition
+; AVP: HSS-ID
+; Section: 6.3.3.14
+; Versions: 18.2.0..19.3.0
+"The definition and the composition of the HSS-ID are specified in 3GPP TS 23.003 [16]."
+    encoding element TS23.003 5.3 "HSS-ID"
+
+
+; Type: Interpreted Constraints
+; Id: sms-gmsc-address-tbcd
+; AVP: SMS-GMSC-Address
+; Section: 6.3.3.19
+; Versions: 18.2.0..19.3.0
+"The SMS-GMSC-Address AVP is of type OctetString and it shall contain the E.164 number of the SMS-GMSC or SMS Router, in international number format as described in ITU-T Recommendation E.164 [13] and encoded as a TBCD-string."
+"This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+;; Clause 7.3.1, in each answer, the ten codes clause 7.3 defines.
+; Type: Interpreted Constraints
+; Id: sra-result-code-absent-with-experimental-result
+; AVP: Result-Code
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 7.3.1
+; Versions: 18.2.0..19.3.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+
+
+; Type: Interpreted Constraints
+; Id: ala-result-code-absent-with-experimental-result
+; AVP: Result-Code
+; Command: Alert-Service-Centre-Answer
+; Section: 7.3.1
+; Versions: 18.2.0..19.3.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+
+
+; Type: Interpreted Constraints
+; Id: rda-result-code-absent-with-experimental-result
+; AVP: Result-Code
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 7.3.1
+; Versions: 18.2.0..19.3.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+
+
+; Type: Interpreted Constraints
+; Id: ofa-result-code-absent-with-experimental-result
+; AVP: Result-Code
+; Command: MO-Forward-Short-Message-Answer
+; Section: 7.3.1
+; Versions: 18.2.0..19.3.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
+
+
+; Type: Interpreted Constraints
+; Id: tfa-result-code-absent-with-experimental-result
+; AVP: Result-Code
+; Command: MT-Forward-Short-Message-Answer
+; Section: 7.3.1
+; Versions: 18.2.0..19.3.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_UNKNOWN or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ABSENT_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_USER_BUSY_FOR_MT_SMS or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FACILITY_NOT_SUPPORTED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_USER or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ILLEGAL_EQUIPMENT or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_NOT_SUBSCRIBED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SERVICE_BARRED or Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_MWD_LIST_FULL
