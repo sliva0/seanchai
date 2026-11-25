@@ -2557,6 +2557,260 @@
    ],
    "version": "19.0.0"
   },
+  "29173-i00": {
+   "edits": {
+    "TS29.173.dadx#additional-serving-node-mme-lcs-capabilities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If the HSS registered an MME, the HSS shall not indicate any LCS capability value to the GMLC (i.e., the LCS-Capabilities-Set AVP shall be absent over SLh when the serving node is an MME); in this case, the GMLC shall assume that the MME supports LCS Capability Set 5.'"
+    },
+    "TS29.173.dadx#feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.10: 'For this release, the Feature-List-ID AVP value shall be set to 1.'"
+    },
+    "TS29.173.dadx#gmlc-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.7: 'The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of H-GMLC or the V-GMLC associated with the serving node.'"
+    },
+    "TS29.173.dadx#lmsi-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.2: 'The LMSI AVP is of type OctetString and it shall contain the Local Mobile Station Identity (LMSI) allocated by the VLR, as defined in 3GPP TS 23.003 [10].'"
+    },
+    "TS29.173.dadx#msc-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.5: 'The MSC-Number AVP is of type OctetString and it shall contain the ISDN number of the serving MSC or MSC server in international number format as described in ITU-T Rec E.164 [15] and shall be encoded as a TBCD-string.'"
+    },
+    "TS29.173.dadx#ppr-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.9: 'The PPR-Address AVP is of type Address and contains the IPv4 or IPv6 address of the Privacy Profile Register for the targeted user.'"
+    },
+    "TS29.173.dadx#ria-additional-serving-node": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE may be present if Result- Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [17].'"
+    },
+    "TS29.173.dadx#ria-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#ria-dummy-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If MSISDN was not provided in the Send Routing Info for LCS request and the subscription is MSISDN-less, the HSS shall return the dummy MSISDN value (see 3GPP TS 23.003 [10]).'"
+    },
+    "TS29.173.dadx#ria-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'Experimental-Result AVP shall be used for SLh errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.173.dadx#ria-flags-optimized-lcs": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If the UE is served by the MME and SGSN parts of the same combined MME/SGSN (see 3GPP TS 29.272 [12] subclause 5.2.2.1.1 for how the HSS determines if the UE is served by the combined MME/SGSN) and if this combined MME/SGSN has indicated the support for optimized LCS procedure (via the Supported-Feature AVP as defined in 3GPP TS 29.272 [12] subclause 7.3.10) and if HSS supports this optimized LCS procedure, then the HSS shall set the \"Combined-MME/SGSN-Supporting-Optimized-LCS-Proc\" bit of the RIA-Flags.'"
+    },
+    "TS29.173.dadx#ria-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.4.15/1: 'NOTE1: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving GMLC.'"
+    },
+    "TS29.173.dadx#ria-gmlc-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE should be present if the Result-Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present if Result-Code is DIAMETER_SUCCESS and the MSISDN is absent.'"
+    },
+    "TS29.173.dadx#ria-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present if Result-Code is DIAMETER_SUCCESS and the IMSI is absent.'"
+    },
+    "TS29.173.dadx#ria-ppr-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE should be present if available in the HSS and the Result-Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.173.dadx#ria-serving-node": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present if the Result- Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#ria-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.173.dadx#rir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [17].'"
+    },
+    "TS29.173.dadx#rir-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#rir-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'This IE shall be present if the MSISDN is absent.'"
+    },
+    "TS29.173.dadx#rir-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'This IE shall be present if the IMSI is absent.'"
+    },
+    "TS29.173.dadx#rir-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#rir-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.173.dadx#serving-node-mme-lcs-capabilities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If the HSS registered an MME, the HSS shall not indicate any LCS capability value to the GMLC (i.e., the LCS-Capabilities-Set AVP shall be absent over SLh when the serving node is an MME); in this case, the GMLC shall assume that the MME supports LCS Capability Set 5.'; 'Regarding the LCS capabilities of the serving nodes, if the HSS registered an SGSN via the S6d reference point (i.e., the registered serving node is an S4-SGSN), the HSS shall set the LCS-Capabilities-Set value to indicate support of Capability Set 5 (i.e., LCS release 7 or later version).'"
+    },
+    "TS29.173.dadx#serving-node-sgsn-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'The HSS shall include the Diameter Identity of the SGSN (i.e. SGSN-Name and SGSN-Realm), within the Serving-Node AVP or within an Additional-Serving-Node AVP, if and only if the HSS has received an indication that the Lgd interface is supported by the SGSN (see 3GPP TS 29.272 [12]).'"
+    },
+    "TS29.173.dadx#serving-node-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'The HSS shall include the SGSN Number, within the Serving-Node AVP or Additional Serving-Node AVP, except if the HSS has received an indication that the Lg interface is not supported by the SGSN (see 3GPP TS 29.272 [12]).'"
+    }
+   },
+   "reference": "TS29.173",
+   "renames": [],
+   "version": "18.0.0"
+  },
+  "29173-j00": {
+   "edits": {
+    "TS29.173.dadx#additional-serving-node-mme-lcs-capabilities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If the HSS registered an MME, the HSS shall not indicate any LCS capability value to the GMLC (i.e., the LCS-Capabilities-Set AVP shall be absent over SLh when the serving node is an MME); in this case, the GMLC shall assume that the MME supports LCS Capability Set 5.'"
+    },
+    "TS29.173.dadx#feature-list-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.10: 'For this release, the Feature-List-ID AVP value shall be set to 1.'"
+    },
+    "TS29.173.dadx#gmlc-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.7: 'The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of H-GMLC or the V-GMLC associated with the serving node.'"
+    },
+    "TS29.173.dadx#lmsi-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.2: 'The LMSI AVP is of type OctetString and it shall contain the Local Mobile Station Identity (LMSI) allocated by the VLR, as defined in 3GPP TS 23.003 [10].'"
+    },
+    "TS29.173.dadx#msc-number-e164": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.5: 'The MSC-Number AVP is of type OctetString and it shall contain the ISDN number of the serving MSC or MSC server in international number format as described in ITU-T Rec E.164 [15] and shall be encoded as a TBCD-string.'"
+    },
+    "TS29.173.dadx#ppr-address-ip": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4.9: 'The PPR-Address AVP is of type Address and contains the IPv4 or IPv6 address of the Privacy Profile Register for the targeted user.'"
+    },
+    "TS29.173.dadx#ria-additional-serving-node": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE may be present if Result- Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [17].'"
+    },
+    "TS29.173.dadx#ria-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#ria-dummy-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If MSISDN was not provided in the Send Routing Info for LCS request and the subscription is MSISDN-less, the HSS shall return the dummy MSISDN value (see 3GPP TS 23.003 [10]).'"
+    },
+    "TS29.173.dadx#ria-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'Experimental-Result AVP shall be used for SLh errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.173.dadx#ria-flags-optimized-lcs": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If the UE is served by the MME and SGSN parts of the same combined MME/SGSN (see 3GPP TS 29.272 [12] subclause 5.2.2.1.1 for how the HSS determines if the UE is served by the combined MME/SGSN) and if this combined MME/SGSN has indicated the support for optimized LCS procedure (via the Supported-Feature AVP as defined in 3GPP TS 29.272 [12] subclause 7.3.10) and if HSS supports this optimized LCS procedure, then the HSS shall set the \"Combined-MME/SGSN-Supporting-Optimized-LCS-Proc\" bit of the RIA-Flags.'"
+    },
+    "TS29.173.dadx#ria-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.4.15/1: 'NOTE1: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving GMLC.'"
+    },
+    "TS29.173.dadx#ria-gmlc-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE should be present if the Result-Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present if Result-Code is DIAMETER_SUCCESS and the MSISDN is absent.'"
+    },
+    "TS29.173.dadx#ria-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present if Result-Code is DIAMETER_SUCCESS and the IMSI is absent.'"
+    },
+    "TS29.173.dadx#ria-ppr-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE should be present if available in the HSS and the Result-Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-result-code-absent-with-experimental-result": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.3.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.173.dadx#ria-serving-node": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/2: 'This IE shall be present if the Result- Code is DIAMETER_SUCCESS; otherwise it shall be absent.'"
+    },
+    "TS29.173.dadx#ria-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#ria-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.173.dadx#rir-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [17].'"
+    },
+    "TS29.173.dadx#rir-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#rir-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'This IE shall be present if the MSISDN is absent.'"
+    },
+    "TS29.173.dadx#rir-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1/1: 'This IE shall be present if the IMSI is absent.'"
+    },
+    "TS29.173.dadx#rir-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.173.dadx#rir-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+    },
+    "TS29.173.dadx#serving-node-mme-lcs-capabilities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'If the HSS registered an MME, the HSS shall not indicate any LCS capability value to the GMLC (i.e., the LCS-Capabilities-Set AVP shall be absent over SLh when the serving node is an MME); in this case, the GMLC shall assume that the MME supports LCS Capability Set 5.'; 'Regarding the LCS capabilities of the serving nodes, if the HSS registered an SGSN via the S6d reference point (i.e., the registered serving node is an S4-SGSN), the HSS shall set the LCS-Capabilities-Set value to indicate support of Capability Set 5 (i.e., LCS release 7 or later version).'"
+    },
+    "TS29.173.dadx#serving-node-sgsn-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'The HSS shall include the Diameter Identity of the SGSN (i.e. SGSN-Name and SGSN-Realm), within the Serving-Node AVP or within an Additional-Serving-Node AVP, if and only if the HSS has received an indication that the Lgd interface is supported by the SGSN (see 3GPP TS 29.272 [12]).'"
+    },
+    "TS29.173.dadx#serving-node-sgsn-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.2: 'The HSS shall include the SGSN Number, within the Serving-Node AVP or Additional Serving-Node AVP, except if the HSS has received an indication that the Lg interface is not supported by the SGSN (see 3GPP TS 29.272 [12]).'"
+    }
+   },
+   "reference": "TS29.173",
+   "renames": [],
+   "version": "19.0.0"
+  },
   "29209-680": {
    "edits": {
     "TS29.209.py#asa-redirect-host": {

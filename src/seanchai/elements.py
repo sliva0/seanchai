@@ -1887,6 +1887,25 @@ REGISTRY: tuple[Element, ...] = (
         valid="a 32-bit charging identifier: every value of the Unsigned32",
     ),
     Element(
+        "TS23.003",
+        "2.5",
+        "LMSI",
+        "a Local Mobile Station Identity a VLR allocates",
+        (
+            _source(
+                _NUMBERING,
+                "2.5",
+                "'The LMSI consists of 4 octets and may be allocated by the VLR."
+                " The VLR shall not allocate the value zero.'",
+            ),
+        ),
+        (Octets(4, 4), Field("LMSI", 1, 8, 1, ((1, 0xFFFFFFFF),), last=4)),
+        Depth.FULL,
+        "any value but zero, which the clause reserves for an LMSI the VLR is"
+        " not to interpret",
+        example=b"\x00\x00\x12\x34",
+    ),
+    Element(
         "TS29.274",
         "8.100",
         "TWAN Identifier",

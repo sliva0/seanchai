@@ -401,6 +401,12 @@ TS 29.061's 6 name 6 entries, of which 3 check something:
 | Additional-MBMS-Trace-Info | TS 29.060 7.7.68 Additional MBMS Trace Info | TS 29.060 V19.0.0 7.7.68 | 8 octets | length | the fields are not placed: figure 7.7.68.1 numbers Trace Reference2 octets 4 to 6 and the Trace Recording Session Reference no octets of its own, so where each field sits is not certain; the Trace Activity Control's reserved values would not be refused, since the figure does not say they are not sent |
 | MBMS-Time-To-Data-Transfer | TS 48.018 11.3.92 Time to MBMS Data Transfer | TS 48.018 V19.0.0 11.3.92 | 1 octet | full | every value of the octet is a time, 1 to 256 seconds |
 
+TS 29.173's 1 names 1 entry, which checks something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| LMSI | TS 23.003 2.5 LMSI | TS 23.003 V19.8.0 2.5 | 4 octets; octets 1 to 4 (LMSI) 0x00000001 to 0xffffffff | full | any value but zero, which the clause reserves for an LMSI the VLR is not to interpret |
+
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
@@ -1564,6 +1570,76 @@ header's Application-ID of clauses 5.1 and A.6.1, which no rule reads; the
 capabilities exchange of clauses 5.2 and A.6.2, RFC 6733's commands'; and
 the procedures' result codes (A.4.2's DIAMETER_ERROR_SCEF_REFERENCE_ID_
 UNKNOWN), which are what a node answers with.
+
+## TS 29.173
+
+TS 29.173 V19.0.0 is read completely for SLh: the information-element
+tables of clause 5.2.1.1, with the procedure clause 5.2.1.2 for what it
+states of one message, clause 6.1's common aspects, 6.2.2's commands, 6.3's
+result codes and every AVP clause of 6.4. Release 18's copy, V18.0.0,
+prints every sentence read and holds all 30 blocks. RIR and RIA print once
+under 16777291. The document defines Serving-Node and
+Additional-Serving-Node, which TS 29.336 and TS 29.338 re-use with bodies of
+their own: a block within them reaches those prints too
+([Precedence](#precedence)), but for a member a document reads itself, and
+no print but this one's holds an LCS-Capabilities-Sets.
+
+| | |
+|---|---|
+| AVP clauses (clause 6.4, not its General clause) | 14 |
+| with something to declare | 6, in 6 blocks |
+| with nothing to declare | 8 |
+| information-element C rows | 9, of which 8 state a condition with shall, the LMSI's with should |
+| the tables' blocks (clause 5.2.1.1), the answer's Result among them | 9 |
+| procedure clause 5.2.1.2 | 6 blocks |
+| clause 6.1.4's sessions, 6.2.2's commands, 6.3.3's result codes | 6, 2, 1 blocks |
+| blocks | 30: 20 within a command, 4 within a grouped AVP, 6 on an AVP wherever read |
+| readings | 31 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 3: `e164-tbcd` (MSC-Number), `ip-address` 2 (GMLC-Address, PPR-Address) |
+| `encoding element` | 1: LMSI, TS 23.003's ([above](#elements)) |
+| `range` | 3: Auth-Session-State NO_STATE_MAINTAINED in both commands, Feature-List-ID 1 |
+| `requires`, `present-if`, `absent-if` | 1, 5, 7 |
+| `absent` | 6: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in both commands |
+| `bits` | 1, `only`: RIA-Flags |
+| `text-only` | 5 |
+
+Clause 6.1.4's session handling and clause 6.2.2's Vendor-Specific-
+Application-Id are read in both commands as TS 29.338's clauses 4.5 and
+5.3.2.2 are, and clause 6.3.3's "the Result-Code AVP shall be absent" beside
+one of its two codes in the answer, TS 29.229's DIAMETER_ERROR_USER_UNKNOWN
+(5001) among them; the RIA's Result row holds the Experimental-Result to the
+3GPP vendor. An RIR without an MSISDN carries the IMSI, its User-Name, and
+one without an IMSI its MSISDN, and a successful RIA likewise; the RIA's
+Serving-Node is present on success and absent otherwise, and its
+Additional-Serving-Node, GMLC-Address and PPR-Address absent but on success.
+A serving node is an MME, whose LCS-Capabilities-Sets clause 5.2.1.2 keeps
+off SLh, where it holds an MME-Name and no other node's identity (SGSN-Number,
+SGSN-Name, MSC-Number, 3GPP-AAA-Server-Name), read within Serving-Node and
+Additional-Serving-Node: a node holding more might be a combined MME/SGSN.
+The LMSI is TS 23.003's four octets, which the VLR "shall not allocate the
+value zero".
+
+The text-only rules are conditions on the subscription and on what the HSS
+has received or registered ("the subscription is MSISDN-less", "if and only
+if the HSS has received an indication that the Lgd interface is supported",
+"except if the HSS has received an indication that the Lg interface is not
+supported", the combined MME/SGSN's optimized LCS procedure, an S4-SGSN's
+Capability Set 5). Left unread: the "should" and "may" rows (the RIA's LMSI,
+GMLC-Address and PPR-Address "should be present if"); the procedure's
+"returns" sentences, with no shall, which the table rows read (the IMSI or
+MSISDN not provided, either or both when both were); the rows saying only
+what an AVP holds when present (the GMLC Number's E.164 number, TS 29.272's
+AVP); LCS-Capabilities-Sets' bits, whose meaning clause 6.4.6 gives TS
+29.002; Feature-List's null value, "no feature used by the application", and
+its NOTE; clause 6.1.3's accounting and 6.1.5's SCTP; the routing clause
+6.1.6, which says what a GMLC that knows the HSS puts in Destination-Host;
+clause 6.1.7's Capabilities-Exchange AVPs, RFC 6733's commands'; the
+header's Application-ID of clause 6.2.2, which no rule reads; clause
+5.2.1.3's receiver preferring the serving node; and the procedure's result
+codes, which are what the HSS answers with.
 
 ## RFC 6733
 

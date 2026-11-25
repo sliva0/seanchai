@@ -116,6 +116,248 @@ LMSI                                            LMSI                            
 "Supported Features (See 3GPP TS 29.229 [8])"   Supported-Features                O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#rir-imsi)
+; AVP: User-Name
+; Command: LCS-Routing-Info-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1/1
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE shall be present if the MSISDN is absent."
+    present-if not MSISDN
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#rir-msisdn)
+; AVP: MSISDN
+; Command: LCS-Routing-Info-Request
+; Section: 5.2.1.1
+; Table: 5.2.1.1/1
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE shall be present if the IMSI is absent."
+    present-if not User-Name
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"Experimental-Result AVP shall be used for SLh errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-imsi)
+; AVP: User-Name
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE shall be present if Result-Code is DIAMETER_SUCCESS and the MSISDN is absent."
+    present-if Result-Code = DIAMETER_SUCCESS and not MSISDN
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-msisdn)
+; AVP: MSISDN
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE shall be present if Result-Code is DIAMETER_SUCCESS and the IMSI is absent."
+    present-if Result-Code = DIAMETER_SUCCESS and not User-Name
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-serving-node)
+; AVP: Serving-Node
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE shall be present if the Result- Code is DIAMETER_SUCCESS; otherwise it shall be absent."
+    present-if Result-Code = DIAMETER_SUCCESS
+    absent-if not Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-additional-serving-node)
+; AVP: Additional-Serving-Node
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE may be present if Result- Code is DIAMETER_SUCCESS; otherwise it shall be absent."
+    absent-if not Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-gmlc-address)
+; AVP: GMLC-Address
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE should be present if the Result-Code is DIAMETER_SUCCESS; otherwise it shall be absent."
+    absent-if not Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-ppr-address)
+; AVP: PPR-Address
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1/2
+; Page: 9
+; Versions: 18.0.0..19.0.0
+"This IE should be present if available in the HSS and the Result-Code is DIAMETER_SUCCESS; otherwise it shall be absent."
+    absent-if not Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-dummy-msisdn)
+; AVP: MSISDN
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.2
+; Page: 11
+; Versions: 18.0.0..19.0.0
+"If MSISDN was not provided in the Send Routing Info for LCS request and the subscription is MSISDN-less, the HSS shall return the dummy MSISDN value (see 3GPP TS 23.003 [10])."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#serving-node-sgsn-name)
+; AVP: SGSN-Name
+; Within: Serving-Node
+; Section: 5.2.1.2
+; Page: 11
+; Versions: 18.0.0..19.0.0
+"The HSS shall include the Diameter Identity of the SGSN (i.e. SGSN-Name and SGSN-Realm), within the Serving-Node AVP or within an Additional-Serving-Node AVP, if and only if the HSS has received an indication that the Lgd interface is supported by the SGSN (see 3GPP TS 29.272 [12])."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#serving-node-sgsn-number)
+; AVP: SGSN-Number
+; Within: Serving-Node
+; Section: 5.2.1.2
+; Page: 11
+; Versions: 18.0.0..19.0.0
+"The HSS shall include the SGSN Number, within the Serving-Node AVP or Additional Serving-Node AVP, except if the HSS has received an indication that the Lg interface is not supported by the SGSN (see 3GPP TS 29.272 [12])."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-flags-optimized-lcs)
+; AVP: RIA-Flags
+; Command: LCS-Routing-Info-Answer
+; Section: 5.2.1.2
+; Page: 11
+; Versions: 18.0.0..19.0.0
+"If the UE is served by the MME and SGSN parts of the same combined MME/SGSN (see 3GPP TS 29.272 [12] subclause 5.2.2.1.1 for how the HSS determines if the UE is served by the combined MME/SGSN) and if this combined MME/SGSN has indicated the support for optimized LCS procedure (via the Supported-Feature AVP as defined in 3GPP TS 29.272 [12] subclause 7.3.10) and if HSS supports this optimized LCS procedure, then the HSS shall set the \"Combined-MME/SGSN-Supporting-Optimized-LCS-Proc\" bit of the RIA-Flags."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#serving-node-mme-lcs-capabilities)
+; AVP: LCS-Capabilities-Sets
+; Within: Serving-Node
+; Section: 5.2.1.2
+; Page: 11
+; Versions: 18.0.0..19.0.0
+"If the HSS registered an MME, the HSS shall not indicate any LCS capability value to the GMLC (i.e., the LCS-Capabilities-Set AVP shall be absent over SLh when the serving node is an MME); in this case, the GMLC shall assume that the MME supports LCS Capability Set 5."
+    absent-if MME-Name and not SGSN-Number and not SGSN-Name and not MSC-Number and not 3GPP-AAA-Server-Name
+"Regarding the LCS capabilities of the serving nodes, if the HSS registered an SGSN via the S6d reference point (i.e., the registered serving node is an S4-SGSN), the HSS shall set the LCS-Capabilities-Set value to indicate support of Capability Set 5 (i.e., LCS release 7 or later version)."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#additional-serving-node-mme-lcs-capabilities)
+; AVP: LCS-Capabilities-Sets
+; Within: Additional-Serving-Node
+; Section: 5.2.1.2
+; Page: 11
+; Versions: 18.0.0..19.0.0
+"If the HSS registered an MME, the HSS shall not indicate any LCS capability value to the GMLC (i.e., the LCS-Capabilities-Set AVP shall be absent over SLh when the serving node is an MME); in this case, the GMLC shall assume that the MME supports LCS Capability Set 5."
+    absent-if MME-Name and not SGSN-Number and not SGSN-Name and not MSC-Number and not 3GPP-AAA-Server-Name
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#rir-auth-session-state)
+; AVP: Auth-Session-State
+; Command: LCS-Routing-Info-Request
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.0.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [17]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#rir-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: LCS-Routing-Info-Request
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.0.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#rir-session-timeout)
+; AVP: Session-Timeout
+; Command: LCS-Routing-Info-Request
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.0.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-auth-session-state)
+; AVP: Auth-Session-State
+; Command: LCS-Routing-Info-Answer
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.0.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [17]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: LCS-Routing-Info-Answer
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.0.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-session-timeout)
+; AVP: Session-Timeout
+; Command: LCS-Routing-Info-Answer
+; Section: 6.1.4
+; Page: 13
+; Versions: 18.0.0..19.0.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#rir-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: LCS-Routing-Info-Request
+; Section: 6.2.2
+; Page: 14
+; Versions: 18.0.0..19.0.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: LCS-Routing-Info-Answer
+; Section: 6.2.2
+; Page: 14
+; Versions: 18.0.0..19.0.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+    absent
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes
@@ -124,6 +366,26 @@ LMSI                                            LMSI                            
 DIAMETER_ERROR_USER_UNKNOWN                    = 5001 ; 6.3.3.1 from TS29.229
 DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK = 5490 ; 6.3.3.2
 DIAMETER_ERROR_ABSENT_USER                     = 4201 ; 6.3.4.1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-result-code-absent-with-experimental-result)
+; AVP: Result-Code
+; Command: LCS-Routing-Info-Answer
+; Section: 6.3.3
+; Page: 16
+; Versions: 18.0.0..19.0.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#lmsi-element)
+; AVP: LMSI
+; Section: 6.4.2
+; Page: 17
+; Versions: 18.0.0..19.0.0
+"The LMSI AVP is of type OctetString and it shall contain the Local Mobile Station Identity (LMSI) allocated by the VLR, as defined in 3GPP TS 23.003 [10]."
+    encoding element TS23.003 2.5 "LMSI"
 
 
 ; Type: Grouped AVP
@@ -143,6 +405,24 @@ Serving-Node ::= < AVP header: 2401 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#msc-number-e164)
+; AVP: MSC-Number
+; Section: 6.4.5
+; Page: 18
+; Versions: 18.0.0..19.0.0
+"The MSC-Number AVP is of type OctetString and it shall contain the ISDN number of the serving MSC or MSC server in international number format as described in ITU-T Rec E.164 [15] and shall be encoded as a TBCD-string."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#gmlc-address-ip)
+; AVP: GMLC-Address
+; Section: 6.4.7
+; Page: 18
+; Versions: 18.0.0..19.0.0
+"The GMLC-Address AVP is of type Address and shall contain the IPv4 or IPv6 address of H-GMLC or the V-GMLC associated with the serving node."
+    encoding ip-address
+
+
 ; Type: Grouped AVP
 ; Name: Additional-Serving-Node
 ; Section: 6.4.8
@@ -160,9 +440,36 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ppr-address-ip)
+; AVP: PPR-Address
+; Section: 6.4.9
+; Page: 19
+; Versions: 18.0.0..19.0.0
+"The PPR-Address AVP is of type Address and contains the IPv4 or IPv6 address of the Privacy Profile Register for the targeted user."
+    encoding ip-address
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#feature-list-id)
+; AVP: Feature-List-ID
+; Section: 6.4.10
+; Page: 19
+; Versions: 18.0.0..19.0.0
+"For this release, the Feature-List-ID AVP value shall be set to 1."
+    range 1
+
+
 ; Type: Value Table
 ; AVP: RIA-Flags
 ; Kind: bits
 ; Section: 6.4.15
 ; Table: 6.4.15/1
 "Combined-MME/SGSN-Supporting-Optimized-LCS-Proc" = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-flags-undefined-bits)
+; AVP: RIA-Flags
+; Section: 6.4.15
+; Table: 6.4.15/1
+; Versions: 18.0.0..19.0.0
+"NOTE1: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving GMLC."
+    bits only 0
