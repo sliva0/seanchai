@@ -744,8 +744,9 @@ and Release 20's V20.0.0 alike, and implementations split (Wireshark's
 dictionary types the AVPs Float32, freeDiameter's Unsigned32, changing the
 table's type), so the corpus keeps the table's type and the range is read
 of neither. No linter rule reads the type a plain AVP's clause states, so
-the disagreement is recorded here and in the blocks, not as a finding. Clause 5.3.27's "The Event-Trigger AVP with value
-IP-CAN-CHANGE shall be provided together with the IP-CAN-Type AVP" is
+the disagreement is recorded here and in the blocks, not as a finding.
+Clause 5.3.27's "The Event-Trigger AVP with value IP-CAN-CHANGE shall be
+provided together with the IP-CAN-Type AVP" is
 text-only, since clause 5.3.7's NBIFOM event triggers carry an IP-CAN-Type
 too; clause 5.3.53's unconditional "shall include the Flow-Direction AVP"
 is, beside its sentence excusing a Flow-Information holding only a
