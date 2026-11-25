@@ -660,7 +660,14 @@ def _bounds(low: int | None, high: int | None) -> str:
 
 
 def _value_ref(value: int | str) -> str:
-    return str(value) if isinstance(value, int) else value_name(value)
+    """A number bare, a name as `value_name` spells it, quoted where it is
+    digits only (a value table's `"16"`), which would read back as a
+    number."""
+    if isinstance(value, int):
+        return str(value)
+    if re.fullmatch(r"-?[0-9]+", value):
+        return f'"{value}"'
+    return value_name(value)
 
 
 def reference(reference: ast.Reference) -> str:

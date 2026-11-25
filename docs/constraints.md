@@ -702,9 +702,7 @@ Most checked rules are clause 5.3.7's: an event trigger a CCR reports, of
 any of its Event-Trigger AVPs, with the AVP the value's description says it
 is sent with (SGSN_CHANGE's 3GPP-SGSN-Address or 3GPP-SGSN-IPv6-Address,
 TAI_CHANGE's 3GPP-User-Location-Info, USAGE_REPORT's
-Usage-Monitoring-Information), 29 conditions. H(E)NB_LOCAL_IP_ADDRESS_CHANGE
-and 3GPP_PS_DATA_OFF_CHANGE are written 44 and 55, the first a value the
-corpus's Event-Trigger table lacks, the second a name beginning with a digit.
+Usage-Monitoring-Information), 29 conditions.
 Gxx's initial CCR carries the AN-GW-Address (clause 4a.5.1), Sd's TS-Request
 the UE's IPv4 address or IPv6 prefix (4b.5.1.1), and each Gx and Sd answer's
 Experimental-Result the 3GPP vendor (5.5.1, 5b.5.1). A deletion's

@@ -813,7 +813,11 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   values or result codes give it, or the value of a member of the request
   (`Result-Code = request/Result-Code`, octet for octet), or a bit, by
   number or by its bit table's name. Of the request's members of a name,
-  any one meeting it does.
+  any one meeting it does. A name is spelt as its table spells it, quoted
+  where it is no `avp-name` (`Event-Trigger =
+  "H(E)NB_LOCAL_IP_ADDRESS_CHANGE"`) or is digits only, which would read as
+  a number (TS 29.272's Report-Amount `"16"`, its value 4); one beginning
+  with a digit is bare (`3GPP_PS_DATA_OFF_CHANGE`).
 - `default` is what the AVP is read as when absent, a number or a name its
   values give. `bits` is a rule on the AVP's own bits, numbered as its bit
   table numbers them, bit 0 the least significant, an OctetString's octets

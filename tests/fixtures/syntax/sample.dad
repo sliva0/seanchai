@@ -166,6 +166,7 @@ DIAMETER_ERROR_ACME_UNKNOWN ;; corrected: (Private-ACME-HSS.py#code)
     requires ACME-Data/ACME-Id
     requires Destination-Host
     excludes ACME-Kind = FIRST or ACME-Code = 5
+    absent-if ACME-Kind = 3GPP_ACME or ACME-Kind = "16"
     default 0
 "It is a PLMN, an element of TS 29.002, or TBCD."
     encoding element TS29.002 17.7.8 "ISDN-AddressString"

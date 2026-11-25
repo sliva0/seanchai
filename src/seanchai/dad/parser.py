@@ -1092,7 +1092,10 @@ def _parse_information_elements(
 
 _BOUND = r"-?[0-9]+|\*"
 _BOUNDS = rf"(?P<low>{_BOUND})(?:\.\.(?P<high>{_BOUND}))?"
-_NAME_OR_NUMBER = rf"-?[0-9]+|[A-Za-z0-9][A-Za-z0-9_-]*|{_QUOTED}"
+# A number ends where a name could not go on, so that a name beginning with a
+# digit (TS 29.212's Event-Trigger value 3GPP_PS_DATA_OFF_CHANGE, clause
+# 5.3.7) is read whole; a name of digits only is quoted, `"16"`.
+_NAME_OR_NUMBER = rf"-?[0-9]+(?![A-Za-z0-9_-])|[A-Za-z0-9][A-Za-z0-9_-]*|{_QUOTED}"
 _QUOTE_LINE_RE = re.compile(r'^"(?P<text>(?:[^"\\]|\\["\\])*)"$')
 _LENGTH_RE = re.compile(rf"^length {_BOUNDS} (?P<unit>[a-z]+)$")
 _RANGE_RE = re.compile(rf"^range {_BOUNDS}$")

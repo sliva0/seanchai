@@ -522,8 +522,6 @@
     present-if Event-Trigger = UE_LOCAL_IP_ADDRESS_CHANGE and not UDP-Source-Port
 
 
-;; The value, H(E)NB_LOCAL_IP_ADDRESS_CHANGE, is 44, a name no value table
-;; of the corpus gives.
 ; Type: Interpreted Constraints
 ; Id: ccr-henb-local-ip-address-change
 ; AVP: HeNB-Local-IP-Address
@@ -532,7 +530,7 @@
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because the H(e)NB Local IP Address or the UDP source port number or both assigned by the Fixed Broadband Access have changed. The HeNB-Local-IP-Address AVP and/or the UDP-Source-Port AVP shall be provided in the same request."
-    present-if Event-Trigger = 44 and not UDP-Source-Port
+    present-if Event-Trigger = "H(E)NB_LOCAL_IP_ADDRESS_CHANGE" and not UDP-Source-Port
 
 
 ; Type: Interpreted Constraints
@@ -570,8 +568,6 @@
     present-if Event-Trigger = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT
 
 
-;; The value, 3GPP_PS_DATA_OFF_CHANGE, is 55: a name beginning with a
-;; digit is no name a condition reads.
 ; Type: Interpreted Constraints
 ; Id: ccr-ps-data-off-status
 ; AVP: 3GPP-PS-Data-Off-Status
@@ -580,7 +576,7 @@
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "This value shall be used in CCR command by the PCEF to indicate that the PCEF generated the request because there has been a change of 3GPP PS Data Off status indicated by the UE, with the status of 3GPP PS Data Off in the 3GPP-PS-Data-Off-Status AVP."
-    present-if Event-Trigger = 55
+    present-if Event-Trigger = 3GPP_PS_DATA_OFF_CHANGE
 
 
 ; Type: Interpreted Constraints

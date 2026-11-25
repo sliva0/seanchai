@@ -196,6 +196,41 @@ def test_every_rule_reads_and_writes_back():
     assert formatter.format_spec(spec, comments) == _EVERY_RULE
 
 
+def test_a_condition_names_every_value_a_table_holds():
+    # The shapes the corpus's value names take beside an identifier: one
+    # beginning with a digit (TS 29.212's 3GPP_PS_DATA_OFF_CHANGE), one of
+    # digits only, which a bare number would read, and one needing quotes
+    # (TS 29.212's "H(E)NB_LOCAL_IP_ADDRESS_CHANGE"), its `and` and `or`
+    # inside the quotes no join.
+    text = _block(
+        '"Q."',
+        "    present-if Event-Trigger = 3GPP_PS_DATA_OFF_CHANGE"
+        ' or Event-Trigger = "16" and Kind = 2G-AND-3G'
+        ' or Event-Trigger = "H(E)NB_LOCAL_IP_ADDRESS_CHANGE"'
+        ' or Mode = "Send and Listen"',
+        "    default 3GPP-EPS",
+        '    default "16"',
+        "    default 16",
+    )
+    spec, comments = parser.parse_with_comments(text)
+    (block,) = spec.sections
+    assert isinstance(block, ast.InterpretedConstraints)
+    rule, *defaults = block.readings[0].rules
+    assert isinstance(rule, ast.PredicateRule)
+    assert [[each.value for each in each_and] for each_and in rule.conditions] == [
+        ["3GPP_PS_DATA_OFF_CHANGE"],
+        ["16", "2G-AND-3G"],
+        ["H(E)NB_LOCAL_IP_ADDRESS_CHANGE"],
+        ["Send and Listen"],
+    ]
+    assert defaults == [
+        ast.DefaultRule(value="3GPP-EPS"),
+        ast.DefaultRule(value="16"),
+        ast.DefaultRule(value=16),
+    ]
+    assert formatter.format_spec(spec, comments) == text
+
+
 @pytest.mark.parametrize(
     ("text", "lineno", "fact"),
     [

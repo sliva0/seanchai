@@ -254,6 +254,9 @@ _SCOPED = [
     ("    requires ACME-Data/", "/", "punctuation.separator.path"),
     ("    requires ACME-Data/", "ACME-Id", "variable.other.avp"),
     ("    excludes", "FIRST", "variable.other.avp"),
+    # A value's name may begin with a digit; one of digits only is quoted.
+    ("    absent-if ACME-Kind = 3GPP", "3GPP_ACME", "variable.other.avp"),
+    ("    absent-if ACME-Kind = 3GPP", '"16"', "string.quoted.double.mark"),
     ("    default 0", "0", "constant.numeric"),
     ("    encoding element TS29.002", "element", "support.type.codec"),
     ("    encoding element TS29.002", "17.7.8", "constant.other.section"),

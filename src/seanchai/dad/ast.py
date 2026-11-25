@@ -1555,22 +1555,12 @@ class EncodingRule(Node):
 
 # An integer the file prints bare, so a value or bit name of that spelling
 # would read back as a number.
-_INTEGER_RE = re.compile(r"-?[0-9]+")
-
-
-def _not_a_number(value: int | str | None) -> int | str | None:
-    if isinstance(value, str) and _INTEGER_RE.fullmatch(value):
-        raise ValueError(f"{value!r} reads as a number, not a name")
-    return value
-
-
 # A condition's value or bit: a number, or a name the AVP's values or bit
-# table gives it.
-ValueRef = Annotated[
-    int | EnumValueName,
-    Field(union_mode="left_to_right"),
-    pydantic.AfterValidator(_not_a_number),
-]
+# table gives it. A name may be digits only, as TS 29.272's Report-Amount
+# names its value 4 "16" (clause 7.3.84): a name stays a string and a number
+# an integer, and the formatter quotes such a name, so that `= "16"` and
+# `= 16` stay apart.
+ValueRef = Annotated[int | EnumValueName, Field(union_mode="smart")]
 
 
 class Root(enum.StrEnum):
