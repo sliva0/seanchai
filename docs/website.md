@@ -185,6 +185,9 @@ and in its raw mirror alike, each describing its own file's lines. Every
 - Interpreted Constraints: `name`, the AVP its `; AVP:` names, with the
   `avp_target` that line links to; `interpreted`, true only here, for a block
   a person read in the clause's prose ([constraints.md](constraints.md));
+  `quoted_from_pdf`, true for a hand transcription's block, its quotes held
+  to the text of the PDF the document was copied from
+  ([constraints.md](constraints.md#the-interpretations-file));
   its scope and `Versions` in `fields`; and `readings`, each `quotes` (`line`
   and `text`, unescaped) and `rules`, each at its `line`, the first of a rule
   wrapped over several, with `kind` and the fields of the dictionary's rule

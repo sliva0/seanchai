@@ -12,7 +12,9 @@ import pytest
 from conftest import _CORPUS_DIR
 
 from seanchai import _correction_record, _regenerate
+from seanchai.corpus import Corpus
 from seanchai.downloader import load_catalog
+from seanchai.model import HolePolicy, Model
 
 
 def _manifest(root, stem, release=18):
@@ -646,6 +648,106 @@ def _transcribed(tmp_path, version="3.2.1", declared="3.2.1"):
         ).outcomes
 
     return corpus, sources, edits, run
+
+
+# An interpretations file for the transcription above: its quotes are held
+# to the PDF it was copied from, where that is downloaded.
+_TRANSCRIPTION_INTERPRETATIONS = """\
+; Interprets: ETSI TS 183 017
+
+
+; Type: Interpreted Constraints
+; Id: port-number-range
+; AVP: Port-Number
+; Section: 7.3.6
+; Versions: 3.2.1
+"The Port-Number AVP (AVP code 455) is of type Unsigned32."
+    range 0..65535
+"""
+
+
+def _interpreted_transcription(tmp_path):
+    corpus, sources, edits, _ = _transcribed(tmp_path)
+    interpretations = tmp_path / "interpretations"
+    interpretations.mkdir()
+    (interpretations / "ETSI-TS183.017.dadx").write_text(
+        _TRANSCRIPTION_INTERPRETATIONS, encoding="utf-8"
+    )
+    specifications = tmp_path / "specifications"
+    manifest = specifications / "manifest.json"
+
+    def run():
+        return _regenerate.regenerate(
+            manifest,
+            corpus,
+            corpus,
+            sources_dir=sources,
+            corrections_dir=edits,
+            interpretations_dir=interpretations,
+            transcriptions_dir=tmp_path / "transcriptions",
+            add=["ETSI-TS183.017"],
+        ).outcomes
+
+    return corpus / "etsi" / "ts183017-030201.dad", specifications, run
+
+
+def test_a_transcriptions_interpretations_merge_unchecked_without_its_pdf(tmp_path):
+    """With the PDF the document was copied from not downloaded, the blocks
+    are merged with a warning, their quotes unchecked, and marked as quoted
+    from the PDF."""
+    corrected, _, run = _interpreted_transcription(tmp_path)
+
+    (added,) = run()
+
+    assert added.status == "new"
+    assert any(
+        "merged with their quotes unchecked: ts.pdf is not downloaded" in warning
+        for warning in added.warnings
+    )
+    text = corrected.read_text(encoding="utf-8")
+    assert (
+        "; Type: Interpreted Constraints ;; interpreted:"
+        " (ETSI-TS183.017.dadx#port-number-range), quoted from the PDF"
+    ) in text
+    # The model says so of the constraint, as the dictionary and export do.
+    books = Corpus.load([corrected.parent.parent])
+    (constraint,) = Model.build(books, holes=HolePolicy.ANY).constraints()
+    assert constraint.quoted_from_pdf
+
+
+@pytest.mark.parametrize("printed", [True, False])
+def test_a_transcriptions_quotes_are_held_to_its_pdf(tmp_path, monkeypatch, printed):
+    """With the PDF downloaded, a quote it does not print fails the
+    document; a block's page is the one the transcription prints for its
+    clause, whatever the PDF's outline gives, and none for a clause it
+    prints no block of."""
+    corrected, specifications, run = _interpreted_transcription(tmp_path)
+    pdf = specifications / "transcriptions" / "ts.pdf"
+    pdf.parent.mkdir(parents=True)
+    pdf.write_bytes(b"%PDF-1.4")
+    sentence = (
+        "The Port-Number AVP (AVP code 455) is of type Unsigned32. It contains"
+        " the end point port number."
+    )
+    read = []
+
+    def clause_texts(path):
+        read.append(path)
+        text = sentence if printed else "The Port-Number AVP is of type Unsigned32."
+        return {"7.3.6": [text]}, {"7.3.6": 24}
+
+    monkeypatch.setattr(_regenerate.transcription, "pdf_clause_texts", clause_texts)
+
+    (added,) = run()
+
+    assert read == [pdf]
+    if printed:
+        assert added.status == "new"
+        text = corrected.read_text(encoding="utf-8")
+        assert "; Section: 7.3.6\n; Versions: 3.2.1\n" in text
+    else:
+        assert added.status == "failed"
+        assert "clause 7.3.6 does not print" in (added.error or "")
 
 
 def test_a_transcription_answers_to_its_declarations_version_ranges(tmp_path):

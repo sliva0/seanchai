@@ -523,8 +523,24 @@ the document's corrections:
   indent. A miss fails the document, naming the
   file and line of the quote:
   `edits/interpretations/TS29.272.dadx:435: imei-digits: clause 7.3.4 does
-  not print 'It should consist of 16 digits, ...'`. A transcription has no
-  source text to check against, so a file for one is refused.
+  not print 'It should consist of 16 digits, ...'`.
+- A transcription (`edits/transcriptions/`) has no extracted source, so its
+  quotes are held to the text of the PDF it was copied from, which
+  `seanchai corpus download --only transcribed` fetches: a clause runs from
+  its outline heading's line to the next heading's, the running header
+  ("ETSI TS 183 017 V3.2.1 (2010-02)") dropped and a word its hyphen breaks
+  across a line joined whole, and a quote must be within the clause's text
+  (`transcription.pdf_clause_texts`). Where the PDF is not downloaded the
+  blocks are merged unchecked, under a warning naming the PDF. Either way
+  each block's note in the corrected file ends `, quoted from the PDF`
+  (`;; interpreted: (ETSI-TS183.017.dadx#flow-usage-default), quoted from
+  the PDF`), and the model's, the dictionary's and the export's constraint
+  say `quoted_from_pdf`, so that a consumer can tell a reading held to a
+  hand transcription's PDF from one held to an extracted source. A block's
+  page is the one the transcription prints for its clause, none where it
+  prints no block of the clause, so that the corrected file does not turn
+  on whether the PDF is at hand. The transcription states its version, so
+  each block names `; Versions:`.
 - Merging expects the corrected file to hold every AVP a block names, one
   command of its scope's name, application and clause, the AVP in the
   command's or the grouped AVP's printed body, and no other block for the

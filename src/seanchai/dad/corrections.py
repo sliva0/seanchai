@@ -2061,11 +2061,13 @@ def _noted(results: list[Result]) -> Iterator[tuple[str, ast.TreePath, str, int]
             )
             continue
         if isinstance(edit, Interpretation):
-            # The block is the declaration's; its first line cites it.
+            # The block is the declaration's; its first line cites it, and
+            # says where a transcription's quotes are read.
+            quoted = ", quoted from the PDF" if edit.from_pdf else ""
             yield (
                 "trailing",
                 (*result.path, "type"),
-                f"interpreted: ({edit.cited})",
+                f"interpreted: ({edit.cited}){quoted}",
                 index,
             )
             continue

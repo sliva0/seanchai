@@ -620,6 +620,7 @@ def _blocks(
         elif isinstance(section, ast.InterpretedConstraints):
             fields["name"] = section.avp
             fields["interpreted"] = True
+            fields["quoted_from_pdf"] = spec.transcribed is not None
             fields["avp_target"] = links.names.get(section.avp)
             fields["readings"] = _constraint_readings(placed, index, section)
             requested = ast.request_section(spec.sections, section)

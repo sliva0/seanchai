@@ -263,7 +263,9 @@ class Constraint(_Model):
     for `within`, and the command's members of that name for `command`.
     `versions` is the range of the document's
     versions the quotes were checked against, null for a document with no
-    version, an RFC."""
+    version, an RFC. `quoted_from_pdf` is true for a hand transcription's
+    constraint, its quotes held to the text of the PDF the document was
+    copied from, there being no extracted source."""
 
     interpreted: Literal[True]
     avp: str
@@ -280,6 +282,7 @@ class Constraint(_Model):
     page: int | None
     versions: str | None
     readings: tuple[Reading, ...]
+    quoted_from_pdf: bool = False
 
 
 class Value(_Model):
@@ -1016,6 +1019,7 @@ def _constraint(constraint: model.Constraint, ids: Iterable[str]) -> Constraint:
             )
             for reading in constraint.readings
         ),
+        quoted_from_pdf=constraint.quoted_from_pdf,
     )
 
 

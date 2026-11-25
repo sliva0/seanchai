@@ -50,13 +50,16 @@ class Interpretation:
     lines prints on, the `; Type:` line first, then each quote and rule, so
     a failure names the line to fix. `page` is the clause's page in the
     copy being corrected (`paged`); a block merged without the source
-    carries none.
+    carries none. `from_pdf` marks a transcription's block, whose quotes are
+    held to the text of the PDF the document was copied from rather than an
+    extracted source: its note in the corrected file says so.
     """
 
     block: ast.InterpretationBlock
     path: Path | None = None
     lines: tuple[int, ...] = ()
     page: int | None = None
+    from_pdf: bool = False
 
     @property
     def id(self) -> str:
@@ -105,7 +108,8 @@ class Interpretation:
         )
         table = self.block.table
         where = f"table {table}" if table else f"clause {self.section}"
-        return f"interpreted from {where}: {quotes}"
+        of = " of the PDF" if self.from_pdf else ""
+        return f"interpreted from {where}{of}: {quotes}"
 
     def at(self, index: int | None = None) -> str:
         """Where the block, or its body's `index`-th line, is written, for a
@@ -258,9 +262,17 @@ def check_quotes(
         raise CorrectionError("; ".join(misses))
 
 
-def paged(item: Interpretation, pages: Mapping[str, int] | None) -> Interpretation:
+def paged(
+    item: Interpretation,
+    pages: Mapping[str, int] | None,
+    *,
+    from_pdf: bool = False,
+) -> Interpretation:
     """`item` placed on its clause's page in `pages`, a clause number's page
-    in the copy corrected; unchanged without `pages`."""
+    in the copy corrected, its page unchanged without `pages`; with
+    `from_pdf`, marked as quoted from a transcription's PDF."""
+    if from_pdf:
+        item = dataclasses.replace(item, from_pdf=True)
     if pages is None:
         return item
     return dataclasses.replace(item, page=pages.get(item.section))

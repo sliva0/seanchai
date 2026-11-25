@@ -140,7 +140,9 @@ class Constraint(_Plain):
     application, None where the block reads no request or the document
     prints none or several. `versions` is
     the range of the document's versions the quotes were checked against,
-    None for a document with no version, an RFC.
+    None for a document with no version, an RFC. `quoted_from_pdf` is True
+    for a hand transcription's block, whose quotes are held to the text of
+    the PDF the document was copied from, there being no extracted source.
     """
 
     avp: str
@@ -157,6 +159,7 @@ class Constraint(_Plain):
     readings: tuple[ast.Reading, ...]
     request_section: str | None = None
     interpreted: bool = True
+    quoted_from_pdf: bool = False
 
     @property
     def reads_request(self) -> bool:
@@ -196,6 +199,7 @@ def _constraint(
         versions=block.versions,
         readings=block.readings,
         request_section=request_section,
+        quoted_from_pdf=entry.spec.transcribed is not None,
     )
 
 

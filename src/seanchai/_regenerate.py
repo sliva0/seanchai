@@ -182,7 +182,7 @@ def regenerate(
         report(failed)
         return Report([failed])
     absent = _absent_sources(manifest)
-    listed = sources | _transcriptions(transcriptions_dir)
+    listed = sources | _transcriptions(transcriptions_dir, manifest.parent)
     committed = _committed(corpus)
     # Acceptances are checked against the committed corpus's origins before
     # their ranges are widened; loaded once, and only then.
@@ -846,8 +846,19 @@ def _produce(
         edit for edit in declared if isinstance(edit, corrections.Interpretation)
     ]
     if interpreted or offered:
-        texts, pages = _clauses(source, sources_dir, [*interpreted, *offered])
-        interpretations.check_quotes(interpreted, texts)
+        texts, pages = _clauses(source, sources_dir)
+        if source.transcribed:
+            pages = _printed_pages(spec)
+        if texts is None:
+            # A transcription whose PDF is not downloaded: merged, unchecked.
+            pdf = "its PDF" if source.pdf is None else source.pdf.name
+            warnings.append(
+                f"{len(interpreted)} interpretation(s) merged with their quotes"
+                f" unchecked: {pdf} is not downloaded; run `seanchai corpus"
+                " download --only transcribed`"
+            )
+        else:
+            interpretations.check_quotes(interpreted, texts)
         if adopted is None:
             # Counted, not carried: one the copy does not print stays out of
             # it without a word, as a reviewed release's would.
@@ -860,10 +871,11 @@ def _produce(
             offered = []
         trying = {id(edit) for edit in _held(offered, texts, warnings)}
         chosen = {id(edit) for edit in declared} | trying
-        # In module order, each interpretation on its clause's page here.
+        # In module order, each interpretation on its clause's page here, a
+        # transcription's marked as quoted from its PDF.
         placed = [
             (
-                interpretations.paged(edit, pages)
+                interpretations.paged(edit, pages, from_pdf=source.transcribed)
                 if isinstance(edit, corrections.Interpretation)
                 else edit,
                 id(edit) in trying,
@@ -904,16 +916,18 @@ def _produce(
 def _clauses(
     source: _Source,
     sources_dir: Path | None,
-    interpreted: Sequence[corrections.Interpretation],
-) -> tuple[dict[str, list[str]], dict[str, int] | None]:
+) -> tuple[dict[str, list[str]] | None, dict[str, int] | None]:
     """The text of each clause interpreted constraints are held to, and each
-    clause's page in this copy, from the PDF's outline or the RFC's pages."""
+    clause's page in this copy, from the PDF's outline or the RFC's pages.
+    A transcription's texts are its PDF's (`transcription.pdf_clause_texts`),
+    None where the PDF is not downloaded, for the quotes to go unchecked; its
+    pages are the ones it prints itself (`_printed_pages`), so that the
+    corrected file does not turn on whether the PDF is at hand."""
     if source.transcribed:
-        raise CorrectionError(
-            f"{interpreted[0].at()}: interpreted constraints are checked"
-            " against a 3GPP docx or an RFC's text, and a transcription is"
-            " neither"
-        )
+        if source.pdf is None or not source.pdf.is_file():
+            return None, None
+        texts, _ = transcription.pdf_clause_texts(source.pdf)
+        return texts, None
     if source.document.suffix == ".txt":
         texts, pages = rfc_text.clause_texts(source.document, sources_dir)
         return {key: list(value) for key, value in texts.items()}, dict(pages)
@@ -924,14 +938,29 @@ def _clauses(
     return {key: list(value) for key, value in texts.items()}, pages
 
 
+def _printed_pages(spec: ast.Specification) -> dict[str, int]:
+    """Each clause's page as a transcription prints it, on the first block
+    of the clause that has one: a block it reads takes that page, and none
+    where the transcription prints no block of its clause."""
+    pages: dict[str, int] = {}
+    for section in spec.sections:
+        source = section.source
+        if source.page is not None:
+            pages.setdefault(source.section, source.page)
+    return pages
+
+
 def _held(
     offered: Sequence[corrections.Interpretation],
-    texts: dict[str, list[str]],
+    texts: dict[str, list[str]] | None,
     warnings: list[str],
 ) -> list[corrections.Interpretation]:
     """Of the interpretations `offered`, those whose every quote the copy
     prints in its clause (`interpretations.check_quotes`); the rest are reported as
-    not carried, with what the clause lacks."""
+    not carried, with what the clause lacks. With no `texts` to hold them to,
+    none is: a transcription's other releases, which it has none of."""
+    if texts is None:
+        return []
     held = []
     for edit in offered:
         try:
@@ -1073,14 +1102,24 @@ def _read_sources(manifest_path: Path) -> dict[_Key, _Source]:
     return sources
 
 
-def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
+def _transcriptions(
+    directory: Path | None, specifications: Path | None = None
+) -> dict[_Key, _Source]:
     """Every hand transcription in `directory` as a source, by the reference its
     file is named for, written under its publisher's name for the version:
     `ETSI-ES283.034.dad` to `etsi/es283034-020200.dad` (ETSI's code for V2.2.0),
-    `3GPP2-X.S0057.dad` to `3gpp2/xs0057-0_v2.0.dad` (`_tgpp2_stem`)."""
+    `3GPP2-X.S0057.dad` to `3gpp2/xs0057-0_v2.0.dad` (`_tgpp2_stem`). Its
+    `pdf` is where `seanchai corpus download --only transcribed` puts the
+    PDF it was copied from, under `specifications`, downloaded or not."""
     found: dict[_Key, _Source] = {}
     for path in sorted(directory.glob("*.dad")) if directory is not None else ():
         text = path.read_text(encoding="utf-8")
+        copied = _TRANSCRIBED_LINE_RE.search(text)
+        pdf = (
+            specifications / "transcriptions" / copied["value"].rsplit("/", 1)[-1]
+            if copied is not None and specifications is not None
+            else None
+        )
         version = _VERSION_LINE_RE.search(text)
         if version is None:
             raise ValueError(f"{path}: a transcription states its '; Version:'")
@@ -1104,7 +1143,7 @@ def _transcriptions(directory: Path | None) -> dict[_Key, _Source]:
                 " OMA-DDS-Charging_Data.dad)"
             )
         found[path.stem, tree] = _Source(
-            path.stem, path, None, "", tree, transcribed=True, stem=stem
+            path.stem, path, pdf, "", tree, transcribed=True, stem=stem
         )
     return found
 

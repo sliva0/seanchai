@@ -230,7 +230,7 @@ value_tables[]     kind (result-codes, bits, features, values), avp, avp_ids,
 constraints[]      interpreted, avp, avp_ids, command, application_id,
                    command_section, request_section, within, reference,
                    version, section, table, page, versions,
-                   readings[]: quotes, rules[]
+                   quoted_from_pdf, readings[]: quotes, rules[]
 conflicts[]        vendor_id, code, defining, fields, obsolete,
                    readings[]: avp, obsoleted_by, paths[]
 ```
@@ -291,8 +291,11 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   carrying it in `avp_ids`: the AVP's own, or the grouped AVP's. A command's
   `constraints` are its members', `avp_ids` the members of that name.
   `interpreted` is always true: a person read them in the clause's prose
-  ([below](#interpreted-constraints)). A rule has `kind` and the fields its
-  kind uses, the others null or empty: a length's `unit`, `low` and `high`,
+  ([below](#interpreted-constraints)); `quoted_from_pdf` is true for a hand
+  transcription's, its quotes held to the text of the PDF the document was
+  copied from, there being no extracted source. A rule has `kind` and the
+  fields its kind uses, the others null or empty: a length's `unit`, `low`
+  and `high`,
   a range's `low` and `high`, exclude's `values`, an encoding's `codec` and
   an `element`'s `document`, `clause` and `element`, with `element_entry`,
   the element registry's entry for it or null where it has none (`title`,
@@ -1116,7 +1119,9 @@ for message in s6a.messages:
   the clause of the request an answer's rules read, `reference`, `version`,
   `section`, `table` and `page`, `versions`, the range of versions the
   quotes were checked against (None for an RFC, which has one edition and
-  no version), and `readings`, each an `ast.Reading` of
+  no version), `quoted_from_pdf`, True for a hand transcription's, whose
+  quotes are held to the PDF it was copied from, and `readings`, each an
+  `ast.Reading` of
   `quotes` and `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`,
   `EncodingRule`, `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`,
   `UniqueRule`, `ValuesRule`, `EqualsRule`, `AbsentRule`, `TextOnly`). A

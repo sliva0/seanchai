@@ -491,6 +491,8 @@ class Block(_Model):
       `Command-Section`, `Request-Section` or `Within`) and `Versions`.
       `interpreted` is true only here: a person read the block in the
       clause's prose, and no document prints it as structure.
+      `quoted_from_pdf` is true for a hand transcription's block, its quotes
+      held to the text of the PDF the document was copied from.
 
     `commands` marks where its lines name a command.
     """
@@ -521,6 +523,7 @@ class Block(_Model):
     described: tuple[Target, ...] = ()
     described_by: tuple[ElementTableRef, ...] = ()
     interpreted: bool = False
+    quoted_from_pdf: bool = False
     readings: tuple[ConstraintReading, ...] = ()
     request_target: Target | None = None
     commands: tuple[CommandSpan, ...] = ()

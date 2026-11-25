@@ -61,3 +61,37 @@ def test_a_patch_that_stops_matching_fails_the_reading(tmp_path):
 
     with pytest.raises(PatchError, match="applied 0 times"):
         transcription.read(path, _EDITS / "sources")
+
+
+def test_a_pdfs_clauses_are_read_between_their_headings():
+    """Each outline entry's clause runs from its heading's line to the next
+    heading's, the running headers dropped and a word its hyphen breaks
+    across a line joined whole."""
+    pages = [
+        "ETSI\nETSI TS 183 017 V3.2.1 (2010-02)23\n7.3.1 Binding-information AVP\n"
+        "The Binding-Information AVP is of type Grouped. It holds a Binding-\n"
+        "Input-List.\n7.3.2 Binding-Input-List AVP\nIt is populated -\nin pairs.",
+        "ETSI\nETSI TS 183 017 V3.2.1 (2010-02)24\nThe list continues here.\n"
+        "Annex A (normative): Forking\nA.1 Support\nNo flows.",
+    ]
+    outline = [
+        (1, "7.3.1 Binding-information AVP"),
+        (1, "7.3.2 Binding-Input-List AVP"),
+        (2, "Annex A (normative): Forking"),
+        (2, "A.1 Support"),
+    ]
+
+    texts, pages_of = transcription.clause_texts_of(pages, outline)
+
+    assert texts == {
+        "7.3.1": [
+            "The Binding-Information AVP is of type Grouped. It holds a"
+            " Binding-Input-List."
+        ],
+        "7.3.2": [
+            "It is populated - in pairs. The list continues here. Annex A"
+            " (normative): Forking"
+        ],
+        "A.1": ["No flows."],
+    }
+    assert pages_of == {"7.3.1": 1, "7.3.2": 1, "A.1": 2}
