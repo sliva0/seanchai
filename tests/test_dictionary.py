@@ -43,6 +43,52 @@ def _written(tmp_path: Path, *arguments: str) -> dict:
     return data
 
 
+# --- constraints --------------------------------------------------------------
+
+
+def test_a_documents_rule_on_a_reused_avp_holds_where_it_reads_it(built):
+    """TS 29.272 clause 7.3.43 reads MIP-Home-Agent-Host's members, an AVP
+    RFC 4004 defines: its rules hold on S6a, where TS 29.272 reads the AVP,
+    and not on RFC 4004's own AA-Mobile-Node-Request."""
+    output = build(built, documents=["RFC4004", "TS29.272"])
+    rules = [
+        each
+        for each in output.constraints
+        if each.within == "MIP-Home-Agent-Host" and each.reference == "TS29.272"
+    ]
+    avps = {avp.id: avp for avp in output.avps}
+
+    def reaches(members, ids: set[str], seen: frozenset[str]) -> bool:
+        for member in members:
+            if member.avp is None or member.avp in seen:
+                continue
+            if member.avp in ids or reaches(
+                getattr(avps.get(member.avp), "members", ()), ids, seen | {member.avp}
+            ):
+                return True
+        return False
+
+    ids = {each for rule in rules for each in rule.avp_ids}
+    assert {rule.avp for rule in rules} == {"Destination-Host", "Destination-Realm"}
+    assert ids == {"0:348@TS29.272 in RFC4004"}
+    reached = {
+        (application.application_id, command.name)
+        for application in output.applications
+        for command in application.commands
+        if reaches(command.members, ids, frozenset())
+    }
+    assert (_S6A, "Update-Location-Request") in reached
+    assert not {name for app_id, name in reached if app_id != _S6A}
+    amr = next(
+        command
+        for application in output.applications
+        if application.application_id == 2
+        for command in application.commands
+        if command.name == "AA-Mobile-Node-Request"
+    )
+    assert reaches(amr.members, {"0:348"}, frozenset())
+
+
 # --- value tables -------------------------------------------------------------
 
 

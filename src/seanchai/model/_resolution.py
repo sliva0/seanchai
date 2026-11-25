@@ -361,6 +361,12 @@ class _Resolver:
                 constraints=own or found.constraints,
                 member_constraints=members or found.member_constraints,
             )
+            if (own or members) and found.reference != view.entry.reference:
+                # A document's readings of an AVP it re-uses hold where it
+                # reads the AVP, not wherever the definition is read: TS
+                # 29.272 clause 7.3.43 on RFC 4004's MIP-Home-Agent-Host
+                # binds TS 29.272's S6a, not RFC 4004's AMR.
+                found.read_through = self._document(view)
         if (
             found is not None
             and self._wireshark is not None

@@ -1250,13 +1250,16 @@ def test_the_model_and_the_dictionary_carry_the_reading_documents_constraints(
     output = dictionary.build(built, documents=["TS29.999"], application_ids=[99])
     (command,) = output.applications[0].commands
     (scoped,) = command.constraints
-    assert (scoped.interpreted, scoped.avp_ids) == (True, ("10415:1",))
+    # TS 29.999 reads TS 29.998's AVP with rules of its own, so its reading
+    # is read through it, apart from TS 29.998's, which carries none.
+    through = "10415:1@TS29.999 in TS29.998"
+    assert (scoped.interpreted, scoped.avp_ids) == (True, (through,))
     assert scoped.readings[0].rules[0].kind == "requires"
     assert [(each.avp, each.within, each.avp_ids) for each in output.constraints] == [
-        # TS 29.999's reading is TS 29.998's, so the one entry carries it.
-        ("Example-Number", None, ("10415:1",)),
+        ("Example-Number", None, (through,)),
         ("Example-Number", "Example-Group", ("10415:2",)),
     ]
+    assert cited.read_through == "TS29.999" and origin.read_through == "TS29.998"
 
 
 def test_the_linter_asks_a_command_printed_twice_for_its_clause():

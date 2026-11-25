@@ -75,8 +75,8 @@ other, its `supplied` naming the source ([undefined names](#undefined-names)).
 
 `definition` returns the defining document's reading of a name or a
 `(vendor-id, code)`. `readings` returns every reading, because a citing
-document's table can change the flags. `Avp.read_through` names the document
-whose table did.
+document's table can change the flags, and its interpretations add rules of
+its own. `Avp.read_through` names the document whose table or reading did.
 
 ```python
 from seanchai.model import Model
@@ -1093,7 +1093,12 @@ for message in s6a.messages:
 
 - `Avp.constraints` holds what the document reading the AVP read of it
   wherever it appears, or failing any, its origin's, as `value_tables` does;
-  like `value_tables` it is not part of the reading's identity.
+  like `value_tables` it is not part of the reading's identity. A document
+  reading an AVP it re-uses with constraints of its own, on the AVP or its
+  members, reads it through itself (`read_through`), so they hold where it
+  reads the AVP and not wherever the definition is read: TS 29.272 clause
+  7.3.43's rules on RFC 4004's MIP-Home-Agent-Host bind S6a's commands, not
+  RFC 4004's AA-Mobile-Node-Request.
   `Grouped.member_constraints` holds what it read of the grouped AVP's
   members, `Message.constraints` of the command's.
 - A `model.Constraint` has the `avp`, its scope (`command`,

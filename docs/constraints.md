@@ -334,7 +334,9 @@ TS 29.212's 4 name 4 entries, all of which check something:
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
-  AVP wherever it appears, or else its origin's, as value tables are;
+  AVP wherever it appears, or else its origin's, as value tables are; a
+  document's rules on an AVP it re-uses make its reading one of its own,
+  read through it, so they hold where that document reads the AVP;
   `Grouped.member_constraints` what it read of the grouped AVP's members;
   `Message.constraints` what it read of the command's members.
   `Model.constraints(reference)` lists a document's. Each is a

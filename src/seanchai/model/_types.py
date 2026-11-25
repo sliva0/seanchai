@@ -236,7 +236,8 @@ class Avp(_Plain):
     completed_by: tuple[tuple[Missing, str], ...] = ()
     # The document whose table produced this reading, spelled as
     # `Hole.document` for an older copy: `defined_in`, unless a table elsewhere
-    # changed the flag rules, the Encrypt cell or a grouped member. TS 29.229
+    # changed the flag rules, the Encrypt cell or a grouped member, or a
+    # document re-using it read constraints of its own on it. TS 29.229
     # reads RFC 6733's `Session-Id` as RFC 6733 does, so that reading names
     # RFC 6733; oneM2M TS-0004's table adds P under May, so its reading names
     # it. Two documents changing a reading alike give two readings, one
