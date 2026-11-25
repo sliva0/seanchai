@@ -135,6 +135,29 @@ def test_a_command_requiring_what_the_corpus_cannot_complete_is_skipped(built):
     }
 
 
+def test_nothing_inside_a_failed_avp_is_broken(built):
+    """RFC 6733 section 7.5 lets Failed-AVP hold the failed AVP as received,
+    so a checker holds it to its `1* { AVP }` alone: a negative changes
+    nothing inside it (TS 29.338's ALA, whose Failed-AVP holds a Vendor-Id
+    and which has no other integer to shorten)."""
+    s6c = _vectors(built, 16777312)
+
+    def inside(vector: vectors.Vector) -> set[tuple[str, str, str | None]]:
+        return {
+            (child.name, child.flags, child.data)
+            for node in vector.tree
+            if node.name == "Failed-AVP"
+            for child in node.children
+        }
+
+    valid = set().union(*(inside(v) for v in s6c.vectors if v.kind != "negative"))
+    assert valid
+    assert all(inside(v) <= valid for v in s6c.vectors if v.kind == "negative")
+    assert not [
+        v.id for v in s6c.vectors if v.id.startswith("16777312/ALA/negative/data")
+    ]
+
+
 _RUNNER = """
 local core = dofile(arg[1])
 local rules = dofile(arg[2])

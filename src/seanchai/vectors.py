@@ -158,6 +158,7 @@ class Vectors(_Model):
 
 # --- values ---------------------------------------------------------------
 
+_FAILED_AVP = 279
 _HEADER_FLAGS = {"R": 0x80, "P": 0x40, "E": 0x20, "T": 0x10}
 _M, _V, _P = 0x40, 0x80, 0x20
 _FIXED = {
@@ -375,6 +376,14 @@ class _Values:
 
 def _identity(avp: dictionary.Avp) -> str:
     return f"{avp.vendor_id}:{avp.code}"
+
+
+def _opaque(avp: dictionary.Avp) -> bool:
+    """Whether `avp` is Failed-AVP, which RFC 6733 section 7.5 lets hold the
+    failed AVP as received: a checker holds it to its `1* { AVP }` alone, so
+    nothing inside it is broken for a negative vector (TS 29.338's ALA, its
+    Failed-AVP holding a Vendor-Id)."""
+    return avp.vendor_id == 0 and avp.code == _FAILED_AVP
 
 
 def _payload(
@@ -1715,6 +1724,8 @@ class _Negatives:
 
         def walk(nodes: list[_Avp], scope: _Scope) -> Iterator[tuple[_Avp, _Scope]]:
             for node in nodes:
+                if _opaque(node.avp):
+                    continue
                 if node.avp.kind == "grouped":
                     yield from walk(node.children, self.builder.scope_of(node.avp))
                 else:
@@ -1993,7 +2004,7 @@ class _Negatives:
             nodes: list[_Avp], scope: _Scope
         ) -> Iterator[tuple[_Avp, _Scope, list[_Avp]]]:
             for node in nodes:
-                if node.avp.kind == "grouped":
+                if node.avp.kind == "grouped" and not _opaque(node.avp):
                     yield node, scope, nodes
                     yield from walk(node.children, self.builder.scope_of(node.avp))
 
