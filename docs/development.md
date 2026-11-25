@@ -91,6 +91,14 @@ runs on GitHub and on Forgejo, which reads `.github/workflows/` while
   not, so there the Vim half is skipped: run it locally after changing
   either module, as below.
 
+- A whole `uv run pytest` peaks near 2.7 GB. Each heavy module builds its
+  own model, dictionaries and vectors, and less than 100 MB of objects
+  outlive one, but what a module frees stays the process's: `conftest.py`
+  hands it back to the system (`malloc_trim`) once a module is done, or a
+  run climbs past 3 GB. Its temporary files, some 700 MB, count as memory
+  where `/tmp` is a tmpfs; under a memory cap with no swap, put them on
+  disk with `--basetemp DIR` or `TMPDIR`.
+
 Support for a new source-document shape is covered by the `sources` tests.
 Add a synthetic test only for a rejection path.
 

@@ -1,4 +1,8 @@
+import ctypes
+import gc
+import sys
 import threading
+from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -325,3 +329,34 @@ def pytest_addoption(parser):
         action="store_true",
         help="Rewrite tests/export.sha256 from the export before comparing.",
     )
+
+
+def _trimmer() -> Callable[[int], int] | None:
+    """glibc's `malloc_trim`, which gives the heap's free pages back to the
+    system, or None where the C library has none."""
+    if not sys.platform.startswith("linux"):
+        return None
+    try:
+        return ctypes.CDLL(None).malloc_trim
+    except (OSError, AttributeError):
+        return None
+
+
+_TRIM = _trimmer()
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_teardown(item, nextitem):
+    """Once a module's tests and fixtures are done, hand what they freed back
+    to the system. Each heavy module builds its own model, dictionaries and
+    vectors; what they free stays the process's otherwise, so that a whole
+    run climbed past 3 GB, though less than 100 MB of objects outlive a
+    module (docs/development.md)."""
+    result = yield
+    if nextitem is None or getattr(nextitem, "module", None) is not getattr(
+        item, "module", None
+    ):
+        gc.collect()
+        if _TRIM is not None:
+            _TRIM(0)
+    return result
