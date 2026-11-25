@@ -167,8 +167,9 @@ def test_a_rule_on_an_avp_only_the_wildcard_admits_builds_it(built):
 def test_nothing_inside_a_failed_avp_is_broken(built):
     """RFC 6733 section 7.5 lets Failed-AVP hold the failed AVP as received,
     so a checker holds it to its `1* { AVP }` alone: a negative changes
-    nothing inside it (TS 29.338's ALA, whose Failed-AVP holds a Vendor-Id
-    and which has no other integer to shorten)."""
+    nothing inside it (TS 29.338's ALA, whose Failed-AVP holds a Vendor-Id:
+    its one integer to shorten is the Vendor-Id of the
+    Vendor-Specific-Application-Id an agent may add, clause 5.3.2.2)."""
     s6c = _vectors(built, 16777312)
 
     def inside(vector: vectors.Vector) -> set[tuple[str, str, str | None]]:
@@ -182,9 +183,18 @@ def test_nothing_inside_a_failed_avp_is_broken(built):
     valid = set().union(*(inside(v) for v in s6c.vectors if v.kind != "negative"))
     assert valid
     assert all(inside(v) <= valid for v in s6c.vectors if v.kind == "negative")
-    assert not [
-        v.id for v in s6c.vectors if v.id.startswith("16777312/ALA/negative/data")
+    shortened = [
+        v for v in s6c.vectors if v.id.startswith("16777312/ALA/negative/data")
     ]
+    assert [v.id for v in shortened] == ["16777312/ALA/negative/data-length/Vendor-Id"]
+    (vendor,) = [
+        child
+        for node in shortened[0].tree
+        if node.name == "Vendor-Specific-Application-Id"
+        for child in node.children
+        if child.name == "Vendor-Id"
+    ]
+    assert vendor.data is not None and len(vendor.data) < 8
 
 
 _RUNNER = """

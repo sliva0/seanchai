@@ -1293,7 +1293,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#ria-no-vendor-specific-application-id)
@@ -1303,7 +1304,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cir-no-vendor-specific-application-id)
@@ -1313,7 +1315,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cia-no-vendor-specific-application-id)
@@ -1323,7 +1326,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-no-vendor-specific-application-id)
@@ -1333,7 +1337,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-no-vendor-specific-application-id)
@@ -1343,7 +1348,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#odr-no-vendor-specific-application-id)
@@ -1353,7 +1359,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#oda-no-vendor-specific-application-id)
@@ -1363,7 +1370,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tdr-no-vendor-specific-application-id)
@@ -1373,7 +1381,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-no-vendor-specific-application-id)
@@ -1383,7 +1392,8 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 32
 ; Versions: 18.0.0..19.2.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Value Table

@@ -670,7 +670,8 @@ Event-Reports ::= < AVP header: 4215 10415 > ;; corrected: (TS29.154.py#vendor-i
 ; Section: A.6.6.1
 ; Versions: 18.0.0..19.0.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.154.dadx#eca-vendor-specific-application-id)
@@ -679,7 +680,8 @@ Event-Reports ::= < AVP header: 4215 10415 > ;; corrected: (TS29.154.py#vendor-i
 ; Section: A.6.6.1
 ; Versions: 18.0.0..19.0.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.154.dadx#err-vendor-specific-application-id)
@@ -688,7 +690,8 @@ Event-Reports ::= < AVP header: 4215 10415 > ;; corrected: (TS29.154.py#vendor-i
 ; Section: A.6.6.1
 ; Versions: 18.0.0..19.0.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.154.dadx#era-vendor-specific-application-id)
@@ -697,7 +700,8 @@ Event-Reports ::= < AVP header: 4215 10415 > ;; corrected: (TS29.154.py#vendor-i
 ; Section: A.6.6.1
 ; Versions: 18.0.0..19.0.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Undefined AVP ;; inserted: (TS29.154.py#undefined-external-group-identifier)

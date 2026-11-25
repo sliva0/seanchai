@@ -345,7 +345,8 @@ LMSI                                            LMSI                            
 ; Page: 14
 ; Versions: 18.0.0..19.0.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#ria-vendor-specific-application-id)
@@ -355,7 +356,8 @@ LMSI                                            LMSI                            
 ; Page: 14
 ; Versions: 18.0.0..19.0.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Value Table

@@ -1088,7 +1088,7 @@
     },
     "TS29.128.dadx#cia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cia-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -1112,7 +1112,7 @@
     },
     "TS29.128.dadx#cir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cir-supported-features-vendor": {
      "kind": "interpret",
@@ -1144,7 +1144,7 @@
     },
     "TS29.128.dadx#cma-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cma-pdn-connection-charging-id": {
      "kind": "interpret",
@@ -1184,7 +1184,7 @@
     },
     "TS29.128.dadx#cmr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cmr-rat-type": {
      "kind": "interpret",
@@ -1272,7 +1272,7 @@
     },
     "TS29.128.dadx#oda-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#oda-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -1296,7 +1296,7 @@
     },
     "TS29.128.dadx#odr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#odr-non-ip-data": {
      "kind": "interpret",
@@ -1344,7 +1344,7 @@
     },
     "TS29.128.dadx#ria-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#ria-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -1376,7 +1376,7 @@
     },
     "TS29.128.dadx#rir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#rir-supported-features-vendor": {
      "kind": "interpret",
@@ -1420,7 +1420,7 @@
     },
     "TS29.128.dadx#tda-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#tda-requested-retransmission-time": {
      "kind": "interpret",
@@ -1448,7 +1448,7 @@
     },
     "TS29.128.dadx#tdr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#tdr-non-ip-data": {
      "kind": "interpret",
@@ -1584,7 +1584,7 @@
     },
     "TS29.128.dadx#cia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cia-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -1608,7 +1608,7 @@
     },
     "TS29.128.dadx#cir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cir-supported-features-vendor": {
      "kind": "interpret",
@@ -1640,7 +1640,7 @@
     },
     "TS29.128.dadx#cma-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cma-pdn-connection-charging-id": {
      "kind": "interpret",
@@ -1680,7 +1680,7 @@
     },
     "TS29.128.dadx#cmr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#cmr-rat-type": {
      "kind": "interpret",
@@ -1768,7 +1768,7 @@
     },
     "TS29.128.dadx#oda-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#oda-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -1792,7 +1792,7 @@
     },
     "TS29.128.dadx#odr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#odr-non-ip-data": {
      "kind": "interpret",
@@ -1840,7 +1840,7 @@
     },
     "TS29.128.dadx#ria-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#ria-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -1872,7 +1872,7 @@
     },
     "TS29.128.dadx#rir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#rir-supported-features-vendor": {
      "kind": "interpret",
@@ -1920,7 +1920,7 @@
     },
     "TS29.128.dadx#tda-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#tda-requested-retransmission-time": {
      "kind": "interpret",
@@ -1948,7 +1948,7 @@
     },
     "TS29.128.dadx#tdr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.128.dadx#tdr-non-ip-data": {
      "kind": "interpret",
@@ -2173,7 +2173,7 @@
     },
     "TS29.154.dadx#eca-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#ecr-auth-session-state": {
      "kind": "interpret",
@@ -2189,7 +2189,7 @@
     },
     "TS29.154.dadx#ecr-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#era-auth-session-state": {
      "kind": "interpret",
@@ -2197,7 +2197,7 @@
     },
     "TS29.154.dadx#era-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#err-auth-session-state": {
      "kind": "interpret",
@@ -2213,7 +2213,7 @@
     },
     "TS29.154.dadx#err-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#event-configuration-location-reporting": {
      "kind": "interpret",
@@ -2365,7 +2365,7 @@
     },
     "TS29.154.dadx#eca-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#ecr-auth-session-state": {
      "kind": "interpret",
@@ -2381,7 +2381,7 @@
     },
     "TS29.154.dadx#ecr-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#era-auth-session-state": {
      "kind": "interpret",
@@ -2389,7 +2389,7 @@
     },
     "TS29.154.dadx#era-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#err-auth-session-state": {
      "kind": "interpret",
@@ -2405,7 +2405,7 @@
     },
     "TS29.154.dadx#err-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause A.6.6.1: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.154.dadx#event-configuration-location-reporting": {
      "kind": "interpret",
@@ -2641,7 +2641,7 @@
     },
     "TS29.173.dadx#ria-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.173.dadx#rir-auth-session-state": {
      "kind": "interpret",
@@ -2665,7 +2665,7 @@
     },
     "TS29.173.dadx#rir-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.173.dadx#serving-node-mme-lcs-capabilities": {
      "kind": "interpret",
@@ -2768,7 +2768,7 @@
     },
     "TS29.173.dadx#ria-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.173.dadx#rir-auth-session-state": {
      "kind": "interpret",
@@ -2792,7 +2792,7 @@
     },
     "TS29.173.dadx#rir-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.173.dadx#serving-node-mme-lcs-capabilities": {
      "kind": "interpret",
@@ -13534,7 +13534,7 @@
     },
     "TS29.336.dadx#cia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#cia-number-of-ues": {
      "kind": "interpret",
@@ -13602,7 +13602,7 @@
     },
     "TS29.336.dadx#cir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#cir-origin-host-scef-id": {
      "kind": "interpret",
@@ -13710,7 +13710,7 @@
     },
     "TS29.336.dadx#nia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#nia-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -13758,7 +13758,7 @@
     },
     "TS29.336.dadx#nir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#nir-supported-features-vendor": {
      "kind": "interpret",
@@ -13822,7 +13822,7 @@
     },
     "TS29.336.dadx#ria-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#ria-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -13862,7 +13862,7 @@
     },
     "TS29.336.dadx#rir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#rir-pdn-connectivity-status-report": {
      "kind": "interpret",
@@ -13978,7 +13978,7 @@
     },
     "TS29.336.dadx#sia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#sia-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -14026,7 +14026,7 @@
     },
     "TS29.336.dadx#sir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#sir-scs-identity": {
      "kind": "interpret",
@@ -14302,7 +14302,7 @@
     },
     "TS29.336.dadx#cia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#cia-number-of-ues": {
      "kind": "interpret",
@@ -14370,7 +14370,7 @@
     },
     "TS29.336.dadx#cir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#cir-origin-host-scef-id": {
      "kind": "interpret",
@@ -14478,7 +14478,7 @@
     },
     "TS29.336.dadx#nia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#nia-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -14526,7 +14526,7 @@
     },
     "TS29.336.dadx#nir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#nir-supported-features-vendor": {
      "kind": "interpret",
@@ -14590,7 +14590,7 @@
     },
     "TS29.336.dadx#ria-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#ria-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -14630,7 +14630,7 @@
     },
     "TS29.336.dadx#rir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 8.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#rir-pdn-connectivity-status-report": {
      "kind": "interpret",
@@ -14746,7 +14746,7 @@
     },
     "TS29.336.dadx#sia-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#sia-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -14794,7 +14794,7 @@
     },
     "TS29.336.dadx#sir-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.336.dadx#sir-scs-identity": {
      "kind": "interpret",
@@ -15194,7 +15194,7 @@
     },
     "TS29.338.dadx#ala-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#ala-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -15226,7 +15226,7 @@
     },
     "TS29.338.dadx#alr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#alr-smsmi-correlation-id": {
      "kind": "interpret",
@@ -15274,7 +15274,7 @@
     },
     "TS29.338.dadx#ofa-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#ofa-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -15302,7 +15302,7 @@
     },
     "TS29.338.dadx#ofr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#ofr-sm-delivery-outcome": {
      "kind": "interpret",
@@ -15334,7 +15334,7 @@
     },
     "TS29.338.dadx#rda-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#rda-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -15366,7 +15366,7 @@
     },
     "TS29.338.dadx#rdr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#rdr-sm-delivery-outcome": {
      "kind": "interpret",
@@ -15506,7 +15506,7 @@
     },
     "TS29.338.dadx#sra-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#sra-only-one-serving-node": {
      "kind": "interpret",
@@ -15578,7 +15578,7 @@
     },
     "TS29.338.dadx#srr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#srr-sm-rp-smea": {
      "kind": "interpret",
@@ -15614,7 +15614,7 @@
     },
     "TS29.338.dadx#tfa-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#tfa-requested-retransmission-time": {
      "kind": "interpret",
@@ -15658,7 +15658,7 @@
     },
     "TS29.338.dadx#tfr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#tfr-sgsn-number": {
      "kind": "interpret",
@@ -15774,7 +15774,7 @@
     },
     "TS29.338.dadx#ala-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#ala-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -15806,7 +15806,7 @@
     },
     "TS29.338.dadx#alr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#alr-smsmi-correlation-id": {
      "kind": "interpret",
@@ -15854,7 +15854,7 @@
     },
     "TS29.338.dadx#ofa-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#ofa-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -15882,7 +15882,7 @@
     },
     "TS29.338.dadx#ofr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#ofr-sm-delivery-outcome": {
      "kind": "interpret",
@@ -15918,7 +15918,7 @@
     },
     "TS29.338.dadx#rda-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#rda-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -15958,7 +15958,7 @@
     },
     "TS29.338.dadx#rdr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#rdr-sm-delivery-outcome": {
      "kind": "interpret",
@@ -16102,7 +16102,7 @@
     },
     "TS29.338.dadx#sra-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#sra-only-one-serving-node": {
      "kind": "interpret",
@@ -16174,7 +16174,7 @@
     },
     "TS29.338.dadx#srr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#srr-sm-rp-smea": {
      "kind": "interpret",
@@ -16210,7 +16210,7 @@
     },
     "TS29.338.dadx#tfa-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#tfa-requested-retransmission-time": {
      "kind": "interpret",
@@ -16254,7 +16254,7 @@
     },
     "TS29.338.dadx#tfr-no-vendor-specific-application-id": {
      "kind": "interpret",
-     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'"
+     "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.338.dadx#tfr-sgsn-number": {
      "kind": "interpret",

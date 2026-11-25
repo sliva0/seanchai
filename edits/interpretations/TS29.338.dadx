@@ -784,8 +784,10 @@
     text-only
 
 
-;; Clause 5.3.2.2, in each S6c command, whose ABNF prints the AVP only, its
-;; NOTE says, for agents not complying with RFC 6733.
+;; Clause 5.3.2.2, in each S6c command. A rule on the sender's: the
+;; receiver ignores the AVP, and the NOTE has the command formats print it
+;; for intermediate agents not complying with RFC 6733, so a capture past
+;; such an agent may hold it rightly.
 ; Type: Interpreted Constraints
 ; Id: srr-no-vendor-specific-application-id
 ; AVP: Vendor-Specific-Application-Id
@@ -793,7 +795,8 @@
 ; Section: 5.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -803,7 +806,8 @@
 ; Section: 5.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -813,7 +817,8 @@
 ; Section: 5.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -823,7 +828,8 @@
 ; Section: 5.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -833,7 +839,8 @@
 ; Section: 5.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -843,7 +850,8 @@
 ; Section: 5.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1434,7 +1442,8 @@
 ; Section: 6.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1444,7 +1453,8 @@
 ; Section: 6.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1454,7 +1464,8 @@
 ; Section: 6.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1464,7 +1475,8 @@
 ; Section: 6.3.2.2
 ; Versions: 18.2.0..19.3.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints

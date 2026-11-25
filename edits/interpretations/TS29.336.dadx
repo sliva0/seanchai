@@ -240,8 +240,10 @@
     requires Supported-Features/Vendor-Id = 10415
 
 
-;; Clause 6.2.2, in each command, which admits the AVP through its * [ AVP ]
-;; where its ABNF does not print it.
+;; Clause 6.2.2, in each command, as TS 29.338's clause 5.3.2.2: a rule on
+;; the sender's: the receiver ignores the AVP, and the NOTE has the
+;; command formats print it for intermediate agents not complying with
+;; RFC 6733, so a capture past such an agent may hold it rightly.
 ; Type: Interpreted Constraints
 ; Id: sir-no-vendor-specific-application-id
 ; AVP: Vendor-Specific-Application-Id
@@ -249,7 +251,8 @@
 ; Section: 6.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -259,7 +262,8 @@
 ; Section: 6.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ;; Clause 6.3.3, in the answer, the three codes its clauses define, TS
@@ -1229,7 +1233,8 @@
 ; Section: 8.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1239,7 +1244,8 @@
 ; Section: 8.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1249,7 +1255,8 @@
 ; Section: 8.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1259,7 +1266,8 @@
 ; Section: 8.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1269,7 +1277,8 @@
 ; Section: 8.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1279,7 +1288,8 @@
 ; Section: 8.2.2
 ; Versions: 18.2.0..19.1.0
 "The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
-    absent
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ;; Clause 8.3.3, in each answer, the eight codes its clauses define, TS

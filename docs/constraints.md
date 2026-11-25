@@ -1113,20 +1113,23 @@ S6c's application (clause 6.3.2.2), so the tables of clauses 5.2.2.1 and
 | `length` | 1: SM-RP-UI, at most 200 octets |
 | `range` | 12: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands, Feature-List-ID 1 for S6c and SGd |
 | `requires`, `present-if`, `absent-if`, `excludes` | 38, 7, 9, 7 |
-| `absent` | 30: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in each of the 10 commands |
+| `absent` | 20: Authorization-Lifetime and Session-Timeout in each of the 10 commands |
 | reading the request | 3: the SRA's Serving-Node in a success's answer to a request without SM-Delivery-Not-Intended and holding the IP-SM-GW number for one with an SMSMI-Correlation-ID, the TFA's Requested-Retransmission-Time only after a Maximum-Retransmission-Time |
 | `bits` | 6, each `only`: a flags AVP's NOTE that undefined bits are cleared, MWD-Status's once per release |
 | `members` | 2: `at-least-one`, Serving-Node's and Additional-Serving-Node's numbers |
-| `text-only` | 34 |
+| `text-only` | 44, 10 of them Vendor-Specific-Application-Id's in each command |
 
 Clause 4.5's "shall include ... the Auth-Session-State AVP set to the value
 NO_STATE_MAINTAINED (1)" and "Neither the Authorization-Lifetime AVP nor the
 Session-Timeout AVP shall be present" are read in each of the ten commands,
-the two AVPs RFC 6733 defines admitted through each body's `* [ AVP ]`, and
-clauses 5.3.2.2's and 6.3.2.2's "The Vendor-Specific-Application-Id AVP shall
+the two AVPs RFC 6733 defines admitted through each body's `* [ AVP ]`.
+Clauses 5.3.2.2's and 6.3.2.2's "The Vendor-Specific-Application-Id AVP shall
 not be included in any command sent by Diameter nodes supporting
-applications defined in this specification" as `absent` in each, an AVP the
-ABNF prints only, its NOTE says, for agents not complying with RFC 6733.
+applications defined in this specification" is `text-only` in each: it
+binds the sending node, the next sentence has the receiver ignore the AVP,
+and the NOTE has every command format print it for intermediate agents not
+complying with RFC 6733, so a message captured past such an agent may hold
+it rightly.
 Serving-Node's and Additional-Serving-Node's "The following combinations are
 allowed" (clauses 5.3.3.6 and 5.3.3.7) are read member by member: one of the
 numbers present, and each member only beside the others of its
@@ -1220,11 +1223,11 @@ holds of both, as an establishment's AVPs, which the SCEF never requests.
 | `range` | 10: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands |
 | `exclude` | 2: Uplink-Rate-Limit and Downlink-Rate-Limit 1 to 9 |
 | `requires`, `present-if`, `absent-if` | 22, 8, 5 |
-| `absent` | 30: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in each of the 10 commands |
+| `absent` | 20: Authorization-Lifetime and Session-Timeout in each of the 10 commands |
 | reading the request | 1: the CMA's PDN-Connection-Charging-ID answering an establishment with DIAMETER_SUCCESS |
 | `values` | 1: a reachability report's Reachability-Information REACHABLE_FOR_DATA |
 | `bits` | 2, each `only`: CMR-Flags, TDA-Flags |
-| `text-only` | 15 |
+| `text-only` | 25, 10 of them Vendor-Specific-Application-Id's in each command |
 
 Clause 6.1.4's session handling and clause 6.2.2's Vendor-Specific-
 Application-Id are read in each of the ten commands as TS 29.338's clauses
@@ -1313,14 +1316,14 @@ UE's identity.
 | `range` | 9: Auth-Session-State NO_STATE_MAINTAINED in each of the 8 commands, PDN-Connectivity-Status-Report's Non-IP-PDN-Type-Indicator TRUE |
 | `exclude` | 1: PDN-Connectivity-Status-Report's PDN-Type IPv4_OR_IPv6 |
 | `requires`, `present-if`, `absent-if`, `excludes` | 41, 12, 13, 13 |
-| `absent` | 24: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in each of the 8 commands |
+| `absent` | 16: Authorization-Lifetime and Session-Timeout in each of the 8 commands |
 | `equals` | 1: the CIR's Origin-Host, the SCEF-ID of its Monitoring-Event-Configuration |
 | reading the request | 10: the SIA's Service-Data after the SIR's Service-ID and its User-Identifier answering S6n, the CIA's User-Identifier, Number-Of-UEs and IMSI-Group-Id as the CIR's group or flags ask, its Monitoring-Event-Config-Status after a Monitoring-Event-Configuration and its Enhanced-Coverage-Restriction-Data after the query, the NIA's NIDD-Authorization-Response answering the HSS's update and holding the IMSI for an MSISDN, its Group-User-Identifier for a group |
 | `default` | 6: Reachability-Type, MONTE-Location-Type, Scheduled-Communication-Time's Time-Of-Day-Start, Type-Of-External-Identifier, Supported-Monitoring-Events, PLMN-ID-Requested |
 | `values` | 1: Maximum-Number-of-Reports at most one for an SMS reachability or a last known location (clause 8.4.8) |
 | `bits` | 16: `only` 12, a flags AVP's NOTE that undefined bits are cleared, Supported-Monitoring-Events' in Release 19 alone; `at-most-one` 4 (Reachability-Type, IMEI-Change, Battery-Indicator's bit 0 against bits 1 and 2) |
 | `members` | 12, each `at-least-one`: User-Identifier not empty, Serving-Node's and Additional-Serving-Node's numbers, the reference IDs of Monitoring-Event-Configuration, AESE-Communication-Pattern and Updated-Network-Configuration, the SCEF's NIDD-Authorization-Request's APN, each Group-User-Identifier's IMSI and MSISDN or External-Identifier, AdditionalIdentifiers, Exclude-Identifiers, Include-Identifiers |
-| `text-only` | 33 |
+| `text-only` | 41, 8 of them Vendor-Specific-Application-Id's in each command |
 
 Clauses 6.1.4 and 8.1.4's session handling and clauses 6.2.2 and 8.2.2's
 Vendor-Specific-Application-Id are read in each of the eight commands as TS
@@ -1545,11 +1548,10 @@ Unsigned32 clause 5.3.4 names the values of, says, 0 or 1.
 | `encoding element` | 1: Network-Area-Info-List, TS 29.274's Presence Reporting Area Action from octet 9, as TS 29.212's Presence-Reporting-Area-Elements-List ([above](#elements)) |
 | `range` | 7: Auth-Session-State NO_STATE_MAINTAINED in each of the 6 commands, Event-Configuration's Monitoring-Type LOCATION_REPORTING |
 | `requires`, `present-if` | 6, 10 |
-| `absent` | 4: Vendor-Specific-Application-Id in each of Nta's 4 commands |
 | reading the request | 2: the BTA's Transfer-Policy and Reference-Id answering a transfer policy request |
 | `members` | 4, each `at-least-one`: a Transfer-Policy's Time-Window and Rating-Group, Event-Configuration's Location-Information-Configuration and its MONTE-Location-Type |
 | `unique` | 1: Transfer-Policy-Id within Transfer-Policy |
-| `text-only` | 11 |
+| `text-only` | 15, 4 of them Vendor-Specific-Application-Id's in each of Nta's commands |
 
 A transfer policy request's BTR carries the ASP's identity, a volume, the
 number of UEs and the time window, the volume the downlink's, the uplink's
@@ -1562,11 +1564,12 @@ one BTA share its Reference-Id, so their Transfer-Policy-Ids differ (clause
 within the Vendor-Specific-Application-Id grouped AVP" is read on the BTR and
 BTA through a path into it, RFC 6733's AVP, and clauses 5.4.2's and
 A.6.4.2's Supported-Features Vendor-Id in each command printing it, as TS
-29.336's are. Nta's commands carry no Vendor-Specific-Application-Id, which
-they admit through their `* [ AVP ]` (clause A.6.6.1), and the successful
-ECA its Event-Configuration-Status (A.4.1). Network-Area-Info-List, as TS
-29.212's Presence-Reporting-Area-Elements-List, holds the Presence Reporting
-Area Action from its octet 9: the entry those read.
+29.336's are. Clause A.6.6.1's Vendor-Specific-Application-Id is
+`text-only` in Nta's commands, as TS 29.338's clause 5.3.2.2 is, and the
+successful ECA its Event-Configuration-Status (A.4.1).
+Network-Area-Info-List, as TS 29.212's Presence-Reporting-Area-Elements-List,
+holds the Presence Reporting Area Action from its octet 9: the entry those
+read.
 
 The text-only rules are mostly conditions on the node, a feature, what the
 PCRF holds or an earlier message ("if supported by the SCEF and PCRF
@@ -1618,9 +1621,9 @@ no print but this one's holds an LCS-Capabilities-Sets.
 | `encoding element` | 1: LMSI, TS 23.003's ([above](#elements)) |
 | `range` | 3: Auth-Session-State NO_STATE_MAINTAINED in both commands, Feature-List-ID 1 |
 | `requires`, `present-if`, `absent-if` | 1, 5, 7 |
-| `absent` | 6: Authorization-Lifetime, Session-Timeout and Vendor-Specific-Application-Id in both commands |
+| `absent` | 4: Authorization-Lifetime and Session-Timeout in both commands |
 | `bits` | 1, `only`: RIA-Flags |
-| `text-only` | 5 |
+| `text-only` | 7, 2 of them Vendor-Specific-Application-Id's in both commands |
 
 Clause 6.1.4's session handling and clause 6.2.2's Vendor-Specific-
 Application-Id are read in both commands as TS 29.338's clauses 4.5 and
