@@ -666,17 +666,17 @@ _TRANSCRIPTION_INTERPRETATIONS = """\
 """
 
 
-def _interpreted_transcription(tmp_path):
+def _interpreted_transcription(tmp_path, versions="3.2.1"):
     corpus, sources, edits, _ = _transcribed(tmp_path)
     interpretations = tmp_path / "interpretations"
     interpretations.mkdir()
     (interpretations / "ETSI-TS183.017.dadx").write_text(
-        _TRANSCRIPTION_INTERPRETATIONS, encoding="utf-8"
+        _TRANSCRIPTION_INTERPRETATIONS.replace("3.2.1", versions), encoding="utf-8"
     )
     specifications = tmp_path / "specifications"
     manifest = specifications / "manifest.json"
 
-    def run():
+    def run(**options):
         return _regenerate.regenerate(
             manifest,
             corpus,
@@ -686,6 +686,7 @@ def _interpreted_transcription(tmp_path):
             interpretations_dir=interpretations,
             transcriptions_dir=tmp_path / "transcriptions",
             add=["ETSI-TS183.017"],
+            **options,
         ).outcomes
 
     return corpus / "etsi" / "ts183017-030201.dad", specifications, run
@@ -748,6 +749,27 @@ def test_a_transcriptions_quotes_are_held_to_its_pdf(tmp_path, monkeypatch, prin
     else:
         assert added.status == "failed"
         assert "clause 7.3.6 does not print" in (added.error or "")
+
+
+def test_one_run_expanding_ranges_prints_the_widened_versions(tmp_path):
+    """A corrected file prints each interpreted block's `; Versions:` line:
+    the run widening a block's range builds the document again from the
+    widened file, so that a plain run after it changes nothing."""
+    corrected, _, run = _interpreted_transcription(tmp_path, versions="3.2.0")
+    interpretations = tmp_path / "interpretations" / "ETSI-TS183.017.dadx"
+
+    (added,) = run()
+    assert added.status == "new"
+    assert "; Versions: 3.2.0\n" in corrected.read_text(encoding="utf-8")
+
+    (expanded,) = run(expand_ranges=True)
+    assert expanded.expanded
+    assert expanded.status == "changed"
+    assert "; Versions: 3.2.0..3.2.1\n" in interpretations.read_text("utf-8")
+    assert "; Versions: 3.2.0..3.2.1\n" in corrected.read_text(encoding="utf-8")
+
+    (again,) = run()
+    assert again.status == "unchanged"
 
 
 def test_a_transcription_answers_to_its_declarations_version_ranges(tmp_path):
@@ -965,14 +987,16 @@ def test_a_run_failing_on_a_later_document_changes_nothing(
 
     def failing_second(*arguments, **options):
         calls.append(arguments[0].reference)
-        if len(calls) == 2:
+        if arguments[0].reference == "TS29.999":
             raise _regenerate.CorrectionError("injected")
         return produce(*arguments, **options)
 
     monkeypatch.setattr(_regenerate, "_produce", failing_second)
     report = rebuild(expand_ranges=True)
 
-    assert calls == ["ETSI-TS183.017", "TS29.999"]
+    # The first, its ranges widened, built again from the widened files once
+    # the next document comes.
+    assert calls == ["ETSI-TS183.017", "TS29.999", "ETSI-TS183.017"]
     first, second = report.outcomes
     assert first.expanded and first.status == "unchanged"
     assert second.status == "failed"

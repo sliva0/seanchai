@@ -274,6 +274,11 @@ diff -u /tmp/old/raw/3gpp/rel-19/29272-j50.raw.dad \
 
 `-o` keeps the old pair out of the corpus.
 
+A corrected file prints each interpreted block's `; Versions:` line, so a
+run with `--expand-ranges` builds a document whose ranges it widened again
+from the widened files, every copy of it, and reports its copies together
+after the last: one run leaves the corpus as a second, plain run would.
+
 `--expand-ranges` rewrites `first_version`/`last_version` in
 `edits/sources/<SpecRef>.toml`, the `versions=` string literal in
 `edits/corrections/<SpecRef>.py` and a block's `; Versions:` line in

@@ -252,22 +252,8 @@ def _run(
         # Newest first within a document, so that a run going back widens a
         # block release by release, each copy then the next one's neighbour.
         selected.sort(key=lambda key: (key[0], -(_release(key[1]) or 0)))
-    for key in selected:
-        outcome = _one(
-            key[0],
-            listed.get(key),
-            committed.get(moves.get(key, key)),
-            corpus,
-            output,
-            stage,
-            sources_dir,
-            corrections_dir,
-            interpretations_dir,
-            books,
-            absent,
-            _offering(key, [*listed, *committed], whole, offer_cited),
-        )
-        stage.unstaged(outcome)
+
+    def finish(key: _Key, outcome: Outcome) -> None:
         previous = committed.get(moves.get(key, key))
         if outcome.replaced and previous is not None:
             _diff(outcome, previous, corpus, output, stage)
@@ -284,6 +270,55 @@ def _run(
                 )
         outcomes.append(outcome)
         report(outcome)
+
+    # Expanding, a document's copies are reported together: a corrected file
+    # prints each interpreted block's `; Versions:` line, so where a copy
+    # widened a range the document's copies are built again from the widened
+    # edit files, the ones built before it too, as a plain run would build
+    # them, and one run leaves the corpus as a second would.
+    pending: list[tuple[_Key, Outcome]] = []
+
+    def settle() -> None:
+        if any(outcome.expanded for _, outcome in pending):
+            for key, outcome in pending:
+                _rebuild(
+                    outcome,
+                    listed.get(key),
+                    committed.get(moves.get(key, key)),
+                    stage,
+                    sources_dir,
+                    corrections_dir,
+                    interpretations_dir,
+                    _offering(key, [*listed, *committed], whole, offer_cited),
+                )
+                stage.unstaged(outcome)
+        for key, outcome in pending:
+            finish(key, outcome)
+        pending.clear()
+
+    for key in selected:
+        outcome = _one(
+            key[0],
+            listed.get(key),
+            committed.get(moves.get(key, key)),
+            corpus,
+            output,
+            stage,
+            sources_dir,
+            corrections_dir,
+            interpretations_dir,
+            books,
+            absent,
+            _offering(key, [*listed, *committed], whole, offer_cited),
+        )
+        stage.unstaged(outcome)
+        if books is None:
+            finish(key, outcome)
+            continue
+        if pending and pending[0][0][0] != key[0]:
+            settle()
+        pending.append((key, outcome))
+    settle()
     result = Report(
         outcomes,
         missing_sources=tuple(
@@ -552,6 +587,50 @@ def _one(
     for path, text in ((corrected, corrected_text), (raw, raw_text)):
         stage.write(path, text)
     return outcome
+
+
+def _rebuild(
+    outcome: Outcome,
+    source: _Source | None,
+    committed: _Committed | None,
+    stage: _Stage,
+    sources_dir: Path | None,
+    corrections_dir: Path | None,
+    interpretations_dir: Path | None,
+    offering: _Offering,
+) -> None:
+    """Build a copy `_one` built cleanly again, from the edit files as
+    `--expand-ranges` widened them, as a run without it would: its
+    corrected file then prints the widened `; Versions:` lines. The
+    warnings are the first build's, which named the ranges as found."""
+    if source is None or outcome.status not in ("unchanged", "changed", "new"):
+        return
+    try:
+        raw_text, corrected_text, _ = _produce(
+            source,
+            sources_dir,
+            corrections_dir,
+            interpretations_dir,
+            [],
+            offering=offering,
+        )
+    except (ExtractionError, CorrectionError, DadParseError, OSError) as error:
+        outcome.status = "failed"
+        outcome.error = f"rebuilding with the widened ranges: {error}"
+        return
+    stem = source.stem or source.document.stem
+    corrected = Path(source.tree) / f"{stem}.dad"
+    raw = Path("raw") / source.tree / f"{stem}.raw.dad"
+    if outcome.status != "new":
+        assert committed is not None
+        outcome.status = (
+            "changed"
+            if _read(committed.corrected) != corrected_text
+            or _read(committed.raw) != raw_text
+            else "unchanged"
+        )
+    for path, text in ((corrected, corrected_text), (raw, raw_text)):
+        stage.write(path, text)
 
 
 def _diff(
