@@ -1591,6 +1591,18 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
   elseif depth == 0 then
     scoped = ctx.cons
   end
+  -- The reading an AVP only `* [ AVP ]` admits is held to, by identity:
+  -- the one the scope's rules on it were read for (TS 32.299's CCA, its
+  -- Supported-Features, whose Feature-List-ID TS 32.299 sets M), else the
+  -- identity's own.
+  local admits = {}
+  for _, list in pairs(scoped or {}) do
+    for _, cons in ipairs(list) do
+      if cons.a and not admits[cons.s] then
+        admits[cons.s] = cons.a
+      end
+    end
+  end
   local counts = {}
   local positions = {}
   -- Each identity's AVPs in order, for the first beyond what is allowed.
@@ -1613,7 +1625,8 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
       reading = rules.avps[slot.member.id]
       name = slot.member.name
     else
-      reading = rules.avps[identity]
+      reading = admits[identity] and rules.avps[admits[identity]]
+        or rules.avps[identity]
       name = avp_label(rules, avp)
       unlisted = unlisted + 1
       if not body.wildcard then

@@ -646,6 +646,23 @@ class _Builder:
             avp.name,
         )
 
+    def admitted(
+        self,
+        scope: _Scope,
+        member: dictionary.Member | None,
+        each: dictionary.Constraint,
+    ) -> str | None:
+        """The reading to build for the subject of `each`, a constraint of
+        `scope`: its member's, or where the body lists it not, the
+        constraint's own where the body's `* [ AVP ]` admits it (TS 32.299's
+        CCA, its Supported-Features), the reading the Wireshark plugin holds
+        it to; None where neither can be built."""
+        if member is not None:
+            return member.avp
+        if not any(m.kind == "wildcard" for m in scope.members) or not each.avp_ids:
+            return None
+        return each.avp_ids[0] if each.avp_ids[0] in self.avps else None
+
     def rules_for(
         self, avp: dictionary.Avp, scope: _Scope, name: str
     ) -> list[dictionary.Rule]:
@@ -1081,13 +1098,17 @@ class _Builder:
                     if any(n.avp.name == name for n in nodes):
                         # Added for another block on it in this pass.
                         continue
-                    member = next(m for m in scope.members if m.name == name)
-                    if member.avp is None:
+                    member = next((m for m in scope.members if m.name == name), None)
+                    identifier = self.admitted(scope, member, each)
+                    if identifier is None:
                         raise _Unbuildable(
                             f"{name} is to be present and cannot be built"
+                            if member is not None
+                            else f"{name} is to be present and the body does not"
+                            " admit it"
                         )
                     nodes.append(
-                        self.avp(self.avps[member.avp], scope, member, False, ())
+                        self.avp(self.avps[identifier], scope, member, False, ())
                     )
                 elif kind == "excludes" and name in keep:
                     forbidden = {
@@ -2447,13 +2468,7 @@ class _Negatives:
         a member of the body or one its `* [ AVP ]` admits, and break nothing
         else."""
         member = next((m for m in self.scope.members if m.name == name), None)
-        identifier = (
-            member.avp
-            if member is not None
-            else next(iter(each.avp_ids), None)
-            if any(m.kind == "wildcard" for m in self.scope.members)
-            else None
-        )
+        identifier = self.builder.admitted(self.scope, member, each)
         if identifier is None or identifier not in self.builder.avps:
             return False
         try:
@@ -2534,11 +2549,12 @@ class _Negatives:
             if member is not None:
                 return self.sibling(message.nodes, name)
             held = next((n for n in message.nodes if n.avp.name == name), None)
-            if held is not None or not each.avp_ids:
+            identifier = self.builder.admitted(self.scope, None, each)
+            if held is not None or identifier is None:
                 return held
             try:
                 node = self.builder.avp(
-                    self.builder.avps[each.avp_ids[0]], self.scope, None, False, ()
+                    self.builder.avps[identifier], self.scope, None, False, ()
                 )
             except _Unbuildable:
                 return None

@@ -10,6 +10,7 @@ import gc
 import json
 import shutil
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
@@ -135,6 +136,20 @@ def test_a_command_requiring_what_the_corpus_cannot_complete_is_skipped(built):
     }
 
 
+def test_a_rule_on_an_avp_only_the_wildcard_admits_builds_it(built):
+    """TS 32.299's CCA leaves Supported-Features to its `* [ AVP ]`, and
+    clause 6.5.10.3 wants one in an answer to an initial request with
+    DIAMETER_ERROR_FEATURE_UNSUPPORTED, TS 32.299's first 3GPP code, which
+    Ro's dictionary alone gives its Experimental-Result-Code: the AVP is
+    built, read as TS 32.299 reads it, Feature-List-ID's M bit set as its
+    table prints it."""
+    ro = _vectors(built, 4)
+    (cca,) = [v for v in ro.vectors if v.id == "Ro/CCA/maximal"]
+    (features,) = [node for node in cca.tree if node.name == "Supported-Features"]
+    flags = {node.name: node.flags for node in features.children}
+    assert flags["Feature-List-ID"] == "VM"
+
+
 def test_nothing_inside_a_failed_avp_is_broken(built):
     """RFC 6733 section 7.5 lets Failed-AVP hold the failed AVP as received,
     so a checker holds it to its `1* { AVP }` alone: a negative changes
@@ -186,19 +201,31 @@ class _Kept:
     expected: tuple[vectors.Expected, ...]
 
 
+@dataclasses.dataclass(frozen=True)
+class _Checked:
+    """Every application's vectors, as lines the runner reads, and the
+    plugin's rules: the whole corpus's, and each application's own."""
+
+    kept: dict[int | None, list[_Kept]]
+    rules: Path
+    own_rules: dict[int | None, Path]
+    lines: dict[int | None, Path]
+    runner: Path
+
+
 @pytest.fixture(scope="module")
-def checked(built, tmp_path_factory):
+def checked(built, tmp_path_factory) -> _Checked:
     """The vectors of every application the corpus holds, so of every
     document with interpreted rules, but an obsoleted document's, which the
-    plugin holds to the newer one, and the plugin's rules for them, from one
-    dictionary; of each vector only what the test reads is kept."""
+    plugin holds to the newer one, and the plugin's rules for them, from the
+    whole dictionary and from each application's; of each vector only what
+    the test reads is kept."""
     books, model = built
     work = tmp_path_factory.mktemp("vectors")
     whole = dictionary.build(model, corpus_version=books.version)
+    places = generator.Places(books)
     rules = work / "rules.lua"
-    rules.write_text(
-        generator.rules_chunk(whole, model, generator.Places(books)), "utf-8"
-    )
+    rules.write_text(generator.rules_chunk(whole, model, places), "utf-8")
     obsolete = {r for r in model.references() if model.obsoleted_by(r)}
     # Each interpreted document's applications are among them.
     assert {each.application_id for each in whole.applications} >= {
@@ -211,39 +238,61 @@ def checked(built, tmp_path_factory):
         16777272,  # S6b
         16777308,  # S7a/S7d
     }
-    # The whole dictionary's vectors, one application id at a time: all at
-    # once hold over a gigabyte.
     groups: dict[int | None, list[dictionary.Application]] = {}
     for each in whole.applications:
         groups.setdefault(each.application_id, []).append(each)
     pages = vectors.pages_of(books)
-    kept: list[_Kept] = []
-    lines = work / "vectors.txt"
-    with lines.open("w") as out:
-        for key in sorted(groups, key=lambda key: (key is None, key or 0)):
-            part = whole.model_copy(update={"applications": groups[key]})
+    checked = _Checked({}, rules, {}, {}, work / "runner.lua")
+    checked.runner.write_text(_RUNNER, "utf-8")
+    # One application id at a time, as `seanchai vectors --application`
+    # builds them: from the dictionary of that application alone, whose
+    # value tables, and so the values chosen, are its own (TS 32.299's CCA
+    # reaches a rule on its Supported-Features only with TS 32.299's first
+    # Experimental-Result-Code). The commands printing no id, which no
+    # selection names, from the whole dictionary's. All at once hold over a
+    # gigabyte.
+    for key in sorted(groups, key=lambda key: (key is None, key or 0)):
+        part = (
+            whole.model_copy(update={"applications": groups[key]})
+            if key is None
+            else dictionary.build(
+                model, application_ids=(key,), corpus_version=books.version
+            )
+        )
+        own = work / f"rules-{key}.lua"
+        own.write_text(generator.rules_chunk(part, model, places), "utf-8")
+        checked.own_rules[key] = own
+        kept = checked.kept[key] = []
+        lines = checked.lines[key] = work / f"vectors-{key}.txt"
+        with lines.open("w") as out:
             for v in vectors.build(part, pages).vectors:
                 if v.document in obsolete:
                     continue
                 request = v.request.octets if v.request else ""
                 out.write(f"{v.document}\t{v.octets}\t{request}\n")
                 kept.append(_Kept(v.id, v.document, v.expected))
-            gc.collect()
-    runner = work / "runner.lua"
-    runner.write_text(_RUNNER, "utf-8")
-    return kept, rules, lines, runner
+        del part
+        gc.collect()
+    return checked
 
 
-@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
-@pytest.mark.parametrize("lua", LUAS)
-def test_the_plugin_reports_exactly_what_each_vector_expects(lua, checked):
-    kept, rules, lines, runner = checked
+def _judged(
+    lua: str, checked: _Checked, rules: Path, keys: Sequence[int | None]
+) -> tuple[int, int, list[tuple[str, list[tuple[str, str]], list[str]]]]:
+    """How many of the vectors of the applications `keys` the core read,
+    how many it held to another document's definition, and those it reports
+    otherwise than they expect."""
+    lines = rules.parent / f"judged-{rules.stem}.txt"
+    with lines.open("w") as out:
+        for key in keys:
+            out.write(checked.lines[key].read_text())
     done = subprocess.run(
-        [lua, str(runner), str(CORE), str(rules), str(lines)],
+        [lua, str(checked.runner), str(CORE), str(rules), str(lines)],
         check=True,
         capture_output=True,
         text=True,
     )
+    kept = [vector for key in keys for vector in checked.kept[key]]
     held, wrong = 0, []
     for vector, line in zip(kept, done.stdout.splitlines(), strict=True):
         chosen, *found = line.split("\t")
@@ -271,8 +320,27 @@ def test_the_plugin_reports_exactly_what_each_vector_expects(lua, checked):
             e.rule in notes for e in vector.expected if e.severity == "note"
         ):
             wrong.append((vector.id, expected, found))
+    return len(kept), held, wrong
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_plugin_reports_exactly_what_each_vector_expects(lua, checked):
+    count, held, wrong = _judged(lua, checked, checked.rules, list(checked.kept))
     assert not wrong, wrong[:5]
-    assert held < len(kept) / 50
+    assert held < count / 50
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+def test_the_plugin_of_one_application_reports_what_its_vectors_expect(checked):
+    """`seanchai wireshark-plugin --application`'s rules hold only what the
+    application reaches: its vectors draw from them what they expect, as
+    from the whole corpus's (Gx's Result-Code reads RFC 6733's codes, which
+    TS 29.212's own table adds to)."""
+    wrong = []
+    for key, rules in checked.own_rules.items():
+        wrong += _judged(LUAS[-1], checked, rules, [key])[2]
+    assert not wrong, wrong[:5]
 
 
 @pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")

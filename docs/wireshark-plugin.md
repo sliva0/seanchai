@@ -62,6 +62,10 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
 - Grouped AVPs: the same, against the members of the reading the command's
   document means, at any depth. `Failed-AVP` is checked only for its
   `1* { AVP }`, since section 7.5 lets it hold the failed AVP as received.
+  An AVP only `* [ AVP ]` admits is held to the reading the body's
+  interpreted rules on it were read for, where it has some (TS 32.299's CCA,
+  its Supported-Features, whose Feature-List-ID TS 32.299 sets M), else to
+  the defining document's.
   One a table types Grouped and no document prints a rule for (TS 29.128's
   `APN-Rate-Control-Status`) is checked for its framing only.
 - Flags, per that reading's flag rules: a bit clear under Must or set under
@@ -337,9 +341,11 @@ The findings are expert info too ([Findings](#findings)).
 `lua5.4` found on PATH, over messages it encodes, and the generated plugin
 under `tshark` over a capture of them, with the preference set and the marked
 line rewritten. `tests/test_vectors.py` runs it over the
-[test messages](consumers.md#test-messages) of eight applications, each
-pinned to its document: every valid one draws no error, warning or note of an
-interpreted rule and every negative one exactly the finding it expects, an
+[test messages](consumers.md#test-messages) of every application, each
+built as `seanchai vectors --application` builds it: every valid one draws
+no error, warning or note of an interpreted rule and every negative one
+exactly the finding it expects, from the whole corpus's rules under each
+Lua and from the application's own (`--application`) under one, an
 interpreted rule's as `seanchai.interpreted` under tshark, and a synthetic
 document's request and answer pairs, each answer read against its request
 in the core and paired by the plugin in a capture, and left unchecked

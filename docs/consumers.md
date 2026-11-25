@@ -459,7 +459,12 @@ through a path, present or holding the number it asks (TS 29.336's CIR, its
 User-Identifier holding an External-Identifier or an MSISDN and not both, TS
 29.154's BTR, its Vendor-Specific-Application-Id holding Nt's
 Auth-Application-Id and so no Acct-Application-Id), a distinct value of a
-`unique` member in each repeated grouped AVP. A command a
+`unique` member in each repeated grouped AVP. An AVP a predicate wants
+present that only `* [ AVP ]` admits is built as the predicate's reading
+reads it, which the plugin holds it to (TS 32.299's CCA, its
+Supported-Features after an initial request it answers with
+DIAMETER_ERROR_FEATURE_UNSUPPORTED); where the body admits no such AVP the
+command is listed in `skipped`. A command a
 required member of which the corpus cannot complete is listed in `skipped` (TS
 29.154's ECR under `--policy hole`); an optional one is left out. A command
 printing no application id is sent in application 0.
@@ -486,9 +491,11 @@ plugin. `--schema FILE` writes the JSON
 Schema. From Python, `seanchai.vectors.build(dictionary)` returns the same.
 
 The vectors are the plugin's end-to-end test (`tests/test_vectors.py`): of
-every application the corpus holds, each valid one draws no error, warning
-or note of an interpreted rule, each negative one exactly the finding it
-expects, under every Lua, and S6a's under tshark.
+every application the corpus holds, each built as `--application` builds
+it, each valid one draws no error, warning or note of an interpreted rule,
+each negative one exactly the finding it expects, from the whole corpus's
+plugin under every Lua and from the application's own under one, and S6a's
+under tshark.
 Read through python-diameter's codec, which checks types and no rule, the
 library refuses exactly the vectors breaking a data format.
 

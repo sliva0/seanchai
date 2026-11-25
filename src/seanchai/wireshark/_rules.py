@@ -699,9 +699,13 @@ def _constraint(
     if not rules:
         return None
     # The AVP's identity, where the scope's body admits it only through its
-    # `* [ AVP ]`, so names no member of it.
+    # `* [ AVP ]`, so names no member of it, and the reading the constraint
+    # was read for, which the core holds such an AVP to.
     admitted = (
-        [f"s={lua_string(constraint.avp_ids[0].partition('@')[0])}"]
+        [
+            f"s={lua_string(constraint.avp_ids[0].partition('@')[0])}",
+            f"a={lua_string(constraint.avp_ids[0])}",
+        ]
         if siblings
         and constraint.avp not in siblings
         and (constraint.command or constraint.within)
