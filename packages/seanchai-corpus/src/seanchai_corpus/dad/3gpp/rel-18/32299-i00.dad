@@ -4111,6 +4111,7 @@ SM-Device-Trigger-Information ::= < AVP header: 3405 10415 > ;; corrected: (TS32
 SM-Message-Type ::= < Enumerated AVP header: 2007 10415 >
         SUBMISSION             = 0
         DELIVERY_REPORT        = 1
+        "SM Service Request"   = 2
         "T4 Device Trigger"    = 3
         "SM Device Trigger"    = 4
         "MO-SMS T4 submission" = 5
@@ -4372,6 +4373,7 @@ Trigger-Type ::= < Enumerated AVP header: 870 10415 >
         CHANGE_IN_HYBRID_SUBSCRIBED_USER_CSG_INFORMATION   = 71
         CHANGE_IN_HYBRID_UNSUBSCRIBED_USER_CSG_INFORMATION = 72
         CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA   = 73
+        CHANGE_IN_SERVING_PLMN_RATE_CONTROL                = 74 ;; inserted: (TS32.299.py#trigger-type-serving-plmn-rate-control)
         CHANGE_IN_APN_RATE_CONTROL                         = 75
         CHANGE_IN_3GPP_PS_DATA_OFF                         = 76
 

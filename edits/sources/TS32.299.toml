@@ -193,6 +193,18 @@ first_version = "18.0.0"
 last_version = "19.0.0"
 
 [[patch]]
+find = "2. SM Service Request"
+replace = "2 SM Service Request"
+exact = true
+section = "7.2.207"
+reason = """
+    SM-Message-Type's value list prints a full stop after value 2 alone, '2. SM
+    Service Request', which the value lines read as no value.
+    """
+first_version = "18.0.0"
+last_version = "19.0.0"
+
+[[patch]]
 find = "0 Normal;"
 replace = "0 Normal"
 exact = true

@@ -925,8 +925,10 @@ The document is wrong in places the corpus reads around: clause 7.2.171Ab
 holds Related-Trigger to a Trigger-Type "indirect change condition" clause
 7.2.236 does not define (it is Change-Condition's 34, clause 7.2.37), read
 `text-only`; clause 7.2.236 prints "74 CHANGE_IN_SERVING_PLMN_RATE_CONTROL"
-at the end of value 73's description paragraph, so the corpus's Trigger-Type
-lacks 74; clause 7.2.46B's heading and text name CSG-Membership-Indication
+at the end of value 73's description paragraph, which a correction inserts as
+Trigger-Type's value 74, and clause 7.2.207 prints SM-Message-Type's value 2
+"2. SM Service Request", which an input patch reads as the others are read;
+clause 7.2.46B's heading and text name CSG-Membership-Indication
 CSG--Indication; and clause 7.2.35B types Civic-Address-Information
 OctetString where table 7.2.0.1 types it UTF8String. Left unread: "may"
 and "is" sentences (Quota-Consumption-Time "may be included within the

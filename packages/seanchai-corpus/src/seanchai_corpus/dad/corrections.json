@@ -13812,6 +13812,10 @@
      "kind": "insert",
      "reason": "clause 7.2.242aaA's UWAN-User-Location-Info has a TCP-Source-Port member; table 7.2.0.1 lists UDP-Source-Port from [215], TS 29.212, and omits TCP-Source-Port, which TS 29.212 clause 5.3.129 defines"
     },
+    "TS32.299.py#trigger-type-serving-plmn-rate-control": {
+     "kind": "insert",
+     "reason": "clause 7.2.236 prints '74 CHANGE_IN_SERVING_PLMN_RATE_CONTROL' at the end of value 73's description paragraph, with no line break before it, so the extractor reads no value 74; its description follows on a line of its own, as every other value's does"
+    },
     "TS32.299.py#type-monitoring-event-configuration-activity": {
      "kind": "correction",
      "reason": "clause 7.2.111AaA defines Monitoring-Event-Configuration-Activity as Enumerated with a value list; table 7.2.0.1 types it Integer32, the same encoding"
@@ -15137,6 +15141,10 @@
     "TS32.299.py#tcp-source-port-reused": {
      "kind": "insert",
      "reason": "clause 7.2.242aaA's UWAN-User-Location-Info has a TCP-Source-Port member; table 7.2.0.1 lists UDP-Source-Port from [215], TS 29.212, and omits TCP-Source-Port, which TS 29.212 clause 5.3.129 defines"
+    },
+    "TS32.299.py#trigger-type-serving-plmn-rate-control": {
+     "kind": "insert",
+     "reason": "clause 7.2.236 prints '74 CHANGE_IN_SERVING_PLMN_RATE_CONTROL' at the end of value 73's description paragraph, with no line break before it, so the extractor reads no value 74; its description follows on a line of its own, as every other value's does"
     },
     "TS32.299.py#type-monitoring-event-configuration-activity": {
      "kind": "correction",

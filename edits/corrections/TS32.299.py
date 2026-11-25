@@ -674,6 +674,24 @@ CORRECTIONS += [
     ),
 ]
 
+# Trigger-Type (clause 7.2.236) prints each value on a line of its own, its
+# description after a line break, but runs value 74 on at the end of value
+# 73's description: "... it indicates all PRAs are unsubscribed.74
+# CHANGE_IN_SERVING_PLMN_RATE_CONTROL", so no value line holds it.
+CORRECTIONS += [
+    Insert(
+        id="trigger-type-serving-plmn-rate-control",
+        into=definition("Trigger-Type"),
+        node=ast.EnumValue(name="CHANGE_IN_SERVING_PLMN_RATE_CONTROL", value=74),
+        after="CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA",
+        reason="clause 7.2.236 prints '74 CHANGE_IN_SERVING_PLMN_RATE_CONTROL'"
+        " at the end of value 73's description paragraph, with no line break"
+        " before it, so the extractor reads no value 74; its description"
+        " follows on a line of its own, as every other value's does",
+        versions="18.0.0..19.0.0",
+    ),
+]
+
 # Release 11, V11.20.0: the copy oneM2M TS-0004 [31] cites as "3GPP TS
 # 32.299 ... (Release 11)" for Node-Id and Service-Information. The Release
 # 18 declarations above do not reach it (src/seanchai/_versions.py); these

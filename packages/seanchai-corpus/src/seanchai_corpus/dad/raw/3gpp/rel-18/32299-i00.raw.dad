@@ -3513,6 +3513,7 @@ SM-Device-Trigger-Information ::= < AVP header: 3405 >
 SM-Message-Type ::= < Enumerated AVP header: 2007 10415 >
         SUBMISSION             = 0
         DELIVERY_REPORT        = 1
+        "SM Service Request"   = 2
         "T4 Device Trigger"    = 3
         "SM Device Trigger"    = 4
         "MO-SMS T4 submission" = 5
