@@ -1212,8 +1212,11 @@
 
 
 ;; The clause types the AVP Unsigned32, table 5.3.0.1 Float32, as the
-;; corpus prints it: a range needs an integer, and which the document
-;; means it does not settle.
+;; corpus prints it, in V18.2.0, V19.1.0 and Release 20's V20.0.0 alike,
+;; and implementations split: Wireshark's dictionary types it Float32,
+;; freeDiameter's dict_dcca_3gpp Unsigned32, changing the table's type.
+;; The range holds of the number either way, but the same octets read as
+;; the other type fall in or out of it, so no rule holds of every sender.
 ; Type: Interpreted Constraints
 ; Id: max-plr-dl-range
 ; AVP: Max-PLR-DL
