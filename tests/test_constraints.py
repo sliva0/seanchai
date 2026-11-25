@@ -539,6 +539,20 @@ def test_a_rule_on_the_request_holds_of_the_request_given(text, scope, asked, ho
         assert missing == found
 
 
+def test_a_path_reads_the_members_of_the_grouped_avps_it_names():
+    rule = _answer_rule(
+        "present-if Example-Group/Example-Flags bit 1 and not"
+        " request/Example-Group/User-Name"
+    )
+    group = constraints.Avp("Example-Group", DataType.GROUPED, members=(_FLAGS,))
+    asked = constraints.Avp("Example-Group", DataType.GROUPED, members=(_NAME,))
+    assert constraints.holds(rule, "Example", [group], []).holds is False
+    assert constraints.holds(rule, "Example", [group], [asked]).holds is True
+    # Of several, any one meeting it does.
+    empty = constraints.Avp("Example-Group", DataType.GROUPED)
+    assert constraints.holds(rule, "Example", [empty, group], []).holds is False
+
+
 def test_check_reads_a_rule_on_the_request_alone_against_the_request():
     assert constraints.check(_answer_rule("absent"), b"x", DataType.OCTET_STRING) == (
         constraints.Check(False, "not allowed")

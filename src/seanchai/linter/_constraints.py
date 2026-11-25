@@ -4,6 +4,7 @@ bits its conditions name, and rules that cannot all hold."""
 
 from __future__ import annotations
 
+import itertools
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 
@@ -450,10 +451,19 @@ def _constraints(
             if isinstance(rule, ast.MembersRule)
             for name in rule.members
         ]
+        # A member a members rule names may be the grouped AVP's as another
+        # document prints it (IMEI in TS 29.272's Terminal-Information, which
+        # TS 29.273 re-uses): held, or the body read holds it.
+        owner = (
+            _grouped(_documents(spec, block.avp, cited), block.avp)
+            if listed and block.avp in held
+            else None
+        )
+        owned = set() if owner is None else {rule.name for rule in owner.avps}
         names = dict.fromkeys(
             [block.avp, *([block.within] if block.within else [])]
             + [reference.path[0] for reference in references]
-            + listed
+            + [name for name in listed if name not in owned]
         )
         for name in names:
             if name not in held:
@@ -502,11 +512,38 @@ def _constraints(
                     f"a rule reads {first}, which the body of"
                     f" {block.command or block.within} does not hold",
                 )
+            elif (
+                body is None
+                and block.command is None
+                and block.within is None
+                and len(reference.path) > 1
+                and first != block.avp
+            ):
+                found(
+                    "constraint-not-member",
+                    block,
+                    f"a rule reads {formatter.reference(reference)}: with no"
+                    f" scope, a path starts at {block.avp}",
+                )
+            # On through the grouped AVPs the path names, as the documents
+            # read print their bodies.
+            for parent, name in itertools.pairwise(reference.path):
+                grouped = _grouped(_documents(spec, parent, cited), parent)
+                if grouped is None:
+                    break
+                if not {name, "AVP"} & {rule.name for rule in grouped.avps}:
+                    found(
+                        "constraint-not-member",
+                        block,
+                        f"a rule reads {formatter.reference(reference)}, but the"
+                        f" body of {parent} does not hold {name}",
+                    )
+                    break
         if listed and block.avp in held:
-            grouped = _grouped(_documents(spec, block.avp, cited), block.avp)
-            members = set() if grouped is None else {rule.name for rule in grouped.avps}
+            grouped = owner
+            members = owned
             for name in dict.fromkeys(listed):
-                if grouped is not None and name in held and name not in members:
+                if grouped is not None and name not in members:
                     found(
                         "constraint-not-member",
                         block,

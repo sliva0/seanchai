@@ -14,8 +14,8 @@
 --   cites[n]        a place in one: document number, clause, page or false,
 --                   the table's label or false, and true for a clause the
 --                   corpus places nothing in, which the explorer cannot show
---   requests[key]   for a request's "app:code", the identities its answer's
---                   rules read (`M.request_values`)
+--   requests[key]   for a request's "app:code", the paths its answer's rules
+--                   read, identities joined by "/" (`M.request_values`)
 --   base[kind]      the RFC 6733 sections the header and format checks cite
 --   explorer        the explorer site's address, or nil (`--rules-only`
 --                   writes it; the plugin passes its preference instead)
@@ -900,18 +900,32 @@ local function check_constraints(ctx, avp, reading, path, scoped)
   end
 end
 
--- The data of the AVPs a term {avp=identity, q=true for the request's} names:
--- the run's first AVP of the identity (`held[identity]`), or every one of the
--- request's (`ctx.request`, `M.request_values`).
+-- The data of the AVPs a term names: every AVP of the run of its identity
+-- (`held[identity]`), and on through the members of the identities `p`
+-- lists, one a level; with `q`, every one of the request's at its path
+-- (`ctx.request`, `M.request_values`).
 local function term_data(ctx, held, term)
   if term.q then
     return ctx.request and ctx.request[term.avp] or {}
   end
-  local avp = held[term.avp]
-  if not avp then
-    return {}
+  local found = held[term.avp] or {}
+  for _, identity in ipairs(term.p or {}) do
+    local inner = {}
+    for _, avp in ipairs(found) do
+      for _, member in ipairs(parse_avps(ctx.pdu, avp.data, avp.data + avp.size,
+        {})) do
+        if member.vendor .. ":" .. member.code == identity then
+          inner[#inner + 1] = member
+        end
+      end
+    end
+    found = inner
   end
-  return { data_text(ctx.pdu, avp) }
+  local data = {}
+  for _, avp in ipairs(found) do
+    data[#data + 1] = data_text(ctx.pdu, avp)
+  end
+  return data
 end
 
 -- Whether a predicate's condition holds of a run's AVPs: true, false, or nil
@@ -935,7 +949,7 @@ local function condition_holds(ctx, held, condition)
   if condition.v == nil and condition.b == nil then
     return true
   end
-  local reading = ctx.rules.avps[condition.avp]
+  local reading = ctx.rules.avps[condition.l or condition.avp]
   local unknown = false
   for _, data in ipairs(list) do
     local value = reading and integer_value(reading.type, data)
@@ -1017,13 +1031,14 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
   local held = {}
   for _, avp in ipairs(avps) do
     local identity = avp.vendor .. ":" .. avp.code
-    held[identity] = held[identity] or avp
+    held[identity] = held[identity] or {}
+    held[identity][#held[identity] + 1] = avp
   end
   for name, list in pairs(scoped) do
     for _, cons in ipairs(list) do
       -- A member the body names, or one only its `* [ AVP ]` admits.
       local identity = identities[name] or cons.s
-      local subject = identity and held[identity]
+      local subject = identity and held[identity] and held[identity][1]
       for _, rule in ipairs(cons.rules) do
         local problem
         if rule.k == "absent" then
@@ -1640,9 +1655,10 @@ local function find_candidates(rules, application, code, request)
 end
 
 -- What an answer's rules read of a request, kept from the request until its
--- answer comes: the data of every AVP of an identity `rules.requests` lists
--- for the request's "app:code" (or "*:code" for a command printed with no
--- application), as {[identity]={data, ...}}, an empty list for one it lacks.
+-- answer comes: the data of every AVP at a path `rules.requests` lists for
+-- the request's "app:code" (or "*:code" for a command printed with no
+-- application), identities joined by "/", as {[path]={data, ...}}, an empty
+-- list for one it lacks.
 -- Nil for an answer, a header too short, or a request no rule reads.
 function M.request_values(rules, pdu)
   if #pdu < 20 or not rules.requests or not has(u8(pdu, 5), CMD_R) then
@@ -1663,9 +1679,29 @@ function M.request_values(rules, pdu)
   if not any then
     return nil
   end
-  for _, avp in ipairs(avps) do
-    local list = kept[avp.vendor .. ":" .. avp.code]
-    if list then
+  for key, list in pairs(kept) do
+    -- A path's identities, joined by "/": the AVPs at its end.
+    local found = avps
+    local depth = 0
+    for identity in key:gmatch("[^/]+") do
+      if depth > 0 then
+        local inner = {}
+        for _, avp in ipairs(found) do
+          for _, member in ipairs(parse_avps(pdu, avp.data, avp.data + avp.size, {})) do
+            inner[#inner + 1] = member
+          end
+        end
+        found = inner
+      end
+      local named = {}
+      for _, avp in ipairs(found) do
+        if avp.vendor .. ":" .. avp.code == identity then
+          named[#named + 1] = avp
+        end
+      end
+      found, depth = named, depth + 1
+    end
+    for _, avp in ipairs(found) do
       list[#list + 1] = data_text(pdu, avp)
     end
   end

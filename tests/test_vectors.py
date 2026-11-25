@@ -317,6 +317,7 @@ _ASKED = """\
         { Destination-Realm }
         [ Example-Flags ]
         [ Example-Id ]
+        [ Ex-Set ]
         *[ AVP ]
 
 
@@ -333,6 +334,8 @@ _ASKED = """\
         [ Example-Report ]
         [ Example-Data ]
         [ Example-Kept ]
+        [ Ex-Set ]
+        [ Example-Note ]
         *[ AVP ]
 
 
@@ -381,6 +384,22 @@ _ASKED = """\
     absent
 
 
+; Type: Interpreted Constraints
+; AVP: Example-Note
+; Command: Example-Answer
+; Section: 6.1.2
+; Versions: 19.0.0
+"It is present if the request's group asks, and the answer's does not."
+    present-if request/Ex-Set/Example-Flags bit 2 and not Ex-Set/Example-Flags bit 2
+
+
+; Type: Grouped AVP
+; Name: Ex-Set
+; Section: 6.3.8
+Ex-Set ::= < AVP header: 7 10415 >
+        [ Example-Flags ]
+
+
 ; Type: AVP Table
 ; Section: 6.3.1
 ; Columns: Name     Code   Section   Type          Must
@@ -390,6 +409,8 @@ Example-Report      3      6.3.4     OctetString   M,V
 Example-Data        4      6.3.5     OctetString   M,V
 Example-Kept        5      6.3.6     OctetString   M,V
 Example-Never       6      6.3.7     OctetString   M,V
+Ex-Set       7      6.3.8     Grouped       M,V
+Example-Note        8      6.3.9     OctetString   M,V
 """
 
 
@@ -427,6 +448,7 @@ def test_an_answer_reading_its_request_is_sent_with_it(asked):
         ("absent-if", "Example-Data"),
         ("requires", "Example-Kept"),
         ("equals", "Example-Id"),
+        ("present-if", "Example-Note"),
     ):
         valid = paired[f"16777999/EXA/maximal/request/{kind}/{name}/6.1.2"]
         broken = paired[f"16777999/EXA/negative/constraint-{kind}/{name}/6.1.2"]
@@ -534,6 +556,6 @@ def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_p
     rows = _shown(
         work / "plugin.lua", capture, "seanchai.request_missing", "seanchai.rule"
     )
-    assert rows and all(missing == "4" for missing, _ in rows)
+    assert rows and all(missing == "5" for missing, _ in rows)
     reading = {"present-if", "absent-if", "requires", "equals"}
     assert not any(rule.removeprefix("constraint-") in reading for _, rule in rows)

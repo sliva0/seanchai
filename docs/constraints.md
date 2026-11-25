@@ -114,6 +114,17 @@ sentence about an AVP its ABNF leaves to the wildcard; `absent` says such
 an AVP is never sent there. A member of a grouped AVP the command holds is
 the grouped AVP's scope, not the command's.
 
+A name may be a path through grouped AVPs, `/` between the names, relative
+to the block's scope: `MIP6-Agent-Info/MIP-Home-Agent-Host` tests the
+MIP-Home-Agent-Host member of the command's MIP6-Agent-Info, which a sibling
+condition cannot, and reaches a member of a grouped AVP the document re-uses
+from another, as the defining document prints its body. With no scope a
+path starts at the block's AVP itself, though the Wireshark plugin checks a
+predicate only in a scope. Of the AVPs a path names, any one meeting the
+condition does. A `members` rule may name a member of a grouped
+AVP another document defines (IMEI in TS 29.272's Terminal-Information, as
+TS 29.273 re-uses it).
+
 In a block scoped to an answer, a name after `request/` is a member of the
 request the answer answers: the same command code with the R bit under the
 same application, printed at the block's `; Request-Section:` where the

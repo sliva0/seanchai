@@ -93,6 +93,8 @@ _EVERY_RULE = _dad(
     "    absent-if request/Emergency-Services bit Emergency-Indication",
     "    requires request/QoS-Capability or Result-Code = request/Result-Code",
     "    equals request/User-Name",
+    "    excludes request/Terminal-Information/IMEI = request/User-Name or"
+    " MIP6-Agent-Info/MIP-Home-Agent-Host/Destination-Host",
     "",
     "",
     "; Type: Interpreted Constraints",
@@ -113,7 +115,12 @@ def test_every_rule_reads_and_writes_back():
     assert never.body[1:] == (ast.AbsentRule(),)
     assert isinstance(asked, ast.InterpretedConstraints)
     assert asked.request_section == "8.2.2.3"
-    present, _, requires, equals = asked.readings[0].rules
+    present, _, requires, equals, deep = asked.readings[0].rules
+    assert isinstance(deep, ast.PredicateRule)
+    ((echo,), (host,)) = deep.conditions
+    assert echo.path == ("Terminal-Information", "IMEI")
+    assert echo.value == ast.Reference(root=ast.Root.REQUEST, path=("User-Name",))
+    assert (host.root, host.avp) == (None, "Destination-Host")
     assert present == ast.PredicateRule(
         kind=ast.PredicateKind.PRESENT_IF,
         conditions=(
@@ -1370,4 +1377,65 @@ def test_the_linter_takes_an_avp_the_wildcard_admits_and_refuses_absent_required
             "Example-Flags in Other-Request: absent, but the body of"
             " Other-Request requires Example-Flags",
         )
+    ]
+
+
+_DEEP = _ASKED + "\n".join(
+    (
+        "",
+        "",
+        "; Type: Grouped AVP",
+        "; Name: Example-Group",
+        "; Section: 6.3.8",
+        "Example-Group ::= < AVP header: 8 10415 >",
+        "        [ Example-Flags ]",
+        "",
+        "",
+        "; Type: Message",
+        "; Name: Grouped-Request, GRR",
+        "; Section: 6.1.5",
+        "<Grouped-Request> ::= < Diameter Header: 11, REQ, 99 >",
+        "        < Session-Id >",
+        "        [ Example-Group ]",
+        "        [ Example-Number ]",
+        "",
+    )
+)
+
+
+def test_the_linter_follows_a_path_through_the_grouped_avps_it_names():
+    from seanchai import linter
+
+    def found(rule: str, scope: str = "; Command: Grouped-Request") -> list[str]:
+        text = _DEEP + "\n".join(
+            (
+                "",
+                "",
+                "; Type: Interpreted Constraints",
+                "; AVP: Example-Number" if scope else "; AVP: Example-Group",
+                *([scope] if scope else []),
+                "; Section: 6.3.2",
+                "; Versions: 19.0.0",
+                '"Q."',
+                rule,
+                "",
+            )
+        )
+        return [
+            finding.message
+            for finding in linter.lint(parser.parse(text))
+            if finding.rule.startswith("constraint-")
+        ]
+
+    assert found("    requires Example-Group/Example-Flags bit 0") == []
+    assert found("    requires Example-Group/Example-Text") == [
+        "Example-Number in Grouped-Request: a rule reads"
+        " Example-Group/Example-Text, but the body of Example-Group does not"
+        " hold Example-Text"
+    ]
+    # With no scope, a path starts at the block's AVP.
+    assert found("    requires Example-Group/Example-Flags", "") == []
+    assert found("    requires Example-Number/Example-Flags", "") == [
+        "Example-Group: a rule reads Example-Number/Example-Flags: with no"
+        " scope, a path starts at Example-Group"
     ]

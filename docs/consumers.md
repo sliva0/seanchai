@@ -303,10 +303,10 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   a default's `value`, a bits rule's `relation` and `bits`, a
   members rule's `relation` and `members`, a values rule's `values` and
   `conditions`, and an equals rule's `reference`; `unique` and `absent`
-  have none. A
-  condition names its AVP by `root` and `path`: `path` the names from the
-  constraint's scope down to it, `root` null for a sibling or `request` for
-  a member of the request the answer answers, printed at the constraint's
+  have none. A condition names its AVP by `root` and `path`: `path` the
+  names from the constraint's scope down to it, through the grouped AVPs
+  it names, `root` null for a sibling or `request` for a member of the
+  request the answer answers, printed at the constraint's
   `request_section`; it has `value` (a number, a name, or a reference,
   `root` and `path`, to the AVP whose value it tests against) or `bit`, or
   neither for presence, and `negated`, true where it must not hold. A

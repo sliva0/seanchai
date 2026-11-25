@@ -1578,10 +1578,13 @@ class Root(enum.StrEnum):
 class Reference(Node):
     """An AVP a rule reads beside its own, by `path`: a member of the
     block's command or grouped AVP (`Result-Code`), or with `root` a member
-    of another message (`request/Server-Assignment-Type`)."""
+    of another message (`request/Server-Assignment-Type`), and on through
+    the members of the grouped AVPs it names, one name a level
+    (`MIP6-Agent-Info/MIP-Home-Agent-Host`). With no scope, a path starts at
+    the block's own AVP."""
 
     root: Root | None = None
-    path: Annotated[tuple[AvpName, ...], Field(min_length=1, max_length=1)]
+    path: Annotated[tuple[AvpName, ...], Field(min_length=1)]
 
     @property
     def avp(self) -> str:

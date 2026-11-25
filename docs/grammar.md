@@ -727,8 +727,8 @@ predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
 conditions    = conjunction *(" or " conjunction)
 conjunction   = condition *(" and " condition)
 condition     = ["not "] path [" = " (value-ref / rooted) / " bit " value-ref]
-path          = [root "/"] avp-name
-rooted        = root "/" avp-name
+path          = [root "/"] avp-name *("/" avp-name)
+rooted        = root "/" avp-name *("/" avp-name)
 root          = "request"
 value-ref     = integer / enum-name
 default       = "default " value-ref
@@ -779,6 +779,12 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   Elements block chooses), or `; Within:`, a grouped AVP, scopes them to the
   AVP as a member there; a predicate's conditions are its siblings. With
   neither, the rules hold wherever the document reads the AVP.
+- A path names an AVP from the scope through the grouped AVPs before it,
+  one name a level: `MIP6-Agent-Info/MIP-Home-Agent-Host` is the
+  MIP-Home-Agent-Host of the block's command's MIP6-Agent-Info, as the
+  document reading the grouped AVP prints its body. With no scope a path
+  starts at the block's own AVP. Of the AVPs a path names, any one meeting
+  a condition does.
 - In a block scoped to an answer, a name after `request/` is a member of
   the request the answer answers: the same command code with the R bit,
   under the same application, printed at `; Request-Section:` where the

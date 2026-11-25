@@ -319,9 +319,14 @@ class Avp:
 def _reached(
     reference: ast.Reference, scope: Sequence[Avp], request: Sequence[Avp] | None
 ) -> list[Avp]:
-    """The AVPs `reference` names: of `scope`, or of the request's."""
-    run = request if reference.root is ast.Root.REQUEST else scope
-    return [avp for avp in run or () if avp.name == reference.avp]
+    """The AVPs `reference` names: of `scope`, or of the request's, and on
+    through each grouped AVP's members, every one of each name."""
+    found = list((request or ()) if reference.root is ast.Root.REQUEST else scope)
+    for depth, name in enumerate(reference.path):
+        if depth:
+            found = [member for avp in found for member in avp.members]
+        found = [avp for avp in found if avp.name == name]
+    return found
 
 
 def _number(value: int | str, names: Mapping[str, int]) -> int | None:
@@ -332,11 +337,8 @@ def _condition_holds(
     condition: ast.Condition, scope: Sequence[Avp], request: Sequence[Avp] | None
 ) -> bool | None:
     """Whether `condition` holds: True, False, or None where a value it tests
-    cannot be read. An AVP it names is the first of its name, or any of the
-    request's."""
+    cannot be read. Of the AVPs it names, any meeting it does."""
     found = _reached(condition, scope, request)
-    if condition.root is None:
-        found = found[:1]
     if not found:
         return False
     if isinstance(condition.value, ast.Reference):

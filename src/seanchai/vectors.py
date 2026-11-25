@@ -571,6 +571,11 @@ def _positive(condition: dictionary.Condition) -> dictionary.Condition:
     return condition.model_copy(update={"negated": False})
 
 
+def _deeper(condition: dictionary.Condition) -> dictionary.Condition:
+    """`condition` from the grouped AVP its path names first."""
+    return condition.model_copy(update={"root": None, "path": condition.path[1:]})
+
+
 def _reads_request(rule: dictionary.Rule) -> bool:
     """Whether `rule` reads an AVP of the request its answer answers."""
     references: list[dictionary.Reference] = [*_terms(rule)]
@@ -809,7 +814,19 @@ class _Builder:
         }
 
         def resolves(reference: dictionary.Reference) -> dictionary.Avp | None:
-            return (asked if reference.root else siblings).get(reference.avp)
+            """The reading the path ends at, through each grouped AVP's
+            members."""
+            found = (asked if reference.root else siblings).get(reference.path[0])
+            for name in reference.path[1:]:
+                member = (
+                    None
+                    if found is None
+                    else next(
+                        (m for m in found.members if m.name == name and m.avp), None
+                    )
+                )
+                found = None if member is None else self.avps.get(member.avp or "")
+            return found
 
         for name, held in scope.rules.items():
             for each in held:
@@ -853,11 +870,14 @@ class _Builder:
         reference: dictionary.Reference,
         request: Sequence[_Avp] | None,
     ) -> list[_Avp]:
-        """The AVPs `reference` names: the first of `nodes` of its name, or
-        every one of the request's."""
-        if reference.root is not None:
-            return [n for n in request or () if n.avp.name == reference.avp]
-        return [n for n in nodes if n.avp.name == reference.avp][:1]
+        """The AVPs `reference` names: of `nodes`, or of the request's, and
+        on through each grouped AVP's members, every one of each name."""
+        found = list(request or ()) if reference.root is not None else list(nodes)
+        for depth, name in enumerate(reference.path):
+            if depth:
+                found = [child for node in found for child in node.children]
+            found = [node for node in found if node.avp.name == name]
+        return found
 
     def condition(
         self,
@@ -2265,6 +2285,13 @@ class _Negatives:
             return self.make_fail(nodes, _positive(condition), scope)
         if isinstance(condition.value, dictionary.Reference):
             return False
+        if len(condition.path) > 1:
+            parent = self.sibling(nodes, condition.path[0], scope)
+            if parent is None or parent.avp.kind != "grouped":
+                return False
+            return self.make_hold(
+                parent.children, _deeper(condition), self.builder.scope_of(parent.avp)
+            )
         node = self.sibling(nodes, condition.avp, scope)
         if node is None:
             return False
@@ -2291,6 +2318,18 @@ class _Negatives:
             return self.make_hold(nodes, _positive(condition), scope)
         if isinstance(condition.value, dictionary.Reference):
             return False
+        if len(condition.path) > 1:
+            # Every one the path passes through, the condition holding of any.
+            return all(
+                parent.avp.kind == "grouped"
+                and self.make_fail(
+                    parent.children,
+                    _deeper(condition),
+                    self.builder.scope_of(parent.avp),
+                )
+                for parent in nodes
+                if parent.avp.name == condition.path[0]
+            )
         member = next((m for m in scope.members if m.name == condition.avp), None)
         if member is None:
             return False

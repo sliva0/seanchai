@@ -657,7 +657,7 @@ def _constraint(
                 rules.append("{k='absent'}")
             elif kind == "equals":
                 assert rule.reference is not None
-                term = _term(rule.reference, siblings, request, needed)
+                term = _term(rule.reference, siblings, request, needed, names)
                 if term is not None:
                     said = lua_string(
                         formatter.reference(_ast_reference(rule.reference))
@@ -720,26 +720,61 @@ def _constraint(
     )
 
 
+def _resolved(
+    reference: dictionary.Reference,
+    siblings: dict[str, str],
+    request: dict[str, str] | None,
+    names: _Names,
+) -> list[str] | None:
+    """The readings `reference`'s path names, a member of the scope or of
+    the request, then of each grouped AVP before it; None where a name
+    does not resolve."""
+    scope = request if reference.root is not None else siblings
+    found = None if scope is None else scope.get(reference.path[0])
+    if found is None:
+        return None
+    readings = [found]
+    for name in reference.path[1:]:
+        grouped = names.avps.get(readings[-1])
+        member = (
+            None
+            if grouped is None
+            else next(
+                (m.avp for m in grouped.members if m.name == name and m.avp), None
+            )
+        )
+        if member is None:
+            return None
+        readings.append(member)
+    return readings
+
+
 def _term(
     reference: dictionary.Reference,
     siblings: dict[str, str],
     request: dict[str, str] | None,
     needed: set[str] | None,
+    names: _Names,
 ) -> str | None:
-    """`{avp=identity}` for the AVP `reference` names, `q=true` where it is
-    the request's, whose identity `needed` collects; None where it does not
-    resolve: a request no print of which the constraint names, or a name
-    the body does not hold."""
-    scope = request if reference.root is not None else siblings
-    found = None if scope is None else scope.get(reference.avp)
-    if found is None:
+    """`{avp=identity}` for a sibling `reference` names, with `p`, the
+    identities of the members on to the AVP, and `l`, its own, for a path
+    through grouped AVPs; `{avp=key, q=true, l=}` for the request's, `key`
+    the identities joined by `/`, which `needed` collects; None where it
+    does not resolve: a request no print of which the constraint names, or a
+    name its body does not hold."""
+    readings = _resolved(reference, siblings, request, names)
+    if readings is None:
         return None
-    identity = found.partition("@")[0]
+    identities = [each.partition("@")[0] for each in readings]
+    last = f",l={lua_string(identities[-1])}" if len(identities) > 1 else ""
     if reference.root is None:
-        return f"{{avp={lua_string(identity)}}}"
+        deeper = ",".join(lua_string(each) for each in identities[1:])
+        steps = f",p={{{deeper}}}" if deeper else ""
+        return f"{{avp={lua_string(identities[0])}{steps}{last}}}"
+    key = "/".join(identities)
     if needed is not None:
-        needed.add(identity)
-    return f"{{avp={lua_string(identity)},q=true}}"
+        needed.add(key)
+    return f"{{avp={lua_string(key)},q=true{last}}}"
 
 
 def _condition(
@@ -753,13 +788,13 @@ def _condition(
     `{avp=, t=, r={...}}` (the value of another AVP) or `{avp=, t=}`
     (present), with `q=true` for the request's and `n=true` for one negated;
     None where its names or its value do not resolve."""
-    term = _term(condition, siblings, request, needed)
+    term = _term(condition, siblings, request, needed, names)
     if term is None:
         return None
-    scope = request if condition.root is not None else siblings
-    reading = None if scope is None else scope.get(condition.avp)
+    readings = _resolved(condition, siblings, request, names)
+    reading = None if readings is None else readings[-1]
     if isinstance(condition.value, dictionary.Reference):
-        other = _term(condition.value, siblings, request, needed)
+        other = _term(condition.value, siblings, request, needed, names)
         if other is None:
             return None
         test = f"r={other}"

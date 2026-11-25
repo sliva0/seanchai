@@ -1371,12 +1371,8 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
         if not isinstance(rule, ast.Quote)
         for reference in ast.references_of(rule)
     )
-    names.extend(
-        member
-        for rule in node.body
-        if isinstance(rule, ast.MembersRule)
-        for member in rule.members
-    )
+    # A members rule's member may be another document's grouped AVP's,
+    # which the linter reads with the corpus.
     for name in names:
         if name not in held:
             raise CorrectionError(f"{described}: the file holds no AVP {name!r}")

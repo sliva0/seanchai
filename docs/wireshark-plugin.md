@@ -115,7 +115,8 @@ A rule of an answer may read the request it answers (`request/` in
 [grammar.md](grammar.md#interpreted-constraints)). The plugin keeps, of
 each request it meets, the data of the AVPs some loaded rule reads of that
 command's requests, and nothing of a request no rule reads; the generated
-rules list them per application and command code (`requests` in the rules).
+rules list them per application and command code (`requests` in the rules),
+a path through grouped AVPs as its identities joined by `/`.
 
 - An answer is paired with the request Wireshark's own Diameter dissector
   pairs it with (`diameter.answer_to`, by conversation, Hop-by-Hop and

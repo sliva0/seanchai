@@ -1113,10 +1113,11 @@ _VALUES_RE = re.compile(
     r"^values (?P<values>-?[0-9]+(?:, -?[0-9]+)*) if (?P<conditions>.+)$"
 )
 # A path: AVP names joined by `/`, from the block's scope or a root
-# (`request/User-Name`). A value read from another AVP starts at a root, so
-# that a bare name stays a value's.
-_PATH = r"(?:(?:request)/)?[A-Za-z0-9][A-Za-z0-9_-]*"
-_ROOTED = r"(?:request)/[A-Za-z0-9][A-Za-z0-9_-]*"
+# (`request/User-Name`), a grouped AVP's member after it
+# (`MIP6-Agent-Info/MIP-Home-Agent-Host`). A value read from another AVP
+# starts at a root, so that a bare name stays a value's.
+_PATH = r"(?:(?:request)/)?[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9][A-Za-z0-9_-]*)*"
+_ROOTED = r"(?:request)/[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9][A-Za-z0-9_-]*)*"
 _CONDITION_RE = re.compile(
     rf"(?P<not>not )?(?P<path>{_PATH})"
     rf"(?: = (?P<value>{_ROOTED}|{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
