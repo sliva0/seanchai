@@ -34,14 +34,7 @@ def _label(block: ast.InformationElements | ast.CommandResultCodes) -> str:
 
 def _application_id(spec: ast.Specification, message: ast.Message) -> int | None:
     """The id on the wire: the header's, or the scope covering its clause."""
-    if message.application_id is not None:
-        return message.application_id
-    for section in spec.sections:
-        if isinstance(section, ast.ApplicationScope) and section.covers(
-            message.source.section
-        ):
-            return section.application_id
-    return None
+    return ast.application_id_of(spec.sections, message)
 
 
 def _grouped(specs: Sequence[ast.Specification], name: str) -> ast.GroupedAvp | None:

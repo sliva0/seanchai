@@ -1380,7 +1380,8 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
             for section in spec.sections
             if isinstance(section, ast.Message)
             and section.name == node.command
-            and node.application_id in (None, section.application_id)
+            and node.application_id
+            in (None, ast.application_id_of(spec.sections, section))
             and node.command_section in (None, section.source.section)
         ]
         if len(messages) != 1:

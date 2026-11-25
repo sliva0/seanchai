@@ -774,9 +774,11 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   one before it, beside the clause it reads.
 - `; AVP:` is the AVP the rules constrain. `; Command:`, with
   `; Application-ID:` where the file prints the command for several
-  applications and `; Command-Section:`, the clause of the command's block,
-  where it prints the command more than once for one application or for
-  none (TS 29.273's Diameter-EAP-Request for STa and SWd, as an Information
+  applications (the header's id, else the one of the application scope
+  covering the command's clause, as TS 29.212's CC-Request for Gx and Gxx)
+  and `; Command-Section:`, the clause of the command's block, where it
+  prints the command more than once for one application or for none (TS
+  29.273's Diameter-EAP-Request for STa and SWd, as an Information
   Elements block chooses), or `; Within:`, a grouped AVP, scopes them to the
   AVP as a member there; a predicate's conditions are its siblings. With
   neither, the rules hold wherever the document reads the AVP.

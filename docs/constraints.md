@@ -388,10 +388,13 @@ a reviewer reads it beside the specification:
   `; Application-ID:`, `; Command-Section:` and `; Request-Section:`,
   `; Section:`, `; Table:`),
   the quotes and the rules, and `; Versions:`, the range the quotes were
-  checked against. `; Command-Section:` names the clause of the command's
-  block where the document prints the command more than once for one
-  application, or for none: TS 29.273 prints Diameter-EAP-Answer for STa
-  and SWd under STa's application, and for SWa with none.
+  checked against. `; Application-ID:` names the application of the
+  command's print: its header's id, or where the header names none, the
+  one the application scope covering its clause gives it, as TS 29.212's
+  Gx and Gxx prints of CC-Request take theirs. `; Command-Section:` names
+  the clause of the command's block where the document prints the command
+  more than once for one application: TS 29.273 prints Diameter-EAP-Answer
+  for STa and SWd under STa's application.
 - `; Id:` names the block: a kebab-case name, unique in the file, naming what
   is read (`imei-digits`), not where. The corrected file's note and the
   corrections record cite it as `TS29.272.dadx#imei-digits`, so it stays put
@@ -665,9 +668,9 @@ within the document's own grouped AVP, already reads.
 The document has no information-element tables, and prints CC-Request,
 CC-Answer, RA-Request and RA-Answer for Gx, Gxx, Sd and S15 with no
 application id in their headers, and TS-Request and TS-Answer for Sd and
-St: a block names the print with `; Command-Section:`, Gx's in clauses
-5.6.2 to 5.6.5, Gxx's in 5a.6, Sd's in 5b.6, St's in 5c.6, S15's in E.6.6.
-A PCC rule's
+St: a block names the print's application with `; Application-ID:`, which
+the application scope covering its clause gives it, Gx's in clause 5.6,
+Gxx's in 5a.6, Sd's in 5b.6, St's in 5c.6, S15's in E.6.6. A PCC rule's
 Charging-Rule-Definition modifies the one installed before it, keeping what
 it omits (clause 5.3.4), and an ADC rule's ADC-Rule-Definition likewise
 (clause 5b.3.3), so a condition on their members is `text-only`.

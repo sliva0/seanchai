@@ -8,7 +8,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-xdsl-rat-type)
 ; AVP: RAT-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Page: 30
 ; Versions: 18.2.0..19.1.0
@@ -20,7 +20,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-xdsl-logical-access-id)
 ; AVP: Logical-Access-ID
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Page: 30
 ; Versions: 18.2.0..19.1.0
@@ -32,7 +32,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-xdsl-physical-access-id)
 ; AVP: Physical-Access-ID
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Page: 30
 ; Versions: 18.2.0..19.1.0
@@ -44,7 +44,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-an-gw-address-eps)
 ; AVP: AN-GW-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Page: 30
 ; Versions: 18.2.0..19.1.0
@@ -55,7 +55,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#gxx-ccr-initial-an-gw-address)
 ; AVP: AN-GW-Address
 ; Command: CC-Request
-; Command-Section: 5a.6.2
+; Application-ID: 16777266
 ; Section: 4a.5.1
 ; Page: 81
 ; Versions: 18.2.0..19.1.0
@@ -66,7 +66,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#gxx-ccr-initial-subscription-id)
 ; AVP: Subscription-Id
 ; Command: CC-Request
-; Command-Section: 5a.6.2
+; Application-ID: 16777266
 ; Section: 4a.5.1
 ; Page: 81
 ; Versions: 18.2.0..19.1.0
@@ -77,7 +77,7 @@
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#sd-tsr-framed-ip-address)
 ; AVP: Framed-IP-Address
 ; Command: TS-Request
-; Command-Section: 5b.6.2
+; Application-ID: 16777303
 ; Section: 4b.5.1.1
 ; Page: 103
 ; Versions: 18.2.0..19.1.0
@@ -1653,7 +1653,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#raa-event-trigger)
 ; AVP: Event-Trigger
 ; Command: RA-Answer
-; Command-Section: 5.6.5
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1664,7 +1664,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-sgsn-change-sgsn-address)
 ; AVP: 3GPP-SGSN-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1675,7 +1675,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-qos-change-qos-information)
 ; AVP: QoS-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1690,7 +1690,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-event-bearer-identifier)
 ; AVP: Bearer-Identifier
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1709,7 +1709,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-event-rat-type)
 ; AVP: RAT-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1722,7 +1722,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-event-an-trusted)
 ; AVP: AN-Trusted
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1735,7 +1735,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-tft-change-tft-packet-filter-information)
 ; AVP: TFT-Packet-Filter-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1746,7 +1746,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-plmn-change-sgsn-mcc-mnc)
 ; AVP: 3GPP-SGSN-MCC-MNC
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1757,7 +1757,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-event-charging-rule-report)
 ; AVP: Charging-Rule-Report
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1772,7 +1772,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ip-can-change-ip-can-type)
 ; AVP: IP-CAN-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1783,7 +1783,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-rai-change-rai)
 ; AVP: RAI
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1796,7 +1796,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-location-change-user-location-info)
 ; AVP: 3GPP-User-Location-Info
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1819,7 +1819,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ue-ip-address-framed-ip-address)
 ; AVP: Framed-IP-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1832,7 +1832,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-default-eps-bearer-qos-change)
 ; AVP: Default-EPS-Bearer-QoS
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1843,7 +1843,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-event-an-gw-address)
 ; AVP: AN-GW-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1856,7 +1856,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-resource-modification-packet-filter-operation)
 ; AVP: Packet-Filter-Operation
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1867,7 +1867,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-resource-modification-packet-filter-information)
 ; AVP: Packet-Filter-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1878,7 +1878,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ue-time-zone-change)
 ; AVP: 3GPP-MS-TimeZone
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1889,7 +1889,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-charging-correlation-exchange)
 ; AVP: Access-Network-Charging-Identifier-Gx
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1900,7 +1900,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-csg-change-user-csg-information)
 ; AVP: User-CSG-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1915,7 +1915,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-usage-report-usage-monitoring-information)
 ; AVP: Usage-Monitoring-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1926,7 +1926,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-routing-rule-change)
 ; AVP: Routing-Rule-Install
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1937,7 +1937,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-application-detection-information)
 ; AVP: Application-Detection-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1950,7 +1950,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ue-local-ip-address-change)
 ; AVP: UE-Local-IP-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1961,7 +1961,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-henb-local-ip-address-change)
 ; AVP: HeNB-Local-IP-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1972,7 +1972,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-credit-management-status)
 ; AVP: Credit-Management-Status
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1983,7 +1983,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-default-qos-change)
 ; AVP: Default-QoS-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -1994,7 +1994,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-presence-reporting-area-information)
 ; AVP: Presence-Reporting-Area-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -2005,7 +2005,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ps-data-off-status)
 ; AVP: 3GPP-PS-Data-Off-Status
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Page: 131
 ; Versions: 18.2.0..19.1.0
@@ -2344,7 +2344,7 @@ IP-CAN-Type ::= < Enumerated AVP header: 1027 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ip-can-type)
 ; AVP: IP-CAN-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.27
 ; Page: 149
 ; Versions: 18.2.0..19.1.0
@@ -2395,7 +2395,7 @@ QoS-Upgrade ::= < Enumerated AVP header: 1030 10415 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#cca-qos-upgrade-bitrates)
 ; AVP: QoS-Information
 ; Command: CC-Answer
-; Command-Section: 5.6.3
+; Application-ID: 16777238
 ; Section: 5.3.29
 ; Page: 150
 ; Versions: 18.2.0..19.1.0
@@ -2774,7 +2774,7 @@ Packet-Filter-Information ::= < AVP header: 1061 10415 > ;; corrected: (TS29.212
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-deletion-packet-filter-information)
 ; AVP: Packet-Filter-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.56
 ; Page: 163
 ; Versions: 18.2.0..19.1.0
@@ -3072,7 +3072,7 @@ Application-Detection-Information ::= < AVP header: 1098 10415 > ;; corrected: (
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-application-detection-information-event-trigger)
 ; AVP: Application-Detection-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.91
 ; Page: 170
 ; Versions: 18.2.0..19.1.0
@@ -3620,8 +3620,7 @@ CnHealthMonitor               = 15 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#cca-initial-supported-features)
 ; AVP: Supported-Features
 ; Command: CC-Answer
-; Command-Section: 5.6.3
-; Request-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.4.1
 ; Page: 190
 ; Versions: 18.2.0..19.1.0
@@ -3676,7 +3675,7 @@ DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3 from RFC8506
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#cca-experimental-result-vendor)
 ; AVP: Experimental-Result
 ; Command: CC-Answer
-; Command-Section: 5.6.3
+; Application-ID: 16777238
 ; Section: 5.5.1
 ; Page: 196
 ; Versions: 18.2.0..19.1.0
@@ -3687,7 +3686,7 @@ DIAMETER_USER_UNKNOWN = 5030 ; 5.5.3 from RFC8506
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#raa-experimental-result-vendor)
 ; AVP: Experimental-Result
 ; Command: RA-Answer
-; Command-Section: 5.6.5
+; Application-ID: 16777238
 ; Section: 5.5.1
 ; Page: 196
 ; Versions: 18.2.0..19.1.0
@@ -3828,7 +3827,7 @@ User-Equipment-Info-Extension = 11 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#gxx-cca-initial-supported-features)
 ; AVP: Supported-Features
 ; Command: CC-Answer
-; Command-Section: 5a.6.3
+; Application-ID: 16777266
 ; Section: 5a.4.1
 ; Page: 211
 ; Versions: 18.2.0..19.1.0
@@ -4000,8 +3999,7 @@ User-Equipment-Info-Extension = 13 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#sd-tsa-supported-features)
 ; AVP: Supported-Features
 ; Command: TS-Answer
-; Command-Section: 5b.6.3
-; Request-Section: 5b.6.2
+; Application-ID: 16777303
 ; Section: 5b.4.1
 ; Page: 228
 ; Versions: 18.2.0..19.1.0
@@ -4013,7 +4011,7 @@ User-Equipment-Info-Extension = 13 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#sd-tsa-experimental-result-vendor)
 ; AVP: Experimental-Result
 ; Command: TS-Answer
-; Command-Section: 5b.6.3
+; Application-ID: 16777303
 ; Section: 5b.5.1
 ; Page: 229
 ; Versions: 18.2.0..19.1.0
@@ -4024,7 +4022,7 @@ User-Equipment-Info-Extension = 13 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#sd-cca-experimental-result-vendor)
 ; AVP: Experimental-Result
 ; Command: CC-Answer
-; Command-Section: 5b.6.5
+; Application-ID: 16777303
 ; Section: 5b.5.1
 ; Page: 229
 ; Versions: 18.2.0..19.1.0
@@ -4035,7 +4033,7 @@ User-Equipment-Info-Extension = 13 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#sd-raa-experimental-result-vendor)
 ; AVP: Experimental-Result
 ; Command: RA-Answer
-; Command-Section: 5b.6.7
+; Application-ID: 16777303
 ; Section: 5b.5.1
 ; Page: 229
 ; Versions: 18.2.0..19.1.0
@@ -4046,8 +4044,7 @@ User-Equipment-Info-Extension = 13 ; O
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#st-tsa-supported-features)
 ; AVP: Supported-Features
 ; Command: TS-Answer
-; Command-Section: 5c.6.3
-; Request-Section: 5c.6.2
+; Application-ID: 16777349
 ; Section: 5c.4.2
 ; Page: 238
 ; Versions: 18.2.0..19.1.0
@@ -4090,7 +4087,7 @@ CS-Service-Resource-Report ::= < AVP header: 2813 10415 > ;; corrected: (TS29.21
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#s15-cca-supported-features)
 ; AVP: Supported-Features
 ; Command: CC-Answer
-; Command-Section: E.6.6.3
+; Application-ID: 16777318
 ; Section: E.6.4.2
 ; Versions: 18.2.0..19.1.0
 "If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP."

@@ -3,18 +3,21 @@
 ;; read by hand and pinned to the sentences read (docs/constraints.md), in
 ;; clause order: the procedure clauses for what they state of one message,
 ;; then per application, Gx, Gxx, Sd, St and S15, the AVP clauses, the
-;; re-used AVPs' descriptions and the clauses on result codes and messages. The document has no
-;; information-element tables: its commands are their ABNF. A clause
-;; pointing at another document for a layout is an `element`; a rule
-;; depending on an earlier message, a feature, the node, the subscription,
-;; the operator's policy or the procedure is `text-only`.
+;; re-used AVPs' descriptions and the clauses on result codes and messages.
+;; The document has no information-element tables: its commands are their
+;; ABNF. A clause pointing at another document for a layout is an
+;; `element`; a rule depending on an earlier message, a feature, the node,
+;; the subscription, the operator's policy or the procedure is `text-only`.
 ;;
 ;; The document prints CC-Request and CC-Answer, and RA-Request and
-;; RA-Answer, for Gx, Gxx, Sd and S15, each with no application id in its
-;; header: a block on a command names the print with `; Command-Section:`,
-;; Gx's in clauses 5.6.2 to 5.6.5, Gxx's in 5a.6, Sd's in 5b.6, St's in
-;; 5c.6 and S15's in E.6.6. An AVP clause of clause 5.3 is Gx's, and
-;; its sentences on a command are read of Gx's.
+;; RA-Answer, for Gx, Gxx, Sd and S15, and TS-Request and TS-Answer for Sd
+;; and St, each with no application id in its header: a block on a command
+;; names the application with `; Application-ID:`, which the clause's
+;; application scope gives the print (Gx 16777238 in clause 5.6, Gxx
+;; 16777266 in 5a.6, Sd 16777303 in 5b.6, St 16777349 in 5c.6, S15 16777318
+;; in E.6.6), and an answer's rules read the request printed under the same
+;; application. An AVP clause of clause 5.3 is Gx's, and its sentences on a
+;; command are read of Gx's.
 ;;
 ;; A PCC rule's Charging-Rule-Definition modifies the rule installed before
 ;; it: "If optional AVP(s) within a Charging-Rule-Definition AVP are omitted,
@@ -28,7 +31,7 @@
 ; Id: ccr-xdsl-rat-type
 ; AVP: RAT-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Versions: 18.2.0..19.1.0
 "1) At IP-CAN session establishment:"
@@ -40,7 +43,7 @@
 ; Id: ccr-xdsl-logical-access-id
 ; AVP: Logical-Access-ID
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Versions: 18.2.0..19.1.0
 "1) At IP-CAN session establishment:"
@@ -52,7 +55,7 @@
 ; Id: ccr-xdsl-physical-access-id
 ; AVP: Physical-Access-ID
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Versions: 18.2.0..19.1.0
 "1) At IP-CAN session establishment:"
@@ -66,7 +69,7 @@
 ; Id: ccr-an-gw-address-eps
 ; AVP: AN-GW-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 4.5.1
 ; Versions: 18.2.0..19.1.0
 "For 3GPP-EPS and 3GPP2 accesses, the PCEF shall provide the IP address(es) (Ipv4 or Ipv6, if available) of the SGW/AGW within the AN-GW-Address AVP."
@@ -79,7 +82,7 @@
 ; Id: gxx-ccr-initial-an-gw-address
 ; AVP: AN-GW-Address
 ; Command: CC-Request
-; Command-Section: 5a.6.2
+; Application-ID: 16777266
 ; Section: 4a.5.1
 ; Versions: 18.2.0..19.1.0
 "The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP."
@@ -92,7 +95,7 @@
 ; Id: gxx-ccr-initial-subscription-id
 ; AVP: Subscription-Id
 ; Command: CC-Request
-; Command-Section: 5a.6.2
+; Application-ID: 16777266
 ; Section: 4a.5.1
 ; Versions: 18.2.0..19.1.0
 "The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP."
@@ -105,7 +108,7 @@
 ; Id: sd-tsr-framed-ip-address
 ; AVP: Framed-IP-Address
 ; Command: TS-Request
-; Command-Section: 5b.6.2
+; Application-ID: 16777303
 ; Section: 4b.5.1.1
 ; Versions: 18.2.0..19.1.0
 "When establishing the session with the TDF, the PCRF shall send a TS-Request with the PDN information, if available, within the Called-Station-Id AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP. These parameters shall uniquely identify the session between the PCRF and the TDF."
@@ -208,7 +211,7 @@
 ; Id: raa-event-trigger
 ; AVP: Event-Trigger
 ; Command: RA-Answer
-; Command-Section: 5.6.5
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "Whenever the PCRF subscribes to one or more event triggers by using the RAR command, unless otherwise specified in an event trigger's value definition, the PCEF shall send the corresponding currently applicable values (e.g. 3GPP-SGSN-Address AVP or 3GPP-SGSN-Ipv6-Address AVP, RAT-Type, 3GPP-User-Location-Info, etc.) to the PCRF in the RAA if available, and in this case, the Event-Trigger AVPs shall not be included."
@@ -221,7 +224,7 @@
 ; Id: ccr-sgsn-change-sgsn-address
 ; AVP: 3GPP-SGSN-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because the serving SGSN changed. The new value of the serving SGSN shall be indicated in either 3GPP-SGSN-Address AVP or 3GPP-SGSN-Ipv6-Address AVP."
@@ -232,7 +235,7 @@
 ; Id: ccr-qos-change-qos-information
 ; AVP: QoS-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there has been a change in the requested QoS for a specific bearer (e.g. the previously maximum authorized QoS has been exceeded) or APN."
@@ -247,7 +250,7 @@
 ; Id: ccr-event-bearer-identifier
 ; AVP: Bearer-Identifier
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When applicable to 3GPP-GPRS and if the PCRF performs bearer binding, the Bearer-Identifier AVP shall be provided to indicate the affected bearer."
@@ -266,7 +269,7 @@
 ; Id: ccr-event-rat-type
 ; AVP: RAT-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because of a RAT change. The new RAT type shall be provided in the RAT-Type AVP and AN-Trusted AVP if applicable."
@@ -279,7 +282,7 @@
 ; Id: ccr-event-an-trusted
 ; AVP: AN-Trusted
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "The new RAT type shall be provided in the RAT-Type AVP and AN-Trusted AVP if applicable."
@@ -294,7 +297,7 @@
 ; Id: ccr-tft-change-tft-packet-filter-information
 ; AVP: TFT-Packet-Filter-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "All the TFT filter definitions for this bearer, including the requested changes, but excluding the TFT filters created with NW-initiated procedures, shall be provided in TFT-Packet-Filter-Information AVP."
@@ -305,7 +308,7 @@
 ; Id: ccr-plmn-change-sgsn-mcc-mnc
 ; AVP: 3GPP-SGSN-MCC-MNC
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there was a change of PLMN. 3GPP-SGSN-MCC-MNC AVP shall be provided in the same request with the new value."
@@ -318,7 +321,7 @@
 ; Id: ccr-event-charging-rule-report
 ; AVP: Charging-Rule-Report
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "The PCC-Rule-Status AVP within the Charging-Rule-Report AVP shall indicate that these PCC rules are temporarily inactive."
@@ -333,7 +336,7 @@
 ; Id: ccr-ip-can-change-ip-can-type
 ; AVP: IP-CAN-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there was a change of IP-CAN type. IP-CAN-Type AVP shall be provided in the same request with the new value."
@@ -344,7 +347,7 @@
 ; Id: ccr-rai-change-rai
 ; AVP: RAI
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there has been a change in the RAI. The new RAI value shall be provided in the RAI AVP."
@@ -357,7 +360,7 @@
 ; Id: ccr-location-change-user-location-info
 ; AVP: 3GPP-User-Location-Info
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there has been a change in the user location. The new location value shall be provided in the 3GPP-User-Location-Info AVP."
@@ -380,7 +383,7 @@
 ; Id: ccr-ue-ip-address-framed-ip-address
 ; AVP: Framed-IP-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because a UE Ipv4 address is allocated. The Framed-IP-Address AVP shall be provided in the same request."
@@ -393,7 +396,7 @@
 ; Id: ccr-default-eps-bearer-qos-change
 ; AVP: Default-EPS-Bearer-QoS
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there has been a change in the default EPS Bearer QoS. The new value shall be provided in the Default-EPS-Bearer-QoS AVP."
@@ -404,7 +407,7 @@
 ; Id: ccr-event-an-gw-address
 ; AVP: AN-GW-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because the serving Access Node gateway changed. The new value of the serving Access Node gateway shall be indicated in the AN-GW-Address AVP."
@@ -417,7 +420,7 @@
 ; Id: ccr-resource-modification-packet-filter-operation
 ; AVP: Packet-Filter-Operation
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "This value shall be used in a CCR command to indicate that PCC rules are requested for a resource modification request initiated by the UE. The Packet-Filter-Operation and Packet-Filter-Information AVPs shall be provided in the same request."
@@ -428,7 +431,7 @@
 ; Id: ccr-resource-modification-packet-filter-information
 ; AVP: Packet-Filter-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "This value shall be used in a CCR command to indicate that PCC rules are requested for a resource modification request initiated by the UE. The Packet-Filter-Operation and Packet-Filter-Information AVPs shall be provided in the same request."
@@ -439,7 +442,7 @@
 ; Id: ccr-ue-time-zone-change
 ; AVP: 3GPP-MS-TimeZone
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because the time zone the UE is currently located in has changed. The new value of the UE's time zone shall be indicated in the 3GPP-MS-TimeZone AVP."
@@ -450,7 +453,7 @@
 ; Id: ccr-charging-correlation-exchange
 ; AVP: Access-Network-Charging-Identifier-Gx
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that an access network charging identifier has been assigned. The actual value shall be reported with the Access-Network-Charging-Identifier-Gx AVP."
@@ -462,7 +465,7 @@
 ; Id: ccr-csg-change-user-csg-information
 ; AVP: User-CSG-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When the user enters a CSG cell, the User-CSG-Information AVP shall also be provided with the event report in the CCR command."
@@ -479,7 +482,7 @@
 ; Id: ccr-usage-report-usage-monitoring-information
 ; AVP: Usage-Monitoring-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request to report the accumulated usage for one or more monitoring keys. The PCEF shall also provide the accumulated usage volume and/or time using the Usage-Monitoring-Information AVP(s) including the Monitoring-Key AVP and the Used-Service-Unit AVP."
@@ -491,7 +494,7 @@
 ; Id: ccr-routing-rule-change
 ; AVP: Routing-Rule-Install
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "The new IP flow mobility/NBIFOM routing rule information shall be provided in the Routing-Rule-Definition AVP within the same CCR command."
@@ -502,7 +505,7 @@
 ; Id: ccr-application-detection-information
 ; AVP: Application-Detection-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF identified the start of the corresponding application's traffic for an applicationidentified by a TDF-Application-Identifier AVP.The detected application(s) shall be identified by the Application-Detection-Information AVP(s)."
@@ -515,7 +518,7 @@
 ; Id: ccr-ue-local-ip-address-change
 ; AVP: UE-Local-IP-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because the UE Local IP Address or the UDP source port number or both assigned by the Fixed Broadband Access have changed. The UE-Local-IP-Address AVP and/or the UDP-Source-Port AVP shall be provided in the same request."
@@ -526,7 +529,7 @@
 ; Id: ccr-henb-local-ip-address-change
 ; AVP: HeNB-Local-IP-Address
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because the H(e)NB Local IP Address or the UDP source port number or both assigned by the Fixed Broadband Access have changed. The HeNB-Local-IP-Address AVP and/or the UDP-Source-Port AVP shall be provided in the same request."
@@ -537,7 +540,7 @@
 ; Id: ccr-credit-management-status
 ; AVP: Credit-Management-Status
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "If the failure applies to the session, the Credit-Management-Status shall be set to the corresponding value as reported by the OCS."
@@ -548,7 +551,7 @@
 ; Id: ccr-default-qos-change
 ; AVP: Default-QoS-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates that the PCEF generated the request because there has been a change in the Default QoS. The new value shall be provided in the Default-QoS-Information AVP."
@@ -561,7 +564,7 @@
 ; Id: ccr-presence-reporting-area-information
 ; AVP: Presence-Reporting-Area-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates whether the UE is within or outside the requested presence reporting area. Presence-Reporting-Area-Identifier AVP and Presence-Reporting-Area-Status AVP shall be provided in the same request included in Presence-Reporting-Area-Information AVP."
@@ -572,7 +575,7 @@
 ; Id: ccr-ps-data-off-status
 ; AVP: 3GPP-PS-Data-Off-Status
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.7
 ; Versions: 18.2.0..19.1.0
 "This value shall be used in CCR command by the PCEF to indicate that the PCEF generated the request because there has been a change of 3GPP PS Data Off status indicated by the UE, with the status of 3GPP PS Data Off in the 3GPP-PS-Data-Off-Status AVP."
@@ -721,7 +724,7 @@
 ; Id: ccr-ip-can-type
 ; AVP: IP-CAN-Type
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.27
 ; Versions: 18.2.0..19.1.0
 "The IP-CAN-Type AVP shall always be present during the IP-CAN session establishment."
@@ -757,7 +760,7 @@
 ; Id: cca-qos-upgrade-bitrates
 ; AVP: QoS-Information
 ; Command: CC-Answer
-; Command-Section: 5.6.3
+; Application-ID: 16777238
 ; Section: 5.3.29
 ; Versions: 18.2.0..19.1.0
 "If the SGSN does not support a QoS upgrade, the PCRF shall not provision an authorized bitrates (e.g. GBR, MBR) which are higher than the requested bitrates for this IP CAN bearer in the response of the IP-CAN session establishment or modification."
@@ -930,7 +933,7 @@
 ; Id: ccr-deletion-packet-filter-information
 ; AVP: Packet-Filter-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.56
 ; Versions: 18.2.0..19.1.0
 "When the Packet-Filter-Operation AVP included within the CCR command indicates DELETION, only the Packet-Filter-Identifier AVP shall be provided."
@@ -1052,7 +1055,7 @@
 ; Id: ccr-application-detection-information-event-trigger
 ; AVP: Application-Detection-Information
 ; Command: CC-Request
-; Command-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.3.91
 ; Versions: 18.2.0..19.1.0
 "Also, the corresponding Event-Trigger (APPLICATION_START or APPLICATION_STOP) shall be provided to PCRF."
@@ -1330,8 +1333,7 @@
 ; Id: cca-initial-supported-features
 ; AVP: Supported-Features
 ; Command: CC-Answer
-; Command-Section: 5.6.3
-; Request-Section: 5.6.2
+; Application-ID: 16777238
 ; Section: 5.4.1
 ; Versions: 18.2.0..19.1.0
 "The following exceptions apply to the initial CCR/CCA command pair:"
@@ -1358,7 +1360,7 @@
 ; Id: cca-experimental-result-vendor
 ; AVP: Experimental-Result
 ; Command: CC-Answer
-; Command-Section: 5.6.3
+; Application-ID: 16777238
 ; Section: 5.5.1
 ; Versions: 18.2.0..19.1.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
@@ -1369,7 +1371,7 @@
 ; Id: raa-experimental-result-vendor
 ; AVP: Experimental-Result
 ; Command: RA-Answer
-; Command-Section: 5.6.5
+; Application-ID: 16777238
 ; Section: 5.5.1
 ; Versions: 18.2.0..19.1.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
@@ -1422,7 +1424,7 @@
 ; Id: gxx-cca-initial-supported-features
 ; AVP: Supported-Features
 ; Command: CC-Answer
-; Command-Section: 5a.6.3
+; Application-ID: 16777266
 ; Section: 5a.4.1
 ; Versions: 18.2.0..19.1.0
 "If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-8 Gxx functionality, the PCRF shall not include the Supported-Features AVP in the CCA command."
@@ -1499,8 +1501,7 @@
 ; Id: sd-tsa-supported-features
 ; AVP: Supported-Features
 ; Command: TS-Answer
-; Command-Section: 5b.6.3
-; Request-Section: 5b.6.2
+; Application-ID: 16777303
 ; Section: 5b.4.1
 ; Versions: 18.2.0..19.1.0
 "The following exceptions apply to the initial TSR/TSA command pair:"
@@ -1513,7 +1514,7 @@
 ; Id: sd-tsa-experimental-result-vendor
 ; AVP: Experimental-Result
 ; Command: TS-Answer
-; Command-Section: 5b.6.3
+; Application-ID: 16777303
 ; Section: 5b.5.1
 ; Versions: 18.2.0..19.1.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
@@ -1524,7 +1525,7 @@
 ; Id: sd-cca-experimental-result-vendor
 ; AVP: Experimental-Result
 ; Command: CC-Answer
-; Command-Section: 5b.6.5
+; Application-ID: 16777303
 ; Section: 5b.5.1
 ; Versions: 18.2.0..19.1.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
@@ -1535,7 +1536,7 @@
 ; Id: sd-raa-experimental-result-vendor
 ; AVP: Experimental-Result
 ; Command: RA-Answer
-; Command-Section: 5b.6.7
+; Application-ID: 16777303
 ; Section: 5b.5.1
 ; Versions: 18.2.0..19.1.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
@@ -1548,8 +1549,7 @@
 ; Id: st-tsa-supported-features
 ; AVP: Supported-Features
 ; Command: TS-Answer
-; Command-Section: 5c.6.3
-; Request-Section: 5c.6.2
+; Application-ID: 16777349
 ; Section: 5c.4.2
 ; Versions: 18.2.0..19.1.0
 "The following exceptions apply to the initial TSR/TSA command pair:"
@@ -1562,7 +1562,7 @@
 ; Id: s15-cca-supported-features
 ; AVP: Supported-Features
 ; Command: CC-Answer
-; Command-Section: E.6.6.3
+; Application-ID: 16777318
 ; Section: E.6.4.2
 ; Versions: 18.2.0..19.1.0
 "If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP."

@@ -787,6 +787,74 @@ def test_an_interpretation_chooses_a_print_of_its_command_by_its_clause():
             )
 
 
+def _scoped(clause: str, application_id: int) -> tuple[str, ...]:
+    """An application's scope, its request and its answer, printed with no
+    application id, as TS 29.212 prints Gx's and Gxx's CC-Request."""
+    return (
+        "; Type: Application Scope",
+        f"; Name: App{application_id}",
+        f"; Section: {clause}",
+        f"; Application-ID: {application_id}",
+        f"; Applies-To: {clause}.*",
+        "",
+        "",
+        "; Type: Message",
+        "; Name: Example-Request, EXR",
+        f"; Section: {clause}.1",
+        "<Example-Request> ::= < Diameter Header: 9, REQ >",
+        "        < Session-Id >",
+        "        [ Example-Flags ]",
+        "",
+        "",
+        "; Type: Message",
+        "; Name: Example-Answer, EXA",
+        f"; Section: {clause}.2",
+        "<Example-Answer> ::= < Diameter Header: 9 >",
+        "        < Session-Id >",
+        "        [ Example-Number ]",
+        "",
+        "",
+    )
+
+
+def test_an_interpretation_names_a_print_by_its_scopes_application():
+    """`; Application-ID:` resolves a print whose header names none through
+    the application scope covering its clause, and an answer's rules read
+    the request printed under that application."""
+    text = _dad(
+        *_scoped("6.1", 98),
+        *_scoped("6.2", 99),
+        "; Type: AVP Table",
+        "; Section: 6.3.1",
+        "; Columns: Name Code Section Type Must",
+        "Example-Number 1 6.3.2 OctetString V",
+        "Example-Flags 2 6.3.4 Unsigned32 V",
+    )
+    chosen = _interpret(
+        '"Only when the request asks."',
+        "    requires request/Example-Flags bit 0",
+        scope=("; Command: Example-Answer", "; Application-ID: 99"),
+    )
+
+    corrected, _ = corrections.apply(parser.parse(text), [chosen])
+
+    (block,) = [
+        section
+        for section in corrected.sections
+        if isinstance(section, ast.InterpretedConstraints)
+    ]
+    assert block.application_id == 99
+    answers, requests = ast.request_prints(corrected.sections, block)
+    assert [each.source.section for each in answers] == ["6.2.2"]
+    assert [each.source.section for each in requests] == ["6.2.1"]
+    assert ast.request_section(corrected.sections, block) == "6.2.1"
+    with pytest.raises(CorrectionError, match="2 commands 'Example-Answer' match"):
+        corrections.apply(
+            parser.parse(text),
+            [_interpret(id="unscoped", scope=("; Command: Example-Answer",))],
+        )
+
+
 def test_a_quote_is_held_to_its_clause_and_its_page_read_from_the_copy():
     declared = [
         _interpret(

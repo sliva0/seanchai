@@ -123,6 +123,7 @@ __all__ = [
     "Version",
     "VersionsText",
     "VoidValues",
+    "application_id_of",
     "conditions_of",
     "defines",
     "in_document_order",
@@ -1993,6 +1994,23 @@ class Interpretations(Node):
         return self
 
 
+def application_id_of(sections: Iterable[Any], message: Message) -> int | None:
+    """The application id `message` is sent under: its header's, else that
+    of the first application scope covering its clause, as TS 29.212 prints
+    Gx's CC-Request in clause 5.6.2 with no id and clause 5.1 gives Gx's."""
+    if message.application_id is not None:
+        return message.application_id
+    return next(
+        (
+            section.application_id
+            for section in sections
+            if isinstance(section, ApplicationScope)
+            and section.covers(message.source.section)
+        ),
+        None,
+    )
+
+
 def request_prints(
     sections: Iterable[Any], block: InterpretedConstraints
 ) -> tuple[list[Message], list[Message]]:
@@ -2000,13 +2018,15 @@ def request_prints(
     of the requests of its command code under its application, those at
     the block's `; Request-Section:` where it names one: what a path rooted
     at `request` reads."""
+    sections = list(sections)
     messages = [section for section in sections if isinstance(section, Message)]
+    ids = {id(message): application_id_of(sections, message) for message in messages}
     answers = [
         message
         for message in messages
         if message.name == block.command
         and CommandFlag.REQUEST not in message.flags
-        and block.application_id in (None, message.application_id)
+        and block.application_id in (None, ids[id(message)])
         and block.command_section in (None, message.source.section)
     ]
     requests = [
@@ -2015,7 +2035,7 @@ def request_prints(
         if CommandFlag.REQUEST in message.flags
         and any(
             message.command_code == answer.command_code
-            and message.application_id == answer.application_id
+            and ids[id(message)] == ids[id(answer)]
             for answer in answers
         )
         and block.request_section in (None, message.source.section)
