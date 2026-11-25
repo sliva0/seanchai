@@ -36,10 +36,10 @@ table it carries comes too, and each feature list only for the application it
 numbers. `Emergency-Services`
 is one TS 29.272 re-uses: `show` prints TS 29.273's definition and its bits,
 both in `s6a.json`. The clauses of TS 29.128, 29.212, 29.214, 29.272, 29.273,
-29.329, 29.338 and 32.299, and of RFC 4006 and 6733, are also read for what
-their prose says of each AVP's value and presence (a PLMN identity's layout,
-a range, a member allowed only beside another, an answer's member present
-only as its request asked), as
+29.329, 29.338 and 32.299, and of RFC 4006, 6733 and 8506, are also read for
+what their prose says of each AVP's value and presence (a PLMN identity's
+layout, a range, a member allowed only beside another, an answer's member
+present only as its request asked), as
 [interpreted constraints][constraints], each pinned to the sentences read
 and written by hand in the `.dad` syntax beside the specification
 (`edits/interpretations/TS29.272.dadx`).

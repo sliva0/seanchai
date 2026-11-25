@@ -2249,6 +2249,86 @@ REGISTRY: tuple[Element, ...] = (
         Depth.FULL,
         valid="8 octets the Unsigned64 carries whole: every value",
     ),
+    Element(
+        "TS23.003",
+        "6.2.2",
+        "IMEISV",
+        "the International Mobile station Equipment Identity and Software"
+        " Version Number",
+        (
+            _source(
+                _NUMBERING,
+                "6.2.2",
+                "a Type Allocation Code of 8 digits, a Serial Number of 6 and a"
+                " Software Version Number of 2, 'each element shall consist of"
+                " decimal digits only'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the clause gives the IMEISV as 16 decimal digits, and neither it"
+        " nor RFC 8506 clause 8.53 says how an OctetString carries them, as"
+        " 16 characters or packed two to an octet",
+    ),
+    Element(
+        "TS23.003",
+        "6.2.1",
+        "IMEI",
+        "the International Mobile station Equipment Identity",
+        (
+            _source(
+                _NUMBERING,
+                "6.2.1",
+                "a Type Allocation Code of 8 digits, a Serial Number of 6 and a"
+                " Check Digit or Spare Digit, 'each element shall consist of"
+                " decimal digits only'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the clause gives the IMEI as 15 decimal digits, and neither it nor"
+        " RFC 8506 clause 8.57 says how an OctetString carries them, as 15"
+        " characters or packed two to an octet",
+    ),
+    Element(
+        "RFC5777",
+        "4.1.7.8",
+        "MAC-Address",
+        "a layer 2 address in MAC-48 format",
+        (
+            Source(
+                "RFC5777",
+                "(February 2010)",
+                "4.1.7.8",
+                "'The value is a 6-octet encoding of the address as it would"
+                " appear in the frame header'",
+            ),
+        ),
+        (Octets(6, 6),),
+        Depth.FULL,
+        "the address takes any value",
+        example=bytes.fromhex("0010a42319c0"),
+    ),
+    Element(
+        "RFC4291",
+        "2.5.1",
+        "Modified EUI-64",
+        "an interface identifier in Modified EUI-64 format",
+        (
+            Source(
+                "RFC4291",
+                "(February 2006)",
+                "2.5.1",
+                "interface identifiers 'required to be 64 bits long and to be"
+                " constructed in Modified EUI-64 format', its 'u' bit telling"
+                " universal from local scope",
+            ),
+        ),
+        (Octets(8, 8),),
+        Depth.FULL,
+        "the identifier takes any value, its 'u' bit set or not",
+        example=bytes.fromhex("021122fffe334455"),
+    ),
 )
 
 _BY_KEY = {element.key: element for element in REGISTRY}

@@ -381,6 +381,15 @@ TS 29.128's 10 name 10 entries, of which 5 check something:
 | Uplink-Number-Of-Packets-Allowed, Number-Of-Additional-Exception-Reports, Downlink-Number-Of-Packets-Allowed | TS 29.274 8.38 (the field of that name) | TS 29.274 V19.6.0 8.38 | 4 octets the Unsigned32 carries whole: every value | full |  |
 | APN-Rate-Control-Status-Validity-Time | TS 29.274 8.38 APN Rate Control Status validity Time | TS 29.274 V19.6.0 8.38 | 8 octets the Unsigned64 carries whole: every value | full |  |
 
+RFC 8506's 4 name 4 entries, of which 2 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| User-Equipment-Info-IMEISV | TS 23.003 6.2.2 IMEISV | TS 23.003 V19.8.0 6.2.2 | nothing | none | the clause gives the IMEISV as 16 decimal digits, and neither it nor RFC 8506 clause 8.53 says how an OctetString carries them, as 16 characters or packed two to an octet |
+| User-Equipment-Info-MAC | RFC 5777 4.1.7.8 MAC-Address | RFC 5777 (February 2010) 4.1.7.8 | 6 octets | full | the address takes any value |
+| User-Equipment-Info-ModifiedEUI64 | RFC 4291 2.5.1 Modified EUI-64 | RFC 4291 (February 2006) 2.5.1 | 8 octets | full | the identifier takes any value, its 'u' bit set or not |
+| User-Equipment-Info-IMEI | TS 23.003 6.2.1 IMEI | TS 23.003 V19.8.0 6.2.1 | nothing | none | the clause gives the IMEI as 15 decimal digits, and neither it nor RFC 8506 clause 8.57 says how an OctetString carries them, as 15 characters or packed two to an octet |
+
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
@@ -1382,3 +1391,66 @@ is "applicable only" to or "to be used only" in, with no MUST
 retransmission, terminating a session on DIAMETER_BAD_ANSWER, the state
 machines of section 7); the result codes a server answers with; and
 section 10.2's RAR and RAA table, which allows its AVPs and forbids none.
+
+## RFC 8506
+
+RFC 8506 is read as RFC 4006 is, sections 3 to 9 and section 10.1's
+occurrence table, for what it says of the credit-control AVPs and its own
+CCR and CCA; where it repeats RFC 4006, its file quotes its own text. It
+obsoletes RFC 4006, so its print of the commands is the one the Wireshark
+plugin holds an application 4 message to beside TS 32.299's and OMA's,
+and TS 29.212 reads the credit-control AVPs from it: a block with no scope,
+or within a grouped AVP, holds in Gx's commands, and a block on the CCR or
+CCA binds RFC 8506's print alone ([Precedence](#precedence)). An RFC has
+one edition, so no block names `; Versions:`.
+
+| | |
+|---|---|
+| sections 3 to 9.2 (the commands, the procedures, the AVPs, the result codes) | 67 blocks |
+| section 10.1's table, each "0" cell of an AVP the command's body admits only through `* [ AVP ]` | 29 blocks |
+| blocks | 96: 51 within a command, 20 within a grouped AVP, 25 on an AVP wherever read |
+| readings | 103 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 1: `ip-address` (Redirect-Address-IPAddress) |
+| `encoding element` | 4, naming 4 entries of the registry; 2 rules checked, 2 not ([above](#elements)) |
+| `length` | 1: User-Equipment-Info-EUI64, 8 octets |
+| `range` | 1: the CCR's Auth-Application-Id 4 |
+| `present-if` | 10: RFC 4006's eight, the CCR's Subscription-Id for a CHECK_BALANCE only where it holds no Subscription-Id-Extension, and QoS-Final-Unit-Indication's Redirect-Server-Extension for REDIRECT (8.64, 8.68) |
+| `absent-if` | 2: the CCR's Multiple-Services-Credit-Control without a Requested-Service-Unit in an INITIAL_REQUEST (5.2, 8.16) |
+| `excludes` | 13: Final-Unit-Indication and QoS-Final-Unit-Indication with TERMINATE holding nothing else, a G-S-U-Pool-Reference's unit type absent from its Granted-Service-Unit, and the members of User-Equipment-Info-Extension (4), Subscription-Id-Extension (4) and Redirect-Server-Extension (2) two at a time |
+| `values` | 3: as RFC 4006's |
+| `default` | 5: as RFC 4006's |
+| `absent` | 29: table 10.1's "0" cells |
+| `text-only` | 34 |
+
+The rules RFC 4006 states the document states again, but for the CCR's
+Tariff-Change-Usage: where RFC 4006 keeps it out of a request's
+Multiple-Services-Credit-Control, section 8.16 has a client reporting units
+either side of a tariff change use the Used-Service-Unit's, which turns on
+an earlier answer, and is `text-only`. Its extension AVPs hold "exactly
+one" member (sections 8.52, 8.58, 8.64): no two of the members its body
+names, read member by member against those after it; that one is present
+is not read, since each body's `[ AVP ]` may carry the one AVP of an
+identifier type defined later. The MAC and the modified EUI-64 of
+User-Equipment-Info-Extension are RFC 5777's and RFC 4291's elements, its
+EUI-64 the clause's own 64 bits, and its IMEI and IMEISV TS 23.003's,
+whose digits neither document says how an OctetString carries.
+
+The text-only rules are RFC 4006's, and the extensions' identifiers and
+addresses as texts other documents define (E.164, E.212, SIP URI, NAI,
+URL), which no codec or element reads, Subscription-Id-Extension's one
+identifier, which its `[ AVP ]` may carry, and its use beside
+Subscription-Id where "full backward compatibility with [RFC4006] is
+required", the node's.
+
+The document disagrees with itself where the corpus reads around it:
+section 8.34 has a Final-Unit-Indication with REDIRECT carry "the
+Redirect-Server AVP or the Redirect-Server-Extension AVP (at least one)",
+where its body holds no Redirect-Server-Extension and no `* [ AVP ]`, so
+the block reads the Redirect-Server, as section 8.37 does. Left unread: as
+RFC 4006's, section 8.2's CC-Request-Number, which "should be set to 0" for
+an INITIAL_REQUEST or EVENT_REQUEST and so states no requirement; section
+8.38's receiver "MAY be liberal" in the IPv6 text it accepts; and the
+SHOULDs keeping RFC 4006's AVPs beside their extensions for older peers.

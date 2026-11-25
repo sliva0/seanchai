@@ -1,0 +1,983 @@
+; Interprets: RFC 8506
+;; What RFC 8506's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. The document obsoletes RFC 4006, whose file reads RFC
+;; 4006's own text where the two say the same; TS 29.212 reads the
+;; credit-control AVPs from RFC 8506, TS 32.299 from RFC 4006. A block with
+;; no scope, or within a grouped AVP, holds wherever a document reading RFC
+;; 8506's AVP reads it; a block on the CCR or CCA binds RFC 8506's own print
+;; of the command, which no other document's print shares
+;; (docs/constraints.md, Precedence). The credit-control session spans the
+;; CCRs and CCAs of its INITIAL_REQUEST, UPDATE_REQUESTs and
+;; TERMINATION_REQUEST, so what one message carries by an earlier one is
+;; `text-only`, as is what turns on the node, the subscriber's account or
+;; the server's rating.
+
+
+; Type: Interpreted Constraints
+; Id: ccr-auth-application-id-credit-control
+; AVP: Auth-Application-Id
+; Command: Credit-Control-Request
+; Section: 3.1
+"The Auth-Application-Id MUST be set to the value 4, indicating the Diameter Credit-Control application."
+    range 4
+
+
+;; DIAMETER_RATING_FAILED (5031), as sections 8.43 and 9.2 say too; which
+;; AVPs the Failed-AVP holds is the server's.
+; Type: Interpreted Constraints
+; Id: cca-rating-failed-failed-avp
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 4.1.3
+"A CCA message with this error MUST contain one or more Failed-AVP AVPs containing the missing and/or unsupported AVPs that caused the failure."
+    present-if Result-Code = DIAMETER_RATING_FAILED
+
+
+;; The session spans messages.
+; Type: Interpreted Constraints
+; Id: ccr-session-id-the-sessions
+; AVP: Session-Id
+; Command: Credit-Control-Request
+; Section: 5.1
+"Each credit-control session MUST have a globally unique Session-Id as defined in [RFC6733]; this Session-Id MUST NOT be changed during the lifetime of a credit-control session."
+    text-only
+
+
+;; Whether a tariff change occurred an earlier CCA's Tariff-Time-Change
+;; says.
+; Type: Interpreted Constraints
+; Id: ccr-used-service-unit-tariff-change
+; AVP: Used-Service-Unit
+; Command: Credit-Control-Request
+; Section: 5.1.1
+"When the Diameter Credit-Control client reports the used units and a tariff change has occurred during the reporting period, the Diameter Credit-Control client MUST separately itemize the units used before and after the tariff change."
+    text-only
+
+
+;; Which interrogation is the first, and what the client supports, the
+;; request does not show.
+; Type: Interpreted Constraints
+; Id: ccr-multiple-services-indicator-first-interrogation
+; AVP: Multiple-Services-Indicator
+; Command: Credit-Control-Request
+; Section: 5.1.2
+"The credit-control client MUST indicate support for independent credit-control of multiple services within a (sub-)session by including the Multiple-Services-Indicator AVP in the first interrogation."
+    text-only
+
+
+;; The client's indication in an earlier request, the server's wish, and
+;; two Multiple-Services-Credit-Control AVPs compared.
+; Type: Interpreted Constraints
+; Id: cca-multiple-services-credit-control-granted-units
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Answer
+; Section: 5.1.2
+"If the client indicated support for independent credit-control of multiple services, a credit-control server that wishes to use the feature MUST return the granted units within the Multiple-Services-Credit-Control AVP associated to the corresponding service-identifier and/or rating-group."
+    text-only
+"Both granted unit quotas MUST contain the same Service-Identifier and/or rating-group."
+    text-only
+
+
+;; Two AVPs' values compared, which no kind says.
+; Type: Interpreted Constraints
+; Id: g-s-u-pool-reference-unit-types-differ
+; AVP: G-S-U-Pool-Reference
+; Within: Multiple-Services-Credit-Control
+; Section: 5.1.2
+"Where multiple G-S-U-Pool-Reference AVPs (Section 8.30) with the same G-S-U-Pool-Identifier are provided within a Multiple-Services-Credit-Control AVP (Section 8.16) along with the Granted-Service-Unit AVP, these AVPs MUST have different CC-Unit-Type values, and they all draw from the credit pool separately."
+    text-only
+
+
+;; The first interrogation is the CCR whose CC-Request-Type is
+;; INITIAL_REQUEST; the Multiple-Services-Credit-Control's own scope does not
+;; see it, so the rule is read on the CCR through a path into it, as section
+;; 8.16 reads it too. Of several Multiple-Services-Credit-Control AVPs, one
+;; holding a Requested-Service-Unit meets the path.
+; Type: Interpreted Constraints
+; Id: ccr-initial-multiple-services-credit-control-requested-units
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 5.2
+"Where the Multiple-Services-Credit-Control AVP is used, it MUST contain the Requested-Service-Unit AVP to indicate that the quota for the associated service/rating-group is requested."
+    absent-if CC-Request-Type = INITIAL_REQUEST and not Multiple-Services-Credit-Control/Requested-Service-Unit
+
+
+;; Which UPDATE_REQUEST is the first is the session's.
+; Type: Interpreted Constraints
+; Id: ccr-first-update-request-number
+; AVP: CC-Request-Number
+; Command: Credit-Control-Request
+; Section: 5.2.2
+"The CC-Request-Number of the first UPDATE_REQUEST MUST be set to 1 (for details regarding how to produce a unique value for the CC-Request-Number AVP, see Section 8.2)."
+    text-only
+
+
+;; Whether the client requests a new quota, and which unit types the
+;; previous answer held, the request does not show.
+; Type: Interpreted Constraints
+; Id: ccr-update-multiple-services-credit-control-requested-units
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 5.3
+"Where the Multiple-Services-Credit-Control AVP is used, it MUST contain the Requested-Service-Unit AVP if a new quota is requested for the associated service/rating-group."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: ccr-update-used-service-unit-each-type
+; AVP: Used-Service-Unit
+; Command: Credit-Control-Request
+; Section: 5.3
+"If several unit types were included in the previous Answer message, the used service units for each unit type MUST be reported."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: ccr-termination-used-service-unit-each-type
+; AVP: Used-Service-Unit
+; Command: Credit-Control-Request
+; Section: 5.4
+"If several unit types were included in the previous Answer message, the used service units for each unit type MUST be reported."
+    text-only
+
+
+;; The answer to the request an earlier CCA's final units ended.
+; Type: Interpreted Constraints
+; Id: cca-final-units-consumed-validity-time
+; AVP: Validity-Time
+; Command: Credit-Control-Answer
+; Section: 5.6.2
+"Naturally, the Credit-Control-Answer message does not contain any granted service units and MUST include the Validity-Time AVP to indicate to the credit-control client how long the subscriber is allowed to use network resources before a new intermediate interrogation is sent to the server."
+    text-only
+
+
+;; Section 6's one-time events: the Requested-Action names the event, and
+;; the CC-Request-Type, an Enumerated the values rule reads as its number,
+;; is EVENT_REQUEST (4).
+; Type: Interpreted Constraints
+; Id: ccr-price-enquiry-event-request
+; AVP: CC-Request-Type
+; Command: Credit-Control-Request
+; Section: 6.1
+"A Diameter Credit-Control client requesting the cost information MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include the Requested-Action AVP set to PRICE_ENQUIRY, and set the requested service event information in the Service-Identifier AVP in the Credit-Control-Request message."
+    values 4 if Requested-Action = PRICE_ENQUIRY
+
+
+; Type: Interpreted Constraints
+; Id: ccr-price-enquiry-service-identifier
+; AVP: Service-Identifier
+; Command: Credit-Control-Request
+; Section: 6.1
+"A Diameter Credit-Control client requesting the cost information MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include the Requested-Action AVP set to PRICE_ENQUIRY, and set the requested service event information in the Service-Identifier AVP in the Credit-Control-Request message."
+    present-if Requested-Action = PRICE_ENQUIRY
+
+
+; Type: Interpreted Constraints
+; Id: ccr-check-balance-event-request
+; AVP: CC-Request-Type
+; Command: Credit-Control-Request
+; Section: 6.2
+"A Diameter Credit-Control client requesting a balance check MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include a Requested-Action AVP set to CHECK_BALANCE, and include the Subscription-Id AVP or Subscription-Id-Extension AVP in order to identify the end user in the credit-control server."
+    values 4 if Requested-Action = CHECK_BALANCE
+
+
+; Type: Interpreted Constraints
+; Id: ccr-check-balance-subscription-id
+; AVP: Subscription-Id
+; Command: Credit-Control-Request
+; Section: 6.2
+"A Diameter Credit-Control client requesting a balance check MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include a Requested-Action AVP set to CHECK_BALANCE, and include the Subscription-Id AVP or Subscription-Id-Extension AVP in order to identify the end user in the credit-control server."
+    present-if Requested-Action = CHECK_BALANCE and not Subscription-Id-Extension
+
+
+; Type: Interpreted Constraints
+; Id: ccr-refund-account-event-request
+; AVP: CC-Request-Type
+; Command: Credit-Control-Request
+; Section: 6.4
+"The credit-control client MUST set the CC-Request-Type AVP to the value EVENT_REQUEST and the Requested-Action AVP to REFUND_ACCOUNT in the Credit-Control-Request message."
+    values 4 if Requested-Action = REFUND_ACCOUNT
+
+
+; Type: Interpreted Constraints
+; Id: ccr-event-request-requested-action
+; AVP: Requested-Action
+; Command: Credit-Control-Request
+; Section: 8.3
+"The Requested-Action AVP MUST be included in the Credit-Control-Request message when CC-Request-Type is set to EVENT_REQUEST."
+    present-if CC-Request-Type = EVENT_REQUEST
+
+
+; Type: Interpreted Constraints
+; Id: cc-session-failover-default
+; AVP: CC-Session-Failover
+; Section: 8.4
+"FAILOVER_NOT_SUPPORTED 0"
+"When the CC-Session-Failover AVP is set to FAILOVER_NOT_SUPPORTED, the credit-control message stream MUST NOT be moved to an alternative destination in the case of a communication failure. This is the default behavior if the AVP isn't included in the reply from the authorization or credit-control server."
+    default FAILOVER_NOT_SUPPORTED
+
+
+;; Earlier messages, and an absence meaning no value.
+; Type: Interpreted Constraints
+; Id: cc-sub-session-id-increasing
+; AVP: CC-Sub-Session-Id
+; Section: 8.5
+"The combination of the Session-Id AVP and this AVP MUST be unique per sub-session, and the value of this AVP MUST be monotonically increased by one for all new sub-sessions."
+    text-only
+"The absence of this AVP implies that no sub-sessions are in use."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: exponent-default
+; AVP: Exponent
+; Within: Unit-Value
+; Section: 8.8
+"The absence of the exponent part MUST be interpreted as an exponent equal to zero."
+    default 0
+
+
+;; ISO 4217's numeric codes, a document the corpus does not hold and no
+;; element of the registry reads.
+; Type: Interpreted Constraints
+; Id: currency-code-iso-4217
+; AVP: Currency-Code
+; Section: 8.11
+"It is specified by using the numeric values defined in the ISO 4217 standard [ISO4217]."
+    text-only
+
+
+;; The Service Element's capabilities, and whether an AA-Request performs
+;; the first interrogation or a re-authorization, are the node's and the
+;; session's; the AA-Requests are other applications' commands.
+; Type: Interpreted Constraints
+; Id: credit-control-in-aa-requests
+; AVP: Credit-Control
+; Section: 8.13
+"The Credit-Control AVP (AVP Code 426) is of type Enumerated and MUST be included in AA-Request messages when the Service Element has credit-control capabilities."
+    text-only
+"The value of the Credit-Control AVP MUST always be set to 0 in an AA-Request sent to perform the first interrogation and to initiate a new credit-control session."
+    text-only
+"This value MUST NOT be used in an AA-Request sent to perform the first interrogation."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: credit-control-failure-handling-default
+; AVP: Credit-Control-Failure-Handling
+; Section: 8.14
+"This is the default behavior if the AVP isn't included in the reply from the authorization or credit-control server."
+    default TERMINATE
+
+
+; Type: Interpreted Constraints
+; Id: direct-debiting-failure-handling-default
+; AVP: Direct-Debiting-Failure-Handling
+; Section: 8.15
+"This is the default behavior if the AVP isn't included in the reply from the authorization server."
+    default TERMINATE_OR_BUFFER
+
+
+;; A pool's unit type names the member of the Granted-Service-Unit that
+;; carries its units: TIME's CC-Time, MONEY's CC-Money, TOTAL-OCTETS',
+;; INPUT-OCTETS' and OUTPUT-OCTETS' octet counts and SERVICE-SPECIFIC-UNITS'
+;; CC-Service-Specific-Units (section 8.32). Of several
+;; G-S-U-Pool-References, one of the type meets the path.
+; Type: Interpreted Constraints
+; Id: g-s-u-pool-reference-granted-units
+; AVP: G-S-U-Pool-Reference
+; Within: Multiple-Services-Credit-Control
+; Section: 8.16
+"If a G-S-U-Pool-Reference AVP is present, then actual service units of the specified type MUST also be present. For example, if the G-S-U-Pool-Reference AVP specifies a CC-Unit-Type value of TIME (Section 8.32), then the CC-Time AVP MUST be present."
+    excludes G-S-U-Pool-Reference/CC-Unit-Type = TIME and not Granted-Service-Unit/CC-Time or G-S-U-Pool-Reference/CC-Unit-Type = MONEY and not Granted-Service-Unit/CC-Money or G-S-U-Pool-Reference/CC-Unit-Type = TOTAL-OCTETS and not Granted-Service-Unit/CC-Total-Octets or G-S-U-Pool-Reference/CC-Unit-Type = INPUT-OCTETS and not Granted-Service-Unit/CC-Input-Octets or G-S-U-Pool-Reference/CC-Unit-Type = OUTPUT-OCTETS and not Granted-Service-Unit/CC-Output-Octets or G-S-U-Pool-Reference/CC-Unit-Type = SERVICE-SPECIFIC-UNITS and not Granted-Service-Unit/CC-Service-Specific-Units
+
+
+;; The Requested-Service-Unit in the initial interrogation, as section 5.2
+;; reads it; an intermediate interrogation's turns on whether the client
+;; requests a new quota, and is not read; whether the client reports units
+;; either side of a tariff change an earlier CCA says.
+; Type: Interpreted Constraints
+; Id: ccr-multiple-services-credit-control-members
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 8.16
+"It MUST be present in the initial interrogation and within the intermediate interrogations in which a new quota is requested."
+    absent-if CC-Request-Type = INITIAL_REQUEST and not Multiple-Services-Credit-Control/Requested-Service-Unit
+"When the client is reporting used units before and after the tariff time change, it MUST use the Tariff-Change-Usage AVP inside the Used-Service-Unit AVP."
+    text-only
+
+
+;; Two Multiple-Services-Credit-Control AVPs, which no kind counts.
+; Type: Interpreted Constraints
+; Id: cca-tariff-change-two-quotas
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Answer
+; Section: 8.16
+"When both the Tariff-Time-Change AVP and the Tariff-Change-Usage AVP are present, the server MUST include two separate instances of the Multiple-Services-Credit-Control AVP with the Granted-Service-Unit AVP associated to the same service-identifier and/or rating-group."
+    text-only
+
+
+;; An absence meaning no value.
+; Type: Interpreted Constraints
+; Id: tariff-time-change-omitted
+; AVP: Tariff-Time-Change
+; Section: 8.20
+"Omission of this AVP means that no tariff change is to be reported."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: tariff-change-usage-omitted
+; AVP: Tariff-Change-Usage
+; Section: 8.27
+"Omission of this AVP means that no tariff change has occurred."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: final-unit-indication-terminate
+; AVP: Final-Unit-Indication
+; Section: 8.34
+"If the Final-Unit-Action AVP is set to TERMINATE, the Final-Unit-Indication group AVP MUST NOT contain any other AVPs."
+    excludes Final-Unit-Action = TERMINATE and Restriction-Filter-Rule or Final-Unit-Action = TERMINATE and Filter-Id or Final-Unit-Action = TERMINATE and Redirect-Server
+
+
+;; The Final-Unit-Indication's body holds no Redirect-Server-Extension and
+;; no * [ AVP ] (section 8.34), so of the two the sentence names its
+;; Redirect-Server is the one it can hold, as section 8.37 says.
+; Type: Interpreted Constraints
+; Id: final-unit-indication-redirect-server
+; AVP: Redirect-Server
+; Within: Final-Unit-Indication
+; Section: 8.34
+"If the Final-Unit-Action AVP is set to REDIRECT, the Redirect-Server AVP or the Redirect-Server-Extension AVP (at least one) MUST be present."
+    present-if Final-Unit-Action = REDIRECT
+
+
+; Type: Interpreted Constraints
+; Id: redirect-server-redirect
+; AVP: Redirect-Server
+; Within: Final-Unit-Indication
+; Section: 8.37
+"It MUST be present when the Final-Unit-Action AVP is set to REDIRECT."
+    present-if Final-Unit-Action = REDIRECT
+
+
+;; A text's form chosen by a sibling's value, which no kind reads.
+; Type: Interpreted Constraints
+; Id: redirect-server-address-by-type
+; AVP: Redirect-Server-Address
+; Within: Redirect-Server
+; Section: 8.38
+"IPv4 Address 0"
+"The address type is in the form of a \"dotted-decimal\" IPv4 address, as defined in [RFC791]."
+"IPv6 Address 1"
+"The address type is in the form of an IPv6 address, as defined in [RFC4291]. The address MUST conform to the textual representation of the address according to [RFC5952]."
+"URL 2"
+"The address type is in the form of a Uniform Resource Locator, as defined in [RFC3986]."
+"SIP URI 3"
+"The address type is in the form of a SIP Uniform Resource Identifier, as defined in [RFC3261]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: multiple-services-indicator-default
+; AVP: Multiple-Services-Indicator
+; Section: 8.40
+"The absence of this AVP means that independent credit-control of multiple services is not supported."
+    default MULTIPLE_SERVICES_NOT_SUPPORTED
+
+
+;; Who allocates the identifier, and a text's form, which no codec reads.
+; Type: Interpreted Constraints
+; Id: service-context-id-format
+; AVP: Service-Context-Id
+; Section: 8.42
+"This is an identifier allocated by the service provider, the Service Element manufacturer, or a standardization body, and MUST uniquely identify a given Diameter Credit-Control service-specific document."
+    text-only
+"\"service-context\" \"@\" \"domain\""
+    text-only
+
+
+;; As section 4.1.3's; which Service-Parameter-Info caused the failure is
+;; the server's.
+; Type: Interpreted Constraints
+; Id: cca-unknown-service-failed-avp
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 8.43
+"A Credit-Control-Answer message with this error MUST contain one or more Failed-AVP AVPs containing the Service-Parameter-Info AVPs that caused the failure."
+    present-if Result-Code = DIAMETER_RATING_FAILED
+
+
+;; A text's form chosen by a sibling's value, which no kind reads.
+; Type: Interpreted Constraints
+; Id: subscription-id-data-by-type
+; AVP: Subscription-Id-Data
+; Within: Subscription-Id
+; Section: 8.47
+"END_USER_E164 0"
+"The identifier is in international E.164 format (e.g., MSISDN), according to the ITU-T E.164 numbering plan defined in [E164] and [CE164]."
+"END_USER_IMSI 1"
+"The identifier is in IMSI format, according to the ITU-T E.212 identification plan as defined in [E212] and [CE212]."
+"END_USER_SIP_URI 2"
+"The identifier is in the form of a SIP URI, as defined in [RFC3261]. END_USER_NAI 3"
+"The identifier is in the form of a Network Access Identifier, as defined in [RFC7542]."
+    text-only
+
+
+;; Octets chosen by a sibling's value, which no kind reads.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-value-by-type
+; AVP: User-Equipment-Info-Value
+; Within: User-Equipment-Info
+; Section: 8.50
+"IMEISV 0"
+"The identifier contains the International Mobile Equipment Identifier and Software Version (IMEISV) in the IMEISV format according to 3GPP TS 23.003 [TGPPIMEI]."
+"MAC 1"
+"The 48-bit Media Access Control (MAC) address is formatted as described in Section 3.21 of [RFC3580]."
+"EUI64 2"
+"The 64-bit identifier used to identify the hardware instance of the product, as defined in [EUI64]."
+    text-only
+
+
+;; Section 8.52's "Exactly one": no two of its members, read member by
+;; member, each against those after it. That one of them is present is not
+;; read, since the body's [ AVP ] may carry the one AVP of a type defined
+;; after the document.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-extension-imeisv-alone
+; AVP: User-Equipment-Info-IMEISV
+; Within: User-Equipment-Info-Extension
+; Section: 8.52
+"Exactly one AVP MUST be included inside the User-Equipment-Info-Extension AVP."
+    excludes User-Equipment-Info-MAC or User-Equipment-Info-EUI64 or User-Equipment-Info-ModifiedEUI64 or User-Equipment-Info-IMEI
+
+
+; Type: Interpreted Constraints
+; Id: user-equipment-info-extension-mac-alone
+; AVP: User-Equipment-Info-MAC
+; Within: User-Equipment-Info-Extension
+; Section: 8.52
+"Exactly one AVP MUST be included inside the User-Equipment-Info-Extension AVP."
+    excludes User-Equipment-Info-EUI64 or User-Equipment-Info-ModifiedEUI64 or User-Equipment-Info-IMEI
+
+
+; Type: Interpreted Constraints
+; Id: user-equipment-info-extension-eui64-alone
+; AVP: User-Equipment-Info-EUI64
+; Within: User-Equipment-Info-Extension
+; Section: 8.52
+"Exactly one AVP MUST be included inside the User-Equipment-Info-Extension AVP."
+    excludes User-Equipment-Info-ModifiedEUI64 or User-Equipment-Info-IMEI
+
+
+; Type: Interpreted Constraints
+; Id: user-equipment-info-extension-modified-eui64-alone
+; AVP: User-Equipment-Info-ModifiedEUI64
+; Within: User-Equipment-Info-Extension
+; Section: 8.52
+"Exactly one AVP MUST be included inside the User-Equipment-Info-Extension AVP."
+    excludes User-Equipment-Info-IMEI
+
+
+;; TS 23.003's 16 decimal digits, which neither document says how an
+;; OctetString carries.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-imeisv-element
+; AVP: User-Equipment-Info-IMEISV
+; Section: 8.53
+"The User-Equipment-Info-IMEISV AVP contains the International Mobile Equipment Identifier and Software Version in the IMEISV format according to 3GPP TS 23.003 [TGPPIMEI]."
+    encoding element TS23.003 6.2.2 "IMEISV"
+
+
+; Type: Interpreted Constraints
+; Id: user-equipment-info-mac-element
+; AVP: User-Equipment-Info-MAC
+; Section: 8.54
+"The User-Equipment-Info-MAC AVP contains the 48-bit MAC address; the MAC address is formatted as described in Section 4.1.7.8 of [RFC5777]."
+    encoding element RFC5777 4.1.7.8 "MAC-Address"
+
+
+; Type: Interpreted Constraints
+; Id: user-equipment-info-eui64-length
+; AVP: User-Equipment-Info-EUI64
+; Section: 8.55
+"The User-Equipment-Info-EUI64 AVP contains the 64-bit identifier used to identify the hardware instance of the product, as defined in [EUI64]."
+    length 8 octets
+
+
+; Type: Interpreted Constraints
+; Id: user-equipment-info-modified-eui64-element
+; AVP: User-Equipment-Info-ModifiedEUI64
+; Section: 8.56
+"These identifiers can be converted to modified EUI-64 format as described in [RFC4291] or by using some other methods referred to in the service-specific documentation. The User-Equipment-Info-ModifiedEUI64 AVP contains such identifiers."
+    encoding element RFC4291 2.5.1 "Modified EUI-64"
+
+
+;; TS 23.003's 15 decimal digits, which neither document says how an
+;; OctetString carries.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-imei-element
+; AVP: User-Equipment-Info-IMEI
+; Section: 8.57
+"The User-Equipment-Info-IMEI AVP contains the International Mobile Equipment Identifier in the IMEI format according to 3GPP TS 23.003 [TGPPIMEI]."
+    encoding element TS23.003 6.2.1 "IMEI"
+
+
+;; That an identifier is present the body's [ AVP ] may meet with a type
+;; defined after the document, and which identifier types the subscriber
+;; needs carried as RFC 4006's is the node's.
+; Type: Interpreted Constraints
+; Id: subscription-id-extension-one-identifier
+; AVP: Subscription-Id-Extension
+; Section: 8.58
+"The Subscription-Id-Extension group AVP MUST include an AVP holding the subscription identifier."
+    text-only
+"If full backward compatibility with [RFC4006] is required, then the Subscription-Id AVP MUST be used to indicate identifier types enumerated in the Subscription-Id-Type AVP, whereas the Subscription-Id-Extension AVP MUST be used only for newly defined identifier types."
+    text-only
+
+
+;; "Exactly one", read member by member as section 8.52's.
+; Type: Interpreted Constraints
+; Id: subscription-id-extension-e164-alone
+; AVP: Subscription-Id-E164
+; Within: Subscription-Id-Extension
+; Section: 8.58
+"Exactly one sub-AVP MUST be included inside the Subscription-Id-Extension AVP."
+    excludes Subscription-Id-IMSI or Subscription-Id-SIP-URI or Subscription-Id-NAI or Subscription-Id-Private
+
+
+; Type: Interpreted Constraints
+; Id: subscription-id-extension-imsi-alone
+; AVP: Subscription-Id-IMSI
+; Within: Subscription-Id-Extension
+; Section: 8.58
+"Exactly one sub-AVP MUST be included inside the Subscription-Id-Extension AVP."
+    excludes Subscription-Id-SIP-URI or Subscription-Id-NAI or Subscription-Id-Private
+
+
+; Type: Interpreted Constraints
+; Id: subscription-id-extension-sip-uri-alone
+; AVP: Subscription-Id-SIP-URI
+; Within: Subscription-Id-Extension
+; Section: 8.58
+"Exactly one sub-AVP MUST be included inside the Subscription-Id-Extension AVP."
+    excludes Subscription-Id-NAI or Subscription-Id-Private
+
+
+; Type: Interpreted Constraints
+; Id: subscription-id-extension-nai-alone
+; AVP: Subscription-Id-NAI
+; Within: Subscription-Id-Extension
+; Section: 8.58
+"Exactly one sub-AVP MUST be included inside the Subscription-Id-Extension AVP."
+    excludes Subscription-Id-Private
+
+
+;; Texts other documents define, which no codec or element reads.
+; Type: Interpreted Constraints
+; Id: subscription-id-e164-format
+; AVP: Subscription-Id-E164
+; Section: 8.59
+"The Subscription-Id-E164 AVP contains the international E.164 format (e.g., MSISDN), according to the ITU-T E.164 numbering plan defined in [E164] and [CE164]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: subscription-id-imsi-format
+; AVP: Subscription-Id-IMSI
+; Section: 8.60
+"The Subscription-Id-IMSI AVP contains the IMSI format, according to the ITU-T E.212 identification plan as defined in [E212] and [CE212]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: subscription-id-sip-uri-format
+; AVP: Subscription-Id-SIP-URI
+; Section: 8.61
+"The Subscription-Id-SIP-URI AVP contains the identifier in the form of a SIP URI, as defined in [RFC3261]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: subscription-id-nai-format
+; AVP: Subscription-Id-NAI
+; Section: 8.62
+"The Subscription-Id-NAI AVP contains the identifier in the form of a Network Access Identifier, as defined in [RFC7542]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: qos-final-unit-indication-redirect-server-extension
+; AVP: Redirect-Server-Extension
+; Within: QoS-Final-Unit-Indication
+; Section: 8.64
+"It MUST be present inside the QoS-Final-Unit-Indication AVP when the Final-Unit-Action AVP is set to REDIRECT."
+    present-if Final-Unit-Action = REDIRECT
+
+
+;; "Exactly one", read member by member as section 8.52's.
+; Type: Interpreted Constraints
+; Id: redirect-server-extension-ip-address-alone
+; AVP: Redirect-Address-IPAddress
+; Within: Redirect-Server-Extension
+; Section: 8.64
+"Exactly one AVP MUST be included inside the Redirect-Server-Extension AVP."
+    excludes Redirect-Address-URL or Redirect-Address-SIP-URI
+
+
+; Type: Interpreted Constraints
+; Id: redirect-server-extension-url-alone
+; AVP: Redirect-Address-URL
+; Within: Redirect-Server-Extension
+; Section: 8.64
+"Exactly one AVP MUST be included inside the Redirect-Server-Extension AVP."
+    excludes Redirect-Address-SIP-URI
+
+
+; Type: Interpreted Constraints
+; Id: redirect-address-ip-address-family
+; AVP: Redirect-Address-IPAddress
+; Section: 8.65
+"The Redirect-Address-IPAddress AVP (AVP Code 666) is of type Address and defines the IPv4 or IPv6 address of the redirect server with which the end user is to be connected when the account cannot cover the service cost."
+    encoding ip-address
+
+
+;; Texts other documents define, which no codec or element reads.
+; Type: Interpreted Constraints
+; Id: redirect-address-url-format
+; AVP: Redirect-Address-URL
+; Section: 8.66
+"The address type is in the form of a Uniform Resource Locator, as defined in [RFC3986]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: redirect-address-sip-uri-format
+; AVP: Redirect-Address-SIP-URI
+; Section: 8.67
+"The address type is in the form of a SIP Uniform Resource Identifier, as defined in [RFC3261]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: qos-final-unit-indication-terminate
+; AVP: QoS-Final-Unit-Indication
+; Section: 8.68
+"If the Final-Unit-Action AVP is set to TERMINATE, the QoS-Final-Unit-Indication group AVP MUST NOT contain any other AVPs."
+    excludes Final-Unit-Action = TERMINATE and Filter-Rule or Final-Unit-Action = TERMINATE and Filter-Id or Final-Unit-Action = TERMINATE and Redirect-Server-Extension
+
+
+; Type: Interpreted Constraints
+; Id: qos-final-unit-indication-redirect
+; AVP: Redirect-Server-Extension
+; Within: QoS-Final-Unit-Indication
+; Section: 8.68
+"If the Final-Unit-Action AVP is set to REDIRECT, then the Redirect-Server-Extension AVP MUST be present."
+    present-if Final-Unit-Action = REDIRECT
+
+
+;; As section 4.1.3's.
+; Type: Interpreted Constraints
+; Id: cca-rating-failed-result-failed-avp
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 9.2
+"The Failed-AVP AVP MUST be included and contain (1) a copy of the entire AVP or AVPs that could not be processed successfully or (2) an example of the missing AVP, complete with the Vendor-Id if applicable."
+    present-if Result-Code = DIAMETER_RATING_FAILED
+
+
+;; Table 10.1's CCR column: what its "0" says the Credit-Control-Request
+;; never carries, an AVP its body admits only through * [ AVP ].
+; Type: Interpreted Constraints
+; Id: ccr-cc-session-failover-table-absent
+; AVP: CC-Session-Failover
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"CC-Session-Failover | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-check-balance-result-table-absent
+; AVP: Check-Balance-Result
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Check-Balance-Result | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-cost-information-table-absent
+; AVP: Cost-Information
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Cost-Information | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-credit-control-failure-handling-table-absent
+; AVP: Credit-Control-Failure-Handling
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Credit-Control-Failure-Handling | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-direct-debiting-failure-handling-table-absent
+; AVP: Direct-Debiting-Failure-Handling
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Direct-Debiting-Failure-Handling | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-failed-avp-table-absent
+; AVP: Failed-AVP
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Failed-AVP | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-final-unit-indication-table-absent
+; AVP: Final-Unit-Indication
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Final-Unit-Indication | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-qos-final-unit-indication-table-absent
+; AVP: QoS-Final-Unit-Indication
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"QoS-Final-Unit-Indication | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-granted-service-unit-table-absent
+; AVP: Granted-Service-Unit
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Granted-Service-Unit | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-redirect-host-table-absent
+; AVP: Redirect-Host
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-redirect-host-usage-table-absent
+; AVP: Redirect-Host-Usage
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-redirect-max-cache-time-table-absent
+; AVP: Redirect-Max-Cache-Time
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache-Time | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-result-code-table-absent
+; AVP: Result-Code
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Result-Code | 0 | 1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: ccr-validity-time-table-absent
+; AVP: Validity-Time
+; Command: Credit-Control-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Validity-Time | 0 | 0-1 |"
+    absent
+
+
+;; Table 10.1's CCA column: what its "0" says the Credit-Control-Answer
+;; never carries, an AVP its body admits only through * [ AVP ].
+; Type: Interpreted Constraints
+; Id: cca-cc-correlation-id-table-absent
+; AVP: CC-Correlation-Id
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"CC-Correlation-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-destination-host-table-absent
+; AVP: Destination-Host
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Destination-Host | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-destination-realm-table-absent
+; AVP: Destination-Realm
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Destination-Realm | 1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-multiple-services-indicator-table-absent
+; AVP: Multiple-Services-Indicator
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Multiple-Services-Indicator | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-requested-action-table-absent
+; AVP: Requested-Action
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Requested-Action | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-requested-service-unit-table-absent
+; AVP: Requested-Service-Unit
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Requested-Service-Unit | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-service-context-id-table-absent
+; AVP: Service-Context-Id
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Service-Context-Id | 1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-service-identifier-table-absent
+; AVP: Service-Identifier
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Service-Identifier | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-service-parameter-info-table-absent
+; AVP: Service-Parameter-Info
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Service-Parameter-Info | 0+ | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-subscription-id-table-absent
+; AVP: Subscription-Id
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Subscription-Id | 0+ | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-subscription-id-extension-table-absent
+; AVP: Subscription-Id-Extension
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Subscription-Id-Extension | 0+ | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-termination-cause-table-absent
+; AVP: Termination-Cause
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Termination-Cause | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-user-equipment-info-table-absent
+; AVP: User-Equipment-Info
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"User-Equipment-Info | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-user-equipment-info-extension-table-absent
+; AVP: User-Equipment-Info-Extension
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"User-Equipment-Info-Extension | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: cca-used-service-unit-table-absent
+; AVP: Used-Service-Unit
+; Command: Credit-Control-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Used-Service-Unit | 0+ | 0 |"
+    absent
