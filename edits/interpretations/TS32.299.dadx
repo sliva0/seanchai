@@ -175,15 +175,13 @@
     text-only
 
 
-;; Inactive (0); the corpus reads no values of the clause, whose list opens
-;; "The following value is defined:".
 ; Type: Interpreted Constraints
 ; Id: charging-per-ip-can-session-indicator-default
 ; AVP: Charging-Per-IP-CAN-Session-Indicator
 ; Section: 7.2.39B
 ; Versions: 18.0.0..19.0.0
 "If this AVP is not present, that means charging per IP-CAN session is not active."
-    default 0
+    default Inactive
 
 
 ;; The clause's heading and text name the AVP CSG--Indication.
@@ -378,14 +376,13 @@
     absent-if Service-Information/PS-Information/PDP-Context-Type and not CC-Request-Type = INITIAL_REQUEST
 
 
-;; 'Overwrite' (1); the corpus reads no values of the clause, which prints them quoted.
 ; Type: Interpreted Constraints
 ; Id: ps-append-free-format-data-default
 ; AVP: PS-Append-Free-Format-Data
 ; Section: 7.2.155
 ; Versions: 18.0.0..19.0.0
 "If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session."
-    default 1
+    default Overwrite
 
 
 ;; Quota-Holding-Time, a member of the CCR's Multiple-Services-Credit-Control,

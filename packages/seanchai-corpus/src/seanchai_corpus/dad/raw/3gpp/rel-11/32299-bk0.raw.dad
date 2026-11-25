@@ -1336,6 +1336,17 @@ AoC-Information ::= < AVP header: 2054 >
         [ AoC-Subscription-Information ]
 
 
+; Type: Enumerated AVP
+; Name: AoC-Request-Type
+; Section: 7.2.16
+; Page: 98
+AoC-Request-Type ::= < Enumerated AVP header: 2055 10415 >
+        AoC_NOT_REQUESTED = 0
+        AoC_FULL          = 1
+        AoC_COST_ONLY     = 2
+        AoC_TARIFF_ONLY   = 3
+
+
 ; Type: Grouped AVP
 ; Name: AoC-Service
 ; Section: 7.2.17
@@ -2198,6 +2209,15 @@ Priority ::= < Enumerated AVP header: 1209 10415 >
         Low    = 0
         Normal = 1
         High   = 2
+
+
+; Type: Enumerated AVP
+; Name: PS-Append-Free-Format-Data
+; Section: 7.2.155
+; Page: 129
+PS-Append-Free-Format-Data ::= < Enumerated AVP header: 867 10415 >
+        Append    = 0 ; If this AVP is present and indicates ‘Append’, the P-GW shall append the received PS free format data to the PS free format data stored for the online charging session.
+        Overwrite = 1 ; If this AVP is absent or in value ‘Overwrite’, the P-GW shall overwrite all PS free format data already stored for the online charging session.
 
 
 ; Type: Grouped AVP

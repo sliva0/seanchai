@@ -1698,6 +1698,17 @@ AoC-Information ::= < AVP header: 2054 >
         [ AoC-Subscription-Information ]
 
 
+; Type: Enumerated AVP
+; Name: AoC-Request-Type
+; Section: 7.2.16
+; Page: 118
+AoC-Request-Type ::= < Enumerated AVP header: 2055 10415 >
+        AoC_NOT_REQUESTED = 0
+        AoC_FULL          = 1
+        AoC_COST_ONLY     = 2
+        AoC_TARIFF_ONLY   = 3
+
+
 ; Type: Grouped AVP
 ; Name: AoC-Service
 ; Section: 7.2.17
@@ -1834,6 +1845,15 @@ Charging-Characteristics-Selection-Mode ::= < Enumerated AVP header: 2066 10415 
         Home-Default          = 3
         Roaming-Default       = 4
         Visiting-Default      = 5
+
+
+; Type: Enumerated AVP
+; Name: Charging-Per-IP-CAN-Session-Indicator
+; Section: 7.2.39B
+; Page: 128
+Charging-Per-IP-CAN-Session-Indicator ::= < Enumerated AVP header: 4400 10415 >
+        Inactive = 0
+        Active   = 1
 
 
 ; Type: Enumerated AVP
@@ -3012,6 +3032,15 @@ Proximity-Alert-Indication ::= < Enumerated AVP header: 3454 10415 >
 Privacy-Indicator ::= < Enumerated AVP header: 3915 10415 >
         NOT_PRIVATE = 0
         PRIVATE     = 1
+
+
+; Type: Enumerated AVP
+; Name: PS-Append-Free-Format-Data
+; Section: 7.2.155
+; Page: 167
+PS-Append-Free-Format-Data ::= < Enumerated AVP header: 867 10415 >
+        Append    = 0
+        Overwrite = 1
 
 
 ; Type: Grouped AVP

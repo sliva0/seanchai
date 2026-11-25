@@ -290,7 +290,7 @@ one of them finishes the clause. A version upgrade re-reads the exclusions
 | `x.y.z Name (ABBR) Command` heading and `::= < Diameter Header: … >` | `Message` |
 | `<answer-message> ::= < Diameter Header: code, ERR [PXY] >`, under any heading | `AnswerMessage` |
 | `x.y.z Name AVP` heading and `::= < AVP header: … >` | `GroupedAvp` |
-| `x.y.z Name AVP` heading, "is of type Enumerated", `Name (n)` items | `EnumeratedAvp` |
+| `x.y.z Name AVP` heading, "is of type Enumerated" in any case or "is of type of Enumerated", `Name (n)` items | `EnumeratedAvp` |
 | a table headed "AVP Flag rules" | `AvpTable` |
 | a "re-used Diameter AVPs" table | `ReusedAvps` |
 | a "Bit, Name, Description" table | `bits` `ValueTable` |
@@ -324,6 +324,8 @@ Values are classified by content, not paragraph style.
   `except` in its words, is a vendor-specific range described by those words.
   Any other range is reported.
 - A value or range labelled `Void`, in any case, is a `; VOID` line.
+- A label printed in quotes, `0 'Append'` (TS 32.299 clause 7.2.155), is
+  read without them.
 
 An enumerated AVP takes its code from the AVP table and its vendor-id from the
 document's grouped-AVP headers, or 10415 if there are none. Conflicting

@@ -323,6 +323,11 @@ _LIST_VALUE_RE = re.compile(r"(?P<value>\d+)\.?")
 _VALUE_LABEL_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_()-]*(?: [A-Za-z0-9_()-]+)*")
 
 
+_QUOTED_LABEL_RE = re.compile(
+    r"^(?:'(?P<label>[^']+)'|\u2018(?P<curly>[^\u2019]+)\u2019)$"
+)
+
+
 def _loose_enum_value(
     text: str, section: str, quirks: sources.Quirks
 ) -> ast.EnumValue | None:
@@ -365,10 +370,16 @@ def _loose_enum_value(
 
 
 def _value_first(match: re.Match, section: str) -> ast.EnumValue:
-    if _VALUE_LABEL_RE.fullmatch(match["label"]):
+    # TS 32.299 clause 7.2.155 quotes its labels, "0 'Append'" (V11.20.0 in
+    # curly quotes, U+2018 and U+2019), as its prose names them ("in value
+    # 'Overwrite'"): the quotes are no part of the name.
+    label = match["label"]
+    if quoted := _QUOTED_LABEL_RE.fullmatch(label):
+        label = quoted["label"] or quoted["curly"]
+    if _VALUE_LABEL_RE.fullmatch(label):
         with contextlib.suppress(pydantic.ValidationError):
             return ast.EnumValue(
-                name=match["label"],
+                name=label,
                 value=int(match["value"]),
                 description=match["description"] or None,
             )

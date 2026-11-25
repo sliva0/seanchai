@@ -5,6 +5,7 @@ in the file (`_assemble`)."""
 
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
@@ -48,6 +49,12 @@ from ._rules import (
     _find_rule_header,
 )
 from ._tables import _NAME_LABELS
+
+# The sentence typing a clause's AVP enumerated: "is of type Enumerated", as
+# most clauses print it, "is of type enumerated" (TS 32.299 clauses 7.2.16
+# and 7.2.155) or "is of type of Enumerated" (7.2.39B). "is of type
+# UTF8String. Enumerated in IMS charging" (7.2.102) is no such sentence.
+_ENUMERATED_TYPE_RE = re.compile(r"\btype (?:of )?enumerated\b", re.IGNORECASE)
 
 
 @dataclass
@@ -302,7 +309,9 @@ def _collect(
                         collected.commented,
                     )
                 )
-            elif section.paragraphs and "type Enumerated" in section.paragraphs[0].text:
+            elif section.paragraphs and _ENUMERATED_TYPE_RE.search(
+                section.paragraphs[0].text
+            ):
                 collected.pending_enums.append((section, title["name"]))
     if quirks.enabled("prose-avp-origins"):
         _prose_avp_origins(collected, sections, quirks)

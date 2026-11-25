@@ -928,11 +928,9 @@ holds Related-Trigger to a Trigger-Type "indirect change condition" clause
 at the end of value 73's description paragraph, so the corpus's Trigger-Type
 lacks 74; clause 7.2.46B's heading and text name CSG-Membership-Indication
 CSG--Indication; and clause 7.2.35B types Civic-Address-Information
-OctetString where table 7.2.0.1 types it UTF8String. The corpus reads no
-values of Charging-Per-IP-CAN-Session-Indicator (clause 7.2.39B) or
-PS-Append-Free-Format-Data (7.2.155), whose defaults are written 0 and 1.
-Left unread: "may" and "is" sentences (Quota-Consumption-Time "may be
-included within the Multiple-Services-Credit-Control AVP when"); the
+OctetString where table 7.2.0.1 types it UTF8String. Left unread: "may"
+and "is" sentences (Quota-Consumption-Time "may be included within the
+Multiple-Services-Credit-Control AVP when"); the
 Rating-Group's "unique Rating Group value" of each quota, which RFC 4006
 states; and the result codes' descriptions of clause 7.1.11 but
 DIAMETER_RATING_FAILED's Failed-AVP.

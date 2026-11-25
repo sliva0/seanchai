@@ -1923,6 +1923,17 @@ AoC-Information ::= < AVP header: 2054 10415 > ;; corrected: (TS32.299.py#vendor
         [ AoC-Subscription-Information ]
 
 
+; Type: Enumerated AVP
+; Name: AoC-Request-Type
+; Section: 7.2.16
+; Page: 118
+AoC-Request-Type ::= < Enumerated AVP header: 2055 10415 >
+        AoC_NOT_REQUESTED = 0
+        AoC_FULL          = 1
+        AoC_COST_ONLY     = 2
+        AoC_TARIFF_ONLY   = 3
+
+
 ; Type: Grouped AVP
 ; Name: AoC-Service
 ; Section: 7.2.17
@@ -2106,13 +2117,22 @@ Charging-Characteristics-Selection-Mode ::= < Enumerated AVP header: 2066 10415 
         Visiting-Default      = 5
 
 
+; Type: Enumerated AVP
+; Name: Charging-Per-IP-CAN-Session-Indicator
+; Section: 7.2.39B
+; Page: 128
+Charging-Per-IP-CAN-Session-Indicator ::= < Enumerated AVP header: 4400 10415 >
+        Inactive = 0
+        Active   = 1
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#charging-per-ip-can-session-indicator-default)
 ; AVP: Charging-Per-IP-CAN-Session-Indicator
 ; Section: 7.2.39B
 ; Page: 128
 ; Versions: 18.0.0..19.0.0
 "If this AVP is not present, that means charging per IP-CAN session is not active."
-    default 0
+    default Inactive
 
 
 ; Type: Enumerated AVP
@@ -3473,13 +3493,22 @@ Privacy-Indicator ::= < Enumerated AVP header: 3915 10415 >
         PRIVATE     = 1
 
 
+; Type: Enumerated AVP
+; Name: PS-Append-Free-Format-Data
+; Section: 7.2.155
+; Page: 167
+PS-Append-Free-Format-Data ::= < Enumerated AVP header: 867 10415 >
+        Append    = 0
+        Overwrite = 1
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ps-append-free-format-data-default)
 ; AVP: PS-Append-Free-Format-Data
 ; Section: 7.2.155
 ; Page: 167
 ; Versions: 18.0.0..19.0.0
 "If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session."
-    default 1
+    default Overwrite
 
 
 ; Type: Grouped AVP
