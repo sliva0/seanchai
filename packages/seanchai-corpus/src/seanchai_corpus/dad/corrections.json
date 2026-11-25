@@ -18558,6 +18558,274 @@
   },
   "rfc4006": {
    "edits": {
+    "RFC4006.dadx#cc-session-failover-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.4: 'FAILOVER_NOT_SUPPORTED 0 When the CC-Session-Failover AVP is set to FAILOVER_NOT_SUPPORTED, the credit-control message stream MUST NOT to be moved to an alternative destination in the case of communication failure.'; 'This is the default behavior if the AVP isn't included in the reply from the authorization or credit-control server.'"
+    },
+    "RFC4006.dadx#cc-sub-session-id-increasing": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.5: 'The combination of the Session-Id and this AVP MUST be unique per sub-session, and the value of this AVP MUST be monotonically increased by one for all new sub-sessions.'; 'The absence of this AVP implies that no sub-sessions are in use.'"
+    },
+    "RFC4006.dadx#cca-cc-correlation-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'CC-Correlation-Id | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-destination-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Destination-Host | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-destination-realm-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Destination-Realm | 1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-final-units-consumed-validity-time": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.2: 'Naturally, the Credit-Control-Answer message does not contain any granted service unit and MUST include the Validity-Time AVP to indicate to the credit-control client how long the subscriber is allowed to use network resources before a new intermediate interrogation is sent to the server.'"
+    },
+    "RFC4006.dadx#cca-multiple-services-credit-control-granted-units": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'If the client indicated support for independent credit-control of multiple services, a credit-control server that wishes to use the feature MUST return the granted units within the Multiple-Services-Credit-Control AVP associated to the corresponding service-identifier and/or rating-group.'; 'Both granted unit quotas MUST contain the same Service-Identifier and/or Rating-Group.'"
+    },
+    "RFC4006.dadx#cca-multiple-services-indicator-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multiple-Services-Indicator | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-rating-failed-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.1.3: 'A CCA message with this error MUST contain one or more Failed-AVP AVPs containing the missing and/or unsupported AVPs that caused the failure.'"
+    },
+    "RFC4006.dadx#cca-rating-failed-result-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.2: 'The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable.'"
+    },
+    "RFC4006.dadx#cca-requested-action-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Requested-Action | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-requested-service-unit-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Requested-Service-Unit | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-service-context-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Service-Context-Id | 1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-service-identifier-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Service-Identifier | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-service-parameter-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Service-Parameter-Info | 0+ | 0 |'"
+    },
+    "RFC4006.dadx#cca-subscription-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Subscription-Id | 0+ | 0 |'"
+    },
+    "RFC4006.dadx#cca-tariff-change-two-quotas": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.16: 'When both the Tariff-Time-Change and Tariff-Change-Usage AVPs are present, the server MUST include two separate instances of the Multiple-Services-Credit-Control AVP with the Granted-Service-Unit AVP associated to the same service-identifier and/or rating-group.'"
+    },
+    "RFC4006.dadx#cca-termination-cause-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Termination-Cause | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#cca-unknown-service-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.43: 'A Credit-Control-Answer message with this error MUST contain one or more Failed-AVP AVPs containing the Service-Parameter-Info AVPs that caused the failure.'"
+    },
+    "RFC4006.dadx#cca-used-service-unit-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Used-Service-Unit | 0+ | 0 |'"
+    },
+    "RFC4006.dadx#cca-user-equipment-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Equipment-Info | 0-1 | 0 |'"
+    },
+    "RFC4006.dadx#ccr-auth-application-id-credit-control": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 3.1: 'The Auth-Application-Id MUST be set to the value 4, indicating the Diameter credit-control application.'"
+    },
+    "RFC4006.dadx#ccr-cc-session-failover-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'CC-Session-Failover | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-check-balance-event-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'A Diameter credit-control client requesting the balance check MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include a Requested-Action AVP set to CHECK_BALANCE, and include the Subscription-Id AVP in order to identify the end user in the credit-control server.'"
+    },
+    "RFC4006.dadx#ccr-check-balance-result-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Check-Balance-Result | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-check-balance-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'A Diameter credit-control client requesting the balance check MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include a Requested-Action AVP set to CHECK_BALANCE, and include the Subscription-Id AVP in order to identify the end user in the credit-control server.'"
+    },
+    "RFC4006.dadx#ccr-cost-information-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Cost-Information | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-credit-control-failure-handling-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Credit-Control-Failure- | 0 | 0-1 | Handling | | |'"
+    },
+    "RFC4006.dadx#ccr-direct-debiting-failure-handling-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Direct-Debiting-Failure- | 0 | 0-1 | Handling | | |'"
+    },
+    "RFC4006.dadx#ccr-event-request-requested-action": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.3: 'The Requested-Action AVP MUST be included in the Credit-Control-Request message when CC-Request-Type is set to EVENT_REQUEST.'"
+    },
+    "RFC4006.dadx#ccr-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Failed-AVP | 0 | 0+ |'"
+    },
+    "RFC4006.dadx#ccr-final-unit-indication-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Final-Unit-Indication | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-first-update-request-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2: 'The CC-Request-Number of the first UPDATE_REQUEST MUST be set to 1 (for how to produce unique value for the CC-Request-Number AVP, see section 8.2).'"
+    },
+    "RFC4006.dadx#ccr-granted-service-unit-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Granted-Service-Unit | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-initial-multiple-services-credit-control-requested-units": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2: 'Where the Multiple-Services-Credit-Control AVP is used, it MUST contain the Requested-Service-Unit AVP to indicate that the quota for the associated service/rating-group is requested.'"
+    },
+    "RFC4006.dadx#ccr-multiple-services-credit-control-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.16: 'It MUST be present in the initial interrogation and within the intermediate interrogations in which new quota is requested.'; 'The Tariff-Change-Usage AVP MUST NOT be included in request commands to report used units before, and after tariff time change the Used-Service-Unit AVP MUST be used.'"
+    },
+    "RFC4006.dadx#ccr-multiple-services-indicator-first-interrogation": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'The credit-control client MUST indicate support for independent credit-control of multiple services within a (sub-)session by including the Multiple-Services-Indicator AVP in the first interrogation.'"
+    },
+    "RFC4006.dadx#ccr-price-enquiry-event-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A Diameter credit-control client requesting the cost information MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include the Requested-Action AVP set to PRICE_ENQUIRY, and set the requested service event information into the Service-Identifier AVP in the Credit-Control-Request message.'"
+    },
+    "RFC4006.dadx#ccr-price-enquiry-service-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1: 'A Diameter credit-control client requesting the cost information MUST set the CC-Request-Type AVP equal to EVENT_REQUEST, include the Requested-Action AVP set to PRICE_ENQUIRY, and set the requested service event information into the Service-Identifier AVP in the Credit-Control-Request message.'"
+    },
+    "RFC4006.dadx#ccr-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host | 0 | 0+ |'"
+    },
+    "RFC4006.dadx#ccr-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache-Time | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#ccr-refund-account-event-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.4: 'The credit-control client MUST set CC-Request-Type to the value EVENT_REQUEST and the Requested-Action AVP to REFUND_ACCOUNT in the Credit-Control-Request message.'"
+    },
+    "RFC4006.dadx#ccr-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code | 0 | 1 |'"
+    },
+    "RFC4006.dadx#ccr-session-id-the-sessions": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: 'Each credit-control session MUST have a globally unique Session-Id as defined in [DIAMBASE], which MUST NOT be changed during the lifetime of a credit-control session.'"
+    },
+    "RFC4006.dadx#ccr-termination-used-service-unit-each-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4: 'If several unit types were included in the previous answer message, the used service units for each unit type MUST be reported.'"
+    },
+    "RFC4006.dadx#ccr-update-multiple-services-credit-control-requested-units": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3: 'Where the Multiple-Services-Credit-Control AVP is used, it MUST contain the Requested-Service-Unit AVP if a new quota is requested for the associated service/rating-group.'"
+    },
+    "RFC4006.dadx#ccr-update-used-service-unit-each-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3: 'If several unit types were included in the previous answer message, the used service units for each unit type MUST be reported.'"
+    },
+    "RFC4006.dadx#ccr-used-service-unit-tariff-change": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.1: 'When the Diameter credit-control client reports the used units and a tariff change has occurred during the reporting period, the Diameter credit-control client MUST separately itemize the units used before and after the tariff change.'"
+    },
+    "RFC4006.dadx#ccr-validity-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Validity-Time | 0 | 0-1 |'"
+    },
+    "RFC4006.dadx#credit-control-failure-handling-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.14: 'This is the default behavior if the AVP isn't included in the reply from the authorization or credit-control server.'"
+    },
+    "RFC4006.dadx#credit-control-in-aa-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.13: 'The Credit-Control AVP (AVP Code 426) is of type Enumerated and MUST be included in AA requests when the service element has credit-control capabilities.'; 'The value of the Credit-Control AVP MUST always be set to 0 in an AA request sent to perform the first interrogation and to initiate a new credit-control session.'; 'This value MUST NOT be used in an AA request sent to perform the first interrogation.'"
+    },
+    "RFC4006.dadx#currency-code-iso-4217": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.11: 'It is specified by using the numeric values defined in the ISO 4217 standard [ISO4217].'"
+    },
+    "RFC4006.dadx#direct-debiting-failure-handling-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.15: 'This is the default behavior if the AVP isn't included in the reply from the authorization server.'"
+    },
+    "RFC4006.dadx#exponent-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.8: 'The absence of the exponent part MUST be interpreted as an exponent equal to zero.'"
+    },
+    "RFC4006.dadx#final-unit-indication-redirect-server": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.34: 'If the Final-Unit-Action AVP is set to REDIRECT at least the Redirect-Server AVP MUST be present.'"
+    },
+    "RFC4006.dadx#final-unit-indication-terminate": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.34: 'If the Final-Unit-Action AVP is set to TERMINATE, no other AVPs MUST be present.'"
+    },
+    "RFC4006.dadx#g-s-u-pool-reference-granted-units": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.16: 'If a G-S-U-Pool-Reference AVP is present, then actual service units of the specified type MUST also be present. For example, if the G-S-U-Pool-Reference AVP specifies Unit-Type TIME, then the CC-Time AVP MUST be present.'"
+    },
+    "RFC4006.dadx#g-s-u-pool-reference-unit-types-differ": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'Where multiple G-S-U-Pool-Reference AVPs (section 8.30) with the same G-S-U-Pool-Identifier are provided within a Multiple-Services-Credit-Control AVP (section 8.16) along with the Granted-Service-Unit AVP, then these MUST have different CC-Unit-Type values, and they all draw from the credit pool separately.'"
+    },
+    "RFC4006.dadx#multiple-services-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.40: 'The absence of this AVP means that independent credit-control of multiple services is not supported.'"
+    },
+    "RFC4006.dadx#redirect-server-address-by-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.38: 'IPv4 Address 0 The address type is in the form of \"dotted-decimal\" IPv4 address, as defined in [IPv4].'; 'IPv6 Address 1 The address type is in the form of IPv6 address, as defined in [IPv6Addr]. The address is a text representation of the address in either the preferred or alternate text form [IPv6Addr].'; 'URL 2 The address type is in the form of Uniform Resource Locator, as defined in [URL].'; 'SIP URI 3 The address type is in the form of SIP Uniform Resource Identifier, as defined in [SIP].'"
+    },
+    "RFC4006.dadx#redirect-server-redirect": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.37: 'It MUST be present when the Final-Unit-Action AVP is set to REDIRECT.'"
+    },
+    "RFC4006.dadx#service-context-id-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.42: 'This is an identifier allocated by the service provider, by the service element manufacturer, or by a standardization body, and MUST uniquely identify a given Diameter credit-control service specific document.'; '\"service-context\" \"@\" \"domain\"'"
+    },
+    "RFC4006.dadx#subscription-id-data-by-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.47: 'END_USER_E164 0 The identifier is in international E.164 format (e.g., MSISDN), according to the ITU-T E.164 numbering plan defined in [E164] and [CE164].'; 'END_USER_IMSI 1 The identifier is in international IMSI format, according to the ITU-T E.212 numbering plan as defined in [E212] and [CE212].'; 'END_USER_SIP_URI 2 The identifier is in the form of a SIP URI, as defined in [SIP].'; 'END_USER_NAI 3 The identifier is in the form of a Network Access Identifier, as defined in [NAI].'"
+    },
+    "RFC4006.dadx#tariff-change-usage-omitted": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.27: 'Omission of this AVP means that no tariff change has occurred.'"
+    },
+    "RFC4006.dadx#tariff-time-change-omitted": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.20: 'Omission of this AVP means that no tariff change is to be reported.'"
+    },
+    "RFC4006.dadx#user-equipment-info-value-by-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8.50: 'IMEISV 0 The identifier contains the International Mobile Equipment Identifier and Software Version in the international IMEISV format according to 3GPP TS 23.003 [3GPPIMEI].'; 'MAC 1 The 48-bit MAC address is formatted as described in [RAD802.1X].'; 'EUI64 2 The 64-bit identifier used to identify hardware instance of the product, as defined in [EUI64].'"
+    },
     "RFC4006.py#application-id": {
      "kind": "insert",
      "reason": "clause 12.1: 'This specification assigns the value 4, 'Diameter Credit Control', to the Application Identifier namespace'; the CCR/CCA headers print none"

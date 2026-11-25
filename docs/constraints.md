@@ -1310,3 +1310,75 @@ sections 5.6, 8.1 and 8.2); clause 7.6's Result-Code or Experimental-Result,
 which the base protocol's answers' bodies already require; and the IANA
 section's assignments.
 
+## RFC 4006
+
+RFC 4006 is read for what it says of the credit-control AVPs and its own
+CCR and CCA: sections 3 to 9, and section 10.1's occurrence table. RFC 8506
+obsoletes it, so the Wireshark plugin holds a message to RFC 8506's print of
+the commands, not RFC 4006's
+([wireshark-plugin.md](wireshark-plugin.md#which-definition-a-message-is-held-to)),
+but TS 32.299 reads the credit-control AVPs from RFC 4006: a block with no
+scope, or within a grouped AVP, holds in Ro's commands, and a block on the
+CCR or CCA binds RFC 4006's print alone ([Precedence](#precedence)). An RFC
+has one edition, so no block names `; Versions:`.
+
+| | |
+|---|---|
+| sections 3 to 9.2 (the commands, the procedures, the AVPs, the result codes) | 41 blocks |
+| section 10.1's table, each "0" cell of an AVP the command's body admits only through `* [ AVP ]` | 26 blocks |
+| blocks | 67: 48 within a command, 8 within a grouped AVP, 11 on an AVP wherever read |
+| readings | 73 |
+
+| Rules | |
+|---|---|
+| `range` | 1: the CCR's Auth-Application-Id 4 |
+| `present-if` | 8: the CCA's Failed-AVP with DIAMETER_RATING_FAILED (sections 4.1.3, 8.43, 9.2), the CCR's Service-Identifier for a PRICE_ENQUIRY, its Subscription-Id for a CHECK_BALANCE and its Requested-Action for an EVENT_REQUEST, Final-Unit-Indication's Redirect-Server for REDIRECT (8.34, 8.37) |
+| `absent-if` | 3: the CCR's Multiple-Services-Credit-Control without a Requested-Service-Unit in an INITIAL_REQUEST (5.2, 8.16), or holding a Tariff-Change-Usage |
+| `excludes` | 2: Final-Unit-Indication with TERMINATE holding nothing else, a G-S-U-Pool-Reference's unit type absent from its Granted-Service-Unit |
+| `values` | 3: the CCR's CC-Request-Type EVENT_REQUEST for a PRICE_ENQUIRY, a CHECK_BALANCE and a REFUND_ACCOUNT |
+| `default` | 5: CC-Session-Failover, Credit-Control-Failure-Handling, Direct-Debiting-Failure-Handling, Multiple-Services-Indicator, Exponent within Unit-Value |
+| `absent` | 26: table 10.1's "0" cells |
+| `text-only` | 25 |
+
+Section 6's one-time events are told apart by their Requested-Action: a
+PRICE_ENQUIRY, CHECK_BALANCE or REFUND_ACCOUNT CCR is an EVENT_REQUEST,
+and a price enquiry carries its Service-Identifier, a balance check its
+Subscription-Id. The initial interrogation's Multiple-Services-Credit-
+Control carries a Requested-Service-Unit (sections 5.2, 8.16) and a CCR's
+holds no Tariff-Change-Usage of its own, the Used-Service-Unit's member
+reporting the tariff change (8.16): both are read on the CCR through a
+path into the AVP, whose own scope does not see the CC-Request-Type. A
+G-S-U-Pool-Reference names the unit type of a pool, and the
+Multiple-Services-Credit-Control's Granted-Service-Unit holds that type's
+units (8.16): TIME its CC-Time, MONEY its CC-Money, each octet type its
+count and SERVICE-SPECIFIC-UNITS its CC-Service-Specific-Units (8.32).
+
+The text-only rules are conditions on the session or an earlier message
+(the session's one Session-Id, the first UPDATE_REQUEST's CC-Request-Number
+1, the Multiple-Services-Indicator in the first interrogation, the used
+units of each type the previous answer granted, a tariff change an earlier
+CCA announced, the Validity-Time answering a request after the final
+units), the node or the server (the Credit-Control AVP of an AA request
+from a node with credit-control capabilities, the granted units a server
+returns within Multiple-Services-Credit-Control, a Service-Context-Id
+identifying one document), two AVPs compared (the G-S-U-Pool-References of
+one pool, the two quotas of a tariff change), what an absent AVP means
+where that is no value (CC-Sub-Session-Id, Tariff-Time-Change,
+Tariff-Change-Usage), and texts no kind reads: Currency-Code's ISO 4217
+codes, Service-Context-Id's `"service-context" "@" "domain"`, and the
+address or identifier Redirect-Server-Address, Subscription-Id-Data and
+User-Equipment-Info-Value carry by their sibling's type.
+
+Left unread: section 8.2's CC-Request-Number 0 for an INITIAL_REQUEST or
+EVENT_REQUEST, "an easy way to produce unique numbers", no requirement;
+section 1.3's advertised Auth-Application-Id 4, RFC 6733's CER and CEA,
+which this file does not print; the sentences repeating the commands'
+ABNF (the Service-Context-Id "at the command level", CC-Request-Type in
+every CCR, the Final-Unit-Action in every Final-Unit-Indication, "a maximum
+of one instance of the same unit type"); the sentences saying what a value
+is "applicable only" to or "to be used only" in, with no MUST
+(Check-Balance-Result, Tariff-Change-Usage's UNIT_INDETERMINATE); the
+"MUST" sentences of what a node does on receipt (failover, the T flag on a
+retransmission, terminating a session on DIAMETER_BAD_ANSWER, the state
+machines of section 7); the result codes a server answers with; and
+section 10.2's RAR and RAA table, which allows its AVPs and forbids none.
