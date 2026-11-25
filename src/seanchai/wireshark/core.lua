@@ -548,11 +548,15 @@ local function ipv6_ok(text)
   return ipv6_groups(text, true) == 8
 end
 
--- Why `token` is no IPFilterRule address: "any", "assigned", or an IPv4 or
--- IPv6 number with an optional mask width valid for its version.
-local function ip_filter_address(token)
-  if token == "any" or token == "assigned" then
+-- Why `token` is no IPFilterRule address: "any", "assigned" (unless
+-- `no_assigned`), or an IPv4 or IPv6 number with an optional mask width
+-- valid for its version.
+local function ip_filter_address(token, no_assigned)
+  if token == "any" or (token == "assigned" and not no_assigned) then
     return nil
+  end
+  if token == "assigned" then
+    return "the keyword 'assigned' is used"
   end
   local number, bits = token:match("^([^/]*)/(.*)$")
   number = number or token
@@ -588,8 +592,9 @@ end
 -- Why `text` is no IPFilterRule (RFC 6733 clause 4.3.1) as the documents
 -- restrict it: "permit", a direction ("out" where `out_only`), a protocol
 -- number or "ip", "from" a source and "to" a destination, each an address
--- and optional ports, no options and no "!".
-local function ip_filter_problem(text, out_only)
+-- and optional ports, no options and no "!"; for one `flow`, no
+-- "assigned" and the source port one port.
+local function ip_filter_problem(text, out_only, flow)
   if text:find("!", 1, true) then
     return "the invert modifier '!' is used"
   end
@@ -616,7 +621,7 @@ local function ip_filter_problem(text, out_only)
     if not tokens[position + 1] then
       return string.format("no address after '%s'", keyword)
     end
-    local problem = ip_filter_address(tokens[position + 1])
+    local problem = ip_filter_address(tokens[position + 1], flow)
     if problem then
       return problem
     end
@@ -627,6 +632,10 @@ local function ip_filter_problem(text, out_only)
           return "options are used"
         end
         return string.format("'%s' are no ports", tokens[position])
+      end
+      if flow and keyword == "from" and not tokens[position]:match("^%d+$") then
+        return string.format("the source port '%s' is a list or range",
+          tokens[position])
       end
       position = position + 1
     end
@@ -700,8 +709,9 @@ local function codec_problem(codec, s)
     if not s:match("^" .. octet .. ("%-" .. octet):rep(5) .. "$") then
       return "not six upper-case hexadecimal octets joined by '-'"
     end
-  elseif codec == "ip-filter" or codec == "ip-filter-out" then
-    return ip_filter_problem(s, codec == "ip-filter-out")
+  elseif codec == "ip-filter" or codec == "ip-filter-out"
+    or codec == "ip-filter-flow" then
+    return ip_filter_problem(s, codec == "ip-filter-out", codec == "ip-filter-flow")
   end
   return nil
 end

@@ -1,0 +1,957 @@
+; Interprets: 3GPP TS 29.214
+;; What TS 29.214's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order: the procedure clauses of clause 4.4 for what they state of
+;; one message, then the protocol clauses, Rx's AVP clauses, the re-used
+;; AVPs' descriptions of table 5.4.0.1, the supported features and the
+;; result codes. The document has no information-element tables: its
+;; commands are their ABNF, each printed once, under Rx's 16777236. A clause
+;; pointing at another document for a layout is an `element`; a rule
+;; depending on an earlier message, a feature, the node, the subscription,
+;; the operator's policy or the procedure is `text-only`.
+;;
+;; Service information modifies what was provisioned before it: "If a
+;; Media-Component-Description AVP is not supplied by the AF, or if optional
+;; AVP(s) within a Media-Component-Description AVP are omitted, but
+;; corresponding information has been provided in previous Diameter
+;; messages, the previous information for the corresponding IP flow(s)
+;; remains valid" (clause 5.3.16), and Media-Sub-Component likewise (clause
+;; 5.3.18). A condition on what a modification must carry is `text-only`.
+;; An AA-Request is the initial one only where its Rx-Request-Type says so,
+;; which clause 4.4.1 lets the AF leave out.
+
+
+;; Clause 4.4.1's AF session. An AA-Request asking only for access network
+;; information or EPC health monitoring binds by Subscription-Id and
+;; Called-Station-Id instead (clauses 4.4.6.7, 4.4.6.10), and a later
+;; AA-Request of the session need not repeat the address.
+; Type: Interpreted Constraints
+; Id: aar-ue-address
+; AVP: Framed-IP-Address
+; Command: AA-Request
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"The AF shall provide the full IP address of the UE using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP, and the corresponding Service Information within Media-Component-Description AVP(s)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aaa-access-network-charging-identifier
+; AVP: Access-Network-Charging-Identifier
+; Command: AA-Answer
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"The acknowledgement towards the AF should take place before or in parallel with any required PCC Rule provisioning towards the PCEF and shall include the Access-Network-Charging-Identifier(s) and may include the Access-Network-Charging-Address AVP, if they are available."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aaa-an-gw-address
+; AVP: AN-GW-Address
+; Command: AA-Answer
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"The AA-Answer message shall also include the AN-GW-Address AVP, if the PCRF has previously requested to be updated with this information in the PCEF."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aaa-sgsn-mcc-mnc
+; AVP: 3GPP-SGSN-MCC-MNC
+; Command: AA-Answer
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"The AA-Answer message shall also include the PLMN identifier within the 3GPP-SGSN-MCC-MNC AVP if the PCRF has previously requested to be updated with this information in the PCEF/BBERF."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aaa-ip-can-type
+; AVP: IP-CAN-Type
+; Command: AA-Answer
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"The AA-Answer message shall also include the IP-CAN-Type AVP. if the PCRF has previously requested to be updated with this information in the PCEF/BBERF."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aaa-rat-type
+; AVP: RAT-Type
+; Command: AA-Answer
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"In that case, the AA-Answer message shall also include the RAT type information within the RAT-Type AVP and AN-Trusted AVP when applicable for the specific IP-CAN Type."
+    text-only
+
+
+;; Only where the AF provided a usage threshold at the session's provisioning
+;; or modification, an earlier message.
+; Type: Interpreted Constraints
+; Id: sta-used-service-unit
+; AVP: Sponsored-Connectivity-Data
+; Command: ST-Answer
+; Section: 4.4.4
+; Versions: 18.4.0..19.3.0
+"The PCRF shall send then the ST-Answer to the AF including the Used-Service-Unit AVP for reporting accumulated usage within the Sponsored-Connectivity-Data AVP."
+    text-only
+
+
+;; A temporary network failure leaves the information out (clause 4.4.6.8,
+;; NOTE 1), and an access network not supporting the reporting answers with
+;; NetLoc-Access-Support instead (clause 4.4.6.7).
+; Type: Interpreted Constraints
+; Id: sta-access-network-information
+; AVP: 3GPP-User-Location-Info
+; Command: ST-Answer
+; Section: 4.4.4
+; Versions: 18.4.0..19.3.0
+"The PCRF shall send then the ST-Answer to the AF including the required data within the 3GPP-User-Location-Info AVP (if available), TWAN-Identifier AVP (if available), User-Location-Info-Time AVP (if available), UE-Local-IP-Address AVP (if available), UDP-Source-Port AVP (if available), TCP-Source-Port AVP (if available), 3GPP-SGSN-MCC-MNC AVP (if location info is not available) and/or 3GPP-MS-TimeZone AVP (if available)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sta-ran-nas-release-cause
+; AVP: RAN-NAS-Release-Cause
+; Command: ST-Answer
+; Section: 4.4.4
+; Versions: 18.4.0..19.3.0
+"Additionally, if the PCRF received from the PCEF the RAN cause and/or NAS cause, TWAN cause or untrusted WLAN cause, the PCRF shall provide the received cause(s) in the RAN-NAS-Release-Cause AVP in the ST-Answer command."
+    text-only
+
+
+;; Clause 4.4.6.6: a RAR reporting usage carries it in its
+;; Sponsored-Connectivity-Data's Used-Service-Unit, read on the RAR through a
+;; path into the AVP, since its own scope does not see the Specific-Action.
+; Type: Interpreted Constraints
+; Id: rar-usage-report-used-service-unit
+; AVP: Sponsored-Connectivity-Data
+; Command: RA-Request
+; Section: 4.4.6.6
+; Versions: 18.4.0..19.3.0
+"When the PCRF detects that the usage threshold has been reached or the AF disables the sponsored data connectivity, the PCRF shall report the accumulated usage as provided by the PCEF/TDF to the AF in a RA-Request (RAR) command with the Specific-Action AVP set to the value USAGE_REPORT; Otherwise, when the AF session is terminated by the AF or the PCRF, the PCRF shall report the accumulated usage as provided by the PCEF/TDF to the AF in ST-Answer (STA) command."
+"The accumulated usage shall be reported in the Used-Service-Unit AVP within the Sponsored-Connectivity-Data AVP."
+    present-if Specific-Action = USAGE_REPORT
+    absent-if Specific-Action = USAGE_REPORT and not Sponsored-Connectivity-Data/Used-Service-Unit
+
+
+;; A RAR reporting a bearer's release or loss carries the location too, with
+;; the Specific-Action of that event (clauses 4.4.6.2 and 4.4.6.3), so the
+;; AVP's presence alone does not say the report is this one.
+; Type: Interpreted Constraints
+; Id: rar-access-network-info-report
+; AVP: 3GPP-User-Location-Info
+; Command: RA-Request
+; Section: 4.4.6.7
+; Versions: 18.4.0..19.3.0
+"If the information is provided in the RAR command, PCRF shall also provide the ACCESS_NETWORK_INFO_REPORT within Specific-Action AVP."
+    text-only
+
+
+;; Clause 4.4.6.10, the EPC health monitoring report; the RAR reporting a
+;; session not found carries both too. The document prints the clause's
+;; heading as a paragraph of clause 4.4.6.9, whose text it then is.
+; Type: Interpreted Constraints
+; Id: rar-pc-session-recovery-status
+; AVP: PC-Session-Recovery-Status
+; Command: RA-Request
+; Section: 4.4.6.9
+; Versions: 19.3.0
+"When the PCRF receives the EPC functions health monitoring report from PCEF, the PCRF shall provide the received information to the AF within the PC-Session-Recovery-Status AVP in a RAR command."
+"PCRF shall also provide the CN_HEALTH_MONITOR (21) value within Specific-Action AVP."
+    present-if Specific-Action = CN_HEALTH_MONITOR
+    requires Specific-Action = CN_HEALTH_MONITOR
+
+
+; Type: Interpreted Constraints
+; Id: aar-restoration-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Request
+; Section: 4.4.7
+; Versions: 18.4.0..19.3.0
+"The AF shall also include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1) in the AAR command, as described in IETF RFC 6733 [52]."
+    present-if Rx-Request-Type = PCSCF_RESTORATION
+    values 1 if Rx-Request-Type = PCSCF_RESTORATION
+
+
+;; Whether an address is unique the message does not show: an AAR with
+;; neither address carries the IMSI and the APN.
+; Type: Interpreted Constraints
+; Id: aar-restoration-subscription-id
+; AVP: Subscription-Id
+; Command: AA-Request
+; Section: 4.4.7
+; Versions: 18.4.0..19.3.0
+"The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed."
+"If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP."
+    present-if Rx-Request-Type = PCSCF_RESTORATION and not Framed-IP-Address and not Framed-IPv6-Prefix
+
+
+; Type: Interpreted Constraints
+; Id: aar-restoration-called-station-id
+; AVP: Called-Station-Id
+; Command: AA-Request
+; Section: 4.4.7
+; Versions: 18.4.0..19.3.0
+"The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed."
+"If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP."
+    present-if Rx-Request-Type = PCSCF_RESTORATION and not Framed-IP-Address and not Framed-IPv6-Prefix
+
+
+;; Held to a success's answer, which acknowledges the AAR; the sentence says
+;; nothing of an error's.
+; Type: Interpreted Constraints
+; Id: aaa-restoration-auth-session-state
+; AVP: Auth-Session-State
+; Command: AA-Answer
+; Section: 4.4.7
+; Versions: 18.4.0..19.3.0
+"The PCRF shall acknowledge the AAR command by sending an AAA command to the P-CSCF acting as AF and shall include the Auth-Session-State AVP set to NO_STATE_MAINTAINED (1)."
+    present-if request/Rx-Request-Type = PCSCF_RESTORATION and Result-Code = DIAMETER_SUCCESS
+    values 1 if request/Rx-Request-Type = PCSCF_RESTORATION and Result-Code = DIAMETER_SUCCESS
+
+
+;; Clause 4.4.10: an extended AVP, in kbit/s, carries only what exceeds
+;; 2^32-1 bit/s, 4294967 kbit/s and a fraction, so its value is at least
+;; 4294968.
+; Type: Interpreted Constraints
+; Id: extended-max-requested-bw-dl-range
+; AVP: Extended-Max-Requested-BW-DL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-max-requested-bw-ul-range
+; AVP: Extended-Max-Requested-BW-UL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-max-supported-bw-dl-range
+; AVP: Extended-Max-Supported-BW-DL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-max-supported-bw-ul-range
+; AVP: Extended-Max-Supported-BW-UL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-min-desired-bw-dl-range
+; AVP: Extended-Min-Desired-BW-DL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-min-desired-bw-ul-range
+; AVP: Extended-Min-Desired-BW-UL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-min-requested-bw-dl-range
+; AVP: Extended-Min-Requested-BW-DL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; As Extended-Max-Requested-BW-DL's, clause 4.4.10.
+; Type: Interpreted Constraints
+; Id: extended-min-requested-bw-ul-range
+; AVP: Extended-Min-Requested-BW-UL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used."
+    range 4294968..*
+
+
+;; Of every AVP in bit/s the clause names: an AA-Request establishing the
+;; session is not told from a later one unless its Rx-Request-Type says so.
+; Type: Interpreted Constraints
+; Id: establishment-bandwidth-upper-limit
+; AVP: Max-Requested-Bandwidth-DL
+; Section: 4.4.10
+; Versions: 18.4.0..19.3.0
+"When the Rx session is being established, if the AF supports the corresponding feature (as listed above) and needs to indicate bandwidth values higher than 2^32-1 bps, AVPs representing bitrate in bps shall be provided with value set to 2^32-1 bps and bandwidth AVPs representing bitrate in kbps shall be provided with the actual required bandwidth."
+    text-only
+
+
+;; Clause 4.4.12: only this provisioning sends MPS-Action
+;; AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING, so it tells the AAR apart.
+; Type: Interpreted Constraints
+; Id: aar-mps-signalling-mps-identifier
+; AVP: MPS-Identifier
+; Command: AA-Request
+; Section: 4.4.12
+; Versions: 18.4.0..19.3.0
+"To provision the AF signalling flow information, the AF shall provide the UE’s IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP. The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow. If the AuthorizationForMpsSignalling feature is supported, the AF shall provide the MPS-Action AVP set to value AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING (3)."
+    present-if MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING
+
+
+; Type: Interpreted Constraints
+; Id: aar-mps-signalling-media-component
+; AVP: Media-Component-Description
+; Command: AA-Request
+; Section: 4.4.12
+; Versions: 18.4.0..19.3.0
+"To provision the AF signalling flow information, the AF shall provide the UE’s IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP. The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow. If the AuthorizationForMpsSignalling feature is supported, the AF shall provide the MPS-Action AVP set to value AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING (3)."
+    present-if MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING
+
+
+; Type: Interpreted Constraints
+; Id: aar-mps-signalling-framed-ip-address
+; AVP: Framed-IP-Address
+; Command: AA-Request
+; Section: 4.4.12
+; Versions: 18.4.0..19.3.0
+"To provision the AF signalling flow information, the AF shall provide the UE’s IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP. The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow. If the AuthorizationForMpsSignalling feature is supported, the AF shall provide the MPS-Action AVP set to value AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING (3)."
+    present-if MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING and not Framed-IPv6-Prefix
+
+
+;; Clause 5.1, every Rx command's Auth-Application-Id; the capabilities
+;; exchange of clause 5.2 reads RFC 6733's.
+; Type: Interpreted Constraints
+; Id: auth-application-id-rx
+; AVP: Auth-Application-Id
+; Section: 5.1
+; Versions: 18.4.0..19.3.0
+"Tthe Rx application identification shall be included in the Auth-Application-Id AVP."
+    range 16777236
+
+
+; Type: Interpreted Constraints
+; Id: access-network-charging-address-forwarding
+; AVP: Access-Network-Charging-Address
+; Section: 5.3.2
+; Versions: 18.4.0..19.3.0
+"The Access-Network-Charging-Address AVP should not be forwarded over an inter-operator interface."
+    text-only
+
+
+;; Lines of text, the first two of fixed words: no codec reads them.
+; Type: Interpreted Constraints
+; Id: codec-data-layout
+; AVP: Codec-Data
+; Section: 5.3.7
+; Versions: 18.4.0..19.3.0
+"The first line of the value of the Codec-Data AVP shall consist of either the word \"uplink\" or the word \"downlink\" (in ASCII, without quotes) followed by a new-line character."
+"The second line of the value of the Codec-Data AVP shall consist of either the word \"offer\" or the word \"answer\", or the word \"description\" (in ASCII, without quotes) followed by a new-line character."
+"The rest of the value shall consist of SDP line(s) in ASCII encoding separated by new-line characters, as specified in IETF RFC 4566 [13]. The first of these line(s) shall be an \"m\" line."
+    text-only
+
+
+;; Clause 5.3.8's restrictions, read as `ip-filter-flow`. "Lists or ranges
+;; shall not be used" stands in the source port's item and is read of the
+;; source port alone; "a single IP flow" says what the filter describes, which
+;; a destination port list does not tell from several flows.
+; Type: Interpreted Constraints
+; Id: flow-description-rx
+; AVP: Flow-Description
+; Section: 5.3.8
+; Versions: 18.4.0..19.3.0
+"The Source Port may be omitted to indicate that any source port is allowed. Lists or ranges shall not be used."
+"Only the Action \"permit\" shall be used."
+"No \"options\" shall be used."
+"The invert modifier \"!\" for addresses shall not be used."
+"The keyword \"assigned\" shall not be used."
+    encoding ip-filter-flow
+"For the Rx interface, the Flow description AVP shall be used to describe a single IP flow."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: flows-content-version
+; AVP: Content-Version
+; Within: Flows
+; Section: 5.3.10
+; Versions: 18.4.0..19.3.0
+"The Content-Version AVP(s) shall be included if it was included in the Media-Component-Description AVP when the corresponding media component was provisioned."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: flow-usage-default
+; AVP: Flow-Usage
+; Section: 5.3.12
+; Versions: 18.4.0..19.3.0
+"NO_INFORMATION is the default value."
+    default NO_INFORMATION
+
+
+; Type: Interpreted Constraints
+; Id: aar-specific-action-initial
+; AVP: Specific-Action
+; Command: AA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"Non-one-time-specific-action value(s) may only be provided in the initial AA-Request and shall then be applicable for the entire lifetime of the Rx session."
+    text-only
+
+
+;; Clause 5.3.13's values a RAR reports, of any of its Specific-Action AVPs,
+;; with the AVP the value's description says it carries.
+; Type: Interpreted Constraints
+; Id: rar-charging-correlation
+; AVP: Access-Network-Charging-Identifier
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"Within a RAR, this value shall be used when the server reports the access network charging identifier to the AF."
+"The Access-Network-Charging-Identifier AVP shall be included within the request."
+    present-if Specific-Action = CHARGING_CORRELATION_EXCHANGE
+
+
+; Type: Interpreted Constraints
+; Id: rar-flows
+; AVP: Flows
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"Within a RAR, this value shall be used when the server reports a loss of a bearer (in the case of GPRS PDP context bandwidth modification to 0 kbit for GBR bearers) to the AF."
+"The SDFs that are deactivated as a consequence of this loss of bearer shall be provided within the Flows AVP."
+    present-if Specific-Action = INDICATION_OF_LOSS_OF_BEARER
+"Within a RAR, this value shall be used when the server reports a recovery of a bearer (in the case of 3GPP-GPRS or 3GPP-EPS when PGW interoperates with a Gn/Gp SGSN, PDP context bandwidth modification from 0 kbit to another value for GBR bearers) to the AF."
+"The SDFs that are re-activated as a consequence of the recovery of bearer shall be provided within the Flows AVP."
+    present-if Specific-Action = INDICATION_OF_RECOVERY_OF_BEARER
+"Within a RAR, this value shall be used when the server reports the release of a bearer (e.g. PDP context removal for 3GPP-GPRS or bearer/PDP context removal for 3GPP-EPS) to the AF."
+"The SDFs that are deactivated as a consequence of this release of bearer shall be provided within the Flows AVP."
+    present-if Specific-Action = INDICATION_OF_RELEASE_OF_BEARER
+"Within a RAR, this value shall be used when the PCRF reports to the AF that SDFs have run out of credit, and that the termination action indicated by the corresponding Final-Unit-Action AVP applies (3GPP TS 32.240 [23] and 3GPP TS 32.299 [24]."
+"The SDFs that are impacted as a consequence of the out of credit condition shall be provided within the Flows AVP."
+    present-if Specific-Action = INDICATION_OF_OUT_OF_CREDIT
+"Within a RAR, this value shall be used by the PCRF to indicate that the resources requested for particular service information have been successfully allocated."
+"The SDFs corresponding to the resources successfully allocated shall be provided within the Flows AVP and the content version within the Content-Version AVP as included when the corresponding media component was provisioned."
+    present-if Specific-Action = INDICATION_OF_SUCCESSFUL_RESOURCES_ALLOCATION
+"Within a RAR, this value shall be used by the PCRF to indicate that the resources requested for a particular service information cannot be successfully allocated."
+"The SDFs corresponding to the resources that could not be allocated shall be provided within the Flows AVP."
+    present-if Specific-Action = INDICATION_OF_FAILED_RESOURCES_ALLOCATION
+"Within a RAR, this value shall be used to report to the AF the SDFs for which credit has been reallocated after the former out of credit indication (3GPP TS 32.240 [23] and 3GPP TS 32.299 [24])."
+"The SDFs that are impacted as a consequence of the reallocation of credit condition shall be provided within the Flows AVP."
+    present-if Specific-Action = INDICATION_OF_REALLOCATION_OF_CREDIT
+"If an IP-CAN type or RAT type change is due to IP flow mobility and a subset of the flows within the AF session is affected, the affected service data flows shall be provided in the same request."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: rar-ip-can-change-ip-can-type
+; AVP: IP-CAN-Type
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"When used in RAR it indicates that the PCRF generated the request because of an IP-CAN or RAT change. IP-CAN-Type AVP, RAT-Type AVP (if applicable) ,AN-Trusted AVP (if applicable) and AN-GW-Address AVP (if applicable) shall be provided in the same request with the new/valid value(s)."
+    present-if Specific-Action = IP-CAN_CHANGE
+
+
+;; Whether it applies is the IP-CAN type's, which the clause does not
+;; list.
+; Type: Interpreted Constraints
+; Id: rar-ip-can-change-rat-type
+; AVP: RAT-Type
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"When used in RAR it indicates that the PCRF generated the request because of an IP-CAN or RAT change. IP-CAN-Type AVP, RAT-Type AVP (if applicable) ,AN-Trusted AVP (if applicable) and AN-GW-Address AVP (if applicable) shall be provided in the same request with the new/valid value(s)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: rar-ip-can-change-an-trusted
+; AVP: AN-Trusted
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"When used in RAR it indicates that the PCRF generated the request because of an IP-CAN or RAT change. IP-CAN-Type AVP, RAT-Type AVP (if applicable) ,AN-Trusted AVP (if applicable) and AN-GW-Address AVP (if applicable) shall be provided in the same request with the new/valid value(s)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: rar-ip-can-change-an-gw-address
+; AVP: AN-GW-Address
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"When used in RAR it indicates that the PCRF generated the request because of an IP-CAN or RAT change. IP-CAN-Type AVP, RAT-Type AVP (if applicable) ,AN-Trusted AVP (if applicable) and AN-GW-Address AVP (if applicable) shall be provided in the same request with the new/valid value(s)."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: rar-plmn-change
+; AVP: 3GPP-SGSN-MCC-MNC
+; Command: RA-Request
+; Section: 5.3.13
+; Versions: 18.4.0..19.3.0
+"In the RA-Request (RAR), this value shall be used by the PCRF to indicate that there was a change of PLMN."
+"3GPP-SGSN-MCC-MNC AVP shall be provided in the same RAR command with the new value and, if available, the NID AVP."
+    present-if Specific-Action = PLMN_CHANGE
+
+
+;; The feature is negotiated in an earlier message; the clause names
+;; Extended-Max-Requested-BW-DL, which clause 5.3.52 defines, as
+;; Extended-Max-Requested-Bandwidth-DL.
+; Type: Interpreted Constraints
+; Id: max-requested-bandwidth-dl-extended
+; AVP: Max-Requested-Bandwidth-DL
+; Section: 5.3.14
+; Versions: 18.4.0..19.3.0
+"When the Extended-Max-Requested-BW-NR feature is supported and the value to be transmitted exceeds 2^32-1, the Extended-Max-Requested-Bandwidth-DL AVP shall be used , see clause 4.4.10 and clause 5.3.52."
+    text-only
+
+
+;; As Max-Requested-Bandwidth-DL's, clause 5.3.14.
+; Type: Interpreted Constraints
+; Id: max-requested-bandwidth-ul-extended
+; AVP: Max-Requested-Bandwidth-UL
+; Section: 5.3.15
+; Versions: 18.4.0..19.3.0
+"When the Extended-Max-Requested-BW-NR feature is supported and the value to be transmitted exceeds 2^32-1, the Extended-Max-Requested-Bandwidth-UL AVP shall be used, see clause 4.4.10 and clause 5.3.53."
+    text-only
+
+
+;; An IP flow is a media component's and its Flow-Number's, which two
+;; Media-Component-Descriptions differing in both may still describe alike.
+; Type: Interpreted Constraints
+; Id: media-component-description-single-flow
+; AVP: Media-Component-Description
+; Section: 5.3.16
+; Versions: 18.4.0..19.3.0
+"Within one Diameter message, a single IP flow shall not be described by more than one Media-Component-Description AVP."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: media-component-reservation-priority-default
+; AVP: Reservation-Priority
+; Within: Media-Component-Description
+; Section: 5.3.16
+; Versions: 18.4.0..19.3.0
+"If the Reservation-Priority AVP is not specified the IP flow priority is DEFAULT (0)."
+    default DEFAULT
+
+
+;; The second line of each Codec-Data's text, and whether the session
+;; applies the offer-answer procedures.
+; Type: Interpreted Constraints
+; Id: media-component-codec-data-offer-answer
+; AVP: Codec-Data
+; Within: Media-Component-Description
+; Section: 5.3.16
+; Versions: 18.4.0..19.3.0
+"If the Media-Component-Description AVP contains two Codec-Data AVPs, one of them shall represent an SDP offer and the other one the corresponding SDP answer."
+    text-only
+"If SDP is applied without using the offer-answer procedures, zero or one Codec-Data AVP shall be provisioned."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: acceptable-service-info-media-component
+; AVP: Media-Component-Description
+; Within: Acceptable-Service-Info
+; Section: 5.3.16
+; Versions: 18.4.0..19.3.0
+"The PCRF may provide the Media-Component-Description AVP(s) within the Acceptable-Service-Info AVP in the AA-Answer command if the service information received from the AF is rejected."
+"For this usage, the Media-Component-Description AVP shall only include the appropriate Media-Component-Number AVP and the Max-Requested-Bandwidth-UL and/or Max-Requested-Bandwidth-DL AVPs and/ or the Extended-Max-Requested-BW-UL AVP and/or the Extended-Max-Requested-BW-DL AVP (see clause 4.4.10) indicating the maximum acceptable bandwidth."
+    members only Media-Component-Number Max-Requested-Bandwidth-UL Max-Requested-Bandwidth-DL Extended-Max-Requested-BW-UL Extended-Max-Requested-BW-DL
+
+
+;; A media component whose sub-components carry AF signalling is the AF
+;; signalling's, numbered 0.
+; Type: Interpreted Constraints
+; Id: media-component-number-af-signalling
+; AVP: Media-Component-Number
+; Within: Media-Component-Description
+; Section: 5.3.17
+; Versions: 18.4.0..19.3.0
+"When this AVP refers to AF signalling, this is indicated by using the value 0 according to the rules in Annex B."
+    values 0 if Media-Sub-Component/Flow-Usage = AF_SIGNALLING
+
+
+; Type: Interpreted Constraints
+; Id: media-sub-component-af-signalling-protocol
+; AVP: AF-Signalling-Protocol
+; Within: Media-Sub-Component
+; Section: 5.3.18
+; Versions: 18.4.0..19.3.0
+"The AF-Signalling-Protocol AVP may be included only if the Flow-Usage AVP has a value of ‘AF_SIGNALLING’."
+    requires Flow-Usage = AF_SIGNALLING
+
+
+;; Said of SINGLE_DIALOGUE (0).
+; Type: Interpreted Constraints
+; Id: sip-forking-indication-default
+; AVP: SIP-Forking-Indication
+; Section: 5.3.22
+; Versions: 18.4.0..19.3.0
+"This is the default value applicable if the AVP is omitted."
+    default SINGLE_DIALOGUE
+
+
+;; A text's start: no kind says it.
+; Type: Interpreted Constraints
+; Id: service-urn-prefix
+; AVP: Service-URN
+; Section: 5.3.23
+; Versions: 18.4.0..19.3.0
+"The string \"urn:service:\" in the beginning of the URN shall be omitted in the AVP and all subsequent text shall be included."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: service-info-status-default
+; AVP: Service-Info-Status
+; Section: 5.3.25
+; Versions: 18.4.0..19.3.0
+"If the Service-Info-Status AVP is not provided in the AA request, the value FINAL SERVICE INFORMATION shall be assumed."
+    default "FINAL SERVICE INFORMATION"
+
+
+; Type: Interpreted Constraints
+; Id: af-signalling-protocol-default
+; AVP: AF-Signalling-Protocol
+; Section: 5.3.26
+; Versions: 18.4.0..19.3.0
+"If the AF-Signalling-Protocol AVP is not provided in the AA-Request, the value NO_INFORMATION shall be assumed."
+    default NO_INFORMATION
+
+
+;; The AF's Sponsored-Connectivity-Data, in the AA-Request: the PCRF's,
+;; reporting usage, holds no sponsor. Disabling, or at a session's start not
+;; enabling, is Sponsoring-Action DISABLE_SPONSORING (NOTE of clause 5.3.40),
+;; read through a path into the AVP.
+; Type: Interpreted Constraints
+; Id: aar-sponsored-connectivity-sponsor-identity
+; AVP: Sponsored-Connectivity-Data
+; Command: AA-Request
+; Section: 5.3.27
+; Versions: 18.4.0..19.3.0
+"The Sponsor-Identity AVP identifies the sponsor. It shall be included by the AF in the Sponsored-Connectivity-Data AVP except for the case of disabling sponsored data connectivity."
+    absent-if not Sponsored-Connectivity-Data/Sponsor-Identity and not Sponsored-Connectivity-Data/Sponsoring-Action = DISABLE_SPONSORING
+"The Application-Service-Provider-Identity AVP identifies the application service provider. It shall be included by the AF in the Sponsored-Connectivity-Data AVP except for the case of disabling sponsored data connectivity."
+    absent-if not Sponsored-Connectivity-Data/Application-Service-Provider-Identity and not Sponsored-Connectivity-Data/Sponsoring-Action = DISABLE_SPONSORING
+
+
+;; As the AF's Granted-Service-Unit asked, an earlier message.
+; Type: Interpreted Constraints
+; Id: sponsored-connectivity-used-service-unit
+; AVP: Used-Service-Unit
+; Within: Sponsored-Connectivity-Data
+; Section: 5.3.27
+; Versions: 18.4.0..19.3.0
+"Reporting shall be done, as requested by the AF, in CC-Total-Octets, CC-Input-Octets, CC-Output-Octets or CC-Time of the Used-Service-Unit AVP."
+    text-only
+
+
+;; Across AF sessions, which one message does not show.
+; Type: Interpreted Constraints
+; Id: sharing-key-dl-sessions
+; AVP: Sharing-Key-DL
+; Section: 5.3.37
+; Versions: 18.4.0..19.3.0
+"If resource sharing applies between media components across AF sessions for the same user, the same value of the Sharing-Key-DL AVP shall be used;"
+    text-only
+"If resource sharing does not apply between media components across AF sessions for the same user, a different value of the Sharing-Key-DL AVP shall be used for each media component."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: sharing-key-ul-sessions
+; AVP: Sharing-Key-UL
+; Section: 5.3.38
+; Versions: 18.4.0..19.3.0
+"If resource sharing applies between media components across AF sessions for the same user, the same value of the Sharing-Key-UL AVP shall be used;"
+    text-only
+"If resource sharing does not apply between media components across AF sessions for the same user, a different value of the Sharing-Key-UL AVP shall be used for each media component."
+    text-only
+
+
+;; Said of PRIORITY_SHARING_DISABLED (1).
+; Type: Interpreted Constraints
+; Id: priority-sharing-indicator-default
+; AVP: Priority-Sharing-Indicator
+; Section: 5.3.47
+; Versions: 18.4.0..19.3.0
+"This is the default value applicable if this AVP is not supplied."
+    default PRIORITY_SHARING_DISABLED
+
+
+;; Said of 1 (INACTIVE); the corpus reads no table of the AVP's values.
+; Type: Interpreted Constraints
+; Id: media-component-status-default
+; AVP: Media-Component-Status
+; Section: 5.3.48
+; Versions: 18.4.0..19.3.0
+"This is the default value applicable if this AVP is not supplied."
+    default 1
+
+
+; Type: Interpreted Constraints
+; Id: content-version-unique
+; AVP: Content-Version
+; Section: 5.3.49
+; Versions: 18.4.0..19.3.0
+"The content version shall be unique for the content and for the lifetime of that content."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: pre-emption-control-info-one-bit
+; AVP: Pre-emption-Control-Info
+; Section: 5.3.51
+; Versions: 18.4.0..19.3.0
+"The following values are defined, only one bit shall be set at the same time:"
+    bits at-most-one 0 1 2
+
+
+;; A text's start: no kind says it.
+; Type: Interpreted Constraints
+; Id: flus-identifier-prefix
+; AVP: FLUS-Identifier
+; Section: 5.3.63
+; Versions: 18.4.0..19.3.0
+"It contains the string after \"a=label:\" starting with \"flus\" and may be followed by more characters as described in 3GPP TS 26.238 [69]."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: ma-information-action-default
+; AVP: MA-Information-Action
+; Section: 5.3.67
+; Versions: 18.4.0..19.3.0
+"0 (ADD) is the default value."
+    default 0
+
+
+; Type: Interpreted Constraints
+; Id: nid-digits
+; AVP: NID
+; Section: 5.3.68
+; Versions: 18.4.0..19.3.0
+"The NID AVP (AVP code 569) is of type OctetString, and it indicates Network Identifier (NID) consisting on 44 bits (11 hexadecimal digits), as specified in 3GPP TS 23.003 [38], clause 12.7."
+    encoding element TS23.003 12.7.1 "NID"
+
+
+; Type: Interpreted Constraints
+; Id: 5gmm-cause-coding
+; AVP: 5GMM-Cause
+; Section: 5.3.70
+; Versions: 18.4.0..19.3.0
+"The AVP shall be coded as per the 5GMM Cause in clause 9.11.3.2 of 3GPP TS 24.501 [70]."
+    encoding element TS24.501 9.11.3.2 "5GMM cause"
+
+
+; Type: Interpreted Constraints
+; Id: 5gsm-cause-coding
+; AVP: 5GSM-Cause
+; Section: 5.3.71
+; Versions: 18.4.0..19.3.0
+"The AVP shall be coded as per the 5GSM Cause in clause 9.11.4.2 of 3GPP TS 24.501 [70]."
+    encoding element TS24.501 9.11.4.2 "5GSM cause"
+
+
+; Type: Interpreted Constraints
+; Id: ngap-group-value
+; AVP: NGAP-Group
+; Section: 5.3.73
+; Versions: 18.4.0..19.3.0
+"The value of this IE shall equal to the ASN.1 value of the specified NGAP cause group"
+    encoding element TS38.413 9.4.5 "Cause"
+
+
+;; Cable's is the HFC-Node-Identifier, BBF's the GLI-Identifier; "either ...
+;; or" read as at least one of them.
+; Type: Interpreted Constraints
+; Id: wireline-user-location-info-members
+; AVP: Wireline-User-Location-Info
+; Section: 5.3.75
+; Versions: 18.4.0..19.3.0
+"The Wireline-User-Location-Info AVP (AVP code 578) is of type Grouped and contains either wireline Cable or wireline BBF user location information."
+    members at-least-one HFC-Node-Identifier GLI-Identifier
+
+
+;; CableLabs' document, which no reference of the corpus can name.
+; Type: Interpreted Constraints
+; Id: hfc-node-identifier-cablelabs
+; AVP: HFC-Node-Identifier
+; Section: 5.3.76
+; Versions: 18.4.0..19.3.0
+"The HFC-Node-Identifier AVP (AVP code 579) is of type OctetString and contains an HFC Node Identifier as specified in CableLabs WR-TR-5WWC-ARCH [73]."
+    text-only
+
+
+;; Base64 writes 150 octets as 200 characters; no codec reads base64, and BBF
+;; WT-470, which no reference of the corpus can name, gives the value.
+; Type: Interpreted Constraints
+; Id: gli-identifier-base64
+; AVP: GLI-Identifier
+; Section: 5.3.77
+; Versions: 18.4.0..19.3.0
+"The GLI-Identifier AVP (AVP code 580) is of type OctetString and contains a Global Line Identifier (see clause 28.16.3 of 3GPP TS 23.003 [38]) encoded as base64-encoded characters, representing the GLI value (up to 150 bytes) as specified in BBF WT-470 [74]."
+    length *..200 octets
+
+
+;; A layout chosen by the AVP's first octet, from two documents: no shape of
+;; the element registry switches on a type.
+; Type: Interpreted Constraints
+; Id: user-location-info-coding
+; AVP: 3GPP-User-Location-Info
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"Coding for type values between 0 and 134 shall be done as defined in 3GPP TS 29.274 [33]."
+"Coding for these type values shall be done as defined in 3GPP TS 29.061 [34]"
+    text-only
+
+
+;; Rx carries the AVP only in the AF's AA-Request. A whole address takes the
+;; 16 octets of the Prefix field; that the Prefix-Length octet holds 128 no
+;; rule says, since a bits rule reaches bit 63 at most.
+; Type: Interpreted Constraints
+; Id: framed-ipv6-prefix-ue-address
+; AVP: Framed-IPv6-Prefix
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"The encoding of the value within this Octet String type AVP shall be as defined in RFC 3162 [20], clause 2.3. The \"Reserved\", \"Prefix-Length\" and \"Prefix\" fields shall be included in this order."
+    encoding element RFC3162 2.3 "Framed-IPv6-Prefix"
+"The AF shall set the \"Prefix Length\" to 128 and encode the Ipv6 address of the UE within the \"Prefix\" field."
+    length 18 octets
+
+
+;; Within Sponsored-Connectivity-Data, where Rx reads it; that one of
+;; CC-Input-Octets and CC-Output-Octets is used, not both, no `members` form
+;; says.
+; Type: Interpreted Constraints
+; Id: sponsored-connectivity-granted-service-unit-members
+; AVP: Granted-Service-Unit
+; Within: Sponsored-Connectivity-Data
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"Only CC-Total-Octets, one of the CC-Input-Octets and CC-Output-Octets, or CC-Time AVPs are reused."
+    members only CC-Total-Octets CC-Input-Octets CC-Output-Octets CC-Time
+
+
+; Type: Interpreted Constraints
+; Id: sponsored-connectivity-used-service-unit-members
+; AVP: Used-Service-Unit
+; Within: Sponsored-Connectivity-Data
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"Only CC-Total-Octets, one of the CC-Input-Octets and CC-Output-Octets, or CC-Time AVPs are reused."
+    members only CC-Total-Octets CC-Input-Octets CC-Output-Octets CC-Time
+
+
+; Type: Interpreted Constraints
+; Id: tos-traffic-class-mask
+; AVP: ToS-Traffic-Class
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"The first octet contains the DSCP code and the second octet contains the mask field set to 11111100."
+    length 2 octets
+    bits set 2 3 4 5 6 7
+    bits clear 0 1
+
+
+;; Digits as text where a sibling's value says IMEISV: no kind says it.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-imeisv
+; AVP: User-Equipment-Info
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"When the User-Equipment-Info-Type is set to IMEISV(0), the value within the User-Equipment-Info-Value shall be a UTF-8 encoded decimal."
+    text-only
+
+
+;; RFC 8506's members, which this document does not print.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-extension-imei
+; AVP: User-Equipment-Info-Extension
+; Section: 5.4.0
+; Table: 5.4.0.1
+; Versions: 18.4.0..19.3.0
+"When the User-Equipment-Info-IMEISV or the User-Equipment-Info-IMEI is used, it shall be a UTF-8 encoded decimal."
+    text-only
+
+
+;; Every Rx feature is 3GPP's, in the two commands carrying the AVP;
+;; RFC 6733's Vendor-Id, which this file does not hold, read through a path
+;; into it.
+; Type: Interpreted Constraints
+; Id: aar-supported-features-vendor
+; AVP: Supported-Features
+; Command: AA-Request
+; Section: 5.4.1
+; Versions: 18.4.0..19.3.0
+"On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+;; The initial AAR is the one whose Rx-Request-Type says INITIAL_REQUEST, the
+;; stateless one PCSCF_RESTORATION (clause 4.4.7); an AAR without the AVP is
+;; not told apart. Held to a success's answer. Whether the PCRF supports
+;; Rel-7 the answer does not say.
+; Type: Interpreted Constraints
+; Id: aaa-initial-supported-features
+; AVP: Supported-Features
+; Command: AA-Answer
+; Section: 5.4.1
+; Versions: 18.4.0..19.3.0
+"On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+"The following exceptions apply to the initial and stateless AAR/AAA command pair:"
+"If the AAR command contains the Supported-Features AVP(s), the PCRF shall include the Supported-Features AVP(s) in the AAA command, with the ‘M’ bit cleared, indicating only the features that both the PCRF and AF support."
+    present-if request/Rx-Request-Type = INITIAL_REQUEST and request/Supported-Features and Result-Code = DIAMETER_SUCCESS or request/Rx-Request-Type = PCSCF_RESTORATION and request/Supported-Features and Result-Code = DIAMETER_SUCCESS
+"The following exceptions apply to the initial and stateless AAR/AAA command pair:"
+"If the AAR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-7 Rx functionality, the AAA command shall not include the Supported-Features AVP."
+    text-only
+
+
+;; Clause 5.5.1, the Experimental-Result of every Rx answer printing one.
+; Type: Interpreted Constraints
+; Id: aaa-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: AA-Answer
+; Section: 5.5.1
+; Versions: 18.4.0..19.3.0
+"The Vendor-ID AVP shall be set to 3GPP (10415)."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: raa-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: RA-Answer
+; Section: 5.5.1
+; Versions: 18.4.0..19.3.0
+"The Vendor-ID AVP shall be set to 3GPP (10415)."
+    requires Experimental-Result/Vendor-Id = 10415

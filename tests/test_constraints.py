@@ -156,6 +156,33 @@ VECTORS = [
     pytest.param(
         Codec.IP_FILTER, b"permit out ip from any to any 70000", False, id="filter-port"
     ),
+    pytest.param(
+        Codec.IP_FILTER_FLOW,
+        b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 1-1023,8080",
+        True,
+        id="flow",
+    ),
+    pytest.param(
+        Codec.IP_FILTER_FLOW, b"permit out ip from any to any", True, id="flow-any"
+    ),
+    pytest.param(
+        Codec.IP_FILTER_FLOW,
+        b"permit out ip from assigned to any",
+        False,
+        id="flow-assigned",
+    ),
+    pytest.param(
+        Codec.IP_FILTER_FLOW,
+        b"permit in 17 from any 5060,5062 to any",
+        False,
+        id="flow-source-list",
+    ),
+    pytest.param(
+        Codec.IP_FILTER_FLOW,
+        b"permit in 17 from any 5060-5070 to any",
+        False,
+        id="flow-source-range",
+    ),
     pytest.param(Codec.ELEMENT, b"\xff\xff", True, id="element-unchecked"),
 ]
 

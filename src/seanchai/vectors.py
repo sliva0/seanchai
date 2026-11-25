@@ -190,6 +190,7 @@ _CODEC = {
     ast.Codec.MAC_ADDRESS: b"00-10-A4-23-19-C0",
     ast.Codec.IP_FILTER: b"permit in 17 from assigned to 192.0.2.10/32 5060",
     ast.Codec.IP_FILTER_OUT: b"permit out 17 from 192.0.2.10/32 5060 to assigned",
+    ast.Codec.IP_FILTER_FLOW: b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060",
     ast.Codec.IP_ADDRESS: b"\x00\x01\xc0\x00\x02\x01",
 }
 # What breaks a codec's layout without changing its length.
@@ -206,6 +207,7 @@ _BROKEN_CODEC = {
     ast.Codec.MAC_ADDRESS: lambda good: good.lower(),
     ast.Codec.IP_FILTER: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_FILTER_OUT: lambda good: b"deny  " + good[6:],
+    ast.Codec.IP_FILTER_FLOW: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_ADDRESS: lambda good: b"\x00\x03" + good[2:],
 }
 
@@ -1884,7 +1886,12 @@ class _Negatives:
                                 broke = self.break_values(
                                     target.children, inner, member, rule
                                 )
-                            if broke:
+                            # Breaking a member's rule must keep the grouped
+                            # AVP's own: a values rule made to fail by adding
+                            # a member breaks a `members only` of TS 29.214's
+                            # Media-Component-Description in
+                            # Acceptable-Service-Info.
+                            if broke and self.members_hold(target, held):
                                 done.add(key)
                                 self.emit(
                                     trial,
@@ -1895,6 +1902,22 @@ class _Negatives:
                                     f"constraint-{rule.kind}",
                                     "note",
                                 )
+
+    def members_hold(self, node: _Avp, held: Sequence[dictionary.Constraint]) -> bool:
+        """Whether grouped `node`'s members keep the `members` rules of
+        `held`, the constraints on the node itself."""
+        names = {c.member.name for c in node.children if c.member}
+        for each in held:
+            for reading in each.readings:
+                for rule in reading.rules:
+                    if rule.kind != "members":
+                        continue
+                    if rule.relation is ast.BitsRelation.ONLY:
+                        if not names <= set(rule.members):
+                            return False
+                    elif not names & set(rule.members):
+                        return False
+        return True
 
     def inner_holds(self, scope: _Scope, children: Sequence[_Avp]) -> bool:
         """Whether `children` keep their body's counts and predicates."""

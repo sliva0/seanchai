@@ -171,6 +171,7 @@ name. A layout no clause states is not here.
 | `mac-address` | a 6-octet MAC address as text, each octet two upper-case hexadecimal digits, joined by dashes: `00-10-A4-23-19-C0` | TS 29.273 clauses 5.2.3.23 and 5.2.3.30 |
 | `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports and port ranges; no options, no `!` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it |
 | `ip-filter-out` | an `ip-filter` of the direction `out`: `permit out 17 from 192.0.2.10/32 5060 to assigned` | TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2 |
+| `ip-filter-flow` | an `ip-filter` describing one IP flow: no `assigned`, and the source port, where given, one port, no list or range: `permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060` | RFC 6733 clause 4.3.1, as TS 29.214 clause 5.3.8 restricts it |
 | `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
 A clause pointing at another document without stating a layout ("Octets are
@@ -330,6 +331,16 @@ TS 29.212's 4 name 4 entries, all of which check something:
 | Presence-Reporting-Area-Identifier | TS 29.274 8.109 PRA Identifier | TS 29.274 V19.6.0 8.109; TS 23.003 V19.8.0 19.10 | 3 octets | full | the identifier takes any value, its most significant bit telling a UE-dedicated area from a core network predefined one |
 | Framed-IPv6-Prefix | RFC 3162 2.3 Framed-IPv6-Prefix | RFC 3162 (August 2001) 2.3 | 2 to 18 octets; octet 1 (Reserved) 00000000; octet 2 (Prefix-Length) 00000000 to 10000000 | partial | that the bits beyond the prefix length are zero is not checked: no shape reads a length from a field |
 
+
+TS 29.214's 5 name 5 entries, of which 4 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| NID | TS 23.003 12.7.1 NID | TS 23.003 V19.8.0 12.7.1 | nothing | none | the clause gives the NID as 11 hexadecimal digits, and neither it nor TS 29.214 clause 5.3.68 says how an OctetString carries them, as 11 characters or packed in 44 bits |
+| 5GMM-Cause | TS 24.501 9.11.3.2 5GMM cause | TS 24.501 V19.8.0 9.11.3.2 | an integer 0 to 65535 | partial | whether the Unsigned32 carries the cause value alone or the element's two octets with its IEI the clauses do not say, so only that it fits in two octets is checked; a value table 9.11.3.2.1 does not name is read as 'protocol error, unspecified', not refused |
+| 5GSM-Cause | TS 24.501 9.11.4.2 5GSM cause | TS 24.501 V19.8.0 9.11.4.2 | an integer 0 to 65535 | partial | as 5GMM-Cause's; a value table 9.11.4.2.1 does not name is read as 'Request rejected, unspecified' |
+| NGAP-Group | TS 38.413 9.4.5 Cause | TS 38.413 V19.4.0 9.4.5 | an integer 0 to 4 | full | the CHOICE's choice-Extensions holds no IE in this edition, so the five groups 0 to 4 are all |
+| Framed-IPv6-Prefix | RFC 3162 2.3 Framed-IPv6-Prefix | RFC 3162 (August 2001) 2.3 | as TS 29.212's | partial | as TS 29.212's |
 
 ## Reading them
 
@@ -766,3 +777,89 @@ Flow-Information, where "only Flow-Description AVP and Flow-Direction AVPs
 are used", and Usage-Monitoring-Level, where "Only SESSION_LEVEL (0) ... and
 ADC-Rule-Level (2) apply", against clause 5.3.61's default PCC_RULE_LEVEL,
 which the file reads wherever the AVP is read, Sd's too.
+
+## TS 29.214
+
+TS 29.214 V19.3.0 is read for Rx: every AVP clause of clause 5.3, the
+re-used AVPs' descriptions of table 5.4.0.1, clause 5.1's application id,
+5.4.1's supported features and 5.5.1's result codes, and the procedure
+clauses of clause 4.4 for what they state of one message. Release 18's
+copy, V18.4.0, holds 81 of the 82 blocks: it prints no clause 4.4.6.10,
+whose PC-Session-Recovery-Status Release 19 added. Release 19 prints that
+clause's heading as a paragraph of clause 4.4.6.9, whose text it is read
+as.
+The document has no information-element tables, and prints each command once
+under 16777236. Service information modifies what was provisioned before it
+(clauses 5.3.16 and 5.3.18), and an AA-Request is the session's first only
+where its optional Rx-Request-Type says INITIAL_REQUEST, so what an initial
+or a modifying request must carry is `text-only`.
+
+| | |
+|---|---|
+| AVP clauses (clause 5.3, not its General clause) | 82 |
+| with something to declare | 31, in 42 blocks |
+| with nothing to declare | 51 |
+| re-used AVPs' descriptions (table 5.4.0.1) | 7 blocks |
+| protocol, supported features, result codes (5.1, 5.4.1, 5.5.1) | 5 blocks |
+| procedure clauses (4.4.1, 4.4.4, 4.4.6.6, 4.4.6.7, 4.4.6.9, 4.4.7, 4.4.10, 4.4.12) | 28 blocks |
+| blocks | 82: 41 on an AVP wherever read, 9 within a grouped AVP, 32 within a command |
+| readings | 97 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 1: `ip-filter-flow` (Flow-Description) |
+| `encoding element` | 5, naming 5 entries of the registry, 4 checked ([above](#elements)) |
+| `length` | 3, in octets: Framed-IPv6-Prefix 18, ToS-Traffic-Class 2, GLI-Identifier at most 200 |
+| `range` | 9: Auth-Application-Id 16777236, the 8 extended bandwidth AVPs at least 4294968 |
+| `requires`, `present-if`, `absent-if` | 6, 20, 3 |
+| reading the request | 2: the restoration AAA's Auth-Session-State, the initial AAA's Supported-Features beside the AAR's |
+| `default` | 8 |
+| `values` | 3: Auth-Session-State NO_STATE_MAINTAINED in the restoration AAR and AAA, Media-Component-Number 0 for AF signalling |
+| `bits` | 3: `at-most-one` (Pre-emption-Control-Info), `set` and `clear`, ToS-Traffic-Class's mask 11111100 |
+| `members` | 4: `only` 3 (Acceptable-Service-Info's Media-Component-Description, Sponsored-Connectivity-Data's Granted- and Used-Service-Unit), `at-least-one` (Wireline-User-Location-Info) |
+| `text-only` | 38 |
+
+Most checked rules are clause 5.3.13's: a value a RAR reports, of any of its
+Specific-Action AVPs, with the AVP its description says it carries (the
+Flows of seven bearer and credit events, IP-CAN_CHANGE's IP-CAN-Type,
+PLMN_CHANGE's 3GPP-SGSN-MCC-MNC, CHARGING_CORRELATION_EXCHANGE's
+Access-Network-Charging-Identifier), with clause 4.4.6.6's usage report in
+the Sponsored-Connectivity-Data's Used-Service-Unit and 4.4.6.10's
+PC-Session-Recovery-Status. Clause 4.4.7's P-CSCF restoration AAR, which
+its Rx-Request-Type PCSCF_RESTORATION tells apart, carries Auth-Session-State
+NO_STATE_MAINTAINED, and the IMSI and APN where it holds no address, and its
+AAA the same Auth-Session-State; clause 4.4.12's AAR, which its MPS-Action
+AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING tells apart, an MPS-Identifier, a
+Media-Component-Description and the UE's address. Clause 4.4.10 holds every
+extended bandwidth AVP to more than 2^32-1 bit/s, at least 4294968 kbit/s.
+Flow-Description is clause 5.3.8's `ip-filter-flow`, the restrictions of
+TS 29.212's `ip-filter` with no `assigned` and the source port one port:
+"Lists or ranges shall not be used" stands in the source port's item.
+
+The text-only rules are mostly conditions on an earlier message, the
+session or a feature ("if the PCRF has previously requested to be updated
+with this information", "When the Extended-Max-Requested-BW-NR feature is
+supported", "Non-one-time-specific-action value(s) may only be provided in
+the initial AA-Request"), what the PCRF has available, and texts no kind
+reads: Codec-Data's lines, Service-URN's and FLUS-Identifier's starts,
+3GPP-User-Location-Info's layout chosen by its type, User-Equipment-Info's
+digits, and HFC-Node-Identifier's CableLabs layout, which no reference of
+the corpus names. A RAR's location report carries ACCESS_NETWORK_INFO_REPORT
+(clause 4.4.6.7), but a RAR reporting a bearer's release carries the
+location too, under its own Specific-Action, so that is `text-only`.
+
+The document names its extended bandwidth AVPs otherwise than it defines
+them: clauses 5.3.14, 5.3.15, 5.3.32, 5.3.33 and 5.3.41 to 5.3.44 print
+Extended-Max-Requested-Bandwidth-DL and the like for clauses 5.3.52 to
+5.3.59's Extended-Max-Requested-BW-DL, clause 5.3.44 opens "The
+Min-Desired-Bandwidth-DL AVP (AVP code 546)" for the UL AVP, and clause
+5.3.24 names Extended-Max-Requested-BW-DL twice where the second is the UL.
+Left unread: the M-bit and vendor settings of table 5.4.0.1; the sentences
+saying a value or an AVP is "applicable" or "not applicable", with no
+"shall" (Framed-IP-Address's values 0xFFFFFFFF and 0xFFFFFFFE, NID's "only
+applicable in 5GS"); "will" and "may" sentences (Acceptable-Service-Info's
+"only the Media-Component-Description AVP will be provided"); the procedure
+clauses repeating clause 5.3.13's value descriptions (4.4.6.3, 4.4.6.4,
+4.4.6.5, 4.4.6.9); and Annex A's P-CSCF procedures and Annex E's
+interworking with 5GS, which state what an IMS node or a PCF does, not
+what an Rx message carries.

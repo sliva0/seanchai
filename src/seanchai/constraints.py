@@ -70,6 +70,7 @@ CODEC_TYPES: dict[ast.Codec, frozenset[ast.DataType]] = {
     ast.Codec.MAC_ADDRESS: _TEXT,
     ast.Codec.IP_FILTER: _FILTER,
     ast.Codec.IP_FILTER_OUT: _FILTER,
+    ast.Codec.IP_FILTER_FLOW: _FILTER,
     ast.Codec.IP_ADDRESS: frozenset({ast.DataType.ADDRESS}),
     ast.Codec.ELEMENT: frozenset(ast.DataType),
 }
@@ -145,11 +146,14 @@ _TIME_ZONE = re.compile(r"[+-][0-9]+")
 _MAC_ADDRESS = re.compile(r"[0-9A-F]{2}(?:-[0-9A-F]{2}){5}")
 
 
-def _ip_filter_address(token: str) -> str | None:
-    """Why `token` is no IPFilterRule address: `any`, `assigned`, or an IPv4
-    or IPv6 number with an optional mask width valid for its version."""
-    if token in ("any", "assigned"):
+def _ip_filter_address(token: str, assigned: bool = True) -> str | None:
+    """Why `token` is no IPFilterRule address: `any`, `assigned` (unless not
+    `assigned`), or an IPv4 or IPv6 number with an optional mask width valid
+    for its version."""
+    if token == "any" or (token == "assigned" and assigned):
         return None
+    if token == "assigned":
+        return "the keyword 'assigned' is used"
     number, slash, bits = token.partition("/")
     if "%" in number:
         return f"{token!r} is no address, 'any' or 'assigned'"
@@ -175,11 +179,12 @@ def _ip_filter_ports(token: str) -> bool:
     return True
 
 
-def _ip_filter_problem(text: str, out_only: bool) -> str | None:
+def _ip_filter_problem(text: str, out_only: bool, flow: bool = False) -> str | None:
     """Why `text` is no IPFilterRule (RFC 6733 clause 4.3.1) as the
     documents restrict it: `permit`, a direction (`out` where `out_only`),
     a protocol number or `ip`, `from` a source and `to` a destination, each
-    an address and optional ports, no options and no `!`."""
+    an address and optional ports, no options and no `!`; for one `flow`,
+    no `assigned` and the source port one port."""
     if "!" in text:
         return "the invert modifier '!' is used"
     tokens = text.split()
@@ -199,7 +204,7 @@ def _ip_filter_problem(text: str, out_only: bool) -> str | None:
             return f"no '{keyword}'"
         if len(tokens) <= position + 1:
             return f"no address after '{keyword}'"
-        problem = _ip_filter_address(tokens[position + 1])
+        problem = _ip_filter_address(tokens[position + 1], assigned=not flow)
         if problem is not None:
             return problem
         position += 2
@@ -208,6 +213,8 @@ def _ip_filter_problem(text: str, out_only: bool) -> str | None:
                 if keyword == "to":
                     return "options are used"
                 return f"{tokens[position]!r} are no ports"
+            if flow and keyword == "from" and not tokens[position].isdigit():
+                return f"the source port {tokens[position]!r} is a list or range"
             position += 1
     if position != len(tokens):
         return "options are used"
@@ -269,8 +276,12 @@ def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
         case ast.Codec.MAC_ADDRESS:
             ok = _MAC_ADDRESS.fullmatch(text)
             return None if ok else "not six upper-case hexadecimal octets joined by '-'"
-        case ast.Codec.IP_FILTER | ast.Codec.IP_FILTER_OUT:
-            return _ip_filter_problem(text, codec is ast.Codec.IP_FILTER_OUT)
+        case ast.Codec.IP_FILTER | ast.Codec.IP_FILTER_OUT | ast.Codec.IP_FILTER_FLOW:
+            return _ip_filter_problem(
+                text,
+                codec is ast.Codec.IP_FILTER_OUT,
+                flow=codec is ast.Codec.IP_FILTER_FLOW,
+            )
     raise AssertionError(codec)
 
 

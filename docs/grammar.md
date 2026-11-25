@@ -722,7 +722,7 @@ encoding      = "encoding " codec
 codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
               / "labels" / "apn" / "plmn-domain" / "epc-plmn-domain"
               / "ip-address" / "time-zone" / "mac-address"
-              / "ip-filter" / "ip-filter-out"
+              / "ip-filter" / "ip-filter-out" / "ip-filter-flow"
 predicate     = predicate-kind SP conditions
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
 conditions    = conjunction *(" or " conjunction)

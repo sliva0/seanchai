@@ -533,6 +533,7 @@ _SH = ("TS29.328", "19.2.0")
 _NON_3GPP_ACCESS = ("TS24.302", "19.0.0")
 _NON_3GPP_SECURITY = ("TS33.402", "19.0.0")
 _GBA = ("TS33.220", "19.1.0")
+_NAS_5GS = ("TS24.501", "19.8.0")
 
 
 def _network_name(clause: str, attribute: str, field: str) -> Element:
@@ -1731,6 +1732,91 @@ REGISTRY: tuple[Element, ...] = (
         "that the bits beyond the prefix length are zero is not checked: no"
         " shape reads a length from a field",
         example=b"\x00\x40\x20\x01\x0d\xb8\x00\x00\x00\x00",
+    ),
+    Element(
+        "TS23.003",
+        "12.7.1",
+        "NID",
+        "a Network Identifier of a Stand-Alone Non-Public Network",
+        (
+            _source(
+                _NUMBERING,
+                "12.7.1",
+                "'The NID shall consist of 11 hexadecimal digits, one digit for"
+                " representing an assignment mode and 10 digits for a NID"
+                " value'; assignment modes 0, 1 and 2, 'Other Assignment mode"
+                " values are spare, for future use'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the clause gives the NID as 11 hexadecimal digits, and neither it"
+        " nor TS 29.214 clause 5.3.68 says how an OctetString carries them,"
+        " as 11 characters or packed in 44 bits",
+    ),
+    Element(
+        "TS24.501",
+        "9.11.3.2",
+        "5GMM cause",
+        "the 5GMM cause, a type 3 information element of 2 octets, its cause"
+        " value in octet 2",
+        (
+            _source(
+                _NAS_5GS,
+                "9.11.3.2",
+                "'The 5GMM cause is a type 3 information element with length"
+                " of 2 octets'; table 9.11.3.2.1, the cause value in octet 2,"
+                " 'Any other value received by the mobile station shall be"
+                " treated as 0110 1111'",
+            ),
+        ),
+        (Integer(0, 65535),),
+        Depth.PARTIAL,
+        "whether the Unsigned32 carries the cause value alone or the element's"
+        " two octets with its IEI the clauses do not say, so only that it"
+        " fits in two octets is checked; a value table 9.11.3.2.1 does not"
+        " name is read as 'protocol error, unspecified', not refused",
+    ),
+    Element(
+        "TS24.501",
+        "9.11.4.2",
+        "5GSM cause",
+        "the 5GSM cause, a type 3 information element of 2 octets, its cause"
+        " value in octet 2",
+        (
+            _source(
+                _NAS_5GS,
+                "9.11.4.2",
+                "'The 5GSM cause is a type 3 information element with a length"
+                " of 2 octets'; table 9.11.4.2.1, the cause value in octet 2,"
+                " 'Any other value received by the UE shall be treated as 0001"
+                " 1111'",
+            ),
+        ),
+        (Integer(0, 65535),),
+        Depth.PARTIAL,
+        "whether the Unsigned32 carries the cause value alone or the element's"
+        " two octets with its IEI the clauses do not say, so only that it"
+        " fits in two octets is checked; a value table 9.11.4.2.1 does not"
+        " name is read as 'Request rejected, unspecified', not refused",
+    ),
+    Element(
+        "TS38.413",
+        "9.4.5",
+        "Cause",
+        "the group of an NGAP Cause, the index of its CHOICE alternative",
+        (
+            _source(
+                _NGAP,
+                "9.4.5",
+                "Cause ::= CHOICE { radioNetwork, transport, nas, protocol,"
+                " misc, choice-Extensions }, Cause-ExtIEs holding no IE",
+            ),
+        ),
+        (Integer(0, 4),),
+        Depth.FULL,
+        "the CHOICE's choice-Extensions holds no IE in this edition, so the"
+        " five groups 0 to 4 are all",
     ),
 )
 
