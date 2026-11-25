@@ -24,6 +24,33 @@ MIP6-Agent-Info ::= < AVP header: 486 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5447.dadx#mip6-agent-info-a-home-agent)
+; AVP: MIP6-Agent-Info
+; Section: 4.2.1
+; Page: 6
+"When the MIP6-Agent-Info AVP is present in a message, it MUST contain either the MIP-Home-Agent-Address AVP, the MIP-Home-Agent-Host AVP, or both AVPs."
+    members at-least-one MIP-Home-Agent-Address MIP-Home-Agent-Host
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5447.dadx#mip-home-agent-address-family)
+; AVP: MIP-Home-Agent-Address
+; Within: MIP6-Agent-Info
+; Section: 4.2.2
+; Page: 7
+"The MIP-Home-Agent-Address AVP (AVP Code 334 [RFC4004]) is of type Address and contains the IPv6 or IPv4 address of the MIPv6 HA."
+    encoding ip-address
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5447.dadx#mip6-home-link-prefix-layout)
+; AVP: MIP6-Home-Link-Prefix
+; Section: 4.2.4
+; Page: 8
+"The home network prefix MUST be encoded as the 8-bit prefix length information (one octet) followed by the 128-bit field (16 octets) for the available home network prefix."
+    length 17 octets
+"The trailing bits of the IPv6 prefix after the prefix length bits MUST be set to zero (e.g., if the prefix length is 60, then the remaining 68 bits MUST be set to zero)."
+    text-only
+
+
 ; Type: Value Table
 ; AVP: MIP6-Feature-Vector
 ; Kind: bits

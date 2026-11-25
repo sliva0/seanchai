@@ -389,7 +389,8 @@ def _contradictions(rules: Sequence[ast.ConstraintRule]) -> Iterable[str]:
             if isinstance(rule, ast.ExcludeRule)
             for value in rule.values
         }
-        if set(range(low, high + 1)) <= excluded:
+        # Counted before it is listed: a range may span 2**32 values.
+        if high - low < len(excluded) and excluded >= set(range(low, high + 1)):
             yield "exclude leaves no value of the range"
 
 

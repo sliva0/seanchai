@@ -1506,3 +1506,94 @@ sent; RFC 8581 section 7.1's "A supporting node must also include the
 SourceID AVP", no requirement in its lower case; and what a node does on
 receipt (the OCS entries, abatement, stripping reports from untrusted
 peers, RFC 7944's priority handling).
+
+## RFC 5447, RFC 5777, RFC 5778 and RFC 5779
+
+RFC 5447's MIP6-Agent-Info, MIP6-Home-Link-Prefix and MIP6-Feature-Vector,
+RFC 5777's QoS-Resources and QoS-Capability with their members, and RFC
+5779's PMIPv6 AVPs serve any application whose command admits them, so
+their blocks have no scope or are within the documents' own grouped AVPs,
+and hold wherever a document reading the AVP reads it: RFC 5447's in TS
+29.272's MIP6-Agent-Info too ([Precedence](#precedence)).
+RFC 5778 prints its own DER and DEA under MIP6I (7) and MIR and MIA under
+MIP6A (8), which no other document's print shares. An RFC has one edition,
+so no block names `; Versions:`.
+
+| | RFC 5447 | RFC 5777 | RFC 5778 | RFC 5779 |
+|---|---|---|---|---|
+| sections read | 4 and 6 | 3 to 6 | 3 to 8 | 4 to 7 |
+| blocks | 3: 2 on an AVP wherever read, 1 within a grouped AVP | 39: 22 on an AVP wherever read, 17 within a grouped AVP | 43: 38 within a command, 28 of them table 8.1's "0" cells, 1 within a grouped AVP, 4 on an AVP wherever read | 6: 5 on an AVP wherever read, 1 within a grouped AVP |
+| readings | 4 | 47 | 43 | 9 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 8: `ip-address` (RFC 5447's MIP-Home-Agent-Address within MIP6-Agent-Info, RFC 5777's IP-Address, IP-Address-Start and IP-Address-End, RFC 5778's MIP-Mobile-Node-Address and MIP-Careof-Address, RFC 5779's PMIP6-IPv4-Home-Address and PMIP6-DHCP-Server-Address) |
+| `length` | 9: MIP6-Home-Link-Prefix 17 octets, RFC 5777's MAC-Address and MAC-Address-Mask-Pattern 6, EUI64-Address and EUI64-Address-Mask-Pattern 8, ETH-Ether-Type and ETH-SAP 2, MIP-Timestamp 8, PMIP6-IPv4-Home-Address 6, an IPv4 Address |
+| `range` | 13: RFC 5777's IP-Mask-Bit-Mask-Width 0 to 128, Port, the four VLAN-IDs 0 to 4095, the two user priorities 0 to 7, Time-Of-Day-Start and -End, Day-Of-Month-Mask 0 to 2147483647 and Timezone-Offset; the DER's Auth-Request-Type AUTHORIZE_AUTHENTICATE (RFC 5778 section 5.1.1) |
+| `default` | 10: RFC 5777's Direction BOTH, Negated False, Port-Start 0, Port-End 65535, Time-Of-Day-Start 0, Time-Of-Day-End 86399, the two fractional seconds 0 and Timezone-Flag UTC; RFC 5778's MIP-Replay-Mode None within MIP-MN-HA-MSA |
+| `members` | 1: MIP6-Agent-Info's MIP-Home-Agent-Address or MIP-Home-Agent-Host (RFC 5447 section 4.2.1) |
+| `bits` | 3: Day-Of-Week-Mask's and Month-Of-Year-Mask's undefined bits clear (RFC 5777 sections 4.2.4, 4.2.6), MIP6-Home-Link-Prefix's low 64 bits clear within RFC 5779's MIP6-Agent-Info (section 5.3) |
+| `present-if`, `absent-if`, `excludes` | 7, 2, 1: Timezone-Offset with OFFSET, a Filter-Rule's QoS-Parameters for a shape or mark action, ETH-Ether-Type without ETH-SAP (RFC 5777); the MIR's MIP-MN-AAA-SPI, MIP-Authenticator and MIP-MAC-Mobility-Data for MIP6_AUTH_MN_AAA, the successful MIA's MIP-Mobile-Node-Address, and the MIA's MIP-MN-HA-MSA holding a MIP-MN-HA-SPI and a MIP-Algorithm-Type where the MIR's mode is MIP6_AUTH_MN_AAA (RFC 5778) |
+| `values` | 1: the MIR's Auth-Request-Type AUTHORIZE_AUTHENTICATE for MIP6_AUTH_MN_AAA (RFC 5778 section 6.20) |
+| `absent` | 28: RFC 5778 table 8.1's "0" cells |
+| reading the request | 2: the MIA's MIP-MN-HA-MSA members after the MIR's MIP6_AUTH_MN_AAA |
+| `text-only` | 21: RFC 5447's 1, RFC 5777's 11, RFC 5778's 3, RFC 5779's 6 |
+
+RFC 5777's Treatment-Action values, listed in clause 5.1's prose and read
+by no value table, are written as numbers, 1 shape and 2 mark. An absent
+Time-Of-Day-End ends the window "one second before midnight", the
+inclusive offset 86399. The MIA's MIP-MN-HA-SPI and MIP-Algorithm-Type
+(RFC 5778 sections 6.4, 6.13) are read on the MIA through paths into its
+MIP-MN-HA-MSA, whose own scope does not see the MIR's MIP6-Auth-Mode; the
+MIP-MN-HA-MSA a server returns is taken for the "valid" one. An Address of
+6 octets is an IPv4 one, so RFC 5779's PMIP6-IPv4-Home-Address is
+`ip-address` and 6 octets. MIP6-Home-Link-Prefix's "low 64 bits of the
+prefix" (RFC 5779 section 5.3) are the last 8 of RFC 5447's 17 octets,
+bits 0 to 63; RFC 5779 prints its own MIP6-Agent-Info, which no other
+document re-uses, so the rule holds there alone.
+
+The text-only rules are what the node decides or learnt outside the
+message (RFC 5778's User-Name copied from the Binding Update's MN-NAI
+option, the Chargeable-User-Identity an accounting request carries "if it
+is available in the home agent", RFC 5779's all-zero address where the LMA
+delegates the assignment, a Service-Selection the MAG received from the
+MN, whether a VLAN-ID-Range means a single VLAN-ID), what the server
+assigned (RFC 5778's home address of a prefix-only assignment), two values
+compared (RFC 5777's IP-Address-Start below IP-Address-End), a Classifier's
+attributes against its Protocol, what an absent AVP means where that is no
+value of the AVP's own (an address range's open end, a mask matching every
+day or month, an open-ended window, a Time's or a grouped AVP's default,
+QoS-Profile-Template's), the trailing prefix bits after the prefix length,
+which no kind reads from a field, and texts no codec reads: RFC 5779's
+Mobile-Node-Identifier NAI, Calling-Station-Id's link-layer identifier,
+which RFC 5213 lets be of another length than the `mac-address` codec's
+six octets, and a Service-Selection unique in the PMIPv6 domain.
+
+The documents disagree with themselves where the corpus reads around
+them: RFC 5777 clause 4.1.7.7's heading names IP-Mask-Bit-Mask-Width,
+its text and clause 4.1.7.6's body IP-Bit-Mask-Width, as a correction
+reads; clause 4.2.5 names Day-Of-Month-Mask Day-Of-Month, and clause 4.2.9
+names Absolute-End-Time Time-Of-Day-End; RFC 5778 section 6.20 names
+DIAMETER_ERROR_MIP6_AUTH_MODE DIAMETER_ERROR_AUTH_MODE, in a sentence on
+the server's answer no block reads, and section 8.1's table gives the DER
+MIP6-Agent-Info "1" and MIP-Mobile-Node-Address "1-2", where section
+5.1.1's body prints them optional and has only the first DER carry them,
+and the MIA MIP-MSA-Lifetime "1", an AVP its body holds only within
+MIP-MN-HA-MSA, so no block reads those cells. Left unread: the header's
+Application-ID, which RFC 5778 sections 5.1.1 and 5.1.2 set to 7 and no
+rule reads; RFC 5447's MIP6-Feature-Vector "with value 0 MUST be
+supported", a node's; the sentences repeating the ABNF (RFC 5777's
+"Exactly one Classifier-ID AVP", "Exactly zero or one Protocol AVP"); what
+a classifier or time window matches, and an AVP's absence making a
+comparison "irrelevant"; TCP-Flag-Type's "unused" bits and RFC 5778
+section 6.14's replay modes "supported by this specification", with no
+MUST; the first DER and last DEA carrying the bootstrapping AVPs, with no
+MUST; RFC 5778 section 8.2's accounting table, on RFC 6733's ACR and ACA,
+which the document does not print; RFC 5779's User-Name in NAI form and
+the LMA's Auth-Request-Type AUTHORIZE_ONLY (sections 4.1, 4.2.1), RFC 6733's
+AVPs the file does not print and a request's interface the message does
+not show; its LMA address information, RFC 5447's rule again (section
+4.2.2), and the session mapping of section 6; and RFC 5447 section 6's and
+RFC 5779 section 7's occurrence tables, generic requests and answers of
+whichever application carries the AVPs, which no scope names, RFC 5779's
+symbols undefined in the document.

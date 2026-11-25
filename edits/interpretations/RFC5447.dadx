@@ -1,0 +1,40 @@
+; Interprets: RFC 5447
+;; What RFC 5447's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. The document defines no command: its AVPs serve "any
+;; present and future Diameter applications, where permitted by the command
+;; ABNF" (section 4.1), so a block here has no scope or is within its own
+;; MIP6-Agent-Info, and holds wherever a document reading the AVP reads it
+;; (docs/constraints.md, Precedence).
+
+
+; Type: Interpreted Constraints
+; Id: mip6-agent-info-a-home-agent
+; AVP: MIP6-Agent-Info
+; Section: 4.2.1
+"When the MIP6-Agent-Info AVP is present in a message, it MUST contain either the MIP-Home-Agent-Address AVP, the MIP-Home-Agent-Host AVP, or both AVPs."
+    members at-least-one MIP-Home-Agent-Address MIP-Home-Agent-Host
+
+
+;; RFC 4004's AVP, which the document reads only as MIP6-Agent-Info's
+;; member, and which the clause holds there to the Address's two families.
+; Type: Interpreted Constraints
+; Id: mip-home-agent-address-family
+; AVP: MIP-Home-Agent-Address
+; Within: MIP6-Agent-Info
+; Section: 4.2.2
+"The MIP-Home-Agent-Address AVP (AVP Code 334 [RFC4004]) is of type Address and contains the IPv6 or IPv4 address of the MIPv6 HA."
+    encoding ip-address
+
+
+;; The prefix length octet and the 16 octets of the prefix; that the bits
+;; after the prefix length are zero no kind reads, a length the payload
+;; gives itself.
+; Type: Interpreted Constraints
+; Id: mip6-home-link-prefix-layout
+; AVP: MIP6-Home-Link-Prefix
+; Section: 4.2.4
+"The home network prefix MUST be encoded as the 8-bit prefix length information (one octet) followed by the 128-bit field (16 octets) for the available home network prefix."
+    length 17 octets
+"The trailing bits of the IPv6 prefix after the prefix length bits MUST be set to zero (e.g., if the prefix length is 60, then the remaining 68 bits MUST be set to zero)."
+    text-only

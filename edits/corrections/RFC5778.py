@@ -116,7 +116,7 @@ CORRECTIONS += [
         rule="section-mismatch",
         target=table_row("MIP6-Auth-Mode", table=None),
         expect="MIP6-Auth-Mode is cited at clause 6.20 in table (clause 6), but the"
-        " file holds it at clause 9.5, and nothing at clause 6.20",
+        " file holds it at clause 9.5",
         reason="both are right: clause 6.20 is headed 'MIP6-Auth-Mode AVP' and defines"
         " it in prose, as the table says, and clause 9.5's IANA registry is the only"
         " place that prints its values, which is what the block holds",

@@ -106,6 +106,15 @@ Filter-Rule ::= < AVP header: 509 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#filter-rule-qos-profile-template-default)
+; AVP: QoS-Profile-Template
+; Within: Filter-Rule
+; Section: 3.2
+; Page: 5
+"If the QoS-Profile-Template AVP is not included in the Filter-Rule AVP and the Treatment-Action AVP is set to 'shape' or 'mark' then the default setting is assumed, namely, a setting of the Vendor-Id AVP to 0 (for IETF) and the QoS-Profile-Id AVP to zero (0) (for the profile defined in [RFC5624])."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Classifier
 ; Section: 4.1.1
@@ -285,6 +294,14 @@ Protocol ::= < Enumerated AVP header: 513 >
       ; RESERVED                                    = 255 ;; supplied: (RFC5777.py#protocol-values)
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#protocol-consistent-attributes)
+; AVP: Protocol
+; Section: 4.1.3
+; Page: 9
+"The attributes included in the Classifier AVP MUST be consistent with the value of the Protocol AVP."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Direction
 ; Section: 4.1.4
@@ -293,6 +310,14 @@ Direction ::= < Enumerated AVP header: 514 >
         IN   = 0
         OUT  = 1
         BOTH = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#direction-default)
+; AVP: Direction
+; Section: 4.1.4
+; Page: 9
+"If the Direction AVP is omitted, the classifier matches packets flowing in both directions."
+    default BOTH
 
 
 ; Type: Grouped AVP
@@ -342,6 +367,22 @@ Negated ::= < Enumerated AVP header: 517 >
         True  = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#negated-default)
+; AVP: Negated
+; Section: 4.1.7.1
+; Page: 11
+"When set to False, or when the Negated AVP is not present, the classifier will match the addresses specified by the From-Spec or To-Spec AVP."
+    default False
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#ip-address-family)
+; AVP: IP-Address
+; Section: 4.1.7.2
+; Page: 12
+"The IP-Address AVP (AVP Code 518) is of type Address and specifies a single IP address (IPv4 or IPv6) to match."
+    encoding ip-address
+
+
 ; Type: Grouped AVP
 ; Name: IP-Address-Range
 ; Section: 4.1.7.3
@@ -350,6 +391,42 @@ IP-Address-Range ::= < AVP header: 519 >
         [ IP-Address-Start ]
         [ IP-Address-End ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#ip-address-range-start)
+; AVP: IP-Address-Start
+; Within: IP-Address-Range
+; Section: 4.1.7.3
+; Page: 12
+"If the IP-Address-Start AVP is not included, then the address range starts from the first valid IP address up to and including the specified IP-Address-End address."
+    text-only
+"For the IP-Address-Range AVP to be valid, the IP-Address-Start AVP MUST contain a value that is less than that of the IP-Address-End AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#ip-address-range-end)
+; AVP: IP-Address-End
+; Within: IP-Address-Range
+; Section: 4.1.7.3
+; Page: 12
+"If the IP-Address-End AVP is not included, then the address range starts at the address specified by the IP-Address-Start AVP and includes all the remaining valid IP addresses."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#ip-address-start-family)
+; AVP: IP-Address-Start
+; Section: 4.1.7.4
+; Page: 12
+"The IP-Address-Start AVP (AVP Code 520) is of type Address and specifies the first IP address (IPv4 or IPv6) of an IP address range."
+    encoding ip-address
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#ip-address-end-family)
+; AVP: IP-Address-End
+; Section: 4.1.7.5
+; Page: 13
+"The IP-Address-End AVP (AVP Code 521) is of type Address and specifies the last IP address (IPv4 or IPv6) of an address range."
+    encoding ip-address
 
 
 ; Type: Grouped AVP
@@ -362,6 +439,23 @@ IP-Address-Mask ::= < AVP header: 522 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#ip-address-mask-width)
+; AVP: IP-Mask-Bit-Mask-Width
+; Within: IP-Address-Mask
+; Section: 4.1.7.6
+; Page: 13
+"The bit-width MUST be valid for the type of IP address."
+    range 0..128
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#mac-address-octets)
+; AVP: MAC-Address
+; Section: 4.1.7.8
+; Page: 13
+"The value is a 6-octet encoding of the address as it would appear in the frame header."
+    length 6 octets
+
+
 ; Type: Grouped AVP
 ; Name: MAC-Address-Mask
 ; Section: 4.1.7.9
@@ -370,6 +464,22 @@ MAC-Address-Mask ::= < AVP header: 525 >
         { MAC-Address }
         { MAC-Address-Mask-Pattern }
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#mac-address-mask-pattern-octets)
+; AVP: MAC-Address-Mask-Pattern
+; Section: 4.1.7.10
+; Page: 14
+"The value is 6 octets specifying the bit positions of a MAC address that are taken for matching."
+    length 6 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#eui64-address-octets)
+; AVP: EUI64-Address
+; Section: 4.1.7.11
+; Page: 14
+"The value is an 8-octet encoding of the address as it would appear in the frame header."
+    length 8 octets
 
 
 ; Type: Grouped AVP
@@ -382,6 +492,22 @@ EUI64-Address-Mask ::= < AVP header: 528 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#eui64-address-mask-pattern-octets)
+; AVP: EUI64-Address-Mask-Pattern
+; Section: 4.1.7.13
+; Page: 14
+"The value is 8 octets specifying the bit positions of a EUI64 address that are taken for matching."
+    length 8 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#port-range)
+; AVP: Port
+; Section: 4.1.7.14
+; Page: 14
+"The Port AVP (AVP Code 530) is of type Integer32 in the range of 0 to 65535 and specifies port numbers to match."
+    range 0..65535
+
+
 ; Type: Grouped AVP
 ; Name: Port-Range
 ; Section: 4.1.7.15
@@ -390,6 +516,24 @@ Port-Range ::= < AVP header: 531 >
         [ Port-Start ]
         [ Port-End ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#port-range-start-default)
+; AVP: Port-Start
+; Within: Port-Range
+; Section: 4.1.7.15
+; Page: 15
+"If the Port-Start AVP is omitted, then port 0 is assumed."
+    default 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#port-range-end-default)
+; AVP: Port-End
+; Within: Port-Range
+; Section: 4.1.7.15
+; Page: 15
+"If the Port-End AVP is omitted, then port 65535 is assumed."
+    default 65535
 
 
 ; Type: Enumerated AVP
@@ -642,6 +786,31 @@ ETH-Proto-Type ::= < AVP header: 549 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#eth-ether-type-without-sap)
+; AVP: ETH-Ether-Type
+; Within: ETH-Proto-Type
+; Section: 4.1.8.16
+; Page: 19
+"This AVP MAY be present in the case of Digital, Intel, and Xerox (DIX) or if the Subnetwork Access Protocol (SNAP) is present at 802.2, but the ETH-SAP AVP MUST NOT be present in this case."
+    excludes ETH-SAP
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#eth-ether-type-octets)
+; AVP: ETH-Ether-Type
+; Section: 4.1.8.16
+; Page: 19
+"The value is a double octet that contains the value of the Ethertype field in the packet to match."
+    length 2 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#eth-sap-octets)
+; AVP: ETH-SAP
+; Section: 4.1.8.17
+; Page: 19
+"The value is a double octet representing the 802.2 SAP as specified in [IEEE802.2]."
+    length 2 octets
+
+
 ; Type: Grouped AVP
 ; Name: VLAN-ID-Range
 ; Section: 4.1.8.18
@@ -654,6 +823,47 @@ VLAN-ID-Range ::= < AVP header: 552 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#vlan-id-range-single)
+; AVP: S-VID-Start
+; Within: VLAN-ID-Range
+; Section: 4.1.8.18
+; Page: 20
+"The single VLAN-ID is represented by the C-VID-Start and C-VID-End AVPs, and the S-VID-Start and S-VID-End AVPs SHALL be omitted in this case."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#s-vid-start-range)
+; AVP: S-VID-Start
+; Section: 4.1.8.19
+; Page: 21
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#s-vid-end-range)
+; AVP: S-VID-End
+; Section: 4.1.8.20
+; Page: 21
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#c-vid-start-range)
+; AVP: C-VID-Start
+; Section: 4.1.8.21
+; Page: 21
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#c-vid-end-range)
+; AVP: C-VID-End
+; Section: 4.1.8.22
+; Page: 22
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
 ; Type: Grouped AVP
 ; Name: User-Priority-Range
 ; Section: 4.1.8.23
@@ -662,6 +872,22 @@ User-Priority-Range ::= < AVP header: 557 >
       * [ Low-User-Priority ]
       * [ High-User-Priority ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#low-user-priority-range)
+; AVP: Low-User-Priority
+; Section: 4.1.8.24
+; Page: 22
+"The value MUST be in the range from 0 to 7."
+    range 0..7
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#high-user-priority-range)
+; AVP: High-User-Priority
+; Section: 4.1.8.25
+; Page: 22
+"The value MUST be in the range from 0 to 7."
+    range 0..7
 
 
 ; Type: Grouped AVP
@@ -683,6 +909,28 @@ Time-Of-Day-Condition ::= < AVP header: 560 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#time-of-day-start)
+; AVP: Time-Of-Day-Start
+; Within: Time-Of-Day-Condition
+; Section: 4.2.2
+; Page: 23
+"The value MUST be in the range from 0 to 86400."
+    range 0..86400
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time window starts at midnight."
+    default 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#time-of-day-end)
+; AVP: Time-Of-Day-End
+; Within: Time-Of-Day-Condition
+; Section: 4.2.3
+; Page: 23
+"The value MUST be in the range from 1 to 86400."
+    range 1..86400
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time window ends one second before midnight."
+    default 86399
+
+
 ; Type: Value Table
 ; AVP: Day-Of-Week-Mask
 ; Kind: bits
@@ -695,6 +943,26 @@ WEDNESDAY = 3
 THURSDAY  = 4
 FRIDAY    = 5
 SATURDAY  = 6
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#day-of-week-mask-bits)
+; AVP: Day-Of-Week-Mask
+; Section: 4.2.4
+; Page: 23
+"Bit 0 is the least significant bit and unused bits MUST be cleared."
+    bits only 0 1 2 3 4 5 6
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time windows match on all days of the week."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#day-of-month-mask-range)
+; AVP: Day-Of-Month-Mask
+; Section: 4.2.5
+; Page: 24
+"The value MUST be in the range from 0 to 2147483647."
+    range 0..2147483647
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time windows match on all days of the month."
+    text-only
 
 
 ; Type: Value Table
@@ -716,6 +984,52 @@ NOVEMBER  = 10
 DECEMBER  = 11
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#month-of-year-mask-bits)
+; AVP: Month-Of-Year-Mask
+; Section: 4.2.6
+; Page: 24
+"Bit 0 is the least significant bit and unused bits MUST be cleared."
+    bits only 0 1 2 3 4 5 6 7 8 9 10 11
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time windows match during all months of the year."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#absolute-start-time-default)
+; AVP: Absolute-Start-Time
+; Within: Time-Of-Day-Condition
+; Section: 4.2.7
+; Page: 25
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time window starts on January 1, 1900, 00:00 UTC."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#absolute-start-fractional-seconds-default)
+; AVP: Absolute-Start-Fractional-Seconds
+; Within: Time-Of-Day-Condition
+; Section: 4.2.8
+; Page: 25
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the fractional seconds are assumed to be zero."
+    default 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#absolute-end-time-open-ended)
+; AVP: Absolute-End-Time
+; Within: Time-Of-Day-Condition
+; Section: 4.2.9
+; Page: 25
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the time window is open-ended."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#absolute-end-fractional-seconds-default)
+; AVP: Absolute-End-Fractional-Seconds
+; Within: Time-Of-Day-Condition
+; Section: 4.2.10
+; Page: 25
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the fractional seconds are assumed to be zero."
+    default 0
+
+
 ; Type: Enumerated AVP
 ; Name: Timezone-Flag
 ; Section: 4.2.11
@@ -724,6 +1038,37 @@ Timezone-Flag ::= < Enumerated AVP header: 570 >
         UTC    = 0
         LOCAL  = 1
         OFFSET = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#timezone-flag-default)
+; AVP: Timezone-Flag
+; Within: Time-Of-Day-Condition
+; Section: 4.2.11
+; Page: 25
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the time windows are in UTC."
+    default UTC
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#timezone-offset)
+; AVP: Timezone-Offset
+; Within: Time-Of-Day-Condition
+; Section: 4.2.12
+; Page: 26
+"The value of this AVP MUST be in the range from -43200 to 43200."
+    range -43200..43200
+"This AVP MUST be present if the Timezone-Flag AVP is set to OFFSET."
+    present-if Timezone-Flag = OFFSET
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5777.dadx#filter-rule-shape-and-mark-qos-parameters)
+; AVP: QoS-Parameters
+; Within: Filter-Rule
+; Section: 5.1
+; Page: 26
+"When the action is set to 'shape', the QoS-Parameters AVP SHALL contain QoS information AVPs, such as the TMOD-1 and Bandwidth AVPs [RFC5624], that indicate how to shape the traffic described by the condition part of the rule."
+    present-if Treatment-Action = 1
+"When the action is set to 'mark', the QoS-Parameters AVP SHALL contain QoS information AVPs, such as the PHB-Class AVP [RFC5624], that indicate the Diffserv marking to be applied to the traffic described by the condition part of the rule."
+    present-if Treatment-Action = 2
 
 
 ; Type: Grouped AVP

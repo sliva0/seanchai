@@ -42,11 +42,41 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 MIP6-Agent-Info   RFC5447
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5779.dadx#pmip6-ipv4-home-address-family)
+; AVP: PMIP6-IPv4-Home-Address
+; Section: 5.2
+; Page: 10
+"The PMIP6-IPv4-Home-Address AVP (AVP Code 505) is of type Address and contains an IPv4 address."
+    encoding ip-address
+    length 6 octets
+"If the LMA delegates the assignment of the IPv4-MN-HoA to the HAAA, the AVP MUST contain all zeroes IPv4 address (i.e., 0.0.0.0) in the request message."
+    text-only
+
+
 ; Type: Reused AVPs
 ; Section: 5.3
 ; Page: 10
 ; Columns: Name         From
 MIP6-Home-Link-Prefix   RFC5447
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5779.dadx#mip6-home-link-prefix-mn-hnp)
+; AVP: MIP6-Home-Link-Prefix
+; Within: MIP6-Agent-Info
+; Section: 5.3
+; Page: 10
+"This AVP is used to carry the MN-HNP, if available, from the HAAA to the MAG. The low 64 bits of the prefix MUST be all zeroes."
+    bits clear 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63
+"If the LMA delegates the assignment of the MN-HNP to the HAAA, the AVP MUST contain all zeroes address (i.e., 0::0) in the request message."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5779.dadx#pmip6-dhcp-server-address-family)
+; AVP: PMIP6-DHCP-Server-Address
+; Section: 5.4
+; Page: 10
+"If the AVP contains a DHCPv4 [RFC2131] server address, then the Address type MUST be IPv4. If the AVP contains a DHCPv6 [RFC3315] server address, then the Address type MUST be IPv6."
+    encoding ip-address
 
 
 ; Type: Value Table
@@ -66,11 +96,37 @@ LOCAL_MAG_ROUTING_SUPPORTED = 42
 MIP6-Feature-Vector   RFC5447
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC5779.dadx#mobile-node-identifier-nai)
+; AVP: Mobile-Node-Identifier
+; Section: 5.6
+; Page: 11
+"The Mobile-Node-Identifier AVP (AVP Code 506) is of type UTF8String and contains the mobile node identifier (MN-Identifier; see [RFC5213]) in the NAI [RFC4282] format."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5779.dadx#calling-station-id-link-layer-identifier)
+; AVP: Calling-Station-Id
+; Section: 5.7
+; Page: 12
+"The Link-Layer Identifier is encoded in ASCII format (upper case only), with octet values separated by a \"-\"."
+    text-only
+
+
 ; Type: Reused AVPs
 ; Section: 5.8
 ; Page: 12
 ; Columns: Name     From
 Service-Selection   RFC5778
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC5779.dadx#service-selection-domain-unique)
+; AVP: Service-Selection
+; Section: 5.8
+; Page: 12
+"The identifier MUST be unique within the PMIPv6 Domain."
+    text-only
+"It is also possible that the MAG receives the service selection information from the MN, for example, via some lower layer mechanism. In this case, the MAG MUST include the Service-Selection AVP also in the MAG-to-HAAA request messages."
+    text-only
 
 
 ; Type: Grouped AVP

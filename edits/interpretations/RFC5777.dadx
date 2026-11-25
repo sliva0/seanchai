@@ -1,0 +1,383 @@
+; Interprets: RFC 5777
+;; What RFC 5777's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. The document defines no command: its QoS-Resources,
+;; QoS-Capability and their members ride other applications' messages, so a
+;; block here has no scope or is within one of its own grouped AVPs, and
+;; holds wherever a document reading the AVP reads it (docs/constraints.md,
+;; Precedence). How a classifier matches a packet is the node's, which no
+;; message shows.
+
+
+;; A grouped AVP's default, its members' values, which `default`, a value of
+;; the AVP's own, cannot state.
+; Type: Interpreted Constraints
+; Id: filter-rule-qos-profile-template-default
+; AVP: QoS-Profile-Template
+; Within: Filter-Rule
+; Section: 3.2
+"If the QoS-Profile-Template AVP is not included in the Filter-Rule AVP and the Treatment-Action AVP is set to 'shape' or 'mark' then the default setting is assumed, namely, a setting of the Vendor-Id AVP to 0 (for IETF) and the QoS-Profile-Id AVP to zero (0) (for the profile defined in [RFC5624])."
+    text-only
+
+
+;; What a classifier's attributes may be for its protocol no kind says.
+; Type: Interpreted Constraints
+; Id: protocol-consistent-attributes
+; AVP: Protocol
+; Section: 4.1.3
+"The attributes included in the Classifier AVP MUST be consistent with the value of the Protocol AVP."
+    text-only
+
+
+;; BOTH (2), "flows both to and from the managed terminal".
+; Type: Interpreted Constraints
+; Id: direction-default
+; AVP: Direction
+; Section: 4.1.4
+"If the Direction AVP is omitted, the classifier matches packets flowing in both directions."
+    default BOTH
+
+
+; Type: Interpreted Constraints
+; Id: negated-default
+; AVP: Negated
+; Section: 4.1.7.1
+"When set to False, or when the Negated AVP is not present, the classifier will match the addresses specified by the From-Spec or To-Spec AVP."
+    default False
+
+
+; Type: Interpreted Constraints
+; Id: ip-address-family
+; AVP: IP-Address
+; Section: 4.1.7.2
+"The IP-Address AVP (AVP Code 518) is of type Address and specifies a single IP address (IPv4 or IPv6) to match."
+    encoding ip-address
+
+
+;; An absence meaning no single value, the first address of the family,
+;; and two addresses compared.
+; Type: Interpreted Constraints
+; Id: ip-address-range-start
+; AVP: IP-Address-Start
+; Within: IP-Address-Range
+; Section: 4.1.7.3
+"If the IP-Address-Start AVP is not included, then the address range starts from the first valid IP address up to and including the specified IP-Address-End address."
+    text-only
+"For the IP-Address-Range AVP to be valid, the IP-Address-Start AVP MUST contain a value that is less than that of the IP-Address-End AVP."
+    text-only
+
+
+;; An absence meaning no single value, the last address of the family.
+; Type: Interpreted Constraints
+; Id: ip-address-range-end
+; AVP: IP-Address-End
+; Within: IP-Address-Range
+; Section: 4.1.7.3
+"If the IP-Address-End AVP is not included, then the address range starts at the address specified by the IP-Address-Start AVP and includes all the remaining valid IP addresses."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: ip-address-start-family
+; AVP: IP-Address-Start
+; Section: 4.1.7.4
+"The IP-Address-Start AVP (AVP Code 520) is of type Address and specifies the first IP address (IPv4 or IPv6) of an IP address range."
+    encoding ip-address
+
+
+; Type: Interpreted Constraints
+; Id: ip-address-end-family
+; AVP: IP-Address-End
+; Section: 4.1.7.5
+"The IP-Address-End AVP (AVP Code 521) is of type Address and specifies the last IP address (IPv4 or IPv6) of an address range."
+    encoding ip-address
+
+
+;; The mask width valid for an IPv6 address, which an IPv4 address's narrows
+;; to 32: which family the IP-Address holds no kind ties to its sibling's
+;; range, so the bound every family shares is read.
+; Type: Interpreted Constraints
+; Id: ip-address-mask-width
+; AVP: IP-Mask-Bit-Mask-Width
+; Within: IP-Address-Mask
+; Section: 4.1.7.6
+"The bit-width MUST be valid for the type of IP address."
+    range 0..128
+
+
+; Type: Interpreted Constraints
+; Id: mac-address-octets
+; AVP: MAC-Address
+; Section: 4.1.7.8
+"The value is a 6-octet encoding of the address as it would appear in the frame header."
+    length 6 octets
+
+
+; Type: Interpreted Constraints
+; Id: mac-address-mask-pattern-octets
+; AVP: MAC-Address-Mask-Pattern
+; Section: 4.1.7.10
+"The value is 6 octets specifying the bit positions of a MAC address that are taken for matching."
+    length 6 octets
+
+
+; Type: Interpreted Constraints
+; Id: eui64-address-octets
+; AVP: EUI64-Address
+; Section: 4.1.7.11
+"The value is an 8-octet encoding of the address as it would appear in the frame header."
+    length 8 octets
+
+
+; Type: Interpreted Constraints
+; Id: eui64-address-mask-pattern-octets
+; AVP: EUI64-Address-Mask-Pattern
+; Section: 4.1.7.13
+"The value is 8 octets specifying the bit positions of a EUI64 address that are taken for matching."
+    length 8 octets
+
+
+; Type: Interpreted Constraints
+; Id: port-range
+; AVP: Port
+; Section: 4.1.7.14
+"The Port AVP (AVP Code 530) is of type Integer32 in the range of 0 to 65535 and specifies port numbers to match."
+    range 0..65535
+
+
+; Type: Interpreted Constraints
+; Id: port-range-start-default
+; AVP: Port-Start
+; Within: Port-Range
+; Section: 4.1.7.15
+"If the Port-Start AVP is omitted, then port 0 is assumed."
+    default 0
+
+
+; Type: Interpreted Constraints
+; Id: port-range-end-default
+; AVP: Port-End
+; Within: Port-Range
+; Section: 4.1.7.15
+"If the Port-End AVP is omitted, then port 65535 is assumed."
+    default 65535
+
+
+;; The clause's "in this case" is DIX's or SNAP's, which the ETH-Ether-Type
+;; carries; clause 4.1.8.15 calls the two "mutually exclusive".
+; Type: Interpreted Constraints
+; Id: eth-ether-type-without-sap
+; AVP: ETH-Ether-Type
+; Within: ETH-Proto-Type
+; Section: 4.1.8.16
+"This AVP MAY be present in the case of Digital, Intel, and Xerox (DIX) or if the Subnetwork Access Protocol (SNAP) is present at 802.2, but the ETH-SAP AVP MUST NOT be present in this case."
+    excludes ETH-SAP
+
+
+; Type: Interpreted Constraints
+; Id: eth-ether-type-octets
+; AVP: ETH-Ether-Type
+; Section: 4.1.8.16
+"The value is a double octet that contains the value of the Ethertype field in the packet to match."
+    length 2 octets
+
+
+; Type: Interpreted Constraints
+; Id: eth-sap-octets
+; AVP: ETH-SAP
+; Section: 4.1.8.17
+"The value is a double octet representing the 802.2 SAP as specified in [IEEE802.2]."
+    length 2 octets
+
+
+;; Whether the range means a single VLAN-ID or an 802.1ad pair is what its
+;; sender intends, which the AVPs present already say.
+; Type: Interpreted Constraints
+; Id: vlan-id-range-single
+; AVP: S-VID-Start
+; Within: VLAN-ID-Range
+; Section: 4.1.8.18
+"The single VLAN-ID is represented by the C-VID-Start and C-VID-End AVPs, and the S-VID-Start and S-VID-End AVPs SHALL be omitted in this case."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: s-vid-start-range
+; AVP: S-VID-Start
+; Section: 4.1.8.19
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints
+; Id: s-vid-end-range
+; AVP: S-VID-End
+; Section: 4.1.8.20
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints
+; Id: c-vid-start-range
+; AVP: C-VID-Start
+; Section: 4.1.8.21
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints
+; Id: c-vid-end-range
+; AVP: C-VID-End
+; Section: 4.1.8.22
+"The value MUST be in the range from 0 to 4095."
+    range 0..4095
+
+
+; Type: Interpreted Constraints
+; Id: low-user-priority-range
+; AVP: Low-User-Priority
+; Section: 4.1.8.24
+"The value MUST be in the range from 0 to 7."
+    range 0..7
+
+
+; Type: Interpreted Constraints
+; Id: high-user-priority-range
+; AVP: High-User-Priority
+; Section: 4.1.8.25
+"The value MUST be in the range from 0 to 7."
+    range 0..7
+
+
+; Type: Interpreted Constraints
+; Id: time-of-day-start
+; AVP: Time-Of-Day-Start
+; Within: Time-Of-Day-Condition
+; Section: 4.2.2
+"The value MUST be in the range from 0 to 86400."
+    range 0..86400
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time window starts at midnight."
+    default 0
+
+
+;; One second before midnight, 86399 seconds from it.
+; Type: Interpreted Constraints
+; Id: time-of-day-end
+; AVP: Time-Of-Day-End
+; Within: Time-Of-Day-Condition
+; Section: 4.2.3
+"The value MUST be in the range from 1 to 86400."
+    range 1..86400
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time window ends one second before midnight."
+    default 86399
+
+
+;; Bits 0 to 6, SUNDAY to SATURDAY; an absent mask meaning every day is no
+;; value the clause gives.
+; Type: Interpreted Constraints
+; Id: day-of-week-mask-bits
+; AVP: Day-Of-Week-Mask
+; Section: 4.2.4
+"Bit 0 is the least significant bit and unused bits MUST be cleared."
+    bits only 0 1 2 3 4 5 6
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time windows match on all days of the week."
+    text-only
+
+
+;; Bits 0 to 30, the first day of the month to the last; bit 31, the unused
+;; bit the clause has cleared, is outside the range. The clause names the
+;; AVP Day-Of-Month, its heading and section 10.1's table Day-Of-Month-Mask.
+; Type: Interpreted Constraints
+; Id: day-of-month-mask-range
+; AVP: Day-Of-Month-Mask
+; Section: 4.2.5
+"The value MUST be in the range from 0 to 2147483647."
+    range 0..2147483647
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time windows match on all days of the month."
+    text-only
+
+
+;; Bits 0 to 11, JANUARY to DECEMBER.
+; Type: Interpreted Constraints
+; Id: month-of-year-mask-bits
+; AVP: Month-Of-Year-Mask
+; Section: 4.2.6
+"Bit 0 is the least significant bit and unused bits MUST be cleared."
+    bits only 0 1 2 3 4 5 6 7 8 9 10 11
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time windows match during all months of the year."
+    text-only
+
+
+;; January 1, 1900, 00:00 UTC is the Time type's 0, but a `default` takes
+;; an integer type's value or a name, not a Time's.
+; Type: Interpreted Constraints
+; Id: absolute-start-time-default
+; AVP: Absolute-Start-Time
+; Within: Time-Of-Day-Condition
+; Section: 4.2.7
+"If this AVP is absent from the Time-Of-Day-Condition AVP, the time window starts on January 1, 1900, 00:00 UTC."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: absolute-start-fractional-seconds-default
+; AVP: Absolute-Start-Fractional-Seconds
+; Within: Time-Of-Day-Condition
+; Section: 4.2.8
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the fractional seconds are assumed to be zero."
+    default 0
+
+
+;; The clause names AVP code 568, Absolute-End-Time, Time-Of-Day-End; an
+;; open-ended window is no value.
+; Type: Interpreted Constraints
+; Id: absolute-end-time-open-ended
+; AVP: Absolute-End-Time
+; Within: Time-Of-Day-Condition
+; Section: 4.2.9
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the time window is open-ended."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: absolute-end-fractional-seconds-default
+; AVP: Absolute-End-Fractional-Seconds
+; Within: Time-Of-Day-Condition
+; Section: 4.2.10
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the fractional seconds are assumed to be zero."
+    default 0
+
+
+; Type: Interpreted Constraints
+; Id: timezone-flag-default
+; AVP: Timezone-Flag
+; Within: Time-Of-Day-Condition
+; Section: 4.2.11
+"If this AVP is absent from the Time-Of-Day-Condition AVP, then the time windows are in UTC."
+    default UTC
+
+
+; Type: Interpreted Constraints
+; Id: timezone-offset
+; AVP: Timezone-Offset
+; Within: Time-Of-Day-Condition
+; Section: 4.2.12
+"The value of this AVP MUST be in the range from -43200 to 43200."
+    range -43200..43200
+"This AVP MUST be present if the Timezone-Flag AVP is set to OFFSET."
+    present-if Timezone-Flag = OFFSET
+
+
+;; The Treatment-Action's values the clause lists in prose, "1: shape" and
+;; "2: mark", which the corpus does not read as a table, written as
+;; numbers; which QoS information AVPs the QoS-Parameters holds, "such as"
+;; RFC 5624's, is the profile's, and only its presence is read.
+; Type: Interpreted Constraints
+; Id: filter-rule-shape-and-mark-qos-parameters
+; AVP: QoS-Parameters
+; Within: Filter-Rule
+; Section: 5.1
+"When the action is set to 'shape', the QoS-Parameters AVP SHALL contain QoS information AVPs, such as the TMOD-1 and Bandwidth AVPs [RFC5624], that indicate how to shape the traffic described by the condition part of the rule."
+    present-if Treatment-Action = 1
+"When the action is set to 'mark', the QoS-Parameters AVP SHALL contain QoS information AVPs, such as the PHB-Class AVP [RFC5624], that indicate the Diffserv marking to be applied to the traffic described by the condition part of the rule."
+    present-if Treatment-Action = 2

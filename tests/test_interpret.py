@@ -1119,6 +1119,37 @@ _BROKEN = _dad(
 )
 
 
+def test_a_wide_range_beside_an_exclude_is_not_listed_value_by_value():
+    """RFC 5777's Day-Of-Month-Mask holds 0 to 2147483647: whether an
+    exclude covers the range is told by counting, not by listing the
+    range's values."""
+    from seanchai import linter
+
+    spec = parser.parse(
+        _dad(
+            "; Type: AVP Table",
+            "; Section: 6.3.1",
+            "; Columns: Name Code Section Type Must",
+            "Example-Flags 2 6.3.4 Unsigned32 V",
+            "",
+            "",
+            "; Type: Interpreted Constraints",
+            "; AVP: Example-Flags",
+            "; Section: 6.3.4",
+            "; Versions: 19.0.0",
+            '"Q."',
+            "    range 0..4294967295",
+            "    exclude 0, 1",
+        )
+    )
+
+    assert not [
+        finding
+        for finding in linter.lint(spec)
+        if finding.rule == "constraint-contradiction"
+    ]
+
+
 def test_the_linter_reports_what_cannot_hold():
     from seanchai import linter
 
