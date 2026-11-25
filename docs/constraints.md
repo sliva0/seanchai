@@ -342,6 +342,14 @@ TS 29.214's 5 name 5 entries, of which 4 check something:
 | NGAP-Group | TS 38.413 9.4.5 Cause | TS 38.413 V19.4.0 9.4.5 | an integer 0 to 4 | full | the CHOICE's choice-Extensions holds no IE in this edition, so the five groups 0 to 4 are all |
 | Framed-IPv6-Prefix | RFC 3162 2.3 Framed-IPv6-Prefix | RFC 3162 (August 2001) 2.3 | as TS 29.212's | partial | as TS 29.212's |
 
+TS 32.299's 3 name 3 entries, of which 2 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| Bearer-Capability | TS 29.078 5.1 BearerCapability | TS 29.078 V19.0.0 5.1; TS 29.078 V19.0.0 5.5 | 2 to 11 octets | length | the User Service Information's fields are ETSI EN 300 356-1's, a document the corpus does not hold, and are not read |
+| Location-Estimate | TS 23.032 7 Geographical area description | TS 23.032 V19.0.0 7.2; TS 23.032 V19.0.0 7.3.1 | at least 7 octets | partial | the shape's own layout and length are not checked: the AVP may carry any of them; the type codes table 2a reserves are not refused, since the clause does not say they are not sent |
+| PDN-Connection-Charging-ID | TS 29.061 16.4.7.2 3GPP-Charging-Id | TS 29.061 V19.1.0 16.4.7.2 | a 32-bit charging identifier: every value of the Unsigned32 | full |  |
+
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
@@ -863,3 +871,68 @@ clauses repeating clause 5.3.13's value descriptions (4.4.6.3, 4.4.6.4,
 4.4.6.5, 4.4.6.9); and Annex A's P-CSCF procedures and Annex E's
 interworking with 5GS, which state what an IMS node or a PCF does, not
 what an Rx message carries.
+
+## TS 32.299
+
+TS 32.299 V19.0.0 is read for Rf and Ro in part: clause 7.1's Diameter
+AVPs, and clause 7.2's 3GPP specific AVPs from 7.2.0A to 7.2.179; clauses
+7.2.180 to 7.2.255 are not yet read. Release 18's copy, V18.0.0, prints
+every sentence read and holds all 50 blocks. The commands' information-element
+tables of clauses 6.2 and 6.4 give each member's category, OM, OC, M or O,
+which the corpus already reads ([grammar.md](grammar.md#information-elements)),
+so no block restates them; Rf's commands print once under 3 and Ro's once
+under 4.
+
+| | |
+|---|---|
+| clause 7.1's AVP clauses (not its General and Void clauses) | 17 |
+| with something to declare | 8, in 10 blocks |
+| clause 7.2's AVP clauses read, 7.2.0A to 7.2.179 (not Void) | 315 |
+| with something to declare | 32, in 40 blocks |
+| blocks | 50: 31 on an AVP wherever read, 8 within a grouped AVP, 11 within a command |
+| readings | 53 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 3: `e164-tbcd` 2 (ISUP-Location-Number, MSC-Address), `apn` (Called-Station-Id) |
+| `encoding element` | 3, naming 3 entries of the registry, 2 checked ([above](#elements)) |
+| `range` | 3: Acct-Application-Id 3, Auth-Application-Id 4, Vendor-Specific-Application-Id's Vendor-Id 10415 |
+| `exclude` | 1: a Multiple-Services-Credit-Control's Reporting-Reason, none of the values one quota type's Used-Service-Unit carries |
+| `requires`, `present-if`, `absent-if`, `excludes` | 4, 2, 2, 1 |
+| `absent` | 6: Reporting-Reason at the level of each command |
+| `default` | 11 |
+| `members` | 4: `at-least-one` 3 (Address-Domain, Basic-Service-Code, Offline-Charging's Multiple-Services-Credit-Control's Rating-Group), `only` (that Multiple-Services-Credit-Control's members) |
+| `text-only` | 14 |
+
+Most checked rules are defaults ("If this AVP is not present, this means
+...") and clause 7.2.175's Reporting-Reason: never at command level, sent
+only beside a usage report, a Used-Service-Unit always with its reason,
+RATING_CONDITION_CHANGE with a Trigger. A CCR's PDP-Context-Type only in
+the initial CCR (clause 7.2.138) and a CCR's Multiple-Services-Credit-Control
+holding no Quota-Holding-Time, which "may only occur in a CCA command"
+(clause 7.2.160), are read on the CCR through paths into the AVP holding
+them. The text-only rules are conditions on the SIP signalling, the
+charging domain or an earlier message (Called-Asserted-Identity "when the
+P-Asserted-Identity SIP header field is available", User-Equipment-Info's
+digits for PS or IMS charging, Refund-Information "if previously received
+in CCA for IEC"), texts and orders no kind reads (Service-Context-Id's
+form, the Envelopes' chronological order, Message-Body's Content-Type), and
+PDP-Address-Prefix-Length's default of 64, which is an IPv6 PDP-Address's
+alone. Authorised-QoS's "This AVP is not used" is text-only, as TS
+29.272's "is not used in S6a/S6d" is.
+
+The document is wrong in places the corpus reads around: clause 7.2.171Ab
+holds Related-Trigger to a Trigger-Type "indirect change condition" clause
+7.2.236 does not define (it is Change-Condition's 34, clause 7.2.37), read
+`text-only`; clause 7.2.236 prints "74 CHANGE_IN_SERVING_PLMN_RATE_CONTROL"
+at the end of value 73's description paragraph, so the corpus's Trigger-Type
+lacks 74; clause 7.2.46B's heading and text name CSG-Membership-Indication
+CSG--Indication; and clause 7.2.35B types Civic-Address-Information
+OctetString where table 7.2.0.1 types it UTF8String. The corpus reads no
+values of Charging-Per-IP-CAN-Session-Indicator (clause 7.2.39B) or
+PS-Append-Free-Format-Data (7.2.155), whose defaults are written 0 and 1.
+Left unread: "may" and "is" sentences (Quota-Consumption-Time "may be
+included within the Multiple-Services-Credit-Control AVP when"); the
+Rating-Group's "unique Rating Group value" of each quota, which RFC 4006
+states; and the result codes' descriptions of clause 7.1.11 but
+DIAMETER_RATING_FAILED's Failed-AVP.

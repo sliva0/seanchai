@@ -1563,12 +1563,59 @@ Rating-Group              -
 AVP                       OC
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#acct-application-id-rf)
+; AVP: Acct-Application-Id
+; Section: 7.1.5
+; Page: 97
+; Versions: 18.0.0..19.0.0
+"The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 6733 [401] according TS 29.230 [206]."
+    range 3
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#auth-application-id-ro)
+; AVP: Auth-Application-Id
+; Section: 7.1.6
+; Page: 97
+; Versions: 18.0.0..19.0.0
+"The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402] according TS 29.230 [206]."
+    range 4
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#called-station-id-apn)
+; AVP: Called-Station-Id
+; Section: 7.1.7
+; Page: 98
+; Versions: 18.0.0..19.0.0
+"The Called-Station-Id AVP (AVP code 30) shall contain the Access Point Name (APN) the user is connected to."
+    encoding apn
+
+
 ; Type: Value Table
 ; AVP: Experimental-Result-Code
 ; Kind: result-codes
 ; Section: 7.1.8A
 ; Page: 98
 DIAMETER_ERROR_FEATURE_UNSUPPORTED = 5011 ; from TS29.229
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#aca-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Accounting-Answer
+; Section: 7.1.8A
+; Page: 98
+; Versions: 18.0.0..19.0.0
+"The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:"
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Credit-Control-Answer
+; Section: 7.1.8A
+; Page: 98
+; Versions: 18.0.0..19.0.0
+"The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:"
+    requires Experimental-Result/Vendor-Id = 10415
 
 
 ; Type: Grouped AVP
@@ -1620,6 +1667,26 @@ DIAMETER_USER_UNKNOWN                  = 5030
 DIAMETER_RATING_FAILED                 = 5031
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-rating-failed-failed-avp)
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 7.1.11
+; Page: 99
+; Versions: 18.0.0..19.0.0
+"This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating."
+"The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable."
+    present-if Result-Code = DIAMETER_RATING_FAILED
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#service-context-id-format)
+; AVP: Service-Context-Id
+; Section: 7.1.12
+; Page: 100
+; Versions: 18.0.0..19.0.0
+"As a minimum, \"Release\".\"service-context\" \"@\" \"domain\" shall be used."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Used-Service-Unit
 ; Section: 7.1.14
@@ -1637,6 +1704,16 @@ Used-Service-Unit ::= < AVP header: 446 >
 ;;    * [ AVP ]                       ; strikethrough
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#vendor-specific-application-id-vendor)
+; AVP: Vendor-Id
+; Within: Vendor-Specific-Application-Id
+; Section: 7.1.16
+; Page: 101
+; Versions: 18.0.0..19.0.0
+"The Vendor-Id AVP (AVP code 266), as part of the grouped Vendor-Specific-Application-Id AVP, shall contain the value of 10415, which is the IANA registered value for '3GPP' in TS 29.230 [206]."
+    range 10415
+
+
 ; Type: Grouped AVP
 ; Name: User-Equipment-Info
 ; Section: 7.1.17
@@ -1644,6 +1721,17 @@ Used-Service-Unit ::= < AVP header: 446 >
 User-Equipment-Info ::= < AVP header: 458 >
         { User-Equipment-Info-Type }
         { User-Equipment-Info-Value }
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#user-equipment-info-imeisv)
+; AVP: User-Equipment-Info
+; Section: 7.1.17
+; Page: 101
+; Versions: 18.0.0..19.0.0
+"For PS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded hexadecimal."
+    text-only
+"For IMS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded decimal."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -1710,6 +1798,15 @@ Adaptations ::= < Enumerated AVP header: 1217 10415 >
         No  = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#adaptations-default)
+; AVP: Adaptations
+; Section: 7.2.4
+; Page: 115
+; Versions: 18.0.0..19.0.0
+"The Adaptations AVP (AVP code 1217) is of type Enumerated and indicates whether the originator allows adaptation of the content (default Yes)."
+    default Yes
+
+
 ; Type: Grouped AVP
 ; Name: Additional-Content-Information
 ; Section: 7.2.5
@@ -1736,6 +1833,15 @@ Additional-Exception-Reports ::= < Enumerated AVP header: 3936 10415 >
 Address-Domain ::= < AVP header: 898 10415 > ;; corrected: (TS32.299.py#vendor-address-domain)
         [ Domain-Name ]
         [ 3GPP-IMSI-MCC-MNC ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#address-domain-members)
+; AVP: Address-Domain
+; Section: 7.2.8
+; Page: 115
+; Versions: 18.0.0..19.0.0
+"If this AVP is present, at least one of the AVPs described within the grouping shall be included."
+    members at-least-one Domain-Name 3GPP-IMSI-MCC-MNC
 
 
 ; Type: Enumerated AVP
@@ -1912,6 +2018,15 @@ Application-Server-Information ::= < AVP header: 850 10415 > ;; corrected: (TS32
         [ Status-AS-Code ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#authorised-qos-not-used)
+; AVP: Authorised-QoS
+; Section: 7.2.27
+; Page: 122
+; Versions: 18.0.0..19.0.0
+"This AVP is not used."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Basic-Service-Code
 ; Section: 7.2.29A
@@ -1921,6 +2036,33 @@ Basic-Service-Code ::= < AVP header: 3411 10415 > ;; corrected: (TS32.299.py#ven
         [ Teleservice ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#basic-service-code-members)
+; AVP: Basic-Service-Code
+; Section: 7.2.29A
+; Page: 122
+; Versions: 18.0.0..19.0.0
+"Either a Bearer-Service AVP or a Teleservice AVP is included."
+    members at-least-one Bearer-Service Teleservice
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#bearer-capability-cap)
+; AVP: Bearer-Capability
+; Section: 7.2.29B
+; Page: 122
+; Versions: 18.0.0..19.0.0
+"The value as described in TS 29.078 [233] shall be used."
+    encoding element TS29.078 5.1 "BearerCapability"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#called-asserted-identity-presence)
+; AVP: Called-Asserted-Identity
+; Section: 7.2.31
+; Page: 123
+; Versions: 18.0.0..19.0.0
+"This field shall be present when the P-Asserted-Identity SIP header field is available in the SIP 2xx response."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Called-Identity-Change
 ; Section: 7.2.31B
@@ -1928,6 +2070,15 @@ Basic-Service-Code ::= < AVP header: 3411 10415 > ;; corrected: (TS32.299.py#ven
 Called-Identity-Change ::= < AVP header: 3917 10415 > ;; corrected: (TS32.299.py#vendor-called-identity-change)
         [ Called-Identity ]
         [ Change-Time ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#calling-party-address-unknown)
+; AVP: Calling-Party-Address
+; Section: 7.2.33
+; Page: 123
+; Versions: 18.0.0..19.0.0
+"In case no P-Asserted-Identity is known, this AVP list shall include one item with the value \"unknown\"."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -1953,6 +2104,15 @@ Charging-Characteristics-Selection-Mode ::= < Enumerated AVP header: 2066 10415 
         Home-Default          = 3
         Roaming-Default       = 4
         Visiting-Default      = 5
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#charging-per-ip-can-session-indicator-default)
+; AVP: Charging-Per-IP-CAN-Session-Indicator
+; Section: 7.2.39B
+; Page: 128
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, that means charging per IP-CAN session is not active."
+    default 0
 
 
 ; Type: Enumerated AVP
@@ -2006,6 +2166,15 @@ CSG-Access-Mode ::= < Enumerated AVP header: 2317 10415 >
 CSG-Membership-Indication ::= < Enumerated AVP header: 2318 10415 >
         "Not CSG member" = 0
         "CSG Member"     = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#csg-membership-indication-default)
+; AVP: CSG-Membership-Indication
+; Section: 7.2.46B
+; Page: 130
+; Versions: 18.0.0..19.0.0
+"If this indication is not present, this means the UE is a Not member of the CSG cell for hybrid access mode."
+    default "Not CSG member"
 
 
 ; Type: Enumerated AVP
@@ -2096,6 +2265,15 @@ Dynamic-Address-Flag ::= < Enumerated AVP header: 2051 10415 >
         Dynamic = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#dynamic-address-flag-default)
+; AVP: Dynamic-Address-Flag
+; Section: 7.2.57
+; Page: 132
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means that the address is statically allocated."
+    default Static
+
+
 ; Type: Enumerated AVP
 ; Name: Dynamic-Address-Flag-Extension
 ; Section: 7.2.57A
@@ -2103,6 +2281,15 @@ Dynamic-Address-Flag ::= < Enumerated AVP header: 2051 10415 >
 Dynamic-Address-Flag-Extension ::= < Enumerated AVP header: 2068 10415 >
         Static  = 0
         Dynamic = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#dynamic-address-flag-extension-default)
+; AVP: Dynamic-Address-Flag-Extension
+; Section: 7.2.57A
+; Page: 132
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means that the address is statically allocated."
+    default Static
 
 
 ; Type: Grouped AVP
@@ -2136,6 +2323,17 @@ Envelope ::= < AVP header: 1266 10415 > ;; corrected: (TS32.299.py#vendor-envelo
         [ CC-Service-Specific-Units ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#envelope-order)
+; AVP: Envelope
+; Section: 7.2.59
+; Page: 133
+; Versions: 18.0.0..19.0.0
+"If an envelope has not been closed at the time of the usage report, then the Envelope-End-Time AVP shall be absent."
+    text-only
+"Multiple occurrences of this AVP shall be in chronological order, i.e. the first envelope is listed first in CCR."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Envelope-Reporting
 ; Section: 7.2.61
@@ -2146,6 +2344,15 @@ Envelope-Reporting ::= < Enumerated AVP header: 1268 10415 >
         REPORT_ENVELOPES_WITH_VOLUME            = 2
         REPORT_ENVELOPES_WITH_EVENTS            = 3
         REPORT_ENVELOPES_WITH_VOLUME_AND_EVENTS = 4
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#envelope-reporting-absent)
+; AVP: Envelope-Reporting
+; Section: 7.2.61
+; Page: 135
+; Versions: 18.0.0..19.0.0
+"If this AVP is not included in the CCA[Initial] then the client shall not report the individual envelopes."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2195,6 +2402,15 @@ Forwarding-Pending ::= < Enumerated AVP header: 3415 10415 >
         "Forwarding pending"     = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#forwarding-pending-default)
+; AVP: Forwarding-Pending
+; Section: 7.2.67aA
+; Page: 137
+; Versions: 18.0.0..19.0.0
+"When it is not present, the voice call is not expected to be forwarded."
+    default "Forwarding not pending"
+
+
 ; Type: Grouped AVP
 ; Name: Incremental-Cost
 ; Section: 7.2.70
@@ -2225,6 +2441,15 @@ Inter-UE-Transfer ::= < Enumerated AVP header: 3902 10415 >
         "Inter-UE transfer" = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#inter-ue-transfer-default)
+; AVP: Inter-UE-Transfer
+; Section: 7.2.74aA
+; Page: 138
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means that the type of transfer is Intra-UE transfer."
+    default "Intra-UE transfer"
+
+
 ; Type: Enumerated AVP
 ; Name: IMS-Emergency-Indicator
 ; Section: 7.2.76A
@@ -2232,6 +2457,15 @@ Inter-UE-Transfer ::= < Enumerated AVP header: 3902 10415 >
 IMS-Emergency-Indicator ::= < Enumerated AVP header: 2322 10415 >
         "Non Emergency" = 0
         Emergency       = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ims-emergency-indicator-default)
+; AVP: IMS-Emergency-Indicator
+; Section: 7.2.76A
+; Page: 138
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means the IMS session or registration is not detected as an emergency session or registration."
+    default "Non Emergency"
 
 
 ; Type: Grouped AVP
@@ -2303,6 +2537,15 @@ IMSI-Unauthenticated-Flag ::= < Enumerated AVP header: 2308 10415 >
         Unauthenticated = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#imsi-unauthenticated-flag-default)
+; AVP: IMSI-Unauthenticated-Flag
+; Section: 7.2.78
+; Page: 140
+; Versions: 18.0.0..19.0.0
+"If this flag is not present, this means the served IMSI is authenticated."
+    default Authenticated
+
+
 ; Type: Grouped AVP
 ; Name: Inter-Operator-Identifier
 ; Section: 7.2.80
@@ -2329,6 +2572,16 @@ ISUP-Cause ::= < AVP header: 3416 10415 > ;; corrected: (TS32.299.py#vendor-isup
         [ ISUP-Cause-Location ]
         [ ISUP-Cause-Value ]
         [ ISUP-Cause-Diagnostics ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#isup-location-number-tbcd)
+; AVP: ISUP-Location-Number
+; Section: 7.2.80F
+; Page: 141
+; Versions: 18.0.0..19.0.0
+"It contains an E.164 number as transported in ISUP and is encoded as a TBCD-string."
+"This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
 
 
 ; Type: Grouped AVP
@@ -2406,6 +2659,15 @@ LCS-Requestor-ID ::= < AVP header: 1239 10415 > ;; corrected: (TS32.299.py#vendo
 Local-GW-Inserted-Indication ::= < Enumerated AVP header: 2604 10415 >
         "Local GW Not Inserted" = 0
         "Local GW Inserted"     = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#location-estimate-gad)
+; AVP: Location-Estimate
+; Section: 7.2.94
+; Page: 144
+; Versions: 18.0.0..19.0.0
+"Refers to the geographical area description in TS 23.032 [227] for the internal structure and encoding of this AVP."
+    encoding element TS23.032 7 "Geographical area description"
 
 
 ; Type: Enumerated AVP
@@ -2506,6 +2768,15 @@ Media-Initiator-Flag ::= < Enumerated AVP header: 882 10415 >
         unknown         = 2
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#media-initiator-flag-default)
+; AVP: Media-Initiator-Flag
+; Section: 7.2.101
+; Page: 147
+; Versions: 18.0.0..19.0.0
+"The default value is '0' indicating the called party initiated the modification:"
+    default "called party"
+
+
 ; Type: Grouped AVP
 ; Name: Message-Body
 ; Section: 7.2.103
@@ -2515,6 +2786,16 @@ Message-Body ::= < AVP header: 889 10415 > ;; corrected: (TS32.299.py#vendor-mes
         { Content-Length }
         [ Content-Disposition ]
         [ Originator ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#message-body-sdp)
+; AVP: Content-Type
+; Within: Message-Body
+; Section: 7.2.103
+; Page: 147
+; Versions: 18.0.0..19.0.0
+"The message bodies shall not include the bodies' of Content-Type = \"application-sdp\" as these are captured in other AVPs."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -2663,6 +2944,16 @@ Monitoring-Event-Report-Data ::= < AVP header: 3920 10415 > ;; corrected: (TS32.
       * [ Number-Of-UE-Per-Location-Report ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#msc-address-tbcd)
+; AVP: MSC-Address
+; Section: 7.2.111B
+; Page: 151
+; Versions: 18.0.0..19.0.0
+"It is encoded as a TBCD-string."
+"This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
 ; Type: Grouped AVP
 ; Name: Next-Tariff
 ; Section: 7.2.112
@@ -2745,6 +3036,27 @@ Offline-Charging ::= < AVP header: 1278 10415 > ;; corrected: (TS32.299.py#vendo
         [ Envelope-Reporting ]
       * [ Multiple-Services-Credit-Control ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#offline-charging-time-mechanism)
+; AVP: Quota-Consumption-Time
+; Within: Offline-Charging
+; Section: 7.2.121
+; Page: 154
+; Versions: 18.0.0..19.0.0
+"At most one of Quota-Consumption-Time AVP or Time-Quota-Mechanism AVP shall be present, if individual instances are not included within the Multiple-Services-Credit-Control AVP."
+    excludes Time-Quota-Mechanism and not Multiple-Services-Credit-Control/Quota-Consumption-Time and not Multiple-Services-Credit-Control/Time-Quota-Mechanism
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#offline-charging-multiple-services-credit-control)
+; AVP: Multiple-Services-Credit-Control
+; Within: Offline-Charging
+; Section: 7.2.121
+; Page: 154
+; Versions: 18.0.0..19.0.0
+"The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP."
+    members at-least-one Rating-Group
+    members only Rating-Group Quota-Consumption-Time Time-Quota-Mechanism Envelope-Reporting
 
 
 ; Type: Enumerated AVP
@@ -2837,6 +3149,24 @@ PC5-Radio-Technology ::= < Enumerated AVP header: 1300 10415 >
         "Both EUTRA and WLAN" = 2
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#pdn-connection-charging-id-coding)
+; AVP: PDN-Connection-Charging-ID
+; Section: 7.2.136
+; Page: 159
+; Versions: 18.0.0..19.0.0
+"Coding of this AVP is same as 3GPP-Charging-Id coding described in TS 29.061 [207]."
+    encoding element TS29.061 16.4.7.2 "3GPP-Charging-Id"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#pdp-address-prefix-length-default)
+; AVP: PDP-Address-Prefix-Length
+; Section: 7.2.137A
+; Page: 159
+; Versions: 18.0.0..19.0.0
+"The omission of this AVP for an IPv6 typed IP address implicitly means prefix length of 64 bits, as in this case the 64 bit prefix length default shall be assumed."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: PDP-Context-Type
 ; Section: 7.2.138
@@ -2844,6 +3174,16 @@ PC5-Radio-Technology ::= < Enumerated AVP header: 1300 10415 >
 PDP-Context-Type ::= < Enumerated AVP header: 1247 10415 >
         Primary   = 0
         Secondary = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-pdp-context-type-initial)
+; AVP: Service-Information
+; Command: Credit-Control-Request
+; Section: 7.2.138
+; Page: 159
+; Versions: 18.0.0..19.0.0
+"This AVP shall only be present in the CCR[Initial]."
+    absent-if Service-Information/PS-Information/PDP-Context-Type and not CC-Request-Type = INITIAL_REQUEST
 
 
 ; Type: Enumerated AVP
@@ -3133,6 +3473,15 @@ Privacy-Indicator ::= < Enumerated AVP header: 3915 10415 >
         PRIVATE     = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ps-append-free-format-data-default)
+; AVP: PS-Append-Free-Format-Data
+; Section: 7.2.155
+; Page: 167
+; Versions: 18.0.0..19.0.0
+"If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session."
+    default 1
+
+
 ; Type: Grouped AVP
 ; Name: PS-Furnish-Charging-Information
 ; Section: 7.2.157
@@ -3222,6 +3571,16 @@ PS-Information ::= < AVP header: 874 10415 > ;; corrected: (TS32.299.py#vendor-p
         [ Unused-Quota-Timer ]
       * [ RAN-Secondary-RAT-Usage-Report ]
         [ PSCell-Info ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-quota-holding-time)
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 7.2.160
+; Page: 169
+; Versions: 18.0.0..19.0.0
+"This optional AVP may only occur in a CCA command."
+    absent-if Multiple-Services-Credit-Control/Quota-Holding-Time
 
 
 ; Type: Grouped AVP
@@ -3318,6 +3677,15 @@ Recipient-Received-Address ::= < AVP header: 2028 10415 > ;; corrected: (TS32.29
         [ Address-Domain ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#refund-information-ccr)
+; AVP: Refund-Information
+; Section: 7.2.171
+; Page: 173
+; Versions: 18.0.0..19.0.0
+"This AVP shall be used by the CTF in case of a refund scenario and thus shall be included in the CCR for refund if previously received in CCA for IEC."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Relationship-Mode
 ; Section: 7.2.171A
@@ -3348,6 +3716,16 @@ Related-Change-Condition-Information ::= < AVP header: 3925 10415 > ;; corrected
 ; Page: 174
 Related-Trigger ::= < AVP header: 3926 10415 > ;; corrected: (TS32.299.py#vendor-related-trigger)
       * [ Trigger-Type ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#related-trigger-indirect)
+; AVP: Related-Trigger
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.171Ab
+; Page: 174
+; Versions: 18.0.0..19.0.0
+"This AVP is only included when the Trigger AVP contains a Trigger-Type AVP with value of \"indirect change condition\" which is applicable charging per IP can session for a multi-accessPDN connection."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -3383,6 +3761,107 @@ Reporting-Reason ::= < Enumerated AVP header: 872 10415 >
         FORCED_REAUTHORISATION  = 7
         POOL_EXHAUSTED          = 8
         UNUSED_QUOTA_TIMER      = 9
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-command-level-acr)
+; AVP: Reporting-Reason
+; Command: Accounting-Request
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-command-level-aca)
+; AVP: Reporting-Reason
+; Command: Accounting-Answer
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-command-level-ccr)
+; AVP: Reporting-Reason
+; Command: Credit-Control-Request
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-command-level-cca)
+; AVP: Reporting-Reason
+; Command: Credit-Control-Answer
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-command-level-rar)
+; AVP: Reporting-Reason
+; Command: Re-Auth-Request
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-command-level-raa)
+; AVP: Reporting-Reason
+; Command: Re-Auth-Answer
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#reporting-reason-usage)
+; AVP: Reporting-Reason
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall always and shall only be sent when usage is being reported."
+    requires Used-Service-Unit
+"The values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION, RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types and are used directly in the Multiple-Services-Credit-Control AVP, whereas the values THRESHOLD, QUOTA_EXHAUSTED and OTHER_QUOTA_TYPE apply to one particular quota type and shall occur only in the Used-Service-Units AVP."
+    exclude 0, 3, 5
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#used-service-unit-reporting-reason)
+; AVP: Used-Service-Unit
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"It shall always and shall only be sent when usage is being reported."
+    requires Reporting-Reason or Used-Service-Unit/Reporting-Reason
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#rating-condition-change-trigger)
+; AVP: Trigger
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.175
+; Page: 176
+; Versions: 18.0.0..19.0.0
+"When the value RATING_CONDITION_CHANGE is used, the Trigger AVP shall also be included to indicate the specific events which caused the re-authorization request."
+    present-if Reporting-Reason = RATING_CONDITION_CHANGE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#requested-party-address-different)
+; AVP: Requested-Party-Address
+; Section: 7.2.176
+; Page: 177
+; Versions: 18.0.0..19.0.0
+"This AVP is only present if different from the Called-Party-Address AVP."
+    text-only
 
 
 ; Type: Enumerated AVP

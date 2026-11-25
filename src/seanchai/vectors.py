@@ -1903,6 +1903,16 @@ class _Negatives:
                                     "note",
                                 )
 
+    def all_members_hold(self, message: _Message) -> bool:
+        """Whether each grouped AVP of `message` keeps the `members` rules on
+        it, its own and its scope's."""
+        for node, scope, _ in self.each_grouped(message):
+            name = node.member.name if node.member else node.avp.name
+            held = [*self.builder.own.get(node.avp.id, ()), *scope.rules.get(name, ())]
+            if not self.members_hold(node, held):
+                return False
+        return True
+
     def members_hold(self, node: _Avp, held: Sequence[dictionary.Constraint]) -> bool:
         """Whether grouped `node`'s members keep the `members` rules of
         `held`, the constraints on the node itself."""
@@ -2244,6 +2254,11 @@ class _Negatives:
             ):
                 # Making a condition on a path hold broke a grouped AVP's own.
                 return False
+        if not self.all_members_hold(message):
+            # Adding the subject broke a `members` rule on the grouped AVP
+            # holding it: TS 32.299's Multiple-Services-Credit-Control within
+            # Offline-Charging, given a Reporting-Reason.
+            return False
         self.emit(
             message,
             f"constraint-{rule.kind}/{name}/{each.section}",

@@ -534,6 +534,8 @@ _NON_3GPP_ACCESS = ("TS24.302", "19.0.0")
 _NON_3GPP_SECURITY = ("TS33.402", "19.0.0")
 _GBA = ("TS33.220", "19.1.0")
 _NAS_5GS = ("TS24.501", "19.8.0")
+_CAP = ("TS29.078", "19.0.0")
+_GI = ("TS29.061", "19.1.0")
 
 
 def _network_name(clause: str, attribute: str, field: str) -> Element:
@@ -1817,6 +1819,67 @@ REGISTRY: tuple[Element, ...] = (
         Depth.FULL,
         "the CHOICE's choice-Extensions holds no IE in this edition, so the"
         " five groups 0 to 4 are all",
+    ),
+    Element(
+        "TS29.078",
+        "5.1",
+        "BearerCapability",
+        "CAP's bearer capability, its bearerCap octets",
+        (
+            _source(
+                _CAP,
+                "5.1",
+                "bearerCap [0] OCTET STRING"
+                " (SIZE(2..bound.&maxBearerCapabilityLength)),"
+                " 'the ISUP User Service Information, ETSI EN 300 356-1 [23]"
+                " encoding shall be used'",
+            ),
+            _source(_CAP, "5.5", "MAXIMUM-FOR-BEARER-CAPABILITY 11"),
+        ),
+        (Octets(2, 11),),
+        Depth.LENGTH,
+        "the User Service Information's fields are ETSI EN 300 356-1's, a"
+        " document the corpus does not hold, and are not read",
+        example=bytes([0x80, 0x90]),
+    ),
+    Element(
+        "TS23.032",
+        "7",
+        "Geographical area description",
+        "a geographical area description of any shape: the type of shape in"
+        " octet 1's bits 8-5, then the shape",
+        (
+            _source(
+                _GAD,
+                "7.2",
+                "table 2a, the types of shape 0000 to 1110, 'other values"
+                " reserved for future use'",
+            ),
+            _source(_GAD, "7.3.1", "figure 5, an ellipsoid point in 7 octets"),
+        ),
+        (Octets(7, None),),
+        Depth.PARTIAL,
+        "the shape's own layout and length are not checked: the AVP may carry"
+        " any of them; the type codes table 2a reserves are not refused,"
+        " since the clause does not say they are not sent",
+        example=bytes(7),
+    ),
+    Element(
+        "TS29.061",
+        "16.4.7.2",
+        "3GPP-Charging-Id",
+        "the Charging ID of the 3GPP-Charging-Id sub-attribute",
+        (
+            _source(
+                _GI,
+                "16.4.7.2",
+                "sub-attribute 2, 3GPP-Charging ID: 'Length: 6', 'Charging ID"
+                " value: 32 bits unsigned integer'",
+            ),
+        ),
+        (),
+        Depth.FULL,
+        valid="a 32-bit charging identifier: every value of the Unsigned32",
     ),
 )
 

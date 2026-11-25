@@ -116,9 +116,10 @@ syn match dadConstraintOp "\.\.\|\%(\s\|\.\.\)\@2<=\*\|\s\@1<==\ze\s" contained
 " A codec after `encoding`, a length's unit after its bounds.
 syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-filter-out\|ip-filter-flow\|ip-filter\|ip-address\|time-zone\|mac-address\|element\)\ze\%(\s\|$\)" contained
 syn match dadUnit "\%([0-9*] \)\@2<=\%(octets\|digits\|characters\)\ze\s*\%(;;.*\)\=$" contained
-" An element's clause, after its document: an annex's letter alone too.
-syn match dadElementClause "\%(^    encoding element \S\+ \)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\ze\%(\s\|$\)" contained
 syn match dadConstraintNumber "\%(\s\|\.\.\)\@2<=-\?\d\+\ze\%(\s\|$\|\.\.\|,\)" contained
+" An element's clause, after its document: an annex's letter alone too, and,
+" defined after the number so that it wins, digits alone (TS 23.032's 7).
+syn match dadElementClause "\%(^    encoding element \S\+ \)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\ze\%(\s\|$\)" contained
 
 " Directives
 syn match dadDirectiveLine "^; [A-Za-z][A-Za-z-]*: .*$" contains=dadDirectiveKey,dadDirectiveValue

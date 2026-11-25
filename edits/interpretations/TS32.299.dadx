@@ -1,0 +1,529 @@
+; Interprets: 3GPP TS 32.299
+;; What TS 32.299's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order: clause 7.1's Diameter AVPs, then clause 7.2's 3GPP
+;; specific AVPs. The commands' information-element tables of clauses 6.2
+;; and 6.4 already state each member's category (OM, OC, M, O), which no
+;; block restates. Rf's commands are printed once under 3, Ro's once under 4.
+;; A clause pointing at another document for a layout is an `element`; a
+;; rule depending on an earlier message, the charging domain, the node, the
+;; SIP signalling or the operator's configuration is `text-only`.
+
+
+;; Rf's commands are RFC 6733's accounting application's.
+; Type: Interpreted Constraints
+; Id: acct-application-id-rf
+; AVP: Acct-Application-Id
+; Section: 7.1.5
+; Versions: 18.0.0..19.0.0
+"The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 6733 [401] according TS 29.230 [206]."
+    range 3
+
+
+;; Ro's commands are RFC 4006's credit-control application's.
+; Type: Interpreted Constraints
+; Id: auth-application-id-ro
+; AVP: Auth-Application-Id
+; Section: 7.1.6
+; Versions: 18.0.0..19.0.0
+"The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402] according TS 29.230 [206]."
+    range 4
+
+
+; Type: Interpreted Constraints
+; Id: called-station-id-apn
+; AVP: Called-Station-Id
+; Section: 7.1.7
+; Versions: 18.0.0..19.0.0
+"The Called-Station-Id AVP (AVP code 30) shall contain the Access Point Name (APN) the user is connected to."
+    encoding apn
+
+
+;; Of each answer printing Experimental-Result.
+; Type: Interpreted Constraints
+; Id: aca-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: Accounting-Answer
+; Section: 7.1.8A
+; Versions: 18.0.0..19.0.0
+"The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:"
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints
+; Id: cca-experimental-result-vendor
+; AVP: Experimental-Result
+; Command: Credit-Control-Answer
+; Section: 7.1.8A
+; Versions: 18.0.0..19.0.0
+"The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:"
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+;; DIAMETER_RATING_FAILED (5031), the answer's own Result-Code; the code a
+;; Multiple-Services-Credit-Control carries for one rating group is the
+;; group's.
+; Type: Interpreted Constraints
+; Id: cca-rating-failed-failed-avp
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 7.1.11
+; Versions: 18.0.0..19.0.0
+"This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating."
+"The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable."
+    present-if Result-Code = DIAMETER_RATING_FAILED
+
+
+;; A text's form, dot-separated parts and a domain: no codec reads it.
+; Type: Interpreted Constraints
+; Id: service-context-id-format
+; AVP: Service-Context-Id
+; Section: 7.1.12
+; Versions: 18.0.0..19.0.0
+"As a minimum, \"Release\".\"service-context\" \"@\" \"domain\" shall be used."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: vendor-specific-application-id-vendor
+; AVP: Vendor-Id
+; Within: Vendor-Specific-Application-Id
+; Section: 7.1.16
+; Versions: 18.0.0..19.0.0
+"The Vendor-Id AVP (AVP code 266), as part of the grouped Vendor-Specific-Application-Id AVP, shall contain the value of 10415, which is the IANA registered value for '3GPP' in TS 29.230 [206]."
+    range 10415
+
+
+;; The charging domain decides the digits' form, which the AVP does not
+;; carry, and digits as text where a sibling's value says IMEISV no kind
+;; says.
+; Type: Interpreted Constraints
+; Id: user-equipment-info-imeisv
+; AVP: User-Equipment-Info
+; Section: 7.1.17
+; Versions: 18.0.0..19.0.0
+"For PS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded hexadecimal."
+    text-only
+"For IMS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded decimal."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: adaptations-default
+; AVP: Adaptations
+; Section: 7.2.4
+; Versions: 18.0.0..19.0.0
+"The Adaptations AVP (AVP code 1217) is of type Enumerated and indicates whether the originator allows adaptation of the content (default Yes)."
+    default Yes
+
+
+; Type: Interpreted Constraints
+; Id: address-domain-members
+; AVP: Address-Domain
+; Section: 7.2.8
+; Versions: 18.0.0..19.0.0
+"If this AVP is present, at least one of the AVPs described within the grouping shall be included."
+    members at-least-one Domain-Name 3GPP-IMSI-MCC-MNC
+
+
+;; What a node uses, as TS 29.272's "is not used in S6a/S6d": not that it is
+;; never sent, which `absent` would say.
+; Type: Interpreted Constraints
+; Id: authorised-qos-not-used
+; AVP: Authorised-QoS
+; Section: 7.2.27
+; Versions: 18.0.0..19.0.0
+"This AVP is not used."
+    text-only
+
+
+;; "Either ... or" read as at least one of them.
+; Type: Interpreted Constraints
+; Id: basic-service-code-members
+; AVP: Basic-Service-Code
+; Section: 7.2.29A
+; Versions: 18.0.0..19.0.0
+"Either a Bearer-Service AVP or a Teleservice AVP is included."
+    members at-least-one Bearer-Service Teleservice
+
+
+; Type: Interpreted Constraints
+; Id: bearer-capability-cap
+; AVP: Bearer-Capability
+; Section: 7.2.29B
+; Versions: 18.0.0..19.0.0
+"The value as described in TS 29.078 [233] shall be used."
+    encoding element TS29.078 5.1 "BearerCapability"
+
+
+;; SIP's header, which the message does not carry.
+; Type: Interpreted Constraints
+; Id: called-asserted-identity-presence
+; AVP: Called-Asserted-Identity
+; Section: 7.2.31
+; Versions: 18.0.0..19.0.0
+"This field shall be present when the P-Asserted-Identity SIP header field is available in the SIP 2xx response."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: calling-party-address-unknown
+; AVP: Calling-Party-Address
+; Section: 7.2.33
+; Versions: 18.0.0..19.0.0
+"In case no P-Asserted-Identity is known, this AVP list shall include one item with the value \"unknown\"."
+    text-only
+
+
+;; Inactive (0); the corpus reads no values of the clause, whose list opens
+;; "The following value is defined:".
+; Type: Interpreted Constraints
+; Id: charging-per-ip-can-session-indicator-default
+; AVP: Charging-Per-IP-CAN-Session-Indicator
+; Section: 7.2.39B
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, that means charging per IP-CAN session is not active."
+    default 0
+
+
+;; The clause's heading and text name the AVP CSG--Indication.
+; Type: Interpreted Constraints
+; Id: csg-membership-indication-default
+; AVP: CSG-Membership-Indication
+; Section: 7.2.46B
+; Versions: 18.0.0..19.0.0
+"If this indication is not present, this means the UE is a Not member of the CSG cell for hybrid access mode."
+    default "Not CSG member"
+
+
+; Type: Interpreted Constraints
+; Id: dynamic-address-flag-default
+; AVP: Dynamic-Address-Flag
+; Section: 7.2.57
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means that the address is statically allocated."
+    default Static
+
+
+; Type: Interpreted Constraints
+; Id: dynamic-address-flag-extension-default
+; AVP: Dynamic-Address-Flag-Extension
+; Section: 7.2.57A
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means that the address is statically allocated."
+    default Static
+
+
+;; An envelope's state, and an order of the AVPs by their times: no kind says either.
+; Type: Interpreted Constraints
+; Id: envelope-order
+; AVP: Envelope
+; Section: 7.2.59
+; Versions: 18.0.0..19.0.0
+"If an envelope has not been closed at the time of the usage report, then the Envelope-End-Time AVP shall be absent."
+    text-only
+"Multiple occurrences of this AVP shall be in chronological order, i.e. the first envelope is listed first in CCR."
+    text-only
+
+
+;; The initial CCA's, an earlier message for every later report.
+; Type: Interpreted Constraints
+; Id: envelope-reporting-absent
+; AVP: Envelope-Reporting
+; Section: 7.2.61
+; Versions: 18.0.0..19.0.0
+"If this AVP is not included in the CCA[Initial] then the client shall not report the individual envelopes."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: forwarding-pending-default
+; AVP: Forwarding-Pending
+; Section: 7.2.67aA
+; Versions: 18.0.0..19.0.0
+"When it is not present, the voice call is not expected to be forwarded."
+    default "Forwarding not pending"
+
+
+; Type: Interpreted Constraints
+; Id: inter-ue-transfer-default
+; AVP: Inter-UE-Transfer
+; Section: 7.2.74aA
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means that the type of transfer is Intra-UE transfer."
+    default "Intra-UE transfer"
+
+
+; Type: Interpreted Constraints
+; Id: ims-emergency-indicator-default
+; AVP: IMS-Emergency-Indicator
+; Section: 7.2.76A
+; Versions: 18.0.0..19.0.0
+"If this AVP is not present, this means the IMS session or registration is not detected as an emergency session or registration."
+    default "Non Emergency"
+
+
+; Type: Interpreted Constraints
+; Id: imsi-unauthenticated-flag-default
+; AVP: IMSI-Unauthenticated-Flag
+; Section: 7.2.78
+; Versions: 18.0.0..19.0.0
+"If this flag is not present, this means the served IMSI is authenticated."
+    default Authenticated
+
+
+; Type: Interpreted Constraints
+; Id: isup-location-number-tbcd
+; AVP: ISUP-Location-Number
+; Section: 7.2.80F
+; Versions: 18.0.0..19.0.0
+"It contains an E.164 number as transported in ISUP and is encoded as a TBCD-string."
+"This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+; Type: Interpreted Constraints
+; Id: location-estimate-gad
+; AVP: Location-Estimate
+; Section: 7.2.94
+; Versions: 18.0.0..19.0.0
+"Refers to the geographical area description in TS 23.032 [227] for the internal structure and encoding of this AVP."
+    encoding element TS23.032 7 "Geographical area description"
+
+
+; Type: Interpreted Constraints
+; Id: media-initiator-flag-default
+; AVP: Media-Initiator-Flag
+; Section: 7.2.101
+; Versions: 18.0.0..19.0.0
+"The default value is '0' indicating the called party initiated the modification:"
+    default "called party"
+
+
+;; A text value: no kind says it.
+; Type: Interpreted Constraints
+; Id: message-body-sdp
+; AVP: Content-Type
+; Within: Message-Body
+; Section: 7.2.103
+; Versions: 18.0.0..19.0.0
+"The message bodies shall not include the bodies' of Content-Type = \"application-sdp\" as these are captured in other AVPs."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: msc-address-tbcd
+; AVP: MSC-Address
+; Section: 7.2.111B
+; Versions: 18.0.0..19.0.0
+"It is encoded as a TBCD-string."
+"This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address."
+    encoding e164-tbcd
+
+
+;; Read through paths into the Offline-Charging's Multiple-Services-Credit-Control.
+; Type: Interpreted Constraints
+; Id: offline-charging-time-mechanism
+; AVP: Quota-Consumption-Time
+; Within: Offline-Charging
+; Section: 7.2.121
+; Versions: 18.0.0..19.0.0
+"At most one of Quota-Consumption-Time AVP or Time-Quota-Mechanism AVP shall be present, if individual instances are not included within the Multiple-Services-Credit-Control AVP."
+    excludes Time-Quota-Mechanism and not Multiple-Services-Credit-Control/Quota-Consumption-Time and not Multiple-Services-Credit-Control/Time-Quota-Mechanism
+
+
+;; That one of Quota-Consumption-Time and Time-Quota-Mechanism is there, not
+;; both, no `members` form says.
+; Type: Interpreted Constraints
+; Id: offline-charging-multiple-services-credit-control
+; AVP: Multiple-Services-Credit-Control
+; Within: Offline-Charging
+; Section: 7.2.121
+; Versions: 18.0.0..19.0.0
+"The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP."
+    members at-least-one Rating-Group
+    members only Rating-Group Quota-Consumption-Time Time-Quota-Mechanism Envelope-Reporting
+
+
+; Type: Interpreted Constraints
+; Id: pdn-connection-charging-id-coding
+; AVP: PDN-Connection-Charging-ID
+; Section: 7.2.136
+; Versions: 18.0.0..19.0.0
+"Coding of this AVP is same as 3GPP-Charging-Id coding described in TS 29.061 [207]."
+    encoding element TS29.061 16.4.7.2 "3GPP-Charging-Id"
+
+
+;; A default of an IPv6 PDP-Address alone, which a `default` holding wherever
+;; the AVP is read would give an IPv4 one too.
+; Type: Interpreted Constraints
+; Id: pdp-address-prefix-length-default
+; AVP: PDP-Address-Prefix-Length
+; Section: 7.2.137A
+; Versions: 18.0.0..19.0.0
+"The omission of this AVP for an IPv6 typed IP address implicitly means prefix length of 64 bits, as in this case the 64 bit prefix length default shall be assumed."
+    text-only
+
+
+;; PDP-Context-Type, a member of the CCR's PS-Information, whose own scope
+;; does not see the CC-Request-Type; read through a path into the
+;; Service-Information.
+; Type: Interpreted Constraints
+; Id: ccr-pdp-context-type-initial
+; AVP: Service-Information
+; Command: Credit-Control-Request
+; Section: 7.2.138
+; Versions: 18.0.0..19.0.0
+"This AVP shall only be present in the CCR[Initial]."
+    absent-if Service-Information/PS-Information/PDP-Context-Type and not CC-Request-Type = INITIAL_REQUEST
+
+
+;; 'Overwrite' (1); the corpus reads no values of the clause, which prints them quoted.
+; Type: Interpreted Constraints
+; Id: ps-append-free-format-data-default
+; AVP: PS-Append-Free-Format-Data
+; Section: 7.2.155
+; Versions: 18.0.0..19.0.0
+"If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session."
+    default 1
+
+
+;; Quota-Holding-Time, a member of the CCR's Multiple-Services-Credit-Control,
+;; read through a path into it.
+; Type: Interpreted Constraints
+; Id: ccr-quota-holding-time
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 7.2.160
+; Versions: 18.0.0..19.0.0
+"This optional AVP may only occur in a CCA command."
+    absent-if Multiple-Services-Credit-Control/Quota-Holding-Time
+
+
+; Type: Interpreted Constraints
+; Id: refund-information-ccr
+; AVP: Refund-Information
+; Section: 7.2.171
+; Versions: 18.0.0..19.0.0
+"This AVP shall be used by the CTF in case of a refund scenario and thus shall be included in the CCR for refund if previously received in CCA for IEC."
+    text-only
+
+
+;; Clause 7.2.236 defines no Trigger-Type value "indirect change condition":
+;; the name is Change-Condition's 34 (clause 7.2.37).
+; Type: Interpreted Constraints
+; Id: related-trigger-indirect
+; AVP: Related-Trigger
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.171Ab
+; Versions: 18.0.0..19.0.0
+"This AVP is only included when the Trigger AVP contains a Trigger-Type AVP with value of \"indirect change condition\" which is applicable charging per IP can session for a multi-accessPDN connection."
+    text-only
+
+
+;; Clause 7.2.175, in each command, whose `* [ AVP ]` admits it.
+; Type: Interpreted Constraints
+; Id: reporting-reason-command-level-acr
+; AVP: Reporting-Reason
+; Command: Accounting-Request
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: reporting-reason-command-level-aca
+; AVP: Reporting-Reason
+; Command: Accounting-Answer
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: reporting-reason-command-level-ccr
+; AVP: Reporting-Reason
+; Command: Credit-Control-Request
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: reporting-reason-command-level-cca
+; AVP: Reporting-Reason
+; Command: Credit-Control-Answer
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: reporting-reason-command-level-rar
+; AVP: Reporting-Reason
+; Command: Re-Auth-Request
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: reporting-reason-command-level-raa
+; AVP: Reporting-Reason
+; Command: Re-Auth-Answer
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall not be used at command level."
+    absent
+
+
+;; In a Multiple-Services-Credit-Control: sent only beside the
+;; Used-Service-Unit it gives the reason of, and none of the values one quota
+;; type's report carries.
+; Type: Interpreted Constraints
+; Id: reporting-reason-usage
+; AVP: Reporting-Reason
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall always and shall only be sent when usage is being reported."
+    requires Used-Service-Unit
+"The values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION, RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types and are used directly in the Multiple-Services-Credit-Control AVP, whereas the values THRESHOLD, QUOTA_EXHAUSTED and OTHER_QUOTA_TYPE apply to one particular quota type and shall occur only in the Used-Service-Units AVP."
+    exclude 0, 3, 5
+
+
+;; A usage report carries its reason, in the Multiple-Services-Credit-Control
+;; or in the Used-Service-Unit.
+; Type: Interpreted Constraints
+; Id: used-service-unit-reporting-reason
+; AVP: Used-Service-Unit
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"It shall always and shall only be sent when usage is being reported."
+    requires Reporting-Reason or Used-Service-Unit/Reporting-Reason
+
+
+; Type: Interpreted Constraints
+; Id: rating-condition-change-trigger
+; AVP: Trigger
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.175
+; Versions: 18.0.0..19.0.0
+"When the value RATING_CONDITION_CHANGE is used, the Trigger AVP shall also be included to indicate the specific events which caused the re-authorization request."
+    present-if Reporting-Reason = RATING_CONDITION_CHANGE
+
+
+;; Two AVPs' values differing: no kind says it.
+; Type: Interpreted Constraints
+; Id: requested-party-address-different
+; AVP: Requested-Party-Address
+; Section: 7.2.176
+; Versions: 18.0.0..19.0.0
+"This AVP is only present if different from the Called-Party-Address AVP."
+    text-only

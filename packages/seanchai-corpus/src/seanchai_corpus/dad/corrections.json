@@ -12982,6 +12982,206 @@
   },
   "32299-i00": {
    "edits": {
+    "TS32.299.dadx#aca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#acct-application-id-rf": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 6733 [401] according TS 29.230 [206].'"
+    },
+    "TS32.299.dadx#adaptations-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'The Adaptations AVP (AVP code 1217) is of type Enumerated and indicates whether the originator allows adaptation of the content (default Yes).'"
+    },
+    "TS32.299.dadx#address-domain-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.8: 'If this AVP is present, at least one of the AVPs described within the grouping shall be included.'"
+    },
+    "TS32.299.dadx#auth-application-id-ro": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.6: 'The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402] according TS 29.230 [206].'"
+    },
+    "TS32.299.dadx#authorised-qos-not-used": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.27: 'This AVP is not used.'"
+    },
+    "TS32.299.dadx#basic-service-code-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.29A: 'Either a Bearer-Service AVP or a Teleservice AVP is included.'"
+    },
+    "TS32.299.dadx#bearer-capability-cap": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.29B: 'The value as described in TS 29.078 [233] shall be used.'"
+    },
+    "TS32.299.dadx#called-asserted-identity-presence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.31: 'This field shall be present when the P-Asserted-Identity SIP header field is available in the SIP 2xx response.'"
+    },
+    "TS32.299.dadx#called-station-id-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.7: 'The Called-Station-Id AVP (AVP code 30) shall contain the Access Point Name (APN) the user is connected to.'"
+    },
+    "TS32.299.dadx#calling-party-address-unknown": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.33: 'In case no P-Asserted-Identity is known, this AVP list shall include one item with the value \"unknown\".'"
+    },
+    "TS32.299.dadx#cca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#cca-rating-failed-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.11: 'This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating.'; 'The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable.'"
+    },
+    "TS32.299.dadx#ccr-pdp-context-type-initial": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.138: 'This AVP shall only be present in the CCR[Initial].'"
+    },
+    "TS32.299.dadx#ccr-quota-holding-time": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.160: 'This optional AVP may only occur in a CCA command.'"
+    },
+    "TS32.299.dadx#charging-per-ip-can-session-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.39B: 'If this AVP is not present, that means charging per IP-CAN session is not active.'"
+    },
+    "TS32.299.dadx#csg-membership-indication-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.46B: 'If this indication is not present, this means the UE is a Not member of the CSG cell for hybrid access mode.'"
+    },
+    "TS32.299.dadx#dynamic-address-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.57: 'If this AVP is not present, this means that the address is statically allocated.'"
+    },
+    "TS32.299.dadx#dynamic-address-flag-extension-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.57A: 'If this AVP is not present, this means that the address is statically allocated.'"
+    },
+    "TS32.299.dadx#envelope-order": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.59: 'If an envelope has not been closed at the time of the usage report, then the Envelope-End-Time AVP shall be absent.'; 'Multiple occurrences of this AVP shall be in chronological order, i.e. the first envelope is listed first in CCR.'"
+    },
+    "TS32.299.dadx#envelope-reporting-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.61: 'If this AVP is not included in the CCA[Initial] then the client shall not report the individual envelopes.'"
+    },
+    "TS32.299.dadx#forwarding-pending-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.67aA: 'When it is not present, the voice call is not expected to be forwarded.'"
+    },
+    "TS32.299.dadx#ims-emergency-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.76A: 'If this AVP is not present, this means the IMS session or registration is not detected as an emergency session or registration.'"
+    },
+    "TS32.299.dadx#imsi-unauthenticated-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.78: 'If this flag is not present, this means the served IMSI is authenticated.'"
+    },
+    "TS32.299.dadx#inter-ue-transfer-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.74aA: 'If this AVP is not present, this means that the type of transfer is Intra-UE transfer.'"
+    },
+    "TS32.299.dadx#isup-location-number-tbcd": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.80F: 'It contains an E.164 number as transported in ISUP and is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
+    },
+    "TS32.299.dadx#location-estimate-gad": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.94: 'Refers to the geographical area description in TS 23.032 [227] for the internal structure and encoding of this AVP.'"
+    },
+    "TS32.299.dadx#media-initiator-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.101: 'The default value is '0' indicating the called party initiated the modification:'"
+    },
+    "TS32.299.dadx#message-body-sdp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.103: 'The message bodies shall not include the bodies' of Content-Type = \"application-sdp\" as these are captured in other AVPs.'"
+    },
+    "TS32.299.dadx#msc-address-tbcd": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.111B: 'It is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
+    },
+    "TS32.299.dadx#offline-charging-multiple-services-credit-control": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.121: 'The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP.'"
+    },
+    "TS32.299.dadx#offline-charging-time-mechanism": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.121: 'At most one of Quota-Consumption-Time AVP or Time-Quota-Mechanism AVP shall be present, if individual instances are not included within the Multiple-Services-Credit-Control AVP.'"
+    },
+    "TS32.299.dadx#pdn-connection-charging-id-coding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.136: 'Coding of this AVP is same as 3GPP-Charging-Id coding described in TS 29.061 [207].'"
+    },
+    "TS32.299.dadx#pdp-address-prefix-length-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.137A: 'The omission of this AVP for an IPv6 typed IP address implicitly means prefix length of 64 bits, as in this case the 64 bit prefix length default shall be assumed.'"
+    },
+    "TS32.299.dadx#ps-append-free-format-data-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.155: 'If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session.'"
+    },
+    "TS32.299.dadx#rating-condition-change-trigger": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'When the value RATING_CONDITION_CHANGE is used, the Trigger AVP shall also be included to indicate the specific events which caused the re-authorization request.'"
+    },
+    "TS32.299.dadx#refund-information-ccr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.171: 'This AVP shall be used by the CTF in case of a refund scenario and thus shall be included in the CCR for refund if previously received in CCA for IEC.'"
+    },
+    "TS32.299.dadx#related-trigger-indirect": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.171Ab: 'This AVP is only included when the Trigger AVP contains a Trigger-Type AVP with value of \"indirect change condition\" which is applicable charging per IP can session for a multi-accessPDN connection.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-aca": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-acr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-cca": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-ccr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-raa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-rar": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-usage": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall always and shall only be sent when usage is being reported.'; 'The values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION, RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types and are used directly in the Multiple-Services-Credit-Control AVP, whereas the values THRESHOLD, QUOTA_EXHAUSTED and OTHER_QUOTA_TYPE apply to one particular quota type and shall occur only in the Used-Service-Units AVP.'"
+    },
+    "TS32.299.dadx#requested-party-address-different": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.176: 'This AVP is only present if different from the Called-Party-Address AVP.'"
+    },
+    "TS32.299.dadx#service-context-id-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.12: 'As a minimum, \"Release\".\"service-context\" \"@\" \"domain\" shall be used.'"
+    },
+    "TS32.299.dadx#used-service-unit-reporting-reason": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall always and shall only be sent when usage is being reported.'"
+    },
+    "TS32.299.dadx#user-equipment-info-imeisv": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.17: 'For PS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded hexadecimal.'; 'For IMS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded decimal.'"
+    },
+    "TS32.299.dadx#vendor-specific-application-id-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.16: 'The Vendor-Id AVP (AVP code 266), as part of the grouped Vendor-Specific-Application-Id AVP, shall contain the value of 10415, which is the IANA registered value for '3GPP' in TS 29.230 [206].'"
+    },
     "TS32.299.py#acct-multi-session-id-type": {
      "kind": "correction",
      "reason": "table 7.1.0.1 types Acct-Multi-Session-Id Unsigned32; RFC 6733, which clause 7.1.0 names for these AVPs, defines it as UTF8String (clause 9.8.5 and the table in 4.5)"
@@ -13490,7 +13690,7 @@
      "targets": [
       [
        "sections",
-       22
+       27
       ]
      ]
     },
@@ -13502,7 +13702,7 @@
      "targets": [
       [
        "sections",
-       218
+       268
       ]
      ]
     },
@@ -13640,7 +13840,7 @@
      "targets": [
       [
        "sections",
-       24
+       31
       ]
      ]
     },
@@ -14108,6 +14308,206 @@
   },
   "32299-j00": {
    "edits": {
+    "TS32.299.dadx#aca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#acct-application-id-rf": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.5: 'The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 6733 [401] according TS 29.230 [206].'"
+    },
+    "TS32.299.dadx#adaptations-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.4: 'The Adaptations AVP (AVP code 1217) is of type Enumerated and indicates whether the originator allows adaptation of the content (default Yes).'"
+    },
+    "TS32.299.dadx#address-domain-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.8: 'If this AVP is present, at least one of the AVPs described within the grouping shall be included.'"
+    },
+    "TS32.299.dadx#auth-application-id-ro": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.6: 'The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402] according TS 29.230 [206].'"
+    },
+    "TS32.299.dadx#authorised-qos-not-used": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.27: 'This AVP is not used.'"
+    },
+    "TS32.299.dadx#basic-service-code-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.29A: 'Either a Bearer-Service AVP or a Teleservice AVP is included.'"
+    },
+    "TS32.299.dadx#bearer-capability-cap": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.29B: 'The value as described in TS 29.078 [233] shall be used.'"
+    },
+    "TS32.299.dadx#called-asserted-identity-presence": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.31: 'This field shall be present when the P-Asserted-Identity SIP header field is available in the SIP 2xx response.'"
+    },
+    "TS32.299.dadx#called-station-id-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.7: 'The Called-Station-Id AVP (AVP code 30) shall contain the Access Point Name (APN) the user is connected to.'"
+    },
+    "TS32.299.dadx#calling-party-address-unknown": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.33: 'In case no P-Asserted-Identity is known, this AVP list shall include one item with the value \"unknown\".'"
+    },
+    "TS32.299.dadx#cca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.8A: 'The Vendor-ID AVP shall contain 3GPP (10415), and following values are used for Experimental-Result-Code:'"
+    },
+    "TS32.299.dadx#cca-rating-failed-failed-avp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.11: 'This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating.'; 'The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable.'"
+    },
+    "TS32.299.dadx#ccr-pdp-context-type-initial": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.138: 'This AVP shall only be present in the CCR[Initial].'"
+    },
+    "TS32.299.dadx#ccr-quota-holding-time": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.160: 'This optional AVP may only occur in a CCA command.'"
+    },
+    "TS32.299.dadx#charging-per-ip-can-session-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.39B: 'If this AVP is not present, that means charging per IP-CAN session is not active.'"
+    },
+    "TS32.299.dadx#csg-membership-indication-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.46B: 'If this indication is not present, this means the UE is a Not member of the CSG cell for hybrid access mode.'"
+    },
+    "TS32.299.dadx#dynamic-address-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.57: 'If this AVP is not present, this means that the address is statically allocated.'"
+    },
+    "TS32.299.dadx#dynamic-address-flag-extension-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.57A: 'If this AVP is not present, this means that the address is statically allocated.'"
+    },
+    "TS32.299.dadx#envelope-order": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.59: 'If an envelope has not been closed at the time of the usage report, then the Envelope-End-Time AVP shall be absent.'; 'Multiple occurrences of this AVP shall be in chronological order, i.e. the first envelope is listed first in CCR.'"
+    },
+    "TS32.299.dadx#envelope-reporting-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.61: 'If this AVP is not included in the CCA[Initial] then the client shall not report the individual envelopes.'"
+    },
+    "TS32.299.dadx#forwarding-pending-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.67aA: 'When it is not present, the voice call is not expected to be forwarded.'"
+    },
+    "TS32.299.dadx#ims-emergency-indicator-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.76A: 'If this AVP is not present, this means the IMS session or registration is not detected as an emergency session or registration.'"
+    },
+    "TS32.299.dadx#imsi-unauthenticated-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.78: 'If this flag is not present, this means the served IMSI is authenticated.'"
+    },
+    "TS32.299.dadx#inter-ue-transfer-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.74aA: 'If this AVP is not present, this means that the type of transfer is Intra-UE transfer.'"
+    },
+    "TS32.299.dadx#isup-location-number-tbcd": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.80F: 'It contains an E.164 number as transported in ISUP and is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
+    },
+    "TS32.299.dadx#location-estimate-gad": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.94: 'Refers to the geographical area description in TS 23.032 [227] for the internal structure and encoding of this AVP.'"
+    },
+    "TS32.299.dadx#media-initiator-flag-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.101: 'The default value is '0' indicating the called party initiated the modification:'"
+    },
+    "TS32.299.dadx#message-body-sdp": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.103: 'The message bodies shall not include the bodies' of Content-Type = \"application-sdp\" as these are captured in other AVPs.'"
+    },
+    "TS32.299.dadx#msc-address-tbcd": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.111B: 'It is encoded as a TBCD-string.'; 'This AVP does not include leading indicators for the nature of address and the numbering plan; it contains only the TBCD-encoded digits of the address.'"
+    },
+    "TS32.299.dadx#offline-charging-multiple-services-credit-control": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.121: 'The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP.'"
+    },
+    "TS32.299.dadx#offline-charging-time-mechanism": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.121: 'At most one of Quota-Consumption-Time AVP or Time-Quota-Mechanism AVP shall be present, if individual instances are not included within the Multiple-Services-Credit-Control AVP.'"
+    },
+    "TS32.299.dadx#pdn-connection-charging-id-coding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.136: 'Coding of this AVP is same as 3GPP-Charging-Id coding described in TS 29.061 [207].'"
+    },
+    "TS32.299.dadx#pdp-address-prefix-length-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.137A: 'The omission of this AVP for an IPv6 typed IP address implicitly means prefix length of 64 bits, as in this case the 64 bit prefix length default shall be assumed.'"
+    },
+    "TS32.299.dadx#ps-append-free-format-data-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.155: 'If this AVP is absent or in value 'Overwrite', the P-GW shall overwrite all PS free format data already stored for the online charging session.'"
+    },
+    "TS32.299.dadx#rating-condition-change-trigger": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'When the value RATING_CONDITION_CHANGE is used, the Trigger AVP shall also be included to indicate the specific events which caused the re-authorization request.'"
+    },
+    "TS32.299.dadx#refund-information-ccr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.171: 'This AVP shall be used by the CTF in case of a refund scenario and thus shall be included in the CCR for refund if previously received in CCA for IEC.'"
+    },
+    "TS32.299.dadx#related-trigger-indirect": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.171Ab: 'This AVP is only included when the Trigger AVP contains a Trigger-Type AVP with value of \"indirect change condition\" which is applicable charging per IP can session for a multi-accessPDN connection.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-aca": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-acr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-cca": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-ccr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-raa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-command-level-rar": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall not be used at command level.'"
+    },
+    "TS32.299.dadx#reporting-reason-usage": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall always and shall only be sent when usage is being reported.'; 'The values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION, RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types and are used directly in the Multiple-Services-Credit-Control AVP, whereas the values THRESHOLD, QUOTA_EXHAUSTED and OTHER_QUOTA_TYPE apply to one particular quota type and shall occur only in the Used-Service-Units AVP.'"
+    },
+    "TS32.299.dadx#requested-party-address-different": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.176: 'This AVP is only present if different from the Called-Party-Address AVP.'"
+    },
+    "TS32.299.dadx#service-context-id-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.12: 'As a minimum, \"Release\".\"service-context\" \"@\" \"domain\" shall be used.'"
+    },
+    "TS32.299.dadx#used-service-unit-reporting-reason": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.175: 'It shall always and shall only be sent when usage is being reported.'"
+    },
+    "TS32.299.dadx#user-equipment-info-imeisv": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.17: 'For PS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded hexadecimal.'; 'For IMS charging, when the User-Equipment-Info-Type AVP (AVP code 459) is set to IMEISV (0), the value within the User-Equipment-Info-Value AVP (AVP code 460) is of type OctetString and shall be a UTF-8 encoded decimal.'"
+    },
+    "TS32.299.dadx#vendor-specific-application-id-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.16: 'The Vendor-Id AVP (AVP code 266), as part of the grouped Vendor-Specific-Application-Id AVP, shall contain the value of 10415, which is the IANA registered value for '3GPP' in TS 29.230 [206].'"
+    },
     "TS32.299.py#acct-multi-session-id-type": {
      "kind": "correction",
      "reason": "table 7.1.0.1 types Acct-Multi-Session-Id Unsigned32; RFC 6733, which clause 7.1.0 names for these AVPs, defines it as UTF8String (clause 9.8.5 and the table in 4.5)"
@@ -14616,7 +15016,7 @@
      "targets": [
       [
        "sections",
-       22
+       27
       ]
      ]
     },
@@ -14628,7 +15028,7 @@
      "targets": [
       [
        "sections",
-       218
+       268
       ]
      ]
     },
@@ -14766,7 +15166,7 @@
      "targets": [
       [
        "sections",
-       24
+       31
       ]
      ]
     },
