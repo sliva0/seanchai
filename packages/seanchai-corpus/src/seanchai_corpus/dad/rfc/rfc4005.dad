@@ -4,6 +4,24 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc4005.txt
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-auth-application-id-nasreq)
+; AVP: Auth-Application-Id
+; Command: AA-Request
+; Section: 1.3
+; Page: 6
+"Diameter applications conforming to this specification MUST advertise support by including the value of one (1) in the Auth-Application-Id of Capabilities-Exchange-Request (CER), AA-Request (AAR), and AA-Answer (AAA) messages."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-auth-application-id-nasreq)
+; AVP: Auth-Application-Id
+; Command: AA-Answer
+; Section: 1.3
+; Page: 6
+"Diameter applications conforming to this specification MUST advertise support by including the value of one (1) in the Auth-Application-Id of Capabilities-Exchange-Request (CER), AA-Request (AAR), and AA-Answer (AAA) messages."
+    range 1
+
+
 ; Type: Application Scope ;; inserted: (RFC4005.py#application-id)
 ; Name: NASREQ
 ; Section: 11.3
@@ -67,6 +85,15 @@
       * [ Proxy-Info ]
       * [ Route-Record ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-state-from-the-aaa)
+; AVP: State
+; Command: AA-Request
+; Section: 3.1
+; Page: 9
+"A subsequent AAR message SHOULD be sent, with the User-Password AVP that includes the user's response to the prompt, and MUST include any State AVPs that were present in the AAA message."
+    text-only
 
 
 ; Type: Message
@@ -404,6 +431,15 @@
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#acr-acct-application-id-or-vendor-specific)
+; AVP: Acct-Application-Id
+; Command: Accounting-Request
+; Section: 3.9
+; Page: 17
+"Either of Acct-Application-Id or Vendor-Specific-Application-Id AVPs MUST be present."
+    present-if not Vendor-Specific-Application-Id
+
+
 ; Type: Message
 ; Name: Accounting-Answer, ACA
 ; Section: 3.10
@@ -441,6 +477,15 @@
       * [ Proxy-Info ]
       * [ Route-Record ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aca-acct-application-id-or-vendor-specific)
+; AVP: Acct-Application-Id
+; Command: Accounting-Answer
+; Section: 3.10
+; Page: 19
+"Either Acct-Application-Id or Vendor-Specific-Application-Id AVPs MUST be present, as it was in the request."
+    present-if not Vendor-Specific-Application-Id
 
 
 ; Type: AVP Table
@@ -614,6 +659,22 @@ NAS-Port-Type ::= < Enumerated AVP header: 61 >
         "WIMAX-WVS: WiMAX voice service"                                    = 43 ;; supplied: (RFC4005.py#nas-port-type-values)
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#originating-line-info-octets)
+; AVP: Originating-Line-Info
+; Section: 4.8
+; Page: 24
+"The Value field contains two octets (00 - 99)."
+    length 2 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#user-password-length)
+; AVP: User-Password
+; Section: 5.1
+; Page: 26
+"The clear-text password (prior to encryption) MUST NOT be longer than 128 bytes in length."
+    length *..128 octets
+
+
 ; Type: Enumerated AVP
 ; Name: Prompt
 ; Section: 5.3
@@ -635,12 +696,63 @@ CHAP-Auth ::= < AVP header: 402 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-chap-auth-with-challenge)
+; AVP: CHAP-Auth
+; Command: AA-Request
+; Section: 5.4
+; Page: 27
+"If the CHAP-Auth AVP is found in a message, the CHAP-Challenge AVP MUST be present as well."
+    requires CHAP-Challenge
+
+
 ; Type: Enumerated AVP
 ; Name: CHAP-Algorithm
 ; Section: 5.5
 ; Page: 28
 CHAP-Algorithm ::= < Enumerated AVP header: 403 >
         "CHAP with MD5" = 5
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#chap-auth-md5-response)
+; AVP: CHAP-Response
+; Within: CHAP-Auth
+; Section: 5.5
+; Page: 28
+"This algorithm requires that the CHAP-Response AVP MUST be present in the CHAP-Auth AVP."
+    present-if CHAP-Algorithm = "CHAP with MD5"
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#chap-ident-octet)
+; AVP: CHAP-Ident
+; Section: 5.6
+; Page: 28
+"The CHAP-Ident AVP (AVP Code 404) is of type OctetString and contains the 1 octet CHAP Identifier used in the computation of the CHAP response [PPPCHAP]."
+    length 1 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#chap-response-octets)
+; AVP: CHAP-Response
+; Section: 5.7
+; Page: 28
+"The CHAP-Response AVP (AVP Code 405) is of type OctetString and contains the 16 octet authentication data provided by the user in response to the CHAP challenge [PPPCHAP]."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-arap-password-without-other-passwords)
+; AVP: ARAP-Password
+; Command: AA-Request
+; Section: 5.9
+; Page: 28
+"This AVP MUST NOT be present if either the User-Password or the CHAP-Auth AVP is present."
+    excludes User-Password or CHAP-Auth
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#arap-challenge-response-octets)
+; AVP: ARAP-Challenge-Response
+; Section: 5.10
+; Page: 28
+"This AVP contains an 8 octet response to the dial-in client's challenge."
+    length 8 octets
 
 
 ; Type: Enumerated AVP
@@ -670,6 +782,14 @@ Service-Type ::= < Enumerated AVP header: 6 >
         Additional-Authorization  = 19 ;; supplied: (RFC4005.py#service-type-values)
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#qos-filter-rule-format)
+; AVP: QoS-Filter-Rule
+; Section: 6.9
+; Page: 33
+"QoSFilterRule filters MUST follow the following format:"
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Framed-Protocol
 ; Section: 6.10.1
@@ -697,6 +817,14 @@ Framed-Routing ::= < Enumerated AVP header: 10 >
         "Send and Listen"            = 3
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-mtu-range)
+; AVP: Framed-MTU
+; Section: 6.10.3
+; Page: 35
+"The MTU value MUST be in the range from 64 to 65535."
+    range 64..65535
+
+
 ; Type: Enumerated AVP
 ; Name: Framed-Compression
 ; Section: 6.10.4
@@ -707,6 +835,63 @@ Framed-Compression ::= < Enumerated AVP header: 13 >
         "VJ TCP/IP header compression" = 1
         "IPX header compression"       = 2
         "Stac-LZS compression"         = 3
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-ip-address-octets)
+; AVP: Framed-IP-Address
+; Section: 6.11.1
+; Page: 36
+"The Framed-IP-Address AVP (AVP Code 8) [RADIUS] is of type OctetString and contains an IPv4 address of the type specified in the attribute value to be configured for the user."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-ip-netmask-octets)
+; AVP: Framed-IP-Netmask
+; Section: 6.11.2
+; Page: 36
+"The Framed-IP-Netmask AVP (AVP Code 9) is of type OctetString and contains the four octets of the IPv4 netmask to be configured for the user when the user is a router to a network."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-framed-ip-netmask-after-all-ones)
+; AVP: Framed-IP-Netmask
+; Command: AA-Answer
+; Section: 6.11.2
+; Page: 36
+"This AVP MUST be present in a response if the request included this AVP with a value of 0xFFFFFFFF."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-route-text)
+; AVP: Framed-Route
+; Section: 6.11.3
+; Page: 37
+"The string MUST contain a destination prefix in dotted quad form optionally followed by a slash and a decimal length specifier stating how many high-order bits of the prefix should be used."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-ipv6-route-text)
+; AVP: Framed-IPv6-Route
+; Section: 6.11.7
+; Page: 38
+"The string MUST contain an IPv6 address prefix followed by a slash and a decimal length specifier stating how many high order bits of the prefix should be used."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-appletalk-link-range)
+; AVP: Framed-AppleTalk-Link
+; Section: 6.13.1
+; Page: 39
+"Despite the size of the field, values range from 0 to 65,535."
+    range 0..65535
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#framed-appletalk-network-range)
+; AVP: Framed-AppleTalk-Network
+; Section: 6.13.2
+; Page: 39
+"Despite the size of the field, values range from 0 to 65,535."
+    range 0..65535
 
 
 ; Type: Enumerated AVP
@@ -735,6 +920,50 @@ Login-Service ::= < Enumerated AVP header: 15 >
         X25-PAD                                                         = 5
         X25-T3POS                                                       = 6
         "TCP Clear Quiet (suppresses any NAS-generated connect string)" = 8
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#login-tcp-port-range)
+; AVP: Login-TCP-Port
+; Section: 6.16.1
+; Page: 42
+"The value MUST NOT be greater than 65,535."
+    range 0..65535
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-login-lat-service-for-lat)
+; AVP: Login-LAT-Service
+; Command: AA-Answer
+; Section: 6.17.1
+; Page: 42
+"This AVP MUST only be present in the response if the Login-Service AVP states that LAT is desired."
+    requires Login-Service = LAT
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-login-lat-node-for-lat)
+; AVP: Login-LAT-Node
+; Command: AA-Answer
+; Section: 6.17.2
+; Page: 43
+"This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT."
+    requires Login-Service = LAT
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-login-lat-group-for-lat)
+; AVP: Login-LAT-Group
+; Command: AA-Answer
+; Section: 6.17.3
+; Page: 43
+"This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT."
+    requires Login-Service = LAT
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-login-lat-port-for-lat)
+; AVP: Login-LAT-Port
+; Command: AA-Answer
+; Section: 6.17.4
+; Page: 43
+"This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT."
+    requires Login-Service = LAT
 
 
 ; Type: Grouped AVP
@@ -798,6 +1027,24 @@ Tunnel-Medium-Type ::= < Enumerated AVP header: 65 >
         "E.164 with NSAP format subaddress"                               = 15
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#tunnel-client-auth-id-other-than-default)
+; AVP: Tunnel-Client-Auth-Id
+; Within: Tunneling
+; Section: 7.10
+; Page: 50
+"This AVP MUST be present in the authorization response if an authentication name other than the default is desired."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#tunnel-server-auth-id-other-than-default)
+; AVP: Tunnel-Server-Auth-Id
+; Within: Tunneling
+; Section: 7.11
+; Page: 50
+"This AVP MUST be present in the authorization response if an authentication name other than the default is desired."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: Acct-Authentic
 ; Section: 8.6
@@ -821,6 +1068,16 @@ Accounting-Auth-Method ::= < Enumerated AVP header: 406 >
         MS-CHAP-2 = 4
         EAP       = 5
         None      = 7
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-state-returned-unmodified)
+; AVP: State
+; Command: AA-Request
+; Section: 9.3.4
+; Page: 65
+"If so, the NAS MUST return it unmodified in the subsequent AA-Request command."
+"If the NAS performs the Termination-Action by sending a new AA-Request command upon termination of the current service, it MUST return the State AVP unmodified in the new request command."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -858,3 +1115,503 @@ Termination-Cause ::= < Enumerated AVP header: 295 >
 ; Page: 68
 Origin-AAA-Protocol ::= < Enumerated AVP header: 408 >
         RADIUS = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim-Interval | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-arap-challenge-response-table-absent)
+; AVP: ARAP-Challenge-Response
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Challenge-Response | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-arap-features-table-absent)
+; AVP: ARAP-Features
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Features | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-arap-zone-access-table-absent)
+; AVP: ARAP-Zone-Access
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Zone-Access | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-callback-id-table-absent)
+; AVP: Callback-Id
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Callback-Id | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-class-table-absent)
+; AVP: Class
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Class | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-configuration-token-table-absent)
+; AVP: Configuration-Token
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Configuration-Token | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-error-message-table-absent)
+; AVP: Error-Message
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Error-Message | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-filter-id-table-absent)
+; AVP: Filter-Id
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Filter-Id | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-appletalk-link-table-absent)
+; AVP: Framed-AppleTalk-Link
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-Appletalk-Link | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-appletalk-network-table-absent)
+; AVP: Framed-AppleTalk-Network
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-Appletalk-Network | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-appletalk-zone-table-absent)
+; AVP: Framed-AppleTalk-Zone
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-Appletalk-Zone | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-ipv6-pool-table-absent)
+; AVP: Framed-IPv6-Pool
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-IPv6-Pool | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-ipv6-route-table-absent)
+; AVP: Framed-IPv6-Route
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-IPv6-Route | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-ipx-network-table-absent)
+; AVP: Framed-IPX-Network
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-IPX-Network | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-pool-table-absent)
+; AVP: Framed-Pool
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-Pool | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-route-table-absent)
+; AVP: Framed-Route
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-Route | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-framed-routing-table-absent)
+; AVP: Framed-Routing
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Framed-Routing | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-idle-timeout-table-absent)
+; AVP: Idle-Timeout
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Idle-Timeout | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-login-service-table-absent)
+; AVP: Login-Service
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Login-Service | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-login-tcp-port-table-absent)
+; AVP: Login-TCP-Port
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Login-TCP-Port | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out | 0 | 0-1 | ------------------------------|"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-nas-filter-rule-table-absent)
+; AVP: NAS-Filter-Rule
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-Filter-Rule | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-password-retry-table-absent)
+; AVP: Password-Retry
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Password-Retry | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-prompt-table-absent)
+; AVP: Prompt
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Prompt | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-qos-filter-rule-table-absent)
+; AVP: QoS-Filter-Rule
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"QoS-Filter-Rule | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache-Time | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-reply-message-table-absent)
+; AVP: Reply-Message
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Reply-Message | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-result-code-table-absent)
+; AVP: Result-Code
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Result-Code | 0 | 1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aar-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: AA-Request
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-arap-password-table-absent)
+; AVP: ARAP-Password
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Password | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-called-station-id-table-absent)
+; AVP: Called-Station-Id
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Called-Station-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-calling-station-id-table-absent)
+; AVP: Calling-Station-Id
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Calling-Station-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-chap-auth-table-absent)
+; AVP: CHAP-Auth
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"CHAP-Auth | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-chap-challenge-table-absent)
+; AVP: CHAP-Challenge
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"CHAP-Challenge | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-connect-info-table-absent)
+; AVP: Connect-Info
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Connect-Info | 0+ | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-destination-host-table-absent)
+; AVP: Destination-Host
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Destination-Host | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-destination-realm-table-absent)
+; AVP: Destination-Realm
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Destination-Realm | 1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-nas-identifier-table-absent)
+; AVP: NAS-Identifier
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-Identifier | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-nas-ip-address-table-absent)
+; AVP: NAS-IP-Address
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-IP-Address | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-nas-ipv6-address-table-absent)
+; AVP: NAS-IPv6-Address
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-IPv6-Address | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-nas-port-table-absent)
+; AVP: NAS-Port
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-Port | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-nas-port-id-table-absent)
+; AVP: NAS-Port-Id
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-Port-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-nas-port-type-table-absent)
+; AVP: NAS-Port-Type
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"NAS-Port-Type | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-originating-line-info-table-absent)
+; AVP: Originating-Line-Info
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"Originating-Line-Info | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4005.dadx#aaa-user-password-table-absent)
+; AVP: User-Password
+; Command: AA-Answer
+; Section: 10.1
+; Page: 71
+"0 The AVP MUST NOT be present in the message."
+"User-Password | 0-1 | 0 | ------------------------------|"
+    absent

@@ -1597,3 +1597,72 @@ not show; its LMA address information, RFC 5447's rule again (section
 RFC 5779 section 7's occurrence tables, generic requests and answers of
 whichever application carries the AVPs, which no scope names, RFC 5779's
 symbols undefined in the document.
+
+## RFC 4005, RFC 7155 and RFC 4072
+
+RFC 4005 and RFC 7155, which obsoletes it, are read alike for what they
+say of the NASREQ AVPs and their own commands: RFC 4005's sections 1 to 9
+and section 10.1's occurrence table, RFC 7155's sections 1 to 4 and
+section 5.1's; where RFC 7155 repeats RFC 4005, its file quotes its own
+text. RFC 4072 is read for its DER and DEA, sections 2 to 4 and section
+5.1's table. A block with no scope, or within a grouped AVP, holds
+wherever a document reading the AVP reads it, and a block on a command
+binds the document's own print of it ([Precedence](#precedence)): RFC
+4005's and RFC 7155's AA-Request and AA-Answer under NASREQ (1), RFC
+4072's DER and DEA under Diameter EAP (5), which neither RFC 5778's prints
+under MIP6I nor TS 29.273's share. An RFC has one edition, so no block
+names `; Versions:`.
+
+| | RFC 4005 | RFC 7155 | RFC 4072 |
+|---|---|---|---|
+| sections read | 1 to 9, 10.1 | 1 to 4, 5.1 | 2 to 4, 5.1 |
+| table 10.1's or 5.1's "0" cells, each an AVP the command's body admits only through `* [ AVP ]` | 50: 34 in AA-Request, 16 in AA-Answer | 51: 34 and 17, the AA-Answer's Route-Record among them | 43: 31 in Diameter-EAP-Request, 12 in Diameter-EAP-Answer |
+| blocks | 80: 63 within a command, 3 within a grouped AVP, 14 on an AVP wherever read | 80: 63 within a command, 3 within a grouped AVP, 14 on an AVP wherever read | 50, within a command |
+| readings | 80 | 80 | 50 |
+
+| Rules | |
+|---|---|
+| `length` | 15: Originating-Line-Info 2 octets, User-Password at most 128, CHAP-Ident 1, CHAP-Response 16, ARAP-Challenge-Response 8, Framed-IP-Address and Framed-IP-Netmask 4, in each NASREQ document; the DER's EAP-Key-Name empty (RFC 4072 section 4.1.4) |
+| `range` | 14: Auth-Application-Id 1 in RFC 4005's AA-Request and AA-Answer (section 1.3) and in RFC 7155's AA-Request, Re-Auth-Request, Session-Termination-Request and Abort-Session-Request (section 1.5); Framed-MTU 64 to 65535, Framed-AppleTalk-Link and -Network and Login-TCP-Port at most 65535, in each |
+| `requires`, `present-if`, `excludes` | 10, 5, 3: the AA-Request's CHAP-Auth with a CHAP-Challenge and its ARAP-Password without a User-Password or CHAP-Auth, the AA-Answer's Login-LAT-Service, -Node, -Group and -Port with Login-Service LAT, CHAP-Auth's CHAP-Response for CHAP with MD5, in each NASREQ document; RFC 4005's Accounting-Request and -Answer holding an Acct-Application-Id or a Vendor-Specific-Application-Id (sections 3.9, 3.10); the DEA's EAP-Reissued-Payload with DIAMETER_MULTI_ROUND_AUTH and no EAP-Payload, and its Reply-Message never beside an EAP-Payload (RFC 4072 sections 2.4, 2.8.3) |
+| `absent` | 144: the tables' "0" cells |
+| `text-only` | 19: RFC 4005's 8, RFC 7155's 7, RFC 4072's 4 |
+
+The text-only rules are an earlier message (the State an AA-Request or DER
+returns from the answer before, RFC 4005 section 9.3.4's State returned
+unmodified), the server's choice (a Tunneling's Tunnel-Client-Auth-Id and
+Tunnel-Server-Auth-Id "if an authentication name other than the default
+is desired", a fatal error's EAP Failure), a request's OctetString value
+(the AA-Answer's Framed-IP-Netmask after the request's 0xFFFFFFFF), the
+EAP packet's Code within the EAP-Payload (no EAP Request in a DER, no
+DIAMETER_MULTI_ROUND_AUTH beside an EAP-Success or EAP-Failure), and texts
+no codec reads: the QoSFilterRule, Framed-Route's and Framed-IPv6-Route's
+prefixes. RFC 4072's non-fatal error answer is the DEA with
+DIAMETER_MULTI_ROUND_AUTH and no EAP-Payload, as the section's next
+paragraph reads it, every other round's answer carrying its EAP Request.
+
+The documents disagree with themselves where the corpus reads around
+them: RFC 4005 sections 6.17.2 to 6.17.4 and RFC 7155 sections 4.4.11.5.2
+to 4.4.11.5.4 name Login-Service Login-Service-Type, read as Login-Service;
+the tables of RFC 4005 and RFC 4072 spell Framed-AppleTalk-Link, -Network
+and -Zone Framed-Appletalk-, as RFC 7155 spells them throughout; and the
+AppleTalk AVPs "MUST only be present in an authorization response"
+(RFC 4005 sections 6.13.1 to 6.13.3, RFC 7155 4.4.10.7.1 to 4.4.10.7.3),
+which the AA-Request's "0" cells read, where both documents'
+Accounting-Request bodies print them. Left unread: the sections'
+"is only present when" and "can only be present in" sentences, with no
+MUST (ARAP-Password with an ARAP Framed-Protocol, the accounting octet and
+packet counters of an INTERIM_RECORD or STOP_RECORD); the accounting
+tables of RFC 4005 section 10.2, RFC 7155 section 5.2 and RFC 4072 section
+5.2, whose cells turn on the Service-Type's access, and the last two's on
+RFC 6733's ACR and ACA, which neither prints, and which in places contradict
+the sections (Accounting-Input-Octets "1" in every ACR, where section 8.1
+has it only in an interim or stop record); the sentences repeating the
+ABNF (the answers' Result-Code, RFC 7155's Acct-Application-Id, the DER's
+one EAP-Payload); the lower-case "it must have an Acct-Application-Id
+inside" of a Vendor-Specific-Application-Id; the CER and CEA the documents
+advertise in, RFC 6733's; the session's rules (one Session-Id, a STOP
+record, a re-authorization) and what a node does on receipt (a
+translation agent's RADIUS side, RFC 4005 section 9, its prohibited RADIUS
+attributes, which have no AVP of their name); and the authorization AVPs
+a successful answer carries "relevant to the service", the server's.

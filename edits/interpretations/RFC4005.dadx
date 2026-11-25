@@ -1,0 +1,802 @@
+; Interprets: RFC 4005
+;; What RFC 4005's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. RFC 7155 obsoletes the document, and its own file reads
+;; RFC 7155's text. A block with no scope, or within a grouped AVP, holds
+;; wherever a document reading RFC 4005's AVP reads it; a block on a command
+;; binds RFC 4005's own print of the command, which no other document's
+;; print shares (docs/constraints.md, Precedence). What a NAS or server
+;; decides, an earlier message and the RADIUS side of a translation agent
+;; are not in the message, so a rule resting on them is `text-only`.
+
+
+;; The CER the sentence names too is RFC 6733's command, which this file
+;; does not print.
+; Type: Interpreted Constraints
+; Id: aar-auth-application-id-nasreq
+; AVP: Auth-Application-Id
+; Command: AA-Request
+; Section: 1.3
+"Diameter applications conforming to this specification MUST advertise support by including the value of one (1) in the Auth-Application-Id of Capabilities-Exchange-Request (CER), AA-Request (AAR), and AA-Answer (AAA) messages."
+    range 1
+
+
+; Type: Interpreted Constraints
+; Id: aaa-auth-application-id-nasreq
+; AVP: Auth-Application-Id
+; Command: AA-Answer
+; Section: 1.3
+"Diameter applications conforming to this specification MUST advertise support by including the value of one (1) in the Auth-Application-Id of Capabilities-Exchange-Request (CER), AA-Request (AAR), and AA-Answer (AAA) messages."
+    range 1
+
+
+;; The State AVPs of the AA-Answer before, an earlier message.
+; Type: Interpreted Constraints
+; Id: aar-state-from-the-aaa
+; AVP: State
+; Command: AA-Request
+; Section: 3.1
+"A subsequent AAR message SHOULD be sent, with the User-Password AVP that includes the user's response to the prompt, and MUST include any State AVPs that were present in the AAA message."
+    text-only
+
+
+;; At least one of the two; the Acct-Application-Id the sentence after it
+;; has the Vendor-Specific-Application-Id "must" hold, in lower case, is no
+;; requirement.
+; Type: Interpreted Constraints
+; Id: acr-acct-application-id-or-vendor-specific
+; AVP: Acct-Application-Id
+; Command: Accounting-Request
+; Section: 3.9
+"Either of Acct-Application-Id or Vendor-Specific-Application-Id AVPs MUST be present."
+    present-if not Vendor-Specific-Application-Id
+
+
+;; "as it was in the request": which of the two, the request's choice, is
+;; not read, the answer's own presence alone.
+; Type: Interpreted Constraints
+; Id: aca-acct-application-id-or-vendor-specific
+; AVP: Acct-Application-Id
+; Command: Accounting-Answer
+; Section: 3.10
+"Either Acct-Application-Id or Vendor-Specific-Application-Id AVPs MUST be present, as it was in the request."
+    present-if not Vendor-Specific-Application-Id
+
+
+; Type: Interpreted Constraints
+; Id: originating-line-info-octets
+; AVP: Originating-Line-Info
+; Section: 4.8
+"The Value field contains two octets (00 - 99)."
+    length 2 octets
+
+
+;; The AVP carries the clear text: the encryption is the transport's, IPsec
+;; or TLS, as the clause says before.
+; Type: Interpreted Constraints
+; Id: user-password-length
+; AVP: User-Password
+; Section: 5.1
+"The clear-text password (prior to encryption) MUST NOT be longer than 128 bytes in length."
+    length *..128 octets
+
+
+;; The AA-Request is the one command of the document printing CHAP-Auth.
+; Type: Interpreted Constraints
+; Id: aar-chap-auth-with-challenge
+; AVP: CHAP-Auth
+; Command: AA-Request
+; Section: 5.4
+"If the CHAP-Auth AVP is found in a message, the CHAP-Challenge AVP MUST be present as well."
+    requires CHAP-Challenge
+
+
+;; CHAP with MD5 (5), the one value the clause defines.
+; Type: Interpreted Constraints
+; Id: chap-auth-md5-response
+; AVP: CHAP-Response
+; Within: CHAP-Auth
+; Section: 5.5
+"This algorithm requires that the CHAP-Response AVP MUST be present in the CHAP-Auth AVP."
+    present-if CHAP-Algorithm = "CHAP with MD5"
+
+
+; Type: Interpreted Constraints
+; Id: chap-ident-octet
+; AVP: CHAP-Ident
+; Section: 5.6
+"The CHAP-Ident AVP (AVP Code 404) is of type OctetString and contains the 1 octet CHAP Identifier used in the computation of the CHAP response [PPPCHAP]."
+    length 1 octets
+
+
+; Type: Interpreted Constraints
+; Id: chap-response-octets
+; AVP: CHAP-Response
+; Section: 5.7
+"The CHAP-Response AVP (AVP Code 405) is of type OctetString and contains the 16 octet authentication data provided by the user in response to the CHAP challenge [PPPCHAP]."
+    length 16 octets
+
+
+;; The AA-Request is the one command of the document printing the three;
+;; the clause's "is only present when the Framed-Protocol AVP ... is set to
+;; ARAP" has no MUST, and is not read.
+; Type: Interpreted Constraints
+; Id: aar-arap-password-without-other-passwords
+; AVP: ARAP-Password
+; Command: AA-Request
+; Section: 5.9
+"This AVP MUST NOT be present if either the User-Password or the CHAP-Auth AVP is present."
+    excludes User-Password or CHAP-Auth
+
+
+; Type: Interpreted Constraints
+; Id: arap-challenge-response-octets
+; AVP: ARAP-Challenge-Response
+; Section: 5.10
+"This AVP contains an 8 octet response to the dial-in client's challenge."
+    length 8 octets
+
+
+;; The QoSFilterRule's text, which no codec reads.
+; Type: Interpreted Constraints
+; Id: qos-filter-rule-format
+; AVP: QoS-Filter-Rule
+; Section: 6.9
+"QoSFilterRule filters MUST follow the following format:"
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: framed-mtu-range
+; AVP: Framed-MTU
+; Section: 6.10.3
+"The MTU value MUST be in the range from 64 to 65535."
+    range 64..65535
+
+
+;; An IPv4 address, four octets, as RADIUS's attribute carries it.
+; Type: Interpreted Constraints
+; Id: framed-ip-address-octets
+; AVP: Framed-IP-Address
+; Section: 6.11.1
+"The Framed-IP-Address AVP (AVP Code 8) [RADIUS] is of type OctetString and contains an IPv4 address of the type specified in the attribute value to be configured for the user."
+    length 4 octets
+
+
+; Type: Interpreted Constraints
+; Id: framed-ip-netmask-octets
+; AVP: Framed-IP-Netmask
+; Section: 6.11.2
+"The Framed-IP-Netmask AVP (AVP Code 9) is of type OctetString and contains the four octets of the IPv4 netmask to be configured for the user when the user is a router to a network."
+    length 4 octets
+
+
+;; The request's OctetString's value, which no condition reads.
+; Type: Interpreted Constraints
+; Id: aaa-framed-ip-netmask-after-all-ones
+; AVP: Framed-IP-Netmask
+; Command: AA-Answer
+; Section: 6.11.2
+"This AVP MUST be present in a response if the request included this AVP with a value of 0xFFFFFFFF."
+    text-only
+
+
+;; A route's text, which no codec reads.
+; Type: Interpreted Constraints
+; Id: framed-route-text
+; AVP: Framed-Route
+; Section: 6.11.3
+"The string MUST contain a destination prefix in dotted quad form optionally followed by a slash and a decimal length specifier stating how many high-order bits of the prefix should be used."
+    text-only
+
+
+;; As Framed-Route's.
+; Type: Interpreted Constraints
+; Id: framed-ipv6-route-text
+; AVP: Framed-IPv6-Route
+; Section: 6.11.7
+"The string MUST contain an IPv6 address prefix followed by a slash and a decimal length specifier stating how many high order bits of the prefix should be used."
+    text-only
+
+
+;; The values the clause defines. Its "MUST only be present in an
+;; authorization response" is table 10.1's AA-Request "0", read there, and
+;; the Accounting-Request's body prints the AVP (docs/constraints.md).
+; Type: Interpreted Constraints
+; Id: framed-appletalk-link-range
+; AVP: Framed-AppleTalk-Link
+; Section: 6.13.1
+"Despite the size of the field, values range from 0 to 65,535."
+    range 0..65535
+
+
+;; As Framed-AppleTalk-Link's.
+; Type: Interpreted Constraints
+; Id: framed-appletalk-network-range
+; AVP: Framed-AppleTalk-Network
+; Section: 6.13.2
+"Despite the size of the field, values range from 0 to 65,535."
+    range 0..65535
+
+
+; Type: Interpreted Constraints
+; Id: login-tcp-port-range
+; AVP: Login-TCP-Port
+; Section: 6.16.1
+"The value MUST NOT be greater than 65,535."
+    range 0..65535
+
+
+; Type: Interpreted Constraints
+; Id: aaa-login-lat-service-for-lat
+; AVP: Login-LAT-Service
+; Command: AA-Answer
+; Section: 6.17.1
+"This AVP MUST only be present in the response if the Login-Service AVP states that LAT is desired."
+    requires Login-Service = LAT
+
+
+;; The clause's Login-Service-Type is section 6.15.3's Login-Service.
+; Type: Interpreted Constraints
+; Id: aaa-login-lat-node-for-lat
+; AVP: Login-LAT-Node
+; Command: AA-Answer
+; Section: 6.17.2
+"This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT."
+    requires Login-Service = LAT
+
+
+;; As section 6.17.2's.
+; Type: Interpreted Constraints
+; Id: aaa-login-lat-group-for-lat
+; AVP: Login-LAT-Group
+; Command: AA-Answer
+; Section: 6.17.3
+"This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT."
+    requires Login-Service = LAT
+
+
+;; As section 6.17.2's.
+; Type: Interpreted Constraints
+; Id: aaa-login-lat-port-for-lat
+; AVP: Login-LAT-Port
+; Command: AA-Answer
+; Section: 6.17.4
+"This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT."
+    requires Login-Service = LAT
+
+
+;; Whether a name other than the default is desired is the server's.
+; Type: Interpreted Constraints
+; Id: tunnel-client-auth-id-other-than-default
+; AVP: Tunnel-Client-Auth-Id
+; Within: Tunneling
+; Section: 7.10
+"This AVP MUST be present in the authorization response if an authentication name other than the default is desired."
+    text-only
+
+
+;; As section 7.10's.
+; Type: Interpreted Constraints
+; Id: tunnel-server-auth-id-other-than-default
+; AVP: Tunnel-Server-Auth-Id
+; Within: Tunneling
+; Section: 7.11
+"This AVP MUST be present in the authorization response if an authentication name other than the default is desired."
+    text-only
+
+
+;; The State an earlier answer carried.
+; Type: Interpreted Constraints
+; Id: aar-state-returned-unmodified
+; AVP: State
+; Command: AA-Request
+; Section: 9.3.4
+"If so, the NAS MUST return it unmodified in the subsequent AA-Request command."
+"If the NAS performs the Termination-Action by sending a new AA-Request command upon termination of the current service, it MUST return the State AVP unmodified in the new request command."
+    text-only
+
+
+;; Table 10.1's AAR column: what its "0" says the AA-Request never
+;; carries, an AVP its body admits only through * [ AVP ]. The table spells
+;; Framed-AppleTalk-Link, -Network and -Zone Framed-Appletalk-.
+; Type: Interpreted Constraints
+; Id: aar-acct-interim-interval-table-absent
+; AVP: Acct-Interim-Interval
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Acct-Interim-Interval | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-arap-challenge-response-table-absent
+; AVP: ARAP-Challenge-Response
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Challenge-Response | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-arap-features-table-absent
+; AVP: ARAP-Features
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Features | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-arap-zone-access-table-absent
+; AVP: ARAP-Zone-Access
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Zone-Access | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-callback-id-table-absent
+; AVP: Callback-Id
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Callback-Id | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-class-table-absent
+; AVP: Class
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Class | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-configuration-token-table-absent
+; AVP: Configuration-Token
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Configuration-Token | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-error-message-table-absent
+; AVP: Error-Message
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Error-Message | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-error-reporting-host-table-absent
+; AVP: Error-Reporting-Host
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Error-Reporting-Host | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-filter-id-table-absent
+; AVP: Filter-Id
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Filter-Id | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-appletalk-link-table-absent
+; AVP: Framed-AppleTalk-Link
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-Appletalk-Link | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-appletalk-network-table-absent
+; AVP: Framed-AppleTalk-Network
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-Appletalk-Network | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-appletalk-zone-table-absent
+; AVP: Framed-AppleTalk-Zone
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-Appletalk-Zone | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-ipv6-pool-table-absent
+; AVP: Framed-IPv6-Pool
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-IPv6-Pool | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-ipv6-route-table-absent
+; AVP: Framed-IPv6-Route
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-IPv6-Route | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-ipx-network-table-absent
+; AVP: Framed-IPX-Network
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-IPX-Network | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-pool-table-absent
+; AVP: Framed-Pool
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-Pool | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-route-table-absent
+; AVP: Framed-Route
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-Route | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-framed-routing-table-absent
+; AVP: Framed-Routing
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Framed-Routing | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-idle-timeout-table-absent
+; AVP: Idle-Timeout
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Idle-Timeout | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-login-service-table-absent
+; AVP: Login-Service
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Login-Service | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-login-tcp-port-table-absent
+; AVP: Login-TCP-Port
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Login-TCP-Port | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-multi-round-time-out-table-absent
+; AVP: Multi-Round-Time-Out
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Multi-Round-Time-Out | 0 | 0-1 | ------------------------------|"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-nas-filter-rule-table-absent
+; AVP: NAS-Filter-Rule
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-Filter-Rule | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-password-retry-table-absent
+; AVP: Password-Retry
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Password-Retry | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-prompt-table-absent
+; AVP: Prompt
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Prompt | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-qos-filter-rule-table-absent
+; AVP: QoS-Filter-Rule
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"QoS-Filter-Rule | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-re-auth-request-type-table-absent
+; AVP: Re-Auth-Request-Type
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Re-Auth-Request-Type | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-redirect-host-table-absent
+; AVP: Redirect-Host
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-redirect-host-usage-table-absent
+; AVP: Redirect-Host-Usage
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Host-Usage | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-redirect-max-cache-time-table-absent
+; AVP: Redirect-Max-Cache-Time
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Redirect-Max-Cache-Time | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-reply-message-table-absent
+; AVP: Reply-Message
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Reply-Message | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-result-code-table-absent
+; AVP: Result-Code
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Result-Code | 0 | 1 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aar-session-timeout-table-absent
+; AVP: Session-Timeout
+; Command: AA-Request
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Session-Timeout | 0 | 0-1 |"
+    absent
+
+
+;; Table 10.1's AAA column: what its "0" says the AA-Answer never
+;; carries, an AVP its body admits only through * [ AVP ].
+; Type: Interpreted Constraints
+; Id: aaa-arap-password-table-absent
+; AVP: ARAP-Password
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"ARAP-Password | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-called-station-id-table-absent
+; AVP: Called-Station-Id
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Called-Station-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-calling-station-id-table-absent
+; AVP: Calling-Station-Id
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Calling-Station-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-chap-auth-table-absent
+; AVP: CHAP-Auth
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"CHAP-Auth | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-chap-challenge-table-absent
+; AVP: CHAP-Challenge
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"CHAP-Challenge | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-connect-info-table-absent
+; AVP: Connect-Info
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Connect-Info | 0+ | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-destination-host-table-absent
+; AVP: Destination-Host
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Destination-Host | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-destination-realm-table-absent
+; AVP: Destination-Realm
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Destination-Realm | 1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-nas-identifier-table-absent
+; AVP: NAS-Identifier
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-Identifier | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-nas-ip-address-table-absent
+; AVP: NAS-IP-Address
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-IP-Address | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-nas-ipv6-address-table-absent
+; AVP: NAS-IPv6-Address
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-IPv6-Address | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-nas-port-table-absent
+; AVP: NAS-Port
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-Port | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-nas-port-id-table-absent
+; AVP: NAS-Port-Id
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-Port-Id | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-nas-port-type-table-absent
+; AVP: NAS-Port-Type
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"NAS-Port-Type | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-originating-line-info-table-absent
+; AVP: Originating-Line-Info
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"Originating-Line-Info | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints
+; Id: aaa-user-password-table-absent
+; AVP: User-Password
+; Command: AA-Answer
+; Section: 10.1
+"0 The AVP MUST NOT be present in the message."
+"User-Password | 0-1 | 0 | ------------------------------|"
+    absent

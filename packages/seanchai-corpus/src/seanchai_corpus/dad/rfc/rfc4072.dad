@@ -12,6 +12,52 @@
 ; Applies-To: 3.*
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-fatal-error-eap-failure)
+; AVP: EAP-Payload
+; Command: Diameter-EAP-Answer
+; Section: 2.4
+; Page: 10
+"A Diameter server determining that a fatal error has occurred MUST send a Diameter-EAP-Answer with a failure Result-Code and an EAP-Payload AVP encapsulating an EAP Failure packet."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-non-fatal-error-reissued-payload)
+; AVP: EAP-Reissued-Payload
+; Command: Diameter-EAP-Answer
+; Section: 2.4
+; Page: 10
+"A Diameter server determining that a non-fatal error has occurred MUST send a Diameter-EAP-Answer with DIAMETER_MULTI_ROUND_AUTH Result-Code, but no EAP-Payload AVP."
+"To simplify RADIUS translation, this message MUST also include an EAP-Reissued-Payload AVP encapsulating the previous EAP Request sent by the server."
+    present-if Result-Code = DIAMETER_MULTI_ROUND_AUTH and not EAP-Payload
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-eap-result-not-multi-round)
+; AVP: Result-Code
+; Command: Diameter-EAP-Answer
+; Section: 2.8.2
+; Page: 13
+"A Diameter-EAP-Answer message containing an EAP-Payload of type EAP-Success or EAP-Failure MUST NOT have the Result-Code AVP set to DIAMETER_MULTI_ROUND_AUTH."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-reply-message-without-eap-payload)
+; AVP: Reply-Message
+; Command: Diameter-EAP-Answer
+; Section: 2.8.3
+; Page: 14
+"The Reply-Message AVP [NASREQ] MUST NOT be included in any Diameter message containing an EAP-Payload AVP."
+    excludes EAP-Payload
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-eap-payload-no-eap-request)
+; AVP: EAP-Payload
+; Command: Diameter-EAP-Request
+; Section: 2.8.4
+; Page: 14
+"A Diameter client MUST NOT send a Diameter-EAP-Request encapsulating an EAP Request packet, and a Diameter server receiving such a packet MUST respond with a failure Result-Code."
+    text-only
+
+
 ; Type: Message
 ; Name: Diameter-EAP-Request, DER
 ; Section: 3.1
@@ -56,6 +102,15 @@
       * [ Proxy-Info ]
       * [ Route-Record ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-state-from-the-dea)
+; AVP: State
+; Command: Diameter-EAP-Request
+; Section: 3.1
+; Page: 15
+"A subsequent DER message MUST include any State AVPs [NASREQ] that were present in the DEA."
+    text-only
 
 
 ; Type: Message
@@ -131,3 +186,442 @@ EAP-Reissued-Payload         463    4.1.2     OctetString
 EAP-Master-Session-Key       464    4.1.3     OctetString
 EAP-Key-Name                 102    4.1.4     OctetString
 Accounting-EAP-Auth-Method   465    4.1.5     Unsigned64
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-eap-key-name-empty)
+; AVP: EAP-Key-Name
+; Command: Diameter-EAP-Request
+; Section: 4.1.4
+; Page: 19
+"As a result, a Key-Name AVP sent in a Diameter-EAP-Request MUST NOT contain any data."
+    length 0 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-accounting-eap-auth-method-table-absent)
+; AVP: Accounting-EAP-Auth-Method
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Accounting-EAP-Auth-Method | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-acct-interim-interval-table-absent)
+; AVP: Acct-Interim-Interval
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Acct-Interim-Interval [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-callback-id-table-absent)
+; AVP: Callback-Id
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Callback-Id [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-class-table-absent)
+; AVP: Class
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Class [BASE] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-configuration-token-table-absent)
+; AVP: Configuration-Token
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Configuration-Token [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-eap-master-session-key-table-absent)
+; AVP: EAP-Master-Session-Key
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"EAP-Master-Session-Key | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-eap-reissued-payload-table-absent)
+; AVP: EAP-Reissued-Payload
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"EAP-Reissued-Payload | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-error-message-table-absent)
+; AVP: Error-Message
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Error-Message [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-error-reporting-host-table-absent)
+; AVP: Error-Reporting-Host
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Error-Reporting-Host [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-failed-avp-table-absent)
+; AVP: Failed-AVP
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Failed-AVP [BASE] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-filter-id-table-absent)
+; AVP: Filter-Id
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Filter-Id [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-appletalk-link-table-absent)
+; AVP: Framed-AppleTalk-Link
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-Appletalk-Link [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-appletalk-network-table-absent)
+; AVP: Framed-AppleTalk-Network
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-Appletalk-Network [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-appletalk-zone-table-absent)
+; AVP: Framed-AppleTalk-Zone
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-Appletalk-Zone [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-ipv6-pool-table-absent)
+; AVP: Framed-IPv6-Pool
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-IPv6-Pool [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-ipv6-route-table-absent)
+; AVP: Framed-IPv6-Route
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-IPv6-Route [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-ipx-network-table-absent)
+; AVP: Framed-IPX-Network
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-IPX-Network [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-pool-table-absent)
+; AVP: Framed-Pool
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-Pool [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-route-table-absent)
+; AVP: Framed-Route
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-Route [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-framed-routing-table-absent)
+; AVP: Framed-Routing
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Framed-Routing [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-idle-timeout-table-absent)
+; AVP: Idle-Timeout
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Idle-Timeout [NASREQ] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-multi-round-time-out-table-absent)
+; AVP: Multi-Round-Time-Out
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Multi-Round-Time-Out [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-nas-filter-rule-table-absent)
+; AVP: NAS-Filter-Rule
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-Filter-Rule [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-qos-filter-rule-table-absent)
+; AVP: QoS-Filter-Rule
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"QoS-Filter-Rule [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-re-auth-request-type-table-absent)
+; AVP: Re-Auth-Request-Type
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Re-Auth-Request-Type [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-redirect-host-table-absent)
+; AVP: Redirect-Host
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Redirect-Host [BASE] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-redirect-host-usage-table-absent)
+; AVP: Redirect-Host-Usage
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Redirect-Host-Usage [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-redirect-max-cache-time-table-absent)
+; AVP: Redirect-Max-Cache-Time
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Redirect-Max-Cache-Time [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-reply-message-table-absent)
+; AVP: Reply-Message
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Reply-Message [NASREQ] | 0 | 0+ |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-result-code-table-absent)
+; AVP: Result-Code
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Result-Code [BASE] | 0 | 1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#der-session-timeout-table-absent)
+; AVP: Session-Timeout
+; Command: Diameter-EAP-Request
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Session-Timeout [BASE] | 0 | 0-1 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-called-station-id-table-absent)
+; AVP: Called-Station-Id
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Called-Station-Id [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-calling-station-id-table-absent)
+; AVP: Calling-Station-Id
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Calling-Station-Id [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-connect-info-table-absent)
+; AVP: Connect-Info
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Connect-Info [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-destination-host-table-absent)
+; AVP: Destination-Host
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Destination-Host [BASE] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-destination-realm-table-absent)
+; AVP: Destination-Realm
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Destination-Realm [BASE] | 1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-nas-identifier-table-absent)
+; AVP: NAS-Identifier
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-Identifier [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-nas-ip-address-table-absent)
+; AVP: NAS-IP-Address
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-IP-Address [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-nas-ipv6-address-table-absent)
+; AVP: NAS-IPv6-Address
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-IPv6-Address [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-nas-port-table-absent)
+; AVP: NAS-Port
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-Port [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-nas-port-id-table-absent)
+; AVP: NAS-Port-Id
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-Port-Id [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-nas-port-type-table-absent)
+; AVP: NAS-Port-Type
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"NAS-Port-Type [NASREQ] | 0-1 | 0 |"
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC4072.dadx#dea-originating-line-info-table-absent)
+; AVP: Originating-Line-Info
+; Command: Diameter-EAP-Answer
+; Section: 5.1
+; Page: 20
+"0 The AVP MUST NOT be present in the message"
+"Originating-Line-Info [NASREQ] | 0-1 | 0 |"
+    absent

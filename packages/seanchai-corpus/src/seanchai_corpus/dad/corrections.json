@@ -18410,6 +18410,326 @@
   },
   "rfc4005": {
    "edits": {
+    "RFC4005.dadx#aaa-arap-password-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Password | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-auth-application-id-nasreq": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 1.3: 'Diameter applications conforming to this specification MUST advertise support by including the value of one (1) in the Auth-Application-Id of Capabilities-Exchange-Request (CER), AA-Request (AAR), and AA-Answer (AAA) messages.'"
+    },
+    "RFC4005.dadx#aaa-called-station-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Called-Station-Id | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-calling-station-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Calling-Station-Id | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-chap-auth-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'CHAP-Auth | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-chap-challenge-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'CHAP-Challenge | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-connect-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Connect-Info | 0+ | 0 |'"
+    },
+    "RFC4005.dadx#aaa-destination-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Destination-Host | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-destination-realm-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Destination-Realm | 1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-framed-ip-netmask-after-all-ones": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11.2: 'This AVP MUST be present in a response if the request included this AVP with a value of 0xFFFFFFFF.'"
+    },
+    "RFC4005.dadx#aaa-login-lat-group-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.17.3: 'This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT.'"
+    },
+    "RFC4005.dadx#aaa-login-lat-node-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.17.2: 'This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT.'"
+    },
+    "RFC4005.dadx#aaa-login-lat-port-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.17.4: 'This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT.'"
+    },
+    "RFC4005.dadx#aaa-login-lat-service-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.17.1: 'This AVP MUST only be present in the response if the Login-Service AVP states that LAT is desired.'"
+    },
+    "RFC4005.dadx#aaa-nas-identifier-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Identifier | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-nas-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-IP-Address | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-nas-ipv6-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-IPv6-Address | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-nas-port-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Port-Id | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-nas-port-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Port | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-nas-port-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Port-Type | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-originating-line-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Originating-Line-Info | 0-1 | 0 |'"
+    },
+    "RFC4005.dadx#aaa-user-password-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'User-Password | 0-1 | 0 | ------------------------------|'"
+    },
+    "RFC4005.dadx#aar-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim-Interval | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-arap-challenge-response-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Challenge-Response | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-arap-features-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Features | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-arap-password-without-other-passwords": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.9: 'This AVP MUST NOT be present if either the User-Password or the CHAP-Auth AVP is present.'"
+    },
+    "RFC4005.dadx#aar-arap-zone-access-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Zone-Access | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-auth-application-id-nasreq": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 1.3: 'Diameter applications conforming to this specification MUST advertise support by including the value of one (1) in the Auth-Application-Id of Capabilities-Exchange-Request (CER), AA-Request (AAR), and AA-Answer (AAA) messages.'"
+    },
+    "RFC4005.dadx#aar-callback-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Callback-Id | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-chap-auth-with-challenge": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4: 'If the CHAP-Auth AVP is found in a message, the CHAP-Challenge AVP MUST be present as well.'"
+    },
+    "RFC4005.dadx#aar-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Class | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-configuration-token-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Configuration-Token | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-filter-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Filter-Id | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-framed-appletalk-link-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Appletalk-Link | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-framed-appletalk-network-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Appletalk-Network | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-framed-appletalk-zone-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Appletalk-Zone | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-framed-ipv6-pool-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-IPv6-Pool | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-framed-ipv6-route-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-IPv6-Route | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-framed-ipx-network-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-IPX-Network | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-framed-pool-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Pool | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-framed-route-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Route | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-framed-routing-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Routing | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-idle-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Idle-Timeout | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-login-service-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Login-Service | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-login-tcp-port-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Login-TCP-Port | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out | 0 | 0-1 | ------------------------------|'"
+    },
+    "RFC4005.dadx#aar-nas-filter-rule-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Filter-Rule | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-password-retry-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Password-Retry | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-prompt-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Prompt | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-qos-filter-rule-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'QoS-Filter-Rule | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache-Time | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-reply-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Reply-Message | 0 | 0+ |'"
+    },
+    "RFC4005.dadx#aar-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code | 0 | 1 |'"
+    },
+    "RFC4005.dadx#aar-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 10.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout | 0 | 0-1 |'"
+    },
+    "RFC4005.dadx#aar-state-from-the-aaa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 3.1: 'A subsequent AAR message SHOULD be sent, with the User-Password AVP that includes the user's response to the prompt, and MUST include any State AVPs that were present in the AAA message.'"
+    },
+    "RFC4005.dadx#aar-state-returned-unmodified": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 9.3.4: 'If so, the NAS MUST return it unmodified in the subsequent AA-Request command.'; 'If the NAS performs the Termination-Action by sending a new AA-Request command upon termination of the current service, it MUST return the State AVP unmodified in the new request command.'"
+    },
+    "RFC4005.dadx#aca-acct-application-id-or-vendor-specific": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 3.10: 'Either Acct-Application-Id or Vendor-Specific-Application-Id AVPs MUST be present, as it was in the request.'"
+    },
+    "RFC4005.dadx#acr-acct-application-id-or-vendor-specific": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 3.9: 'Either of Acct-Application-Id or Vendor-Specific-Application-Id AVPs MUST be present.'"
+    },
+    "RFC4005.dadx#arap-challenge-response-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.10: 'This AVP contains an 8 octet response to the dial-in client's challenge.'"
+    },
+    "RFC4005.dadx#chap-auth-md5-response": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.5: 'This algorithm requires that the CHAP-Response AVP MUST be present in the CHAP-Auth AVP.'"
+    },
+    "RFC4005.dadx#chap-ident-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6: 'The CHAP-Ident AVP (AVP Code 404) is of type OctetString and contains the 1 octet CHAP Identifier used in the computation of the CHAP response [PPPCHAP].'"
+    },
+    "RFC4005.dadx#chap-response-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.7: 'The CHAP-Response AVP (AVP Code 405) is of type OctetString and contains the 16 octet authentication data provided by the user in response to the CHAP challenge [PPPCHAP].'"
+    },
+    "RFC4005.dadx#framed-appletalk-link-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.13.1: 'Despite the size of the field, values range from 0 to 65,535.'"
+    },
+    "RFC4005.dadx#framed-appletalk-network-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.13.2: 'Despite the size of the field, values range from 0 to 65,535.'"
+    },
+    "RFC4005.dadx#framed-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11.1: 'The Framed-IP-Address AVP (AVP Code 8) [RADIUS] is of type OctetString and contains an IPv4 address of the type specified in the attribute value to be configured for the user.'"
+    },
+    "RFC4005.dadx#framed-ip-netmask-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11.2: 'The Framed-IP-Netmask AVP (AVP Code 9) is of type OctetString and contains the four octets of the IPv4 netmask to be configured for the user when the user is a router to a network.'"
+    },
+    "RFC4005.dadx#framed-ipv6-route-text": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11.7: 'The string MUST contain an IPv6 address prefix followed by a slash and a decimal length specifier stating how many high order bits of the prefix should be used.'"
+    },
+    "RFC4005.dadx#framed-mtu-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.10.3: 'The MTU value MUST be in the range from 64 to 65535.'"
+    },
+    "RFC4005.dadx#framed-route-text": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.11.3: 'The string MUST contain a destination prefix in dotted quad form optionally followed by a slash and a decimal length specifier stating how many high-order bits of the prefix should be used.'"
+    },
+    "RFC4005.dadx#login-tcp-port-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.16.1: 'The value MUST NOT be greater than 65,535.'"
+    },
+    "RFC4005.dadx#originating-line-info-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.8: 'The Value field contains two octets (00 - 99).'"
+    },
+    "RFC4005.dadx#qos-filter-rule-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.9: 'QoSFilterRule filters MUST follow the following format:'"
+    },
+    "RFC4005.dadx#tunnel-client-auth-id-other-than-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.10: 'This AVP MUST be present in the authorization response if an authentication name other than the default is desired.'"
+    },
+    "RFC4005.dadx#tunnel-server-auth-id-other-than-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.11: 'This AVP MUST be present in the authorization response if an authentication name other than the default is desired.'"
+    },
+    "RFC4005.dadx#user-password-length": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: 'The clear-text password (prior to encryption) MUST NOT be longer than 128 bytes in length.'"
+    },
     "RFC4005.py#abort-session-answer-redirected-host": {
      "kind": "correction",
      "reason": "the Abort-Session-Answer ABNF writes Redirected-Host; RFC 6733 (and RFC 3588, current when this was published) defines Redirect-Host and no Redirected-* AVP exists; the AAR/AAA ABNFs of this same document spell the family correctly"
@@ -18841,6 +19161,206 @@
   },
   "rfc4072": {
    "edits": {
+    "RFC4072.dadx#dea-called-station-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Called-Station-Id [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-calling-station-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Calling-Station-Id [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-connect-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Connect-Info [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-destination-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Destination-Host [BASE] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-destination-realm-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Destination-Realm [BASE] | 1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-eap-result-not-multi-round": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 2.8.2: 'A Diameter-EAP-Answer message containing an EAP-Payload of type EAP-Success or EAP-Failure MUST NOT have the Result-Code AVP set to DIAMETER_MULTI_ROUND_AUTH.'"
+    },
+    "RFC4072.dadx#dea-fatal-error-eap-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 2.4: 'A Diameter server determining that a fatal error has occurred MUST send a Diameter-EAP-Answer with a failure Result-Code and an EAP-Payload AVP encapsulating an EAP Failure packet.'"
+    },
+    "RFC4072.dadx#dea-nas-identifier-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-Identifier [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-nas-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-IP-Address [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-nas-ipv6-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-IPv6-Address [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-nas-port-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-Port-Id [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-nas-port-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-Port [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-nas-port-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-Port-Type [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-non-fatal-error-reissued-payload": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 2.4: 'A Diameter server determining that a non-fatal error has occurred MUST send a Diameter-EAP-Answer with DIAMETER_MULTI_ROUND_AUTH Result-Code, but no EAP-Payload AVP.'; 'To simplify RADIUS translation, this message MUST also include an EAP-Reissued-Payload AVP encapsulating the previous EAP Request sent by the server.'"
+    },
+    "RFC4072.dadx#dea-originating-line-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Originating-Line-Info [NASREQ] | 0-1 | 0 |'"
+    },
+    "RFC4072.dadx#dea-reply-message-without-eap-payload": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 2.8.3: 'The Reply-Message AVP [NASREQ] MUST NOT be included in any Diameter message containing an EAP-Payload AVP.'"
+    },
+    "RFC4072.dadx#der-accounting-eap-auth-method-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Accounting-EAP-Auth-Method | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Acct-Interim-Interval [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-callback-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Callback-Id [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Class [BASE] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-configuration-token-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Configuration-Token [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-eap-key-name-empty": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.1.4: 'As a result, a Key-Name AVP sent in a Diameter-EAP-Request MUST NOT contain any data.'"
+    },
+    "RFC4072.dadx#der-eap-master-session-key-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'EAP-Master-Session-Key | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-eap-payload-no-eap-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 2.8.4: 'A Diameter client MUST NOT send a Diameter-EAP-Request encapsulating an EAP Request packet, and a Diameter server receiving such a packet MUST respond with a failure Result-Code.'"
+    },
+    "RFC4072.dadx#der-eap-reissued-payload-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'EAP-Reissued-Payload | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Error-Message [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Error-Reporting-Host [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-failed-avp-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Failed-AVP [BASE] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-filter-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Filter-Id [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-framed-appletalk-link-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-Appletalk-Link [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-framed-appletalk-network-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-Appletalk-Network [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-framed-appletalk-zone-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-Appletalk-Zone [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-framed-ipv6-pool-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-IPv6-Pool [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-framed-ipv6-route-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-IPv6-Route [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-framed-ipx-network-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-IPX-Network [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-framed-pool-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-Pool [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-framed-route-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-Route [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-framed-routing-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Framed-Routing [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-idle-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Idle-Timeout [NASREQ] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Multi-Round-Time-Out [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-nas-filter-rule-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'NAS-Filter-Rule [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-qos-filter-rule-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'QoS-Filter-Rule [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Re-Auth-Request-Type [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Redirect-Host [BASE] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Redirect-Host-Usage [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Redirect-Max-Cache-Time [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-reply-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Reply-Message [NASREQ] | 0 | 0+ |'"
+    },
+    "RFC4072.dadx#der-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Result-Code [BASE] | 0 | 1 |'"
+    },
+    "RFC4072.dadx#der-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message'; 'Session-Timeout [BASE] | 0 | 0-1 |'"
+    },
+    "RFC4072.dadx#der-state-from-the-dea": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 3.1: 'A subsequent DER message MUST include any State AVPs [NASREQ] that were present in the DEA.'"
+    },
     "RFC4072.py#application-id": {
      "kind": "insert",
      "reason": "clause 2.1 advertises 'the Diameter EAP Application ID value of 5', and the IANA considerations (clause 7) allocate it; the DER/DEA headers print none"
@@ -21387,6 +21907,326 @@
   },
   "rfc7155": {
    "edits": {
+    "RFC7155.dadx#aaa-arap-password-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Password | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-called-station-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Called-Station-Id | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-calling-station-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Calling-Station-Id | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-chap-auth-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'CHAP-Auth | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-chap-challenge-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'CHAP-Challenge | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-connect-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Connect-Info | 0+ | 0 |'"
+    },
+    "RFC7155.dadx#aaa-destination-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Destination-Host | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-destination-realm-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Destination-Realm | 1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-framed-ip-netmask-after-all-ones": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.5.2: 'This AVP MUST be present in a response if the request included this AVP with a value of 0xFFFFFFFF.'"
+    },
+    "RFC7155.dadx#aaa-login-lat-group-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.11.5.3: 'This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT.'"
+    },
+    "RFC7155.dadx#aaa-login-lat-node-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.11.5.2: 'This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT.'"
+    },
+    "RFC7155.dadx#aaa-login-lat-port-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.11.5.4: 'This AVP MUST only be present in a response if the Login-Service-Type AVP is set to LAT.'"
+    },
+    "RFC7155.dadx#aaa-login-lat-service-for-lat": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.11.5.1: 'This AVP MUST only be present in the response if the Login-Service AVP states that LAT is desired.'"
+    },
+    "RFC7155.dadx#aaa-nas-identifier-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Identifier | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-nas-ip-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-IP-Address | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-nas-ipv6-address-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-IPv6-Address | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-nas-port-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Port-Id | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-nas-port-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Port | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-nas-port-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Port-Type | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-originating-line-info-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Originating-Line-Info | 0-1 | 0 |'"
+    },
+    "RFC7155.dadx#aaa-route-record-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Route-Record | 0+ | 0 |'"
+    },
+    "RFC7155.dadx#aaa-user-password-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'User-Password | 0-1 | 0 | ------------------------------|'"
+    },
+    "RFC7155.dadx#aar-acct-interim-interval-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Acct-Interim-Interval | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-arap-challenge-response-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Challenge-Response | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-arap-features-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Features | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-arap-password-without-other-passwords": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.9: 'This AVP MUST NOT be present if either the User-Password or the CHAP-Auth AVP is present.'"
+    },
+    "RFC7155.dadx#aar-arap-zone-access-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'ARAP-Zone-Access | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-auth-application-id-nasreq": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 1.5: 'When used in this application, the Auth-Application-Id AVP MUST be set to the value one (1) in the following messages'; 'o AA-Request (Section 3.1)'"
+    },
+    "RFC7155.dadx#aar-callback-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Callback-Id | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-chap-auth-with-challenge": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.4: 'If the CHAP-Auth AVP is found in a message, the CHAP-Challenge AVP (Section 4.3.8) MUST be present as well.'"
+    },
+    "RFC7155.dadx#aar-class-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Class | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-configuration-token-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Configuration-Token | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-error-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Message | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-error-reporting-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Error-Reporting-Host | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-filter-id-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Filter-Id | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-framed-appletalk-link-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Appletalk-Link | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-framed-appletalk-network-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Appletalk-Network | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-framed-appletalk-zone-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Appletalk-Zone | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-framed-ipv6-pool-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-IPv6-Pool | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-framed-ipv6-route-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-IPv6-Route | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-framed-ipx-network-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-IPX-Network | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-framed-pool-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Pool | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-framed-route-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Route | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-framed-routing-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Framed-Routing | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-idle-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Idle-Timeout | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-login-service-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Login-Service | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-login-tcp-port-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Login-TCP-Port | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-multi-round-time-out-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Multi-Round-Time-Out | 0 | 0-1 | ------------------------------|'"
+    },
+    "RFC7155.dadx#aar-nas-filter-rule-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'NAS-Filter-Rule | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-password-retry-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Password-Retry | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-prompt-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Prompt | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-qos-filter-rule-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'QoS-Filter-Rule | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-re-auth-request-type-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Re-Auth-Request-Type | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-redirect-host-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-redirect-host-usage-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Host-Usage | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-redirect-max-cache-time-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Redirect-Max-Cache-Time | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-reply-message-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Reply-Message | 0 | 0+ |'"
+    },
+    "RFC7155.dadx#aar-result-code-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Result-Code | 0 | 1 |'"
+    },
+    "RFC7155.dadx#aar-session-timeout-table-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1: '0 The AVP MUST NOT be present in the message.'; 'Session-Timeout | 0 | 0-1 |'"
+    },
+    "RFC7155.dadx#aar-state-from-the-aaa": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 3.1: 'A subsequent AAR message SHOULD be sent, with the User-Password AVP that includes the user's response to the prompt and MUST include any State AVPs that were present in the AAA message.'"
+    },
+    "RFC7155.dadx#arap-challenge-response-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.10: 'This AVP contains an 8-octet response to the dial-in client's challenge.'"
+    },
+    "RFC7155.dadx#asr-auth-application-id-nasreq": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 1.5: 'When used in this application, the Auth-Application-Id AVP MUST be set to the value one (1) in the following messages'; 'o Abort-Session-Request (Section 3.7)'"
+    },
+    "RFC7155.dadx#chap-auth-md5-response": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.5: 'This algorithm requires that the CHAP-Response AVP (Section 4.3.7) MUST be present in the CHAP-Auth AVP (Section 4.3.4).'"
+    },
+    "RFC7155.dadx#chap-ident-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.6: 'The CHAP-Ident AVP (AVP Code 404) is of type OctetString and contains the 1 octet CHAP Identifier used in the computation of the CHAP response [RFC1994].'"
+    },
+    "RFC7155.dadx#chap-response-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.7: 'The CHAP-Response AVP (AVP Code 405) is of type OctetString and contains the 16-octet authentication data provided by the user in response to the CHAP challenge [RFC1994].'"
+    },
+    "RFC7155.dadx#framed-appletalk-link-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.7.1: 'Despite the size of the field, values range from 0 to 65,535.'"
+    },
+    "RFC7155.dadx#framed-appletalk-network-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.7.2: 'Despite the size of the field, values range from 0 to 65,535.'"
+    },
+    "RFC7155.dadx#framed-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.5.1: 'The Framed-IP-Address AVP (AVP Code 8) [RFC2865] is of type OctetString and contains an IPv4 address of the type specified in the attribute value to be configured for the user.'"
+    },
+    "RFC7155.dadx#framed-ip-netmask-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.5.2: 'The Framed-IP-Netmask AVP (AVP Code 9) is of type OctetString and contains the four octets of the IPv4 netmask to be configured for the user when the user is a router to a network.'"
+    },
+    "RFC7155.dadx#framed-ipv6-route-text": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.5.7: 'The string MUST contain an IPv6 address prefix followed by a slash and a decimal-length specifier stating how many high-order bits of the prefix should be used.'"
+    },
+    "RFC7155.dadx#framed-mtu-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.3: 'The MTU value MUST be in the range from 64 to 65535.'"
+    },
+    "RFC7155.dadx#framed-route-text": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.10.5.3: 'The string MUST contain a destination prefix in dotted quad form optionally followed by a slash and a decimal-length specifier stating how many high-order bits of the prefix should be used.'"
+    },
+    "RFC7155.dadx#login-tcp-port-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.11.4.1: 'The value MUST NOT be greater than 65,535.'"
+    },
+    "RFC7155.dadx#originating-line-info-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.2.8: 'The Value field contains two octets (00 - 99).'"
+    },
+    "RFC7155.dadx#qos-filter-rule-format": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.1.1: 'QoSFilterRule filters MUST follow the following format:'"
+    },
+    "RFC7155.dadx#rar-auth-application-id-nasreq": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 1.5: 'When used in this application, the Auth-Application-Id AVP MUST be set to the value one (1) in the following messages'; 'o Re-Auth-Request(Section 3.3)'"
+    },
+    "RFC7155.dadx#str-auth-application-id-nasreq": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 1.5: 'When used in this application, the Auth-Application-Id AVP MUST be set to the value one (1) in the following messages'; 'o Session-Termination-Request (Section 3.5)'"
+    },
+    "RFC7155.dadx#tunnel-client-auth-id-other-than-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.10: 'This AVP MUST be present in the authorization response if an authentication name other than the default is desired.'"
+    },
+    "RFC7155.dadx#tunnel-server-auth-id-other-than-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.11: 'This AVP MUST be present in the authorization response if an authentication name other than the default is desired.'"
+    },
+    "RFC7155.dadx#user-password-length": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.3.1: 'The clear-text password (prior to encryption) MUST NOT be longer than 128 bytes in length.'"
+    },
     "RFC7155.py#abort-session-answer-redirected-host": {
      "kind": "correction",
      "reason": "the Abort-Session-Answer ABNF writes Redirected-Host; RFC 6733 defines Redirect-Host and no Redirected-* AVP exists; verified errata 5993/5994 correct the spelling"
