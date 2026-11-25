@@ -488,6 +488,31 @@ _NAME = constraints.Avp("User-Name", DataType.UTF8_STRING, b"alice")
         ("equals request/User-Name", ["Example:bob"], [], True),
         ("absent", ["Example"], [], False),
         ("absent", ["User-Name"], [], True),
+        (
+            "present-if request/Example-Flags bit 1 and not request/User-Name",
+            [],
+            [_FLAGS],
+            False,
+        ),
+        (
+            "present-if request/Example-Flags bit 1 and not request/User-Name",
+            [],
+            [_FLAGS, _NAME],
+            True,
+        ),
+        (
+            "requires request/User-Name or request/Example-Flags = 2 and User-Name",
+            ["Example", "User-Name"],
+            [_FLAGS],
+            True,
+        ),
+        (
+            "requires request/User-Name or request/Example-Flags = 2 and User-Name",
+            ["Example"],
+            [_FLAGS],
+            False,
+        ),
+        ("absent", ["Other"], [], True),
     ],
 )
 def test_a_rule_on_the_request_holds_of_the_request_given(text, scope, asked, holds):

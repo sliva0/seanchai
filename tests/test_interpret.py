@@ -56,6 +56,7 @@ _EVERY_RULE = _dad(
     '    encoding element TS24.008 10.5.5.32 "Extended DRX parameter"',
     "    encoding element TS29.002",
     '    present-if Result-Code = DIAMETER_SUCCESS or Mode = "a b" or Other',
+    "    absent-if Mode = 1 and not Other or not Level bit 2 and Kind and Level = 3",
     "    absent-if Emergency-Services bit Emergency-Indication",
     "    excludes Level = -1",
     "    default FALSE",
@@ -116,15 +117,17 @@ def test_every_rule_reads_and_writes_back():
     assert present == ast.PredicateRule(
         kind=ast.PredicateKind.PRESENT_IF,
         conditions=(
-            ast.Condition(
-                root=ast.Root.REQUEST,
-                path=("Server-Assignment-Type",),
-                value="REGISTRATION",
+            (
+                ast.Condition(
+                    root=ast.Root.REQUEST,
+                    path=("Server-Assignment-Type",),
+                    value="REGISTRATION",
+                ),
             ),
         ),
     )
     assert isinstance(requires, ast.PredicateRule)
-    assert requires.conditions[1].value == ast.Reference(
+    assert requires.conditions[1][0].value == ast.Reference(
         root=ast.Root.REQUEST, path=("Result-Code",)
     )
     assert equals == ast.EqualsRule(
@@ -144,7 +147,7 @@ def test_every_rule_reads_and_writes_back():
     (rule,) = first.rules
     assert isinstance(rule, ast.PredicateRule)
     assert rule.kind is ast.PredicateKind.REQUIRES
-    assert [condition.bit for condition in rule.conditions] == [
+    assert [condition.bit for (condition,) in rule.conditions] == [
         "PDN subscription contexts Withdrawal",
         6,
     ]
@@ -152,6 +155,15 @@ def test_every_rule_reads_and_writes_back():
     assert second.rules[1] == ast.RangeRule(low=-1, high=None)
     assert second.rules[3] == ast.RangeRule(low=7, high=7)
     assert second.rules[5] == ast.LengthRule(unit=ast.LengthUnit.OCTETS, low=3, high=3)
+    compound = second.rules[11]
+    assert isinstance(compound, ast.PredicateRule)
+    assert [
+        [(each.avp, each.negated) for each in conjunction]
+        for conjunction in compound.conditions
+    ] == [
+        [("Mode", False), ("Other", True)],
+        [("Level", True), ("Kind", False), ("Level", False)],
+    ]
     assert second.rules[-10:] == (
         ast.DefaultRule(value="FALSE"),
         ast.DefaultRule(value=0),
@@ -168,8 +180,8 @@ def test_every_rule_reads_and_writes_back():
         ast.ValuesRule(
             values=(1, 2),
             conditions=(
-                ast.Condition(path=("Monitoring-Type",), value="UE_REACHABILITY"),
-                ast.Condition(path=("Flags",), bit="A b"),
+                (ast.Condition(path=("Monitoring-Type",), value="UE_REACHABILITY"),),
+                (ast.Condition(path=("Flags",), bit="A b"),),
             ),
         ),
     )
@@ -331,6 +343,18 @@ def test_every_rule_reads_and_writes_back():
         pytest.param(
             _block('"Q."', "    equals"), 11, "malformed rule", id="equals-bare"
         ),
+        pytest.param(
+            _block('"Q."', "    requires A and"),
+            11,
+            "malformed condition",
+            id="and-bare",
+        ),
+        pytest.param(
+            _block('"Q."', "    requires not not A"),
+            11,
+            "malformed condition",
+            id="not-twice",
+        ),
     ],
 )
 def test_a_malformed_block_is_refused_at_its_line(text, lineno, fact):
@@ -426,7 +450,7 @@ def test_an_interpretations_file_reads_and_writes_back():
             ast.Quote(text="Only with the flag."),
             ast.PredicateRule(
                 kind=ast.PredicateKind.REQUIRES,
-                conditions=(ast.Condition(path=("Example-Flags",), bit=0),),
+                conditions=((ast.Condition(path=("Example-Flags",), bit=0),),),
             ),
         ),
     )
@@ -1296,7 +1320,7 @@ def test_the_model_resolves_the_request_an_answers_rules_read(tmp_path):
     answer = next(c for c in output.applications[0].commands if not c.is_request)
     (scoped,) = answer.constraints
     assert scoped.request_section == "6.1.1"
-    (condition,) = scoped.readings[0].rules[0].conditions
+    ((condition,),) = scoped.readings[0].rules[0].conditions
     assert (condition.root, condition.path, condition.bit) == (
         "request",
         ("Example-Flags",),

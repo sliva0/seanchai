@@ -53,6 +53,7 @@ __all__ = [
     "CommandFlag",
     "CommandResultCodes",
     "Condition",
+    "Conjunction",
     "ConstraintRule",
     "DataType",
     "DefaultRule",
@@ -1593,10 +1594,12 @@ class Condition(Reference):
     holds, or with `root` of one the request holds: that it is present
     (`Foo`), that it holds a value (`Foo = 1`, `Foo = TRUE`, or the value of
     an AVP of the request, `Foo = request/Foo`), or that a bit is set (`Foo
-    bit 3`, `Foo bit "Trace Data Withdrawal"`)."""
+    bit 3`, `Foo bit "Trace Data Withdrawal"`); `negated`, that it does not
+    (`not Foo`)."""
 
     value: ValueRef | Reference | None = None
     bit: ValueRef | None = None
+    negated: bool = False
 
     @pydantic.model_validator(mode="after")
     def _one_test(self) -> Condition:
@@ -1619,6 +1622,10 @@ class Condition(Reference):
         return (self,)
 
 
+# Conditions joined by `and`: the alternative holds when each does.
+Conjunction = Annotated[tuple[Condition, ...], Field(min_length=1)]
+
+
 class PredicateKind(enum.StrEnum):
     """How a predicate ties its AVP's presence to its conditions.
 
@@ -1637,7 +1644,9 @@ class PredicateKind(enum.StrEnum):
 
 class PredicateRule(Node):
     """`requires Non-IP-PDN-Type-Indicator = TRUE`: the AVP's presence tied
-    to other AVPs of the block's command or grouped AVP. Several conditions
+    to other AVPs of the block's command or grouped AVP. `conditions` are
+    alternatives (`or`), each a conjunction of conditions (`and`), which
+    binds tighter: `A and B or C`. Several conditions
     are alternatives, `or` in the file."""
 
     kind: Literal[
@@ -1646,7 +1655,7 @@ class PredicateRule(Node):
         PredicateKind.REQUIRES,
         PredicateKind.EXCLUDES,
     ]
-    conditions: Annotated[tuple[Condition, ...], Field(min_length=1)]
+    conditions: Annotated[tuple[Conjunction, ...], Field(min_length=1)]
 
 
 class DefaultRule(Node):
@@ -1742,11 +1751,11 @@ class ValuesRule(Node):
     Monitoring-Type AVP takes the value UE_REACHABILITY (1), the
     Reachability-Information AVP shall take the value REACHABLE_FOR_DATA
     (1)", TS 29.272 clause 7.3.196). The conditions are a predicate's, on the
-    AVP's siblings, `or` joining alternatives."""
+    AVP's siblings, `or` joining alternatives of conditions `and` joins."""
 
     kind: Literal["values"] = "values"
     values: Annotated[tuple[int, ...], Field(min_length=1)]
-    conditions: Annotated[tuple[Condition, ...], Field(min_length=1)]
+    conditions: Annotated[tuple[Conjunction, ...], Field(min_length=1)]
 
     @pydantic.model_validator(mode="after")
     def _distinct(self) -> ValuesRule:
@@ -1802,10 +1811,10 @@ ConstraintRule = Annotated[
 
 
 def conditions_of(rule: ConstraintRule) -> tuple[Condition, ...]:
-    """The conditions a rule tests: a predicate's or a `values` rule's, none
-    for another kind."""
+    """Every condition a rule tests, of each of its alternatives: a
+    predicate's or a `values` rule's, none for another kind."""
     if isinstance(rule, PredicateRule | ValuesRule):
-        return rule.conditions
+        return tuple(each for conjunction in rule.conditions for each in conjunction)
     return ()
 
 

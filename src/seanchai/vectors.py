@@ -561,12 +561,22 @@ class _Scope:
     request: _Scope | None = None
 
 
+def _terms(rule: dictionary.Rule) -> list[dictionary.Condition]:
+    """Every condition of a rule's alternatives."""
+    return [each for conjunction in rule.conditions for each in conjunction]
+
+
+def _positive(condition: dictionary.Condition) -> dictionary.Condition:
+    """`condition` without its `not`."""
+    return condition.model_copy(update={"negated": False})
+
+
 def _reads_request(rule: dictionary.Rule) -> bool:
     """Whether `rule` reads an AVP of the request its answer answers."""
-    references: list[dictionary.Reference] = [*rule.conditions]
+    references: list[dictionary.Reference] = [*_terms(rule)]
     references += [
         each.value
-        for each in rule.conditions
+        for each in _terms(rule)
         if isinstance(each.value, dictionary.Reference)
     ]
     if rule.reference is not None:
@@ -833,7 +843,7 @@ class _Builder:
                             and (
                                 c.bit is None or self.values.bit(avp, c.bit) is not None
                             )
-                            for c in rule.conditions
+                            for c in _terms(rule)
                         ):
                             yield name, each, rule
 
@@ -876,6 +886,19 @@ class _Builder:
                 return True
         return False
 
+    def alternatives(
+        self,
+        nodes: Sequence[_Avp],
+        alternatives: Sequence[Sequence[dictionary.Condition]],
+        request: Sequence[_Avp] | None = None,
+    ) -> bool:
+        """Whether one of `alternatives` holds, each when every condition of
+        it does, a negated one when it does not."""
+        return any(
+            all(self.condition(nodes, c, request) != c.negated for c in conjunction)
+            for conjunction in alternatives
+        )
+
     def broken(
         self,
         scope: _Scope,
@@ -899,7 +922,7 @@ class _Builder:
                 if subject and not self.equal(nodes, name, rule.reference, request):
                     found.append((name, rule.kind, each))
                 continue
-            holds = any(self.condition(nodes, c, request) for c in rule.conditions)
+            holds = self.alternatives(nodes, rule.conditions, request)
             if (
                 (rule.kind == "present-if" and holds and not subject)
                 or (rule.kind == "absent-if" and holds and subject)
@@ -1820,7 +1843,7 @@ class _Negatives:
         nothing else."""
         if not all(
             self.builder.values.number(self.builder.avps[m.avp], c.value) is not None
-            for c in rule.conditions
+            for c in _terms(rule)
             for m in inner.members
             if m.name == c.avp
             and m.avp is not None
@@ -1828,7 +1851,7 @@ class _Negatives:
             and not isinstance(c.value, dictionary.Reference)
         ):
             return False
-        if not self.make_hold(children, rule.conditions[0], inner):
+        if not all(self.make_hold(children, c, inner) for c in rule.conditions[0]):
             return False
         subject = self.sibling(children, member, inner)
         if subject is None or subject.avp.data_type not in _FIXED:
@@ -2004,7 +2027,7 @@ class _Negatives:
             member = next(m for m in self.scope.members if m.name == name)
             subject = [n for n in nodes if n.avp.name == name]
             if rule.kind in ("absent-if", "excludes", "present-if"):
-                if not self.make_hold(nodes, rule.conditions[0]):
+                if not all(self.make_hold(nodes, c) for c in rule.conditions[0]):
                     continue
                 if rule.kind == "present-if":
                     if member.min_occurs:
@@ -2027,7 +2050,10 @@ class _Negatives:
                             self.builder.avps[member.avp], self.scope, member, False, ()
                         )
                     )
-                if not all(self.make_fail(nodes, c) for c in rule.conditions):
+                if not all(
+                    any(self.make_fail(nodes, c) for c in conjunction)
+                    for conjunction in rule.conditions
+                ):
                     continue
             broken = self.builder.broken(self.scope, nodes)
             if [(n, k) for n, k, _ in broken] != [(name, rule.kind)]:
@@ -2167,10 +2193,10 @@ class _Negatives:
                 return None
             target.payload = payload
         else:
-            first = rule.conditions[0]
-            found = self.run_of(valid, first)
-            if found is None or not self.make_hold(found[0], first, found[1]):
-                return None
+            for condition in rule.conditions[0]:
+                found = self.run_of(valid, condition)
+                if found is None or not self.make_hold(found[0], condition, found[1]):
+                    return None
             if rule.kind in ("present-if", "requires"):
                 if present(valid) is None:
                     return None
@@ -2181,10 +2207,11 @@ class _Negatives:
                 if not absent(negative):
                     return None
             elif rule.kind == "requires":
-                for condition in rule.conditions:
-                    found = self.run_of(negative, condition)
-                    if found is None or not self.make_fail(
-                        found[0], condition, found[1]
+                for conjunction in rule.conditions:
+                    if not any(
+                        (found := self.run_of(negative, condition)) is not None
+                        and self.make_fail(found[0], condition, found[1])
+                        for condition in conjunction
                     ):
                         return None
             elif rule.kind in ("absent-if", "excludes"):
@@ -2234,6 +2261,8 @@ class _Negatives:
         condition: dictionary.Condition,
         scope: _Scope | None = None,
     ) -> bool:
+        if condition.negated:
+            return self.make_fail(nodes, _positive(condition), scope)
         if isinstance(condition.value, dictionary.Reference):
             return False
         node = self.sibling(nodes, condition.avp, scope)
@@ -2258,6 +2287,8 @@ class _Negatives:
         scope: _Scope | None = None,
     ) -> bool:
         scope = scope or self.scope
+        if condition.negated:
+            return self.make_hold(nodes, _positive(condition), scope)
         if isinstance(condition.value, dictionary.Reference):
             return False
         member = next((m for m in scope.members if m.name == condition.avp), None)
@@ -2338,17 +2369,34 @@ def _rule_text(rule: dictionary.Rule) -> str:
         return f"bits {rule.relation} {' '.join(map(str, rule.bits))}"
     if rule.kind == "members":
         return f"members {rule.relation} {' '.join(rule.members)}"
-    if rule.kind == "unique":
-        return "unique"
+    if rule.kind in ("unique", "absent"):
+        return rule.kind
+    if rule.kind == "equals" and rule.reference is not None:
+        return f"equals {_path(rule.reference)}"
     conditions = " or ".join(
-        c.avp
-        + (f" = {c.value}" if c.value is not None else "")
-        + (f" bit {c.bit}" if c.bit is not None else "")
-        for c in rule.conditions
+        " and ".join(
+            ("not " if c.negated else "")
+            + _path(c)
+            + (
+                f" = {_path(c.value)}"
+                if isinstance(c.value, dictionary.Reference)
+                else f" = {c.value}"
+                if c.value is not None
+                else ""
+            )
+            + (f" bit {c.bit}" if c.bit is not None else "")
+            for c in conjunction
+        )
+        for conjunction in rule.conditions
     )
     if rule.kind == "values":
         return f"values {', '.join(map(str, rule.values))} if {conditions}"
     return f"{rule.kind} {conditions}"
+
+
+def _path(reference: dictionary.Reference) -> str:
+    names = "/".join(reference.path)
+    return names if reference.root is None else f"{reference.root}/{names}"
 
 
 def _span(low: int | None, high: int | None) -> str:

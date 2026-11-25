@@ -38,6 +38,7 @@ __all__ = [
     "avp_table_cell",
     "commented_avp_rule",
     "condition",
+    "conditions",
     "constraint_rule",
     "format_interpretations",
     "format_spec",
@@ -669,14 +670,24 @@ def reference(reference: ast.Reference) -> str:
 
 
 def condition(each: ast.Condition) -> str:
-    """A condition as a rule prints it: `request/Foo = 1`."""
+    """A condition as a rule prints it: `request/Foo = 1`, `not Foo`."""
     if isinstance(each.value, ast.Reference):
-        return f"{reference(each)} = {reference(each.value)}"
-    if each.value is not None:
-        return f"{reference(each)} = {_value_ref(each.value)}"
-    if each.bit is not None:
-        return f"{reference(each)} bit {_value_ref(each.bit)}"
-    return reference(each)
+        test = f"{reference(each)} = {reference(each.value)}"
+    elif each.value is not None:
+        test = f"{reference(each)} = {_value_ref(each.value)}"
+    elif each.bit is not None:
+        test = f"{reference(each)} bit {_value_ref(each.bit)}"
+    else:
+        test = reference(each)
+    return f"not {test}" if each.negated else test
+
+
+def conditions(alternatives: Sequence[Sequence[ast.Condition]]) -> str:
+    """Alternatives as a rule prints them: `A and B or C`."""
+    return " or ".join(
+        " and ".join(condition(each) for each in conjunction)
+        for conjunction in alternatives
+    )
 
 
 def constraint_rule(rule: ast.ConstraintRule) -> str:
@@ -696,8 +707,7 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
                 parts.append(_quoted(rule.element))
             return " ".join(parts)
         case ast.PredicateRule():
-            conditions = " or ".join(condition(each) for each in rule.conditions)
-            return f"{rule.kind} {conditions}"
+            return f"{rule.kind} {conditions(rule.conditions)}"
         case ast.DefaultRule():
             return f"default {_value_ref(rule.value)}"
         case ast.BitsRule():
@@ -710,8 +720,7 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
             return "absent"
         case ast.ValuesRule():
             values = ", ".join(str(value) for value in rule.values)
-            conditions = " or ".join(condition(each) for each in rule.conditions)
-            return f"values {values} if {conditions}"
+            return f"values {values} if {conditions(rule.conditions)}"
         case ast.EqualsRule():
             return f"equals {reference(rule.reference)}"
         case ast.TextOnly():

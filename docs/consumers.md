@@ -299,7 +299,8 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   `check` in words, `depth`, `unchecked`, what it leaves and why, and
   `sources`, each `document`, `edition`, `clause` and `where`;
   [constraints.md](constraints.md#elements)), a predicate's
-  `conditions`, a default's `value`, a bits rule's `relation` and `bits`, a
+  `conditions`, alternatives each a list of conditions that must all hold,
+  a default's `value`, a bits rule's `relation` and `bits`, a
   members rule's `relation` and `members`, a values rule's `values` and
   `conditions`, and an equals rule's `reference`; `unique` and `absent`
   have none. A
@@ -308,7 +309,8 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   a member of the request the answer answers, printed at the constraint's
   `request_section`; it has `value` (a number, a name, or a reference,
   `root` and `path`, to the AVP whose value it tests against) or `bit`, or
-  neither for presence. A reference is the same `root` and `path`.
+  neither for presence, and `negated`, true where it must not hold. A
+  reference is the same `root` and `path`.
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included: the copy of
   the document printing an error answer that its base resolved to.

@@ -364,17 +364,28 @@ def _condition_holds(
 
 
 def _any_holds(
-    conditions: Sequence[ast.Condition],
+    alternatives: Sequence[Sequence[ast.Condition]],
     scope: Sequence[Avp],
     request: Sequence[Avp] | None,
 ) -> bool | None:
-    """Whether one of `conditions`, alternatives, holds."""
+    """Whether one of `alternatives` holds, each when every condition of it
+    does, a negated one when it does not; None where that rests on a value
+    not read."""
     unknown = False
-    for condition in conditions:
-        found = _condition_holds(condition, scope, request)
-        if found:
+    for conjunction in alternatives:
+        met: bool | None = True
+        for condition in conjunction:
+            found = _condition_holds(condition, scope, request)
+            if found is not None and condition.negated:
+                found = not found
+            if found is False:
+                met = False
+                break
+            if found is None:
+                met = None
+        if met:
             return True
-        unknown = unknown or found is None
+        unknown = unknown or met is None
     return None if unknown else False
 
 
@@ -407,7 +418,7 @@ def holds(
             met = _any_holds(rule.conditions, scope, request)
         case _:
             return Check(None)
-    said = " or ".join(formatter.condition(each) for each in rule.conditions)
+    said = formatter.conditions(rule.conditions)
     match rule:
         case ast.PredicateRule(kind=ast.PredicateKind.PRESENT_IF) if (
             met and subject is None

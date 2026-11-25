@@ -696,6 +696,7 @@ def _condition(each: ast.Condition) -> ConstraintCondition:
         path=each.path,
         value=_reference(value) if isinstance(value, ast.Reference) else value,
         bit=each.bit,
+        negated=each.negated,
     )
 
 
@@ -733,7 +734,9 @@ def _constraint_readings(
                     "element_entry": _json.element_entry(node),
                 }
             case ast.PredicateRule():
-                fields["conditions"] = tuple(map(_condition, node.conditions))
+                fields["conditions"] = tuple(
+                    tuple(map(_condition, each)) for each in node.conditions
+                )
             case ast.DefaultRule():
                 fields["value"] = node.value
             case ast.BitsRule():
@@ -742,7 +745,9 @@ def _constraint_readings(
                 fields |= {"relation": node.relation, "members": node.members}
             case ast.ValuesRule():
                 fields["values"] = node.values
-                fields["conditions"] = tuple(map(_condition, node.conditions))
+                fields["conditions"] = tuple(
+                    tuple(map(_condition, each)) for each in node.conditions
+                )
             case ast.EqualsRule():
                 fields["reference"] = _reference(node.reference)
             case ast.UniqueRule() | ast.AbsentRule() | ast.TextOnly():

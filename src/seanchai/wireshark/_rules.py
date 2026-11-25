@@ -573,8 +573,9 @@ def _constraint(
     `elements`, `r` and `b` for a bits rule's relation and bits,
     `r` and `m` for a members rule's relation and the identities of the
     members it names, `i` for a unique rule's member identity, `c` for a
-    predicate's conditions, and `v` and `c` for a values rule, each condition
-    as `_condition` writes it, `r` for an `equals` rule's AVP, and `q=true`
+    predicate's conditions, and `v` and `c` for a values rule, the
+    conditions alternatives, each the conditions an `and` joins, as
+    `_condition` writes them, `r` for an `equals` rule's AVP, and `q=true`
     on a rule reading the request. `siblings` maps a member name to its
     reading's id, where the scope has members, and `request` a member of
     the request the constraint reads, whose identities `needed` collects;
@@ -667,11 +668,14 @@ def _constraint(
                     )
             elif kind != "text-only":
                 conditions = []
-                for condition in rule.conditions:
-                    found = _condition(condition, siblings, request, needed, names)
-                    if found is None:
+                for conjunction in rule.conditions:
+                    terms = [
+                        _condition(each, siblings, request, needed, names)
+                        for each in conjunction
+                    ]
+                    if None in terms:
                         break
-                    conditions.append(found)
+                    conditions.append("{" + ",".join(map(str, terms)) + "}")
                 else:
                     values = (
                         ",v={" + ",".join(str(each) for each in rule.values) + "}"
@@ -684,7 +688,8 @@ def _constraint(
                             isinstance(each.value, dictionary.Reference)
                             and each.value.root is not None
                         )
-                        for each in rule.conditions
+                        for conjunction in rule.conditions
+                        for each in conjunction
                     )
                     rules.append(
                         f"{{k={lua_string(kind)}{values},c={{{','.join(conditions)}}}"
@@ -746,8 +751,8 @@ def _condition(
 ) -> str | None:
     """A condition as `{avp=, t=, v=}` (a value), `{avp=, t=, b=}` (a bit),
     `{avp=, t=, r={...}}` (the value of another AVP) or `{avp=, t=}`
-    (present), with `q=true` for the request's; None where its names or its
-    value do not resolve."""
+    (present), with `q=true` for the request's and `n=true` for one negated;
+    None where its names or its value do not resolve."""
     term = _term(condition, siblings, request, needed)
     if term is None:
         return None
@@ -769,7 +774,10 @@ def _condition(
     if test is None:
         return None
     said = formatter.condition(_ast_condition(condition))
-    return term[:-1] + f",t={lua_string(said)}{',' + test if test else ''}" + "}"
+    negated = ",n=true" if condition.negated else ""
+    return (
+        term[:-1] + f",t={lua_string(said)}{',' + test if test else ''}{negated}" + "}"
+    )
 
 
 def _ast_reference(reference: dictionary.Reference) -> ast.Reference:
@@ -789,6 +797,7 @@ def _ast_condition(condition: dictionary.Condition) -> ast.Condition:
         if isinstance(value, dictionary.Reference)
         else value,
         bit=condition.bit,
+        negated=condition.negated,
     )
 
 

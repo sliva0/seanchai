@@ -1118,7 +1118,7 @@ _VALUES_RE = re.compile(
 _PATH = r"(?:(?:request)/)?[A-Za-z0-9][A-Za-z0-9_-]*"
 _ROOTED = r"(?:request)/[A-Za-z0-9][A-Za-z0-9_-]*"
 _CONDITION_RE = re.compile(
-    rf"(?P<path>{_PATH})"
+    rf"(?P<not>not )?(?P<path>{_PATH})"
     rf"(?: = (?P<value>{_ROOTED}|{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
 )
 _EQUALS_RE = re.compile(rf"^equals (?P<path>{_PATH})$")
@@ -1160,10 +1160,12 @@ def _value(text: str | None) -> int | str | ast.Reference | None:
     return _name_or_number(text)
 
 
-def _conditions(text: str, lineno: int) -> tuple[ast.Condition, ...]:
-    """Conditions joined by ` or `, each read at its own position so a quoted
-    name may hold the word."""
-    conditions = []
+def _conditions(text: str, lineno: int) -> tuple[tuple[ast.Condition, ...], ...]:
+    """Alternatives joined by ` or `, each conditions joined by ` and `, which
+    binds tighter, each read at its own position so a quoted name may hold
+    either word."""
+    alternatives: list[tuple[ast.Condition, ...]] = []
+    conjunction: list[ast.Condition] = []
     position = 0
     while True:
         match = _CONDITION_RE.match(text, position)
@@ -1171,20 +1173,27 @@ def _conditions(text: str, lineno: int) -> tuple[ast.Condition, ...]:
             raise DadParseError(lineno, f"malformed condition at {text[position:]!r}")
         with _validated(lineno):
             path = _reference(match["path"])
-            conditions.append(
+            conjunction.append(
                 ast.Condition(
                     root=path.root,
                     path=path.path,
                     value=_value(match["value"]),
                     bit=_name_or_number(match["bit"]),
+                    negated=match["not"] is not None,
                 )
             )
         position = match.end()
         if position == len(text):
-            return tuple(conditions)
-        if not text.startswith(" or ", position):
+            alternatives.append(tuple(conjunction))
+            return tuple(alternatives)
+        if text.startswith(" or ", position):
+            alternatives.append(tuple(conjunction))
+            conjunction = []
+            position += len(" or ")
+        elif text.startswith(" and ", position):
+            position += len(" and ")
+        else:
             raise DadParseError(lineno, f"malformed condition at {text[position:]!r}")
-        position += len(" or ")
 
 
 def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:

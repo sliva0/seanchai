@@ -437,7 +437,8 @@ end
 -- entry's number in the rules' `elements` (`element_problem`), a bits rule's
 -- relation `r` and bits `b`, a members rule's `r` and member identities `m`,
 -- a unique rule's member identity `i`, a predicate's `c`, conditions on
--- siblings {avp=identity, t=text, v=value or b=bit or r=another AVP}, and a
+-- siblings {avp=identity, t=text, v=value or b=bit or r=another AVP, n=true
+-- where negated}, alternatives of conditions `and` joins, and a
 -- values rule's `v` and `c`, an equals rule's `r` and words `t`. A term has
 -- `q=true` where it names an AVP of the request the answer answers, and so
 -- does a rule reading one. An absent rule's AVP is never present; a scoped
@@ -954,13 +955,18 @@ local function condition_holds(ctx, held, condition)
   return false
 end
 
--- The conditions joined by "or", a bit of the AVP the one before names
--- by its name alone: `DSR-Flags bit "A" or "B"`.
-local function conditions_text(conditions)
+-- The alternatives joined by "or", each its conditions joined by "and", a
+-- bit of the AVP the one before names by its name alone: `DSR-Flags bit "A"
+-- or "B"`.
+local function conditions_text(alternatives)
   local parts, prefix = {}, nil
-  for _, condition in ipairs(conditions) do
-    local text = condition.t
-    local own = text:match('^(.- bit )"')
+  for _, conjunction in ipairs(alternatives) do
+    local terms = {}
+    for _, condition in ipairs(conjunction) do
+      terms[#terms + 1] = condition.t
+    end
+    local text = table.concat(terms, " and ")
+    local own = #conjunction == 1 and text:match('^(.- bit )"') or nil
     if own and own == prefix then
       text = text:sub(#own + 1)
     end
@@ -968,6 +974,36 @@ local function conditions_text(conditions)
     parts[#parts + 1] = text
   end
   return table.concat(parts, " or ")
+end
+
+-- Whether one of a rule's alternatives holds, each when every condition of
+-- it does, a negated one (`n`) when it does not: true, false, or nil where
+-- that rests on a value not read.
+local function alternatives_hold(ctx, held, alternatives)
+  local unknown = false
+  for _, conjunction in ipairs(alternatives) do
+    local met = true
+    for _, condition in ipairs(conjunction) do
+      local holds = condition_holds(ctx, held, condition)
+      if holds ~= nil and condition.n then
+        holds = not holds
+      end
+      if holds == false then
+        met = false
+        break
+      elseif holds == nil then
+        met = nil
+      end
+    end
+    if met then
+      return true
+    end
+    unknown = unknown or met == nil
+  end
+  if unknown then
+    return nil
+  end
+  return false
 end
 
 -- Checks the predicates `scoped` (constraints by member name) states of a
@@ -1008,15 +1044,8 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
             end
           end
         elseif rule.c then
-          local any, unknown = false, false
-          for _, condition in ipairs(rule.c) do
-            local holds = condition_holds(ctx, held, condition)
-            if holds == nil then
-              unknown = true
-            elseif holds then
-              any = true
-            end
-          end
+          local holds = alternatives_hold(ctx, held, rule.c)
+          local any, unknown = holds == true, holds == nil
           local said = conditions_text(rule.c)
           if rule.k == "present-if" and any and not subject then
             problem = string.format("missing %s, required with %s", name, said)

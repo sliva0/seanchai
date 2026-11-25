@@ -258,7 +258,7 @@
               "name": "support.type.codec.dad"
             },
             {
-              "match": "(?<=\\s)(or|if|bit|at-most-one|at-least-one|set|clear|only)(?=\\s)",
+              "match": "(?<=\\s)(or|and|not|if|bit|at-most-one|at-least-one|set|clear|only)(?=\\s)",
               "name": "keyword.operator.condition.dad"
             },
             {

@@ -162,6 +162,7 @@ DIAMETER_ERROR_ACME_UNKNOWN ;; corrected: (Private-ACME-HSS.py#code)
 "It is present if the Skip-Data bit is set, absent if ACME-Kind is 1, and requires the host."
     present-if ACME-Flags bit 0 or ACME-Flags bit "Withdraw Data"
     absent-if ACME-Kind = 1
+    absent-if ACME-Kind = 2 and not ACME-Flags bit 0
     requires Destination-Host
     excludes ACME-Kind = FIRST or ACME-Code = 5
     default 0

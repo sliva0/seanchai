@@ -359,8 +359,8 @@ _ASKED = """\
 ; Command: Example-Answer
 ; Section: 6.1.2
 ; Versions: 19.0.0
-"It is sent only if the request carried an identity."
-    requires request/Example-Id
+"It is sent only if the request carried an identity, and not with a report."
+    requires request/Example-Id and not Example-Report
 
 
 ; Type: Interpreted Constraints

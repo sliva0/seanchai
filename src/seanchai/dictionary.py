@@ -168,10 +168,11 @@ class Condition(Reference):
     """A predicate's condition on the AVP `root` and `path` name: present
     (`value` and `bit` null), holding `value` (a number, the name its values
     give it, or the value of the AVP a `Reference` names), or with `bit` set
-    (a number, or its bit table's name)."""
+    (a number, or its bit table's name); with `negated`, not so."""
 
     value: int | str | Reference | None
     bit: int | str | None
+    negated: bool
 
 
 class Rule(_Model):
@@ -182,7 +183,8 @@ class Rule(_Model):
     `document`, `clause` and `element` name, with `element_entry`, the
     element registry's entry for it (its check in words, how deep it goes and
     the documents read), null where the registry has none. `present-if`,
-    `absent-if`, `requires` and `excludes`: `conditions`, alternatives.
+    `absent-if`, `requires` and `excludes`: `conditions`, alternatives, each
+    conditions every one of which holds (`and`).
     `default`: `value`,
     a number or a name its values give, what the AVP is read as when absent.
     `bits`: `relation` (`at-most-one`, `at-least-one`, `set`, `clear`,
@@ -222,7 +224,7 @@ class Rule(_Model):
     clause: str | None
     element: str | None
     element_entry: _json.ElementEntry | None
-    conditions: tuple[Condition, ...]
+    conditions: tuple[tuple[Condition, ...], ...]
     value: int | str | None
     relation: ast.BitsRelation | None
     bits: tuple[int, ...]
@@ -913,6 +915,7 @@ def _condition(each: ast.Condition) -> Condition:
         path=each.path,
         value=_reference(value) if isinstance(value, ast.Reference) else value,
         bit=each.bit,
+        negated=each.negated,
     )
 
 
@@ -951,7 +954,9 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
                 "element_entry": _json.element_entry(rule),
             }
         case ast.PredicateRule():
-            fields["conditions"] = tuple(_condition(each) for each in rule.conditions)
+            fields["conditions"] = tuple(
+                tuple(map(_condition, conjunction)) for conjunction in rule.conditions
+            )
         case ast.DefaultRule():
             fields["value"] = rule.value
         case ast.BitsRule():
@@ -960,7 +965,9 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
             fields |= {"relation": rule.relation, "members": rule.members}
         case ast.ValuesRule():
             fields["values"] = rule.values
-            fields["conditions"] = tuple(_condition(each) for each in rule.conditions)
+            fields["conditions"] = tuple(
+                tuple(map(_condition, conjunction)) for conjunction in rule.conditions
+            )
         case ast.EqualsRule():
             fields["reference"] = _reference(rule.reference)
         case ast.UniqueRule() | ast.AbsentRule() | ast.TextOnly():

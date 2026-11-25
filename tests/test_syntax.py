@@ -249,6 +249,8 @@ _SCOPED = [
     ("    present-if", "or", "keyword.operator.condition"),
     ("    present-if", '"Withdraw Data"', "string.quoted.double.mark"),
     ("    absent-if", "=", "keyword.operator"),
+    ("    absent-if ACME-Kind = 2", "and", "keyword.operator.condition"),
+    ("    absent-if ACME-Kind = 2", "not", "keyword.operator.condition"),
     ("    excludes", "FIRST", "variable.other.avp"),
     ("    default 0", "0", "constant.numeric"),
     ("    encoding element TS29.002", "element", "support.type.codec"),

@@ -383,10 +383,12 @@ class ConstraintReference(_Model):
 class ConstraintCondition(ConstraintReference):
     """A predicate's condition: the AVP `root` and `path` name present,
     holding `value` (a number, a name, or the value of the AVP a
-    `ConstraintReference` names), or with `bit` set, a number or a name."""
+    `ConstraintReference` names), or with `bit` set, a number or a name; with
+    `negated`, not so."""
 
     value: int | str | ConstraintReference | None = None
     bit: int | str | None = None
+    negated: bool = False
 
 
 class ConstraintRule(_Model):
@@ -396,7 +398,8 @@ class ConstraintRule(_Model):
     `element`'s `document`, `clause` and `element`, with `element_entry`,
     the element registry's entry for it, omitted where it has none;
     `present-if`,
-    `absent-if`, `requires` and `excludes` their `conditions`, alternatives;
+    `absent-if`, `requires` and `excludes` their `conditions`, alternatives,
+    each conditions joined by `and`;
     `default` its `value`; `bits` its `relation` and `bits`; `members` its
     `relation` and `members`; `values` its `values` and `conditions`;
     `equals` its `reference`; `unique`, `absent` and `text-only` nothing."""
@@ -429,7 +432,7 @@ class ConstraintRule(_Model):
     clause: str | None = None
     element: str | None = None
     element_entry: ElementEntry | None = None
-    conditions: tuple[ConstraintCondition, ...] = ()
+    conditions: tuple[tuple[ConstraintCondition, ...], ...] = ()
     value: int | str | None = None
     relation: ast.BitsRelation | None = None
     bits: tuple[int, ...] = ()

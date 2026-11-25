@@ -722,9 +722,11 @@ encoding      = "encoding " codec
 codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
               / "labels" / "apn" / "plmn-domain" / "epc-plmn-domain"
               / "ip-address" / "time-zone" / "mac-address"
-predicate     = predicate-kind SP condition *(" or " condition)
+predicate     = predicate-kind SP conditions
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
-condition     = path [" = " (value-ref / rooted) / " bit " value-ref]
+conditions    = conjunction *(" or " conjunction)
+conjunction   = condition *(" and " condition)
+condition     = ["not "] path [" = " (value-ref / rooted) / " bit " value-ref]
 path          = [root "/"] avp-name
 rooted        = root "/" avp-name
 root          = "request"
@@ -733,8 +735,7 @@ default       = "default " value-ref
 bits          = "bits " ("at-most-one" / "at-least-one") 2*(SP 1*DIGIT)
               / "bits " ("set" / "clear" / "only") 1*(SP 1*DIGIT)
 members       = "members " ("at-least-one" / "only") 1*(SP avp-name)
-values        = "values " integer *(", " integer) " if " condition
-                *(" or " condition)
+values        = "values " integer *(", " integer) " if " conditions
 equals        = "equals " path
 ```
 
@@ -795,7 +796,10 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   clause). `element` is another document's information element carried
   whole, with the clause and name the clause gives.
 - A predicate ties the AVP's presence to conditions on its siblings, `or`
-  joining alternatives: `present-if` (present when one holds), `absent-if`
+  joining alternatives and `and` the conditions of one, which binds
+  tighter, with no parentheses: `present-if Result-Code = DIAMETER_SUCCESS
+  and TWAN-Connection-Mode bit MC-MODE`; `not` before a condition says it
+  does not hold: `present-if` (present when one holds), `absent-if`
   (absent when one holds), `requires` (one holds when it is present) and
   `excludes` (none holds when it is present). A condition is a sibling's
   presence, or the request's member's, its value, a number or a name its
@@ -904,7 +908,8 @@ Checked by the AST after parsing:
   two or more for `at-most-one` and `at-least-one`; a `members` rule names a
   member once, a `values` rule a value once; `unique` needs `; Within:`; a
   rule reading the request needs `; Command:`, and `; Request-Section:` a
-  rule reading the request; a value read from another AVP starts at a root.
+  rule reading the request; a value read from another AVP starts at a root;
+  `not` is said once of a condition.
 - Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
   value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
   and at least 1.
