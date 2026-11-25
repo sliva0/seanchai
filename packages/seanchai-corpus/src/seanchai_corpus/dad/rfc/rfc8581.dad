@@ -4,6 +4,64 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc8581.txt
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-feature-vector-peer-report-request)
+; AVP: OC-Feature-Vector
+; Within: OC-Supported-Features
+; Section: 6.1.1
+; Page: 9
+"When sending a Diameter request, a DOIC node that supports the OC_PEER_REPORT feature (as defined in Section 7.1.1) MUST include in the OC-Supported-Features AVP an OC-Feature-Vector AVP with the OC_PEER_REPORT bit set."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-supported-features-source-id-request)
+; AVP: SourceID
+; Within: OC-Supported-Features
+; Section: 6.1.1
+; Page: 9
+"When sending a request, a DOIC node that supports the OC_PEER_REPORT feature MUST include a SourceID AVP in the OC-Supported-Features AVP with its own DiameterIdentity."
+    text-only
+"When a Diameter Agent relays a request that includes a SourceID AVP in the OC-Supported-Features AVP, if the Diameter Agent supports the OC_PEER_REPORT feature, then it MUST remove the received SourceID AVP and replace it with a SourceID AVP containing its own DiameterIdentity."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-feature-vector-peer-report-answer)
+; AVP: OC-Feature-Vector
+; Within: OC-Supported-Features
+; Section: 6.1.2
+; Page: 9
+"If the peer supports the OC_PEER_REPORT feature, then the reporting node MUST indicate support for the feature in the OC-Supported-Features AVP."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-supported-features-source-id-answer)
+; AVP: SourceID
+; Within: OC-Supported-Features
+; Section: 6.1.2
+; Page: 9
+"When an agent relays an answer message, a reporting node that supports the OC_PEER_REPORT feature MUST strip any SourceID AVP from the OC-Supported-Features AVP."
+    text-only
+"If the peer supports the OC_PEER_REPORT feature, then the reporting node MUST insert the SourceID AVP in the OC-Supported-Features AVP in the answer message."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-peer-algo-answer)
+; AVP: OC-Peer-Algo
+; Within: OC-Supported-Features
+; Section: 6.1.2
+; Page: 9
+"If the peer supports the OC_PEER_REPORT feature, then the reporting node MUST insert the OC-Peer-Algo AVP in the OC-Supported-Features AVP. The OC-Peer-Algo AVP MUST indicate the overload abatement algorithm that the reporting node wants the reacting nodes to use should the reporting node send a Peer Overload report as a result of becoming overloaded."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-olr-peer-report-source-id)
+; AVP: SourceID
+; Within: OC-OLR
+; Section: 6.2.4
+; Page: 13
+"The reporting node MUST include its DiameterIdentity in the SourceID AVP in the OC-OLR AVP."
+    present-if OC-Report-Type = PEER_REPORT
+
+
 ; Type: AVP Table
 ; Section: 7.4
 ; Page: 16
@@ -42,3 +100,13 @@ OC-OLR ::= < AVP header: 623 >
         [ OC-Validity-Duration ]
         [ SourceID ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8581.dadx#oc-olr-peer-report-agent-identity)
+; AVP: SourceID
+; Within: OC-OLR
+; Section: 7.2
+; Page: 15
+"The peer report MUST also include the Diameter identity of the agent that generated the report."
+"The SourceID AVP is used in the OC-OLR AVP to carry this DiameterIdentity."
+    present-if OC-Report-Type = PEER_REPORT

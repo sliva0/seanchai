@@ -21143,12 +21143,67 @@
   },
   "rfc7683": {
    "edits": {
+    "RFC7683.dadx#oc-feature-vector-reacting-node": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.1: 'It MAY include the OC-Feature-Vector AVP, as a sub-AVP of OC-Supported-Features. If it does so, it MUST indicate support for the \"loss\" algorithm.'; 'If the reacting node is configured to support features (including other algorithms) in addition to the loss algorithm, it MUST indicate such support in an OC-Feature-Vector AVP.'"
+    },
+    "RFC7683.dadx#oc-feature-vector-reporting-node": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'A reporting node MUST select a single abatement algorithm in the OC-Feature-Vector AVP.'; 'The abatement algorithm selected MUST be from the set of abatement algorithms contained in the request message's OC-Feature-Vector AVP.'; 'If it selects a different algorithm, it MUST include the OC-Feature-Vector AVP with an explicit indication of the selected algorithm.'"
+    },
+    "RFC7683.dadx#oc-olr-loss-reduction-percentage": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2: 'When sending the OC-OLR AVP, the reporting node MUST indicate a percentage reduction in the OC-Reduction-Percentage AVP.'"
+    },
+    "RFC7683.dadx#oc-olr-without-the-requests-features": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'A reporting node MUST NOT include the OC-Supported-Features AVP, OC-OLR AVP, or any other overload control AVPs defined in extension documents in response messages for transactions where the request message does not include the OC-Supported-Features AVP.'"
+    },
+    "RFC7683.dadx#oc-reduction-percentage-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.7: 'The value of the Reduction-Percentage AVP is between zero (0) and one hundred (100).'"
+    },
+    "RFC7683.dadx#oc-report-type-advertised": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3: 'A reporting node MUST NOT send overload reports of a type that has not been advertised as supported by the reacting node.'"
+    },
+    "RFC7683.dadx#oc-sequence-number-increasing": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.4: 'When generating sequence numbers for new overload conditions, the new sequence number MUST be greater than any sequence number in an active (unexpired) overload report for the same application and report type previously sent by the reporting node.'; 'A reporting node MUST increment the sequence number associated with the OCS entry anytime the contents of the OCS entry are changed.'"
+    },
+    "RFC7683.dadx#oc-supported-features-doic-node": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1: 'The OC-Supported-Features AVP MUST be included in every Diameter request message a DOIC supporting node sends.'"
+    },
+    "RFC7683.dadx#oc-supported-features-in-answers": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.2: 'If the request message contains an OC-Supported-Features AVP, then a reporting node MUST include the OC-Supported-Features AVP in the answer message for that transaction.'; 'A reporting node MUST NOT include the OC-Supported-Features AVP, OC-OLR AVP, or any other overload control AVPs defined in extension documents in response messages for transactions where the request message does not include the OC-Supported-Features AVP.'"
+    },
+    "RFC7683.dadx#oc-supported-features-in-requests": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.1.1: 'A reacting node MUST include the OC-Supported-Features AVP in all requests.'"
+    },
+    "RFC7683.dadx#oc-validity-duration-default-and-maximum": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.5: 'The default value for the OC-Validity-Duration AVP is 30 seconds. When the OC-Validity-Duration AVP is not present in the OC-OLR AVP, the default value applies.'; 'The maximum value for the OC-Validity-Duration AVP is 86,400 seconds (24 hours).'"
+    },
     "RFC7683.py#peer-report-rfc8581": {
      "kind": "insert",
      "reason": "RFC 8581 clause 7.2.1: 'The following new report type is defined for the OC-Report-Type AVP. PEER_REPORT 2'; the value extends the list RFC 7683 clause 7.6 defines, and RFC 8581's own file has no definition of the AVP to hold it"
     }
    },
    "reference": "RFC7683",
+   "renames": [],
+   "version": null
+  },
+  "rfc7944": {
+   "edits": {
+    "RFC7944.dadx#drmp-absent-default-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 8: 'When using DRMP information, Diameter nodes MUST use the default priority for transactions that do not have priority specified in a DRMP AVP.'"
+    }
+   },
+   "reference": "RFC7944",
    "renames": [],
    "version": null
   },
@@ -21553,6 +21608,34 @@
   },
   "rfc8581": {
    "edits": {
+    "RFC8581.dadx#oc-feature-vector-peer-report-answer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.2: 'If the peer supports the OC_PEER_REPORT feature, then the reporting node MUST indicate support for the feature in the OC-Supported-Features AVP.'"
+    },
+    "RFC8581.dadx#oc-feature-vector-peer-report-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.1: 'When sending a Diameter request, a DOIC node that supports the OC_PEER_REPORT feature (as defined in Section 7.1.1) MUST include in the OC-Supported-Features AVP an OC-Feature-Vector AVP with the OC_PEER_REPORT bit set.'"
+    },
+    "RFC8581.dadx#oc-olr-peer-report-agent-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2: 'The peer report MUST also include the Diameter identity of the agent that generated the report.'; 'The SourceID AVP is used in the OC-OLR AVP to carry this DiameterIdentity.'"
+    },
+    "RFC8581.dadx#oc-olr-peer-report-source-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.4: 'The reporting node MUST include its DiameterIdentity in the SourceID AVP in the OC-OLR AVP.'"
+    },
+    "RFC8581.dadx#oc-peer-algo-answer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.2: 'If the peer supports the OC_PEER_REPORT feature, then the reporting node MUST insert the OC-Peer-Algo AVP in the OC-Supported-Features AVP. The OC-Peer-Algo AVP MUST indicate the overload abatement algorithm that the reporting node wants the reacting nodes to use should the reporting node send a Peer Overload report as a result of becoming overloaded.'"
+    },
+    "RFC8581.dadx#oc-supported-features-source-id-answer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.2: 'When an agent relays an answer message, a reporting node that supports the OC_PEER_REPORT feature MUST strip any SourceID AVP from the OC-Supported-Features AVP.'; 'If the peer supports the OC_PEER_REPORT feature, then the reporting node MUST insert the SourceID AVP in the OC-Supported-Features AVP in the answer message.'"
+    },
+    "RFC8581.dadx#oc-supported-features-source-id-request": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.1: 'When sending a request, a DOIC node that supports the OC_PEER_REPORT feature MUST include a SourceID AVP in the OC-Supported-Features AVP with its own DiameterIdentity.'; 'When a Diameter Agent relays a request that includes a SourceID AVP in the OC-Supported-Features AVP, if the Diameter Agent supports the OC_PEER_REPORT feature, then it MUST remove the received SourceID AVP and replace it with a SourceID AVP containing its own DiameterIdentity.'"
+    },
     "RFC8581.py#bases-rfc7683": {
      "kind": "correction",
      "reason": "the OC-OLR extension references RFC 7683's OC- AVP family, which this document extends rather than re-declares"
@@ -21570,6 +21653,25 @@
     }
    },
    "reference": "RFC8582",
+   "renames": [],
+   "version": null
+  },
+  "rfc8583": {
+   "edits": {
+    "RFC8583.dadx#load-agent-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.2: 'The Diameter Agent MUST include its own DiameterIdentity in the SourceID AVP included in the Load AVP.'; 'The Diameter Agent MUST include a Load-Type AVP of type \"PEER\" in the Load AVP.'; 'The Diameter Agent MUST include its Load value in the Load-Value AVP in the Load AVP.'"
+    },
+    "RFC8583.dadx#load-endpoint-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.1.1: 'The Diameter endpoint MUST include its own DiameterIdentity in the SourceID AVP included in the Load AVP.'; 'The Diameter endpoint MUST include a Load-Type AVP of type \"HOST\" in the Load AVP.'; 'The Diameter endpoint MUST include its Load value in the Load-Value AVP in the Load AVP.'"
+    },
+    "RFC8583.dadx#load-value-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3: 'The Load value has a range of 0-65535.'"
+    }
+   },
+   "reference": "RFC8583",
    "renames": [],
    "version": null
   },

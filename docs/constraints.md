@@ -1454,3 +1454,55 @@ RFC 4006's, section 8.2's CC-Request-Number, which "should be set to 0" for
 an INITIAL_REQUEST or EVENT_REQUEST and so states no requirement; section
 8.38's receiver "MAY be liberal" in the IPv6 text it accepts; and the
 SHOULDs keeping RFC 4006's AVPs beside their extensions for older peers.
+
+## RFC 7683, RFC 8581, RFC 8583 and RFC 7944
+
+The overload control documents define AVPs and no command: RFC 7683's
+OC-Supported-Features and OC-OLR, RFC 8581's peer reports, RFC 8583's Load
+and RFC 7944's DRMP ride every application's requests and answers through
+their `* [ AVP ]`. A block here has no scope or is within one of the
+documents' own grouped AVPs, and holds wherever a document reading the AVP
+reads it. RFC 8581 reprints RFC 7683's OC-Supported-Features and OC-OLR
+with its own members, so its blocks are within them, and RFC 7683's hold in
+its reading too ([Precedence](#precedence)). An RFC has one edition, so no
+block names `; Versions:`.
+
+| | RFC 7683 | RFC 8581 | RFC 8583 | RFC 7944 |
+|---|---|---|---|---|
+| sections read | 5 to 7 | 6 and 7 | 6 and 7 | 8 and 9 |
+| blocks | 11: 8 on an AVP wherever read, 3 within a grouped AVP | 7, within a grouped AVP | 3, on an AVP wherever read | 1, on an AVP wherever read |
+| readings | 17 | 9 | 7 | 1 |
+
+| Rules | |
+|---|---|
+| `range` | 3: OC-Validity-Duration at most 86,400 seconds, OC-Reduction-Percentage at most 100 (RFC 7683 sections 7.5, 7.7), Load-Value at most 65535 (RFC 8583 section 7.3) |
+| `default` | 1: OC-Validity-Duration 30 (RFC 7683 section 7.5) |
+| `present-if` | 2: a peer report's SourceID, within an OC-OLR whose OC-Report-Type is PEER_REPORT (RFC 8581 sections 6.2.4, 7.2) |
+| `members` | 3: a Load's SourceID, Load-Type and Load-Value, which an endpoint's report and an agent's carry alike (RFC 8583 section 6.1.1, section 6.1.2's same sentences of an agent's recorded `text-only` beside them) |
+| `text-only` | 25: RFC 7683's 14, RFC 8581's 7, RFC 8583's 3, RFC 7944's 1 |
+
+A receiver reads an OC-Validity-Duration above the maximum as the default
+and ignores an OC-Reduction-Percentage above 100 (RFC 7683 sections 7.5,
+7.7), which says how it recovers from such a value, not that one is sent:
+the ranges are the values the clauses define.
+
+The text-only rules are the node's support of the DOIC solution or of the
+OC_PEER_REPORT feature, which decides an OC-Supported-Features in each
+request, its OC-Feature-Vector's bits and an RFC 8581 node's SourceID and
+OC-Peer-Algo; an answer read against its request (the answer's
+OC-Supported-Features and OC-OLR only after the request's, its one
+selected algorithm among the request's), which no block of these files is
+scoped to, a feature vector's scope not telling a request's from an
+answer's; the reports' sequence numbers against earlier reports; a report
+type the reacting node advertised; the OC-Reduction-Percentage of the loss
+algorithm, which the answer's OC-Supported-Features selects outside the
+OC-OLR; and the default priority of a message with no DRMP, which a node's
+configuration sets (RFC 7944 section 8). Whose DiameterIdentity a
+SourceID holds, and a Load's Load-Type, HOST for an endpoint and PEER for
+an agent (RFC 8583 sections 6.1.1, 6.1.2), are the sender's role, which
+the message does not show. Left unread: the reserved value 0 of
+OC-Feature-Vector and OC-Peer-Algo, which the clauses do not say is not
+sent; RFC 8581 section 7.1's "A supporting node must also include the
+SourceID AVP", no requirement in its lower case; and what a node does on
+receipt (the OCS entries, abatement, stripping reports from untrusted
+peers, RFC 7944's priority handling).

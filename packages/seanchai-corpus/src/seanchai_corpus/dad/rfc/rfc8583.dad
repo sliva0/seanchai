@@ -4,6 +4,30 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc8583.txt
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC8583.dadx#load-endpoint-members)
+; AVP: Load
+; Section: 6.1.1
+; Page: 11
+"The Diameter endpoint MUST include its own DiameterIdentity in the SourceID AVP included in the Load AVP."
+    members at-least-one SourceID
+"The Diameter endpoint MUST include a Load-Type AVP of type \"HOST\" in the Load AVP."
+    members at-least-one Load-Type
+"The Diameter endpoint MUST include its Load value in the Load-Value AVP in the Load AVP."
+    members at-least-one Load-Value
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8583.dadx#load-agent-members)
+; AVP: Load
+; Section: 6.1.2
+; Page: 12
+"The Diameter Agent MUST include its own DiameterIdentity in the SourceID AVP included in the Load AVP."
+    text-only
+"The Diameter Agent MUST include a Load-Type AVP of type \"PEER\" in the Load AVP."
+    text-only
+"The Diameter Agent MUST include its Load value in the Load-Value AVP in the Load AVP."
+    text-only
+
+
 ; Type: AVP Table
 ; Section: 7.5
 ; Page: 16
@@ -32,6 +56,14 @@ Load ::= < AVP header: 650 >
 Load-Type ::= < Enumerated AVP header: 651 >
         HOST = 0
         PEER = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (RFC8583.dadx#load-value-range)
+; AVP: Load-Value
+; Section: 7.3
+; Page: 15
+"The Load value has a range of 0-65535."
+    range 0..65535
 
 
 ; Type: Reused AVPs

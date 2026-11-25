@@ -4,6 +4,14 @@
 ; Link: https://www.rfc-editor.org/rfc/rfc7944.txt
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC7944.dadx#drmp-absent-default-priority)
+; AVP: DRMP
+; Section: 8
+; Page: 10
+"When using DRMP information, Diameter nodes MUST use the default priority for transactions that do not have priority specified in a DRMP AVP."
+    text-only
+
+
 ; Type: AVP Table
 ; Section: 9.2
 ; Page: 13

@@ -1,0 +1,45 @@
+; Interprets: RFC 8583
+;; What RFC 8583's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. The document defines no command: the Load AVP rides every
+;; application's answers through their * [ AVP ], so a block here has no
+;; scope, and holds wherever a document reading the AVP reads it.
+
+
+;; A load report is an endpoint's (section 6.1.1) or an agent's (6.1.2),
+;; and each holds the three members, so the rules hold of every Load; they
+;; are written once, here, and section 6.1.2's same sentences of an agent's
+;; report are recorded below, read by these rules. Whose DiameterIdentity
+;; the SourceID holds, and the Load-Type, HOST for an endpoint and PEER for
+;; an agent, are the sender's role, which the message does not show.
+; Type: Interpreted Constraints
+; Id: load-endpoint-members
+; AVP: Load
+; Section: 6.1.1
+"The Diameter endpoint MUST include its own DiameterIdentity in the SourceID AVP included in the Load AVP."
+    members at-least-one SourceID
+"The Diameter endpoint MUST include a Load-Type AVP of type \"HOST\" in the Load AVP."
+    members at-least-one Load-Type
+"The Diameter endpoint MUST include its Load value in the Load-Value AVP in the Load AVP."
+    members at-least-one Load-Value
+
+
+;; Read by section 6.1.1's block, whose rules hold of every Load.
+; Type: Interpreted Constraints
+; Id: load-agent-members
+; AVP: Load
+; Section: 6.1.2
+"The Diameter Agent MUST include its own DiameterIdentity in the SourceID AVP included in the Load AVP."
+    text-only
+"The Diameter Agent MUST include a Load-Type AVP of type \"PEER\" in the Load AVP."
+    text-only
+"The Diameter Agent MUST include its Load value in the Load-Value AVP in the Load AVP."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: load-value-range
+; AVP: Load-Value
+; Section: 7.3
+"The Load value has a range of 0-65535."
+    range 0..65535

@@ -1,0 +1,128 @@
+; Interprets: RFC 7683
+;; What RFC 7683's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. The document defines no command: its AVPs ride every
+;; application's requests and answers through their * [ AVP ], so a block
+;; here has no scope or is within one of its own grouped AVPs, and holds
+;; wherever a document reading the AVP reads it. Whether a node supports
+;; the DOIC solution, and what a request of the transaction announced,
+;; neither an AVP's scope here nor the answer alone shows, so a rule
+;; resting on them is `text-only`.
+
+
+;; Whether a node is a reacting node is the node's.
+; Type: Interpreted Constraints
+; Id: oc-supported-features-in-requests
+; AVP: OC-Supported-Features
+; Section: 5.1.1
+"A reacting node MUST include the OC-Supported-Features AVP in all requests."
+    text-only
+
+
+;; A request's feature vector and an answer's are one AVP, which its scope
+;; does not tell apart; what the node is configured to support is the
+;; node's.
+; Type: Interpreted Constraints
+; Id: oc-feature-vector-reacting-node
+; AVP: OC-Feature-Vector
+; Within: OC-Supported-Features
+; Section: 5.1.1
+"It MAY include the OC-Feature-Vector AVP, as a sub-AVP of OC-Supported-Features. If it does so, it MUST indicate support for the \"loss\" algorithm."
+    text-only
+"If the reacting node is configured to support features (including other algorithms) in addition to the loss algorithm, it MUST indicate such support in an OC-Feature-Vector AVP."
+    text-only
+
+
+;; An answer against its request, the applications' commands, which no
+;; block of this file is scoped to.
+; Type: Interpreted Constraints
+; Id: oc-supported-features-in-answers
+; AVP: OC-Supported-Features
+; Section: 5.1.2
+"If the request message contains an OC-Supported-Features AVP, then a reporting node MUST include the OC-Supported-Features AVP in the answer message for that transaction."
+    text-only
+"A reporting node MUST NOT include the OC-Supported-Features AVP, OC-OLR AVP, or any other overload control AVPs defined in extension documents in response messages for transactions where the request message does not include the OC-Supported-Features AVP."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: oc-olr-without-the-requests-features
+; AVP: OC-OLR
+; Section: 5.1.2
+"A reporting node MUST NOT include the OC-Supported-Features AVP, OC-OLR AVP, or any other overload control AVPs defined in extension documents in response messages for transactions where the request message does not include the OC-Supported-Features AVP."
+    text-only
+
+
+;; An answer's feature vector against its request's, and one bit of the
+;; answer's, which its scope does not tell from a request's.
+; Type: Interpreted Constraints
+; Id: oc-feature-vector-reporting-node
+; AVP: OC-Feature-Vector
+; Within: OC-Supported-Features
+; Section: 5.1.2
+"A reporting node MUST select a single abatement algorithm in the OC-Feature-Vector AVP."
+    text-only
+"The abatement algorithm selected MUST be from the set of abatement algorithms contained in the request message's OC-Feature-Vector AVP."
+    text-only
+"If it selects a different algorithm, it MUST include the OC-Feature-Vector AVP with an explicit indication of the selected algorithm."
+    text-only
+
+
+;; Earlier reports.
+; Type: Interpreted Constraints
+; Id: oc-sequence-number-increasing
+; AVP: OC-Sequence-Number
+; Section: 5.2.1.4
+"When generating sequence numbers for new overload conditions, the new sequence number MUST be greater than any sequence number in an active (unexpired) overload report for the same application and report type previously sent by the reporting node."
+    text-only
+"A reporting node MUST increment the sequence number associated with the OCS entry anytime the contents of the OCS entry are changed."
+    text-only
+
+
+;; What the reacting node advertised, in the request.
+; Type: Interpreted Constraints
+; Id: oc-report-type-advertised
+; AVP: OC-Report-Type
+; Section: 5.2.3
+"A reporting node MUST NOT send overload reports of a type that has not been advertised as supported by the reacting node."
+    text-only
+
+
+;; The loss algorithm's, which the answer's OC-Supported-Features selects,
+;; outside the OC-OLR's scope.
+; Type: Interpreted Constraints
+; Id: oc-olr-loss-reduction-percentage
+; AVP: OC-Reduction-Percentage
+; Within: OC-OLR
+; Section: 6.2
+"When sending the OC-OLR AVP, the reporting node MUST indicate a percentage reduction in the OC-Reduction-Percentage AVP."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: oc-supported-features-doic-node
+; AVP: OC-Supported-Features
+; Section: 7.1
+"The OC-Supported-Features AVP MUST be included in every Diameter request message a DOIC supporting node sends."
+    text-only
+
+
+;; A receiver reads a larger value as the default, which says how it
+;; recovers from one, not that one is sent.
+; Type: Interpreted Constraints
+; Id: oc-validity-duration-default-and-maximum
+; AVP: OC-Validity-Duration
+; Section: 7.5
+"The default value for the OC-Validity-Duration AVP is 30 seconds. When the OC-Validity-Duration AVP is not present in the OC-OLR AVP, the default value applies."
+    default 30
+"The maximum value for the OC-Validity-Duration AVP is 86,400 seconds (24 hours)."
+    range 0..86400
+
+
+;; As OC-Validity-Duration's: values above 100 are ignored on receipt.
+; Type: Interpreted Constraints
+; Id: oc-reduction-percentage-range
+; AVP: OC-Reduction-Percentage
+; Section: 7.7
+"The value of the Reduction-Percentage AVP is between zero (0) and one hundred (100)."
+    range 0..100

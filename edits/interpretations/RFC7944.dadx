@@ -1,0 +1,15 @@
+; Interprets: RFC 7944
+;; What RFC 7944's clauses state in prose about an AVP's value or presence,
+;; read by hand and pinned to the sentences read (docs/constraints.md), in
+;; clause order. The document defines no command: DRMP rides every
+;; application's messages through their * [ AVP ].
+
+
+;; The default priority is the node's, set by its local configuration
+;; (section 8), not a value of the AVP.
+; Type: Interpreted Constraints
+; Id: drmp-absent-default-priority
+; AVP: DRMP
+; Section: 8
+"When using DRMP information, Diameter nodes MUST use the default priority for transactions that do not have priority specified in a DRMP AVP."
+    text-only
