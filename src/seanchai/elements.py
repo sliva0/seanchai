@@ -1887,6 +1887,138 @@ REGISTRY: tuple[Element, ...] = (
         valid="a 32-bit charging identifier: every value of the Unsigned32",
     ),
     Element(
+        "TS29.274",
+        "8.100",
+        "TWAN Identifier",
+        "the TWAN Identifier information element from its octet 5: its flags,"
+        " the SSID's length and the SSID, then the fields the flags name",
+        (
+            _source(
+                _GTPV2,
+                "8.100",
+                "figure 8.100-1, octet 5 the spare bits and the LAII, OPNAI,"
+                " PLMNI, CIVAI and BSSIDI flags, octet 6 the SSID Length, octets"
+                " 7 to k the SSID; 'The SSID is an Octet String which shall have"
+                " a maximum length of 32 octets'",
+            ),
+        ),
+        (Octets(2, None), Field("SSID Length", 2, 8, 1, ((0, 32),))),
+        Depth.PARTIAL,
+        "the fields the flags make present, and that the lengths add up to the"
+        " payload's, are not checked: no shape reads a length or a flag from a"
+        " field; the spare bits of octet 5, the payload's first, are the ones"
+        " TS 29.274 clause 8.1 says are sent as 0 and not evaluated by the"
+        " receiver",
+        example=b"\x00\x04ssid",
+    ),
+    Element(
+        "TS24.008",
+        "10.5.6.13",
+        "Temporary Mobile Group Identity",
+        "a Temporary Mobile Group Identity: an MBMS Service ID, and an MCC and MNC",
+        (
+            _source(
+                _NAS,
+                "10.5.6.13",
+                "figure 10.5.154, the IEI and length in octets 1 and 2, the MBMS"
+                " Service ID in octets 3 to 5 and the MCC and MNC in octets 6 to"
+                " 8, 'If octet 6 is included, then octets 7 and 8 shall also be"
+                " included'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the element is a type 4 information element of 5 to 8 octets, and"
+        " neither it nor TS 29.061 clause 17.7.2 says whether the AVP carries"
+        " its IEI and length octets or its contents alone",
+    ),
+    Element(
+        "TS24.008",
+        "10.5.6.14",
+        "MBMS bearer capabilities",
+        "an MS's MBMS bearer capabilities: the maximum bit rate for downlink"
+        " it supports",
+        (
+            _source(
+                _NAS,
+                "10.5.6.14",
+                "figure 10.5.155, the IEI and length in octets 1 and 2, the"
+                " maximum bit rate for downlink in octet 3 and its extension in"
+                " octet 4",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the element's octets are binary, and neither it nor TS 29.061 clause"
+        " 17.7.3, which types the AVP UTF8String and calls its content UTF-8"
+        " encoded, says how a UTF8String spells them",
+    ),
+    Element(
+        "TS29.060",
+        "7.7.54",
+        "CAMEL Charging Information Container",
+        "the CAMELInformationPDP of an SGSN's S-CDR, with its tag and length",
+        (
+            _source(
+                _GTPV1,
+                "7.7.54",
+                "figure 7.7.54.1, octets 4 to m the CAMELInformationPDP IE, 'used"
+                " to copy the CAMELInformationPDP IE including Tag and Length"
+                " from the SGSN's CDR (SCDR)', which 'is defined in 3GPP TS"
+                " 32.298'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the container holds TS 32.298's CAMELInformationPDP in its ASN.1"
+        " encoding, tag and length included, which no shape of the registry"
+        " decodes",
+    ),
+    Element(
+        "TS29.060",
+        "7.7.68",
+        "Additional MBMS Trace Info",
+        "the BM-SC's trace parameters: Trace Reference2, Trace Recording"
+        " Session Reference, the triggering events, trace depth and list of"
+        " interfaces in the BM-SC and its Trace Activity Control",
+        (
+            _source(
+                _GTPV1,
+                "7.7.68",
+                "figure 7.7.68.1, 'Length = 8' after the type and length octets;"
+                " figure 7.7.68.2, Trace Activation 1, Trace Deactivation 0,"
+                " 'All other values are reserved'",
+            ),
+        ),
+        (Octets(8, 8),),
+        Depth.LENGTH,
+        "the fields are not placed: figure 7.7.68.1 numbers Trace Reference2"
+        " octets 4 to 6 and the Trace Recording Session Reference no octets of"
+        " its own, so where each field sits is not certain; the Trace Activity"
+        " Control's reserved values would not be refused, since the figure"
+        " does not say they are not sent",
+        example=bytes(range(1, 9)),
+    ),
+    Element(
+        "TS48.018",
+        "11.3.92",
+        "Time to MBMS Data Transfer",
+        "the value part of the Time to MBMS Data Transfer IE: the time to the"
+        " start of the data transfer, 1 to 256 seconds",
+        (
+            _source(
+                _BSSGP,
+                "11.3.92",
+                "table 11.3.92.a, the value part in octet 3; table 11.3.92.b,"
+                " 0 0 0 0 0 0 0 0 1s to 1 1 1 1 1 1 1 1 256s",
+            ),
+        ),
+        (Octets(1, 1),),
+        Depth.FULL,
+        "every value of the octet is a time, 1 to 256 seconds",
+        example=b"\x09",
+    ),
+    Element(
         "TS23.040",
         "9.2.3.24",
         "User-Data-Header",

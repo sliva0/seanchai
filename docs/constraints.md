@@ -390,6 +390,17 @@ RFC 8506's 4 name 4 entries, of which 2 check something:
 | User-Equipment-Info-ModifiedEUI64 | RFC 4291 2.5.1 Modified EUI-64 | RFC 4291 (February 2006) 2.5.1 | 8 octets | full | the identifier takes any value, its 'u' bit set or not |
 | User-Equipment-Info-IMEI | TS 23.003 6.2.1 IMEI | TS 23.003 V19.8.0 6.2.1 | nothing | none | the clause gives the IMEI as 15 decimal digits, and neither it nor RFC 8506 clause 8.57 says how an OctetString carries them, as 15 characters or packed two to an octet |
 
+TS 29.061's 6 name 6 entries, of which 3 check something:
+
+| AVP | Element | Read | Checked | Depth | Not checked |
+|---|---|---|---|---|---|
+| 3GPP-CAMEL-Charging-Info | TS 29.060 7.7.54 CAMEL Charging Information Container | TS 29.060 V19.0.0 7.7.54 | nothing | none | the container holds TS 32.298's CAMELInformationPDP in its ASN.1 encoding, tag and length included, which no shape of the registry decodes |
+| TWAN-Identifier | TS 29.274 8.100 TWAN Identifier | TS 29.274 V19.6.0 8.100 | at least 2 octets; octet 2 (SSID Length) 00000000 to 00100000 | partial | the fields the flags make present, and that the lengths add up to the payload's, are not checked: no shape reads a length or a flag from a field; the spare bits of octet 5, the payload's first, are the ones TS 29.274 clause 8.1 says are sent as 0 and not evaluated by the receiver |
+| TMGI | TS 24.008 10.5.6.13 Temporary Mobile Group Identity | TS 24.008 V19.5.0 10.5.6.13 | nothing | none | the element is a type 4 information element of 5 to 8 octets, and neither it nor TS 29.061 clause 17.7.2 says whether the AVP carries its IEI and length octets or its contents alone |
+| Required-MBMS-Bearer-Capabilities | TS 24.008 10.5.6.14 MBMS bearer capabilities | TS 24.008 V19.5.0 10.5.6.14 | nothing | none | the element's octets are binary, and neither it nor TS 29.061 clause 17.7.3, which types the AVP UTF8String and calls its content UTF-8 encoded, says how a UTF8String spells them |
+| Additional-MBMS-Trace-Info | TS 29.060 7.7.68 Additional MBMS Trace Info | TS 29.060 V19.0.0 7.7.68 | 8 octets | length | the fields are not placed: figure 7.7.68.1 numbers Trace Reference2 octets 4 to 6 and the Trace Recording Session Reference no octets of its own, so where each field sits is not certain; the Trace Activity Control's reserved values would not be refused, since the figure does not say they are not sent |
+| MBMS-Time-To-Data-Transfer | TS 48.018 11.3.92 Time to MBMS Data Transfer | TS 48.018 V19.0.0 11.3.92 | 1 octet | full | every value of the octet is a time, 1 to 256 seconds |
+
 ## Reading them
 
 - The model: `Avp.constraints` holds what the reading document read of the
@@ -1366,6 +1377,124 @@ clauses do not say are all a sender may send; what a bit or value means
 ("This bit shall be set if the SCEF wants to"); the IMSI a User-Name holds,
 which no codec reads; and Annex A's overload control and Annex B's message
 priorities.
+
+## TS 29.061
+
+TS 29.061 V19.1.0 is read for Gi and SGi, Gmb and SGmb: clause 16.4.7.2's
+3GPP vendor-specific sub-attributes, which table 9a lists as Gi's and SGi's
+Diameter AVPs, clause 16a's procedures, commands and result codes, clause
+17's procedures, commands and every AVP clause of 17.7, and clause 20's
+procedures, commands, every AVP clause of 20.5a and 20.7's supported
+features. Release 18's copy, V18.1.0, prints every sentence read and holds
+all 82 blocks. Clauses 17.7a and 20.5 have re-used RADIUS attributes
+"translated to Diameter AVPs as described in IETF RFC 7155", as table 9a's
+note does: the AVP carries the sub-attribute's value, whose "Length" counts
+its 3GPP Type and Length octets too, so clause 16.4.7.2's "Length: 6" is an
+AVP of 4 octets. The document prints AA-Request and AA-Answer under NASREQ
+(1) and Gmb (16777223), and Re-Auth-Request, ST-Request and
+Abort-Session-Request under Gmb and SGmb (16777292): a block names its
+print's application.
+
+| | |
+|---|---|
+| clause 16.4.7.2's sub-attributes, table 9a's AVPs | 31 |
+| with something to declare | 27, in 27 blocks |
+| with nothing to declare | 4 |
+| Gmb's AVP clauses (17.7.2 to 17.7.25, not Void) | 23 |
+| with something to declare | 16, in 16 blocks |
+| SGmb's AVP clauses (20.5a.1 to 20.5a.12) | 12 |
+| with something to declare | 4, in 4 blocks |
+| procedure and command clauses (16a.2, 16a.3.1, 16a.6, 17, 17.6.1 to 17.6.5, 17.7.15, 20.1, 20.3.4, 20.4.1, 20.4.2, 20.7) | 35 blocks |
+| blocks | 82: 35 within a command, 47 on an AVP wherever read |
+| readings | 89 |
+
+| Rules | |
+|---|---|
+| `encoding`, a codec | 6: `digits` (3GPP-IMSI, 3GPP-IMSI-MCC-MNC, 3GPP-GGSN-MCC-MNC, 3GPP-SGSN-MCC-MNC, 3GPP-Selection-Mode, 3GPP-IMEISV) |
+| `encoding element` | 6, naming 6 entries of the registry; 3 rules checked, 3 not ([above](#elements)) |
+| `length` | 35: 6 in digits, the six codecs' (IMSI at most 15, MCC and MNC 5 or 6, IMEI(SV) 14 to 16), 29 in octets, 16 of the sub-attributes' values (an address 4 or 16, 3GPP-Charging-Id 4, 3GPP-MS-TimeZone 2) and 13 of Gmb's and SGmb's AVPs (MBMS-Session-Duration 3, RAI 11 or 12, MBMS-Service-Area 3 to 513, MBMS-Cell-List 9 to 28674) |
+| `range` | 8: Auth-Application-Id 16777223 in Gmb's 5 commands printing it and 16777292 in SGmb's 3 (clauses 17, 20.1) |
+| `requires`, `present-if`, `absent-if`, `excludes` | 3, 13, 3, 1 |
+| reading the request | 6: the AAA's Gmb specific AVPs after the AAR's Additional-MBMS-Trace-Info, but its 3GPP-IMSI, SGmb's heartbeat RAA's MBMS-StartStop-Indication and Restart-Counter |
+| `default` | 1: MBMS-User-Data-Mode-Indication Unicast |
+| `values` | 1: the heartbeat RAA's MBMS-StartStop-Indication HEARTBEAT |
+| `bits` | 2, each `only`: MBMS-Flags, Diagnostic-Info |
+| `text-only` | 17 |
+
+The sub-attributes' blocks have no scope, and hold wherever a document
+reads the AVP, TS 29.212's, 29.214's and 32.299's among them, but where a
+document reads the AVP itself (TS 29.214's 3GPP-User-Location-Info). A
+digit or text value is a UTF-8 string of characters: the MCC-MNC AVPs "3
+digits" and "2 or 3 digits" with "no padding characters", 3GPP-Selection-
+Mode "a character that represents a single digit", 3GPP-IMEISV's n of 14, 15
+or 16. 3GPP-NSAPI's one hexadecimal character, 3GPP-Charging-Characteristics'
+four, RAI's MCC and MNC digits and hexadecimal LAC and RAC are read as their
+octets alone, no codec reading hexadecimal characters. Gmb's AAR carrying
+Additional-MBMS-Trace-Info activates a trace session, since an AAR for any
+other purpose carries none (clause 17.6.1): it holds none of the AVPs the
+clause forbids then, and its AAA none of the Gmb specific AVPs but 3GPP-IMSI
+(17.6.2), the answer's 3GPP-IMSI held to a success's. A RAR's
+MBMS-StartStop-Indication tells a session start, update or heartbeat (17.6.5,
+20.4.1): Gmb's and SGmb's update carries its MBMS-Session-Duration and
+MBMS-Time-To-Data-Transfer and Gmb's its MBMS-Service-Area, SGmb's start its
+MBMS-Time-To-Data-Transfer and MBMS-Service-Area, Gmb's start its
+MBMS-Session-Identity and MBMS-Session-Repetition-Number together (17.7.15),
+and SGmb's heartbeat its Restart-Counter, the heartbeat's RAA the
+MBMS-StartStop-Indication HEARTBEAT and its Restart-Counter where it
+answers with DIAMETER_SUCCESS. Clause 16a.6's Experimental-Result "containing
+the Vendor-Id AVP set to the value of 3GPP's vendor identifier (10415)" is
+read in the ASA, Gi's one answer printing it, and clause 20.7's
+Supported-Features Vendor-Id in SGmb's RAR and RAA, as TS 29.336's are.
+Clause 20.3.4's heading Release 19 and 18 print as a paragraph of clause
+20.3.3, whose text it is read as.
+
+The text-only rules are mostly conditions on the node, the procedure or an
+earlier message (a re-authorization's AUTHORIZE_ONLY with the initial
+request's Session-Id, an interim record for a deferred IPv4 address, an AAR
+modifying an MBMS UE context, a trace session's deactivation, a changed list
+of downstream nodes or service area, the BM-SC's use of local MBMS
+information, a detected path failure, the initial RAR and RAA, which a
+session start's or heartbeat's RAR need not be, since a broadcast service's
+later sessions keep the first one's Session-Id), and layouts no kind reads:
+3GPP-GPRS-Negotiated-QoS-Profile's release indicator and hexadecimal octets,
+3GPP-User-Location-Info's location, coded by the node and the type in its
+first octet, MBMS-Required-QoS's octets in a UTF8String, MBMS-Session-
+Duration's seconds and days, at most 86400 and 18, a field of the three
+octets, and MBMS-Service-Area's codes each present once. The values a
+document's own Gi and SGi messages do not carry, 3GPP-User-Location-Info's
+5GS types (which "shall not apply for the present specification"), are an
+octet of an OctetString, which no kind reads under a scope, and a
+session update's MBMS-Time-To-Data-Transfer "with the value set to 0" is
+read as its presence alone. 3GPP-UE-Local-IP-Address's 5 or 17 octets are
+read as their bounds, no kind saying a length is one of two.
+
+The document is wrong in places the corpus reads around: clause 16.4.7.2
+prints 3GPP-Secondary-RAT-Usage with "Length=28" and its Usage Data UL in
+octets 20 to 28, nine octets where TS 29.274 clause 8.132's is eight, so no
+length is read; it prints the bounds of 3GPP-IMSI, 3GPP-IPv6-DNS-Servers and
+External-Identifier with "<=" and ">=" in a symbol font the extraction drops
+("Length: m 17"), so no bound is quoted from such a line; and clause
+17.6.3 names Additional-MBMS-Trace-Info Additonal-MBMS-Trace-Info. Left
+unread: table 7's presence column (3GPP-PDP-Type "mandatory if attribute 7 is
+present"), which names RADIUS messages and no Diameter command; 3GPP-PDP-
+Type's values, which the clause says a PDP type "may have", and the
+sentences saying values "do not apply" or are "only applicable", with no
+shall (PDP types 5 and 6, a P-GW's "0", "2", "3" and "4", RAT types 51 to
+58, the Secondary RAT Usage's RAT values); 3GPP-Session-Stop-Indicator,
+which table 9a does not list as a Diameter AVP, and 3GPP-Teardown-Indicator,
+which it has no AVP for; clause 16a.5's P-GW not sending an AVP whose
+information is not up to date, a node's; the "should" and "may" sentences
+(the GGSN's NSAPI values 05 to 0F, Alternative-APN "only includes it if");
+the lower-case "must" of DIAMETER_ERROR_START_INDICATION's Failed-AVP
+(clause 17.8.2), as RFC 4005's lower case is; MBMS-GW-SSM-IPv6-Address's
+"IPv6 prefix" and the UDP ports, which the clauses give no length; the
+sentences saying what a value or AVP means or is "only valid for"
+(MBMS-Counting-Information, MBMS-Data-Transfer-Start); clause 20.4.1's
+QoS-Information members that "are applicable", TS 29.212's AVP; clause
+17.6.5's "other bold marked AVPs ... as given by the previous, corresponding
+MBMS Session Start procedure", which names no AVP; the routing, session and
+capabilities-exchange sentences; and the procedures' result codes, which
+are what a node answers with.
 
 ## RFC 6733
 

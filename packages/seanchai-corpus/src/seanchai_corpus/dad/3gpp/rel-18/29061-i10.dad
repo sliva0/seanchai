@@ -5,6 +5,281 @@
 ; Link: https://www.etsi.org/deliver/etsi_ts/129000_129099/129061/18.01.00_60/ts_129061v180100p.pdf
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#imsi-digits)
+; AVP: 3GPP-IMSI
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"A GGSN (or a P-GW) receives IMSI that is encoded according to 3GPP TS 29.060 [24] (or 3GPP TS 29.274 [81]) and converts IMSI into the UTF-8 characters, which are encoded as defined in 3GPP TS 23.003 [40]. There shall be no padding characters between the MCC and MNC, and between the MNC and MSIN. If the IMSI is less than 15 digits, the padding in the GTP information element shall be removed by the GGSN (or the P-GW) and not encoded in this sub-attribute."
+    encoding digits
+    length *..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#charging-id-octets)
+; AVP: 3GPP-Charging-Id
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 6"
+"Charging ID value: 32 bits unsigned integer"
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#cg-address-octets)
+; AVP: 3GPP-CG-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 6"
+"Charging GW address value: Address type."
+"type Address is 32 bit value and most significant octet is the first one."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#negotiated-qos-profile-text)
+; AVP: 3GPP-GPRS-Negotiated-QoS-Profile
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"The UTF-8 encoding of a QoS IE is defined as follows: each octet is described by 2 UTF-8 encoded characters, defining its hexadecimal representation."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgsn-address-octets)
+; AVP: 3GPP-SGSN-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 6"
+"SGSN address value: Address type."
+"type Address is 32 bit value and most significant octet is the first one."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#ggsn-address-octets)
+; AVP: 3GPP-GGSN-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 6"
+"GGSN address value: Address type."
+"type Address is 32 bit value and most significant octet is the first one."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#imsi-mcc-mnc-digits)
+; AVP: 3GPP-IMSI-MCC-MNC
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"In accordance with 3GPP TS 29.060 [24] (for GGSN), 3GPP TS 29.274 [81] (for P-GW) and 3GPP TS 23.003 [40], the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC."
+    encoding digits
+    length 5..6 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#ggsn-mcc-mnc-digits)
+; AVP: 3GPP-GGSN-MCC-MNC
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"In accordance with 3GPP TS 23.003 [40] and 3GPP TS 29.060 [24] the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC."
+    encoding digits
+    length 5..6 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#nsapi-character)
+; AVP: 3GPP-NSAPI
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 3"
+"It is encoded as its hexadecimal representation, using one UTF-8 encoded character."
+    length 1 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#selection-mode-digit)
+; AVP: 3GPP-Selection-Mode
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"The format of this sub-attribute shall be a character that represents a single digit, mapping from the binary value of the selection mode in the Create PDP Context message (3GPP TS 29.060 [24]) for the GGSN, and the Create Session Request message (3GPP TS 29.274 [81]) for the P-GW."
+    encoding digits
+    length 1 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#charging-characteristics-characters)
+; AVP: 3GPP-Charging-Characteristics
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 6"
+"The charging characteristics is value of the 2 octets."
+"Each octet of this IE field value is represented via 2 UTF-8 encoded character, defining its hexadecimal representation."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#cg-ipv6-address-octets)
+; AVP: 3GPP-CG-IPv6-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 18"
+"Charging GW IPv6 address value: IPv6 Address."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgsn-ipv6-address-octets)
+; AVP: 3GPP-SGSN-IPv6-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 18"
+"SGSN IPv6 address value: IPv6 Address."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#ggsn-ipv6-address-octets)
+; AVP: 3GPP-GGSN-IPv6-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 18"
+"GGSN IPv6 address value: IPv6 Address."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgsn-mcc-mnc-digits)
+; AVP: 3GPP-SGSN-MCC-MNC
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"In accordance with 3GPP TS 23.003 [40] and 3GPP TS 29.060 [24] (for the GGSN and P-GW connected to a Gn/Gp SGSN) and 3GPP TS 29.274 [81] (for the P-GW in GTP/PMIP S5/S8, S2a, S2b), the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC."
+    encoding digits
+    length 5..6 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#imeisv-digits)
+; AVP: 3GPP-IMEISV
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"The GGSN or the P-GW converts IMEI(SV) into a sequence of UTF-8 characters.IMEI(SV) shall be encoded as defined in 3GPP TS 23.003 [40]."
+"n = 16 for IMEISV, where TAC = 8 digits SNR = 6 digits & SVN = 2 digits;"
+"n = 15 for IMEI, where TAC = 8 digits SNR = 6 digits & Spare = 1 digit;"
+"n = 14 for IMEI, where TAC = 8 digits SNR = 6 digits (Spare digit is not sent)"
+    encoding digits
+    length 14..16 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#rat-type-octet)
+; AVP: 3GPP-RAT-Type
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"3GPP Length= 3"
+"RAT field: Radio Access Technology type values. RAT field is Octet String type."
+    length 1 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#user-location-info-coding)
+; AVP: 3GPP-User-Location-Info
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Geographic Location field is used to convey the actual geographic information as indicated in the Geographic Location Type. For GGSN, the coding of this field is as specified in 3GPP TS 29.060 [24]. For P-GW, the coding of this field shall be as follows:"
+"The Geographic Location Type values \"NCGI\", \"5GS TAI\", \"5GS TAI and NCGI\", \"NG-RAN Node ID\" and \"5GS TAI and NG-RAN Node ID\" are only introduced to extend the 3GPP-User-Location-Info AVP derived from the 3GPP Vendor-Specific RADIUS attributes and shall not apply for the present specification."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#ms-time-zone-octets)
+; AVP: 3GPP-MS-TimeZone
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length=4"
+"For GGSN, both fields are coded as specified in 3GPP TS 29.060 [24] and represented as Octet String type. For, P-GW, both fields are coded as specified in 3GPP TS 29.274 [81] in UE-Time Zone IE and represented as Octet String type."
+    length 2 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#camel-charging-info-container)
+; AVP: 3GPP-CAMEL-Charging-Info
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"The coding of this field is as specified in 3GPP TS 29.060 [24] and represented as Octet String type."
+    encoding element TS29.060 7.7.54 "CAMEL Charging Information Container"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#packet-filter-all-or-none)
+; AVP: 3GPP-Packet-Filter
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"When the GGSN/P-GW sends the packet filter information, the RADIUS message shall carry ALL (or none) of the packet filters."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#negotiated-dscp-octet)
+; AVP: 3GPP-Negotiated-DSCP
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length: 3"
+"Negotiated DSCP value: Octet String"
+    length 1 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#allocate-ip-type-octet)
+; AVP: 3GPP-Allocate-IP-Type
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"3GPP Length= 3"
+"IP Type field: It is encoded in Octet String type and the following decimal equivalent values apply:"
+    length 1 octets
+"If multiple Access-Request signalling towards a AAA server is needed during the lifetime of a PDN connection (e.g. for PDN/PDP type IPv4v6 and deferred IPv4 addressing), this sub-attribute shall be included in the Access-Request message to indicate how the AAA server needs to treat the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#twan-identifier-element)
+; AVP: TWAN-Identifier
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"The coding of this field shall be the same as for the GTP TWAN Identifier starting with Octet 5, as per clause 8.100 in 3GPP TS 29.274 [81]."
+    encoding element TS29.274 8.100 "TWAN Identifier"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#user-location-info-time-octets)
+; AVP: 3GPP-User-Location-Info-Time
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length=6"
+"User Location Info time field is Unsigned32 type, it indicates the NTP time at which the UE was last known to be in the location which is reported during bearer deactivation or UE detach procedure."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#ue-local-ip-address-octets)
+; AVP: 3GPP-UE-Local-IP-Address
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length=7 or 19"
+"UE local IP address field: It is encoded in Octet String type, with 4 octets when the IP Type is UE local IPv4 address, or with 16 octets when the IP Type is UE local IPv6 address."
+    length 5..17 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#ue-source-port-octets)
+; AVP: 3GPP-UE-Source-Port
+; Section: 16.4.7.2
+; Page: 91
+; Versions: 18.1.0..19.1.0
+"Length=5"
+"Port Number field: It is encoded in Octet String type, with bit 8 of Octet 4 represents the most significant bit of the port number and bit 1 of Octet 5 represents the least significant bit."
+    length 3 octets
+
+
 ; Type: Application Scope
 ; Name: Gmb
 ; Section: 17
@@ -27,6 +302,28 @@
 ; Page: 112
 ; Application-ID: 1
 ; Applies-To: 16a.*
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#acr-deferred-ipv4-address)
+; AVP: Framed-IP-Address
+; Command: AC-Request
+; Application-ID: 1
+; Section: 16a.2
+; Page: 113
+; Versions: 18.1.0..19.1.0
+"For PDN/PDP type IPv4v6 and deferred IPv4 address allocation, when the IPv4 address is allocated or re-allocated, the accounting session that was established for the IPv6 prefix allocation shall be used to inform the accounting server about the allocated IPv4 address by sending Diameter Accounting-Request Interim-Update with Framed-IP-Address AVP and its value field containing the allocated IPv4 address."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#aar-reauthorization-authorize-only)
+; AVP: Auth-Request-Type
+; Command: AA-Request
+; Application-ID: 1
+; Section: 16a.3.1
+; Page: 114
+; Versions: 18.1.0..19.1.0
+"In this case, the GGSN shall set the Session-Id to the value used in the initial access request, the Auth-Request-Type AVP to \"AUTHORIZE_ONLY\" and the 3GPP-Allocate-IP-Type AVP to the type of IP address to be allocated in the AA-Request message sent to the AAA server."
+    text-only
 
 
 ; Type: Message
@@ -895,6 +1192,213 @@ Supported-Features               TS29.229
 DIAMETER_PDP_CONTEXT_DELETION_INDICATION = 2021
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#asa-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Abort-Session-Answer
+; Application-ID: 1
+; Section: 16a.6
+; Page: 132
+; Versions: 18.1.0..19.1.0
+"The Experimental-Result AVP is a grouped AVP containing the Vendor-Id AVP set to the value of 3GPP’s vendor identifier (10415) and an Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aar-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: AA-Request
+; Application-ID: 16777223
+; Section: 17
+; Page: 132
+; Versions: 18.1.0..19.1.0
+"The Gmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777223
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aaa-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: AA-Answer
+; Application-ID: 16777223
+; Section: 17
+; Page: 132
+; Versions: 18.1.0..19.1.0
+"The Gmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777223
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-str-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: ST-Request
+; Application-ID: 16777223
+; Section: 17
+; Page: 132
+; Versions: 18.1.0..19.1.0
+"The Gmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777223
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17
+; Page: 132
+; Versions: 18.1.0..19.1.0
+"The Gmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777223
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-asr-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: Abort-Session-Request
+; Application-ID: 16777223
+; Section: 17
+; Page: 132
+; Versions: 18.1.0..19.1.0
+"The Gmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777223
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aar-trace-activation)
+; AVP: Additional-MBMS-Trace-Info
+; Command: AA-Request
+; Application-ID: 16777223
+; Section: 17.6.1
+; Page: 143
+; Versions: 18.1.0..19.1.0
+"When used for these purposes, the Additional-MBMS-Trace-Info AVP shall not be included."
+"The AAR command is also used when the GGSN needs to activate a Trace Session in the BM-SC. In this case the Called-Station-Id AVP, Calling-Station-Id AVP, Framed-IP-Address AVP, Framed-IPv6-Prefix AVP, Framed-Interface-Id AVP, and RAI AVP shall not be included."
+    excludes Called-Station-Id or Calling-Station-Id or Framed-IP-Address or Framed-IPv6-Prefix or Framed-Interface-Id or RAI
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aar-modification)
+; AVP: Called-Station-Id
+; Command: AA-Request
+; Application-ID: 16777223
+; Section: 17.6.1
+; Page: 143
+; Versions: 18.1.0..19.1.0
+"When the AAR command is used by the GGSN to modify an MBMS UE context in the BM-SC, it shall include all the parameters that have been changed according to the triggering Update MBMS Context Request, ref. fig. 35."
+"The Called-Station-Id AVP, Calling-Station-Id AVP, Framed-IP-Address AVP, Framed-IPv6-Prefix AVP and Framed-Interface-Id AVP shall not be included,"
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aaa-trace-alternative-apn)
+; AVP: Alternative-APN
+; Command: AA-Answer
+; Application-ID: 16777223
+; Section: 17.6.2
+; Page: 144
+; Versions: 18.1.0..19.1.0
+"When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP."
+    absent-if request/Additional-MBMS-Trace-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aaa-trace-imsi)
+; AVP: 3GPP-IMSI
+; Command: AA-Answer
+; Application-ID: 16777223
+; Section: 17.6.2
+; Page: 144
+; Versions: 18.1.0..19.1.0
+"When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP."
+    present-if request/Additional-MBMS-Trace-Info and Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aaa-trace-tmgi)
+; AVP: TMGI
+; Command: AA-Answer
+; Application-ID: 16777223
+; Section: 17.6.2
+; Page: 144
+; Versions: 18.1.0..19.1.0
+"When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP."
+    absent-if request/Additional-MBMS-Trace-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-aaa-trace-bearer-capabilities)
+; AVP: Required-MBMS-Bearer-Capabilities
+; Command: AA-Answer
+; Application-ID: 16777223
+; Section: 17.6.2
+; Page: 144
+; Versions: 18.1.0..19.1.0
+"When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP."
+    absent-if request/Additional-MBMS-Trace-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-str-trace-deactivation)
+; AVP: Additional-MBMS-Trace-Info
+; Command: ST-Request
+; Application-ID: 16777223
+; Section: 17.6.3
+; Page: 144
+; Versions: 18.1.0..19.1.0
+"The Gmb specific AVP Additonal-MBMS-Trace-Info shall be included in the STR command only in the case of a Trace Session deactivation."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-update-service-area)
+; AVP: MBMS-Service-Area
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17.6.5
+; Page: 145
+; Versions: 18.1.0..19.1.0
+"For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the GGSN(s) to update their session attributes. The updated MBMS-Service-Area AVP shall be included. The MBMS-StartStop-Indication AVP with the value UPDATE shall be included."
+    present-if MBMS-StartStop-Indication = UPDATE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-update-time-to-data-transfer)
+; AVP: MBMS-Time-To-Data-Transfer
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17.6.5
+; Page: 145
+; Versions: 18.1.0..19.1.0
+"The MBMS-StartStop-Indication AVP with the value UPDATE shall be included. The MBMS-Time-To-Data-Transfer with the value set to 0 shall be included."
+    present-if MBMS-StartStop-Indication = UPDATE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-update-session-duration)
+; AVP: MBMS-Session-Duration
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17.6.5
+; Page: 145
+; Versions: 18.1.0..19.1.0
+"The MBMS-Session-Duration AVP shall be included to indicate the duration of the remaining part of the MBMS session."
+    present-if MBMS-StartStop-Indication = UPDATE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-update-sgsn-address)
+; AVP: 3GPP-SGSN-Address
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17.6.5
+; Page: 145
+; Versions: 18.1.0..19.1.0
+"The 3GPP-SGSN-Address AVP and the 3GPP-SGSN-IPv6-Address AVP shall be included if the related lists of downstream nodes in the GGSN(s) have changed."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#tmgi-element)
+; AVP: TMGI
+; Section: 17.7.2
+; Page: 150
+; Versions: 18.1.0..19.1.0
+"The encoding of TMGI is specified in 3GPP TS 24.008 [54]."
+    encoding element TS24.008 10.5.6.13 "Temporary Mobile Group Identity"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#required-bearer-capabilities-element)
+; AVP: Required-MBMS-Bearer-Capabilities
+; Section: 17.7.3
+; Page: 150
+; Versions: 18.1.0..19.1.0
+"The information contained in this AVP is UTF-8 encoded MBMS bearer capabilities as defined in 3GPP TS 24.008 [54]."
+    encoding element TS24.008 10.5.6.14 "MBMS bearer capabilities"
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-StartStop-Indication
 ; Section: 17.7.5
@@ -904,6 +1408,30 @@ MBMS-StartStop-Indication ::= < Enumerated AVP header: 902 10415 >
         STOP      = 1
         UPDATE    = 2
         HEARTBEAT = 3
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-service-area-octets)
+; AVP: MBMS-Service-Area
+; Section: 17.7.6
+; Page: 151
+; Versions: 18.1.0..19.1.0
+"The length of an MBMS service area code is 2 octets."
+"Number N of MBMS service area codes coded as: 1 binary value is ‘00000000’ 256 binary value is '11111111'"
+"A consecutive list of N MBMS service area codes"
+    length 3..513 octets
+"Each MBMS service area code shall only be present once in the list."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-session-duration-octets)
+; AVP: MBMS-Session-Duration
+; Section: 17.7.7
+; Page: 151
+; Versions: 18.1.0..19.1.0
+"The MBMS-Session-Duration AVP (AVP code 904) is of type OctetString with a length of three octets and indicates the estimated session duration (MBMS Service data transmission)."
+    length 3 octets
+"Bit 8 of octet 1 to bit 8 of octet 3 (17 bits) express seconds, for which the maximum allowed value is 86400 seconds. Bits 7 to 1 of octet 3 (7 bits) express days, for which the maximum allowed value is 18 days."
+    text-only
 
 
 ; Type: Enumerated AVP
@@ -925,6 +1453,84 @@ MBMS-2G-3G-Indicator ::= < Enumerated AVP header: 907 10415 >
         2G-AND-3G = 2
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-session-identity-octet)
+; AVP: MBMS-Session-Identity
+; Section: 17.7.11
+; Page: 152
+; Versions: 18.1.0..19.1.0
+"The MBMS-Session-Identity AVP (AVP code 908) is of type OctetString. Its length is one octet."
+    length 1 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#rai-octets)
+; AVP: RAI
+; Section: 17.7.12
+; Page: 152
+; Versions: 18.1.0..19.1.0
+"Its value shall be encoded as a UTF-8 string on either 11 (if the MNC contains two digits) or 12 (if the MNC contains three digits) octets as follows:"
+    length 11..12 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#additional-mbms-trace-info-element)
+; AVP: Additional-MBMS-Trace-Info
+; Section: 17.7.13
+; Page: 152
+; Versions: 18.1.0..19.1.0
+"This AVP contains Trace Reference2, Trace Recording Session Reference, Triggering Events in BM-SC, Trace Depth for BM-SC, List of interfaces in BM-SC, Trace Activity Control For BM-SC which are all part of the Additional MBMS Trace Info IE as specified in TS 29.060 [24]."
+    encoding element TS29.060 7.7.68 "Additional MBMS Trace Info"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#time-to-data-transfer-octet)
+; AVP: MBMS-Time-To-Data-Transfer
+; Section: 17.7.14
+; Page: 152
+; Versions: 18.1.0..19.1.0
+"The MBMS-Time-To-Data-Transfer AVP (AVP code 911) is of type OctetString. Its length is one octet."
+    length 1 octets
+"The coding is specified as per the Time to MBMS Data Transfer Value Part Coding of the Time to MBMS Data Transfer IE in 3GPP TS 48.018 [70]."
+    encoding element TS48.018 11.3.92 "Time to MBMS Data Transfer"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#session-repetition-number-octet)
+; AVP: MBMS-Session-Repetition-Number
+; Section: 17.7.15
+; Page: 153
+; Versions: 18.1.0..19.1.0
+"The MBMS-Session-Repetition-Number AVP (AVP code 912) is of type OctetString with a length of one octet."
+    length 1 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-start-repetition-number)
+; AVP: MBMS-Session-Repetition-Number
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17.7.15
+; Page: 153
+; Versions: 18.1.0..19.1.0
+"When the optional MBMS-Session-Identity AVP is included in the MBMS Session Start RAR (Start) command by the BM-SC, the BM-SC shall also provide the corresponding MBMS-Session-Repetition-Number AVP, and vice versa."
+    present-if MBMS-Session-Identity and MBMS-StartStop-Indication = START
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gmb-rar-start-session-identity)
+; AVP: MBMS-Session-Identity
+; Command: Re-Auth-Request
+; Application-ID: 16777223
+; Section: 17.7.15
+; Page: 153
+; Versions: 18.1.0..19.1.0
+"When the optional MBMS-Session-Identity AVP is included in the MBMS Session Start RAR (Start) command by the BM-SC, the BM-SC shall also provide the corresponding MBMS-Session-Repetition-Number AVP, and vice versa."
+    present-if MBMS-Session-Repetition-Number and MBMS-StartStop-Indication = START
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-required-qos-octets)
+; AVP: MBMS-Required-QoS
+; Section: 17.7.16
+; Page: 153
+; Versions: 18.1.0..19.1.0
+"QoS Profile as specified by the Quality-of-Service information element, from octet 3 onwards, in 3GPP TS 24.008 [54]."
+    text-only
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-Counting-Information
 ; Section: 17.7.17
@@ -941,6 +1547,60 @@ MBMS-Counting-Information ::= < Enumerated AVP header: 914 10415 >
 MBMS-User-Data-Mode-Indication ::= < Enumerated AVP header: 915 10415 >
         Unicast                 = 0
         "Multicast and Unicast" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#user-data-mode-default)
+; AVP: MBMS-User-Data-Mode-Indication
+; Section: 17.7.18
+; Page: 153
+; Versions: 18.1.0..19.1.0
+"The absence of this AVP indicates unicast mode of operation."
+    default Unicast
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-ggsn-address-octets)
+; AVP: MBMS-GGSN-Address
+; Section: 17.7.19
+; Page: 154
+; Versions: 18.1.0..19.1.0
+"The MBMS-GGSN-Address AVP (AVP code 916) is of type OctetString, and contains the value of GGSN’s Ipv4 address for user plane data."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-ggsn-ipv6-address-octets)
+; AVP: MBMS-GGSN-IPv6-Address
+; Section: 17.7.20
+; Page: 154
+; Versions: 18.1.0..19.1.0
+"The MBMS-GGSN-Ipv6-Address AVP (AVP code 917) is of type OctetString, and contains the value of GGSN’s Ipv6 address for user plane data."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#bmsc-ssm-ip-address-octets)
+; AVP: MBMS-BMSC-SSM-IP-Address
+; Section: 17.7.21
+; Page: 154
+; Versions: 18.1.0..19.1.0
+"The MBMS-BMSC-SSM-IP-Address AVP (AVP code 918) is of type OctetString, and contains the value of BM-SC’s IPv4 address for Source Specific Multicasting."
+    length 4 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#bmsc-ssm-ipv6-address-octets)
+; AVP: MBMS-BMSC-SSM-IPv6-Address
+; Section: 17.7.22
+; Page: 154
+; Versions: 18.1.0..19.1.0
+"The MBMS-BMSC-SSM-IPv6-Address AVP (AVP code 919) is of type OctetString, and contains the value of BM-SC’s IPv6 address for Source Specific Multicasting."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-flow-identifier-octets)
+; AVP: MBMS-Flow-Identifier
+; Section: 17.7.23
+; Page: 154
+; Versions: 18.1.0..19.1.0
+"The MBMS-Flow-Identifier AVP (AVP code 920) is of type OctetString. Its length is two octets."
+    length 2 octets
 
 
 ; Type: Enumerated AVP
@@ -982,6 +1642,152 @@ DIAMETER_ERROR_OUT_OF_RESOURCES            = 4121 ; 17.8.3
 DIAMETER_ERROR_UNKNOWN_MBMS_BEARER_SERVICE = 5122 ; 19.5.2
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.1
+; Page: 163
+; Versions: 18.1.0..19.1.0
+"The SGmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777292
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-str-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: ST-Request
+; Application-ID: 16777292
+; Section: 20.1
+; Page: 163
+; Versions: 18.1.0..19.1.0
+"The SGmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777292
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-asr-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: Abort-Session-Request
+; Application-ID: 16777292
+; Section: 20.1
+; Page: 163
+; Versions: 18.1.0..19.1.0
+"The SGmb application identifier value shall be included in the Auth-Application-Id AVP."
+    range 16777292
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-str-path-failure)
+; AVP: Diagnostic-Info
+; Command: ST-Request
+; Application-ID: 16777292
+; Section: 20.3.3
+; Page: 166
+; Versions: 18.1.0..19.1.0
+"If the MBMS GW detects the SGi-mb path failure as specified in subclause 20.3.2.1 of 3GPP TS 23.007 [104], the MBMS GW shall set the Termination-Cause to \"DIAMETER_LINK_BROKEN\" (see IETF RFC 6733 [111]) and shall include the Diagnostic-Info AVP set to \"User Plane Failure\" if it tears down the MBMS session as a result of detecting an SGi-mb path failure."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-time-to-data-transfer)
+; AVP: MBMS-Time-To-Data-Transfer
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.4.1
+; Page: 168
+; Versions: 18.1.0..19.1.0
+"For the MBMS Session Start procedure, RAR is sent by the BM-SC to the MBMS GW(s) that will deliver the MBMS service when it is ready to send data."
+"The MBMS-Time-to-Data-Transfer AVP shall be included to indicate the expected time between the reception of the MBMS Session Start and the transmission of MBMS data flows."
+    present-if MBMS-StartStop-Indication = START
+"For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the MBMS GW(s) to update their session attributes."
+"The MBMS-StartStop-Indication AVP with the value UPDATE shall be included. The MBMS-Time-To-Data-Transfer with AVP the value set to 0 shall be included."
+    present-if MBMS-StartStop-Indication = UPDATE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-service-area)
+; AVP: MBMS-Service-Area
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.4.1
+; Page: 168
+; Versions: 18.1.0..19.1.0
+"For the MBMS Session Start procedure, RAR is sent by the BM-SC to the MBMS GW(s) that will deliver the MBMS service when it is ready to send data."
+"The RAR message shall also contain the MBMS-Service-Area AVP."
+    present-if MBMS-StartStop-Indication = START
+"If the MBMS service area or the MBMS cell list needs to be changed, the MBMS-Service-Area AVP shall be included in the RAR."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-local-m1-information)
+; AVP: Local-M1-Information
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.4.1
+; Page: 168
+; Versions: 18.1.0..19.1.0
+"The RAR message shall also contain the Local-M1-Information AVP if the BM-SC determines to use the local MBMS information as specified in 3GPP TS 23.285 [112]."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-cell-list)
+; AVP: MBMS-Cell-List
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.4.1
+; Page: 168
+; Versions: 18.1.0..19.1.0
+"If the MBMS Cell List feature is supported and the MBMS cell list needs to be changed, the MBMS-Cell-List AVP shall also be included."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-update-session-duration)
+; AVP: MBMS-Session-Duration
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.4.1
+; Page: 168
+; Versions: 18.1.0..19.1.0
+"For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the MBMS GW(s) to update their session attributes."
+"The MBMS-StartStop-Indication AVP with the value UPDATE shall be included."
+"The MBMS-Session-Duration AVP shall be included to indicate the duration of the remaining part of the MBMS session."
+    present-if MBMS-StartStop-Indication = UPDATE
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-heartbeat-restart-counter)
+; AVP: Restart-Counter
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.4.1
+; Page: 168
+; Versions: 18.1.0..19.1.0
+"For the MBMS Heartbeat procedure, RAR is sent by the BM-SC to the MBMS GW, or vice-versa. The RAR message shall contain the following AVPs:"
+"the MBMS-StartStop-Indication AVP set to the value \"heartbeat\";"
+"the Restart-Counter AVP set to the local restart counter of the sender."
+    present-if MBMS-StartStop-Indication = HEARTBEAT
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-raa-heartbeat-indication)
+; AVP: MBMS-StartStop-Indication
+; Command: Re-Auth-Answer
+; Application-ID: 16777292
+; Section: 20.4.2
+; Page: 170
+; Versions: 18.1.0..19.1.0
+"For the MBMS Heartbeat procedure, RAA is sent by the BM-SC to the MBMS GW, or vice-versa. The RAA message shall contain the following AVPs:"
+"the MBMS-StartStop-Indication AVP set to the value \"heartbeat\";"
+    present-if request/MBMS-StartStop-Indication = HEARTBEAT and Result-Code = DIAMETER_SUCCESS
+    values 3 if request/MBMS-StartStop-Indication = HEARTBEAT
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-raa-heartbeat-restart-counter)
+; AVP: Restart-Counter
+; Command: Re-Auth-Answer
+; Application-ID: 16777292
+; Section: 20.4.2
+; Page: 170
+; Versions: 18.1.0..19.1.0
+"For the MBMS Heartbeat procedure, RAA is sent by the BM-SC to the MBMS GW, or vice-versa. The RAA message shall contain the following AVPs:"
+"the Restart-Counter AVP set to the local restart counter of the sender."
+    present-if request/MBMS-StartStop-Indication = HEARTBEAT and Result-Code = DIAMETER_SUCCESS
+
+
 ; Type: Enumerated AVP
 ; Name: MBMS-Access-Indicator
 ; Section: 20.5a.1
@@ -990,6 +1796,15 @@ MBMS-Access-Indicator ::= < Enumerated AVP header: 923 10415 >
         UTRAN             = 0
         E-UTRAN           = 1
         UTRAN-AND-E-UTRAN = 2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#gw-ssm-ip-address-octets)
+; AVP: MBMS-GW-SSM-IP-Address
+; Section: 20.5a.2
+; Page: 176
+; Versions: 18.1.0..19.1.0
+"The MBMS-GW-SSM-IP-Address AVP (AVP code 924) is of type OctetString and contains the Sgi-mb (transport) plane IPv4 destination multicast address used by BM-SC for IP multicast encapsulation of application IP multicast datagrams."
+    length 4 octets
 
 
 ; Type: Enumerated AVP
@@ -1010,6 +1825,16 @@ MSRI   = 0
 LMBCRI = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-flags-undefined-bits)
+; AVP: MBMS-Flags
+; Section: 20.5a.9
+; Table: 20.5a.9.1
+; Page: 176
+; Versions: 18.1.0..19.1.0
+"NOTE: Bits not defined in this table shall be cleared by the sending BM-SC and ignored by the receiving MBMS GW."
+    bits only 0 1
+
+
 ; Type: Value Table
 ; AVP: Diagnostic-Info
 ; Kind: bits
@@ -1017,6 +1842,27 @@ LMBCRI = 1
 ; Table: 20.5a.11.1
 ; Page: 177
 UPFAIL = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#diagnostic-info-undefined-bits)
+; AVP: Diagnostic-Info
+; Section: 20.5a.11
+; Table: 20.5a.11.1
+; Page: 177
+; Versions: 18.1.0..19.1.0
+"NOTE: Bits not defined in this table shall be cleared by the sending MBMS GW and ignored by the receiving BM-SC."
+    bits only 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#mbms-cell-list-octets)
+; AVP: MBMS-Cell-List
+; Section: 20.5a.12
+; Page: 177
+; Versions: 18.1.0..19.1.0
+"The AVP shall consist of two octets indicating the number of cell identifiers in the list, followed by a sequence of maximum 4096 cell identifiers, coded as E-CGIs."
+"Number N of ECGI codes coded as: 1 binary value is ‘0000 0000 0000 0000’ 4096 binary value is '0000 1111 1111 1111'"
+"A consecutive list of N ECGI codes, each encoded according to subclause 8.21.5 of 3GPP TS 29.274 [81]."
+    length 9..28674 octets
 
 
 ; Type: Value Table
@@ -1029,3 +1875,27 @@ UPFAIL = 0
 ; Page: 178
 "MBMS Heartbeat" = 0 ; O
 "MBMS Cell List" = 1 ; O
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-rar-supported-features-vendor)
+; AVP: Supported-Features
+; Command: Re-Auth-Request
+; Application-ID: 16777292
+; Section: 20.7
+; Page: 178
+; Versions: 18.1.0..19.1.0
+"On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-raa-supported-features-vendor)
+; AVP: Supported-Features
+; Command: Re-Auth-Answer
+; Application-ID: 16777292
+; Section: 20.7
+; Page: 178
+; Versions: 18.1.0..19.1.0
+"On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
+    requires Supported-Features/Vendor-Id = 10415
+"If the RAR command contains the Supported-Features AVP, the MBMS GW shall include the Supported-Features AVP in the RAA command, with the ‘M’ bit cleared, indicating only the features that both the BM-SC and MBMS GW support."
+    text-only

@@ -62,6 +62,334 @@
   },
   "29061-i10": {
    "edits": {
+    "TS29.061.dadx#aar-reauthorization-authorize-only": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16a.3.1: 'In this case, the GGSN shall set the Session-Id to the value used in the initial access request, the Auth-Request-Type AVP to \"AUTHORIZE_ONLY\" and the 3GPP-Allocate-IP-Type AVP to the type of IP address to be allocated in the AA-Request message sent to the AAA server.'"
+    },
+    "TS29.061.dadx#acr-deferred-ipv4-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16a.2: 'For PDN/PDP type IPv4v6 and deferred IPv4 address allocation, when the IPv4 address is allocated or re-allocated, the accounting session that was established for the IPv6 prefix allocation shall be used to inform the accounting server about the allocated IPv4 address by sending Diameter Accounting-Request Interim-Update with Framed-IP-Address AVP and its value field containing the allocated IPv4 address.'"
+    },
+    "TS29.061.dadx#additional-mbms-trace-info-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.13: 'This AVP contains Trace Reference2, Trace Recording Session Reference, Triggering Events in BM-SC, Trace Depth for BM-SC, List of interfaces in BM-SC, Trace Activity Control For BM-SC which are all part of the Additional MBMS Trace Info IE as specified in TS 29.060 [24].'"
+    },
+    "TS29.061.dadx#allocate-ip-type-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: '3GPP Length= 3'; 'IP Type field: It is encoded in Octet String type and the following decimal equivalent values apply:'; 'If multiple Access-Request signalling towards a AAA server is needed during the lifetime of a PDN connection (e.g. for PDN/PDP type IPv4v6 and deferred IPv4 addressing), this sub-attribute shall be included in the Access-Request message to indicate how the AAA server needs to treat the request.'"
+    },
+    "TS29.061.dadx#asa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16a.6: 'The Experimental-Result AVP is a grouped AVP containing the Vendor-Id AVP set to the value of 3GPP’s vendor identifier (10415) and an Experimental-Result-Code AVP.'"
+    },
+    "TS29.061.dadx#bmsc-ssm-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.21: 'The MBMS-BMSC-SSM-IP-Address AVP (AVP code 918) is of type OctetString, and contains the value of BM-SC’s IPv4 address for Source Specific Multicasting.'"
+    },
+    "TS29.061.dadx#bmsc-ssm-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.22: 'The MBMS-BMSC-SSM-IPv6-Address AVP (AVP code 919) is of type OctetString, and contains the value of BM-SC’s IPv6 address for Source Specific Multicasting.'"
+    },
+    "TS29.061.dadx#camel-charging-info-container": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The coding of this field is as specified in 3GPP TS 29.060 [24] and represented as Octet String type.'"
+    },
+    "TS29.061.dadx#cg-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'Charging GW address value: Address type.'; 'type Address is 32 bit value and most significant octet is the first one.'"
+    },
+    "TS29.061.dadx#cg-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 18'; 'Charging GW IPv6 address value: IPv6 Address.'"
+    },
+    "TS29.061.dadx#charging-characteristics-characters": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'The charging characteristics is value of the 2 octets.'; 'Each octet of this IE field value is represented via 2 UTF-8 encoded character, defining its hexadecimal representation.'"
+    },
+    "TS29.061.dadx#charging-id-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'Charging ID value: 32 bits unsigned integer'"
+    },
+    "TS29.061.dadx#diagnostic-info-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 20.5a.11.1: 'NOTE: Bits not defined in this table shall be cleared by the sending MBMS GW and ignored by the receiving BM-SC.'"
+    },
+    "TS29.061.dadx#ggsn-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'GGSN address value: Address type.'; 'type Address is 32 bit value and most significant octet is the first one.'"
+    },
+    "TS29.061.dadx#ggsn-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 18'; 'GGSN IPv6 address value: IPv6 Address.'"
+    },
+    "TS29.061.dadx#ggsn-mcc-mnc-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'In accordance with 3GPP TS 23.003 [40] and 3GPP TS 29.060 [24] the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC.'"
+    },
+    "TS29.061.dadx#gmb-aaa-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-alternative-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-bearer-capabilities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-tmgi": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-aar-modification": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.1: 'When the AAR command is used by the GGSN to modify an MBMS UE context in the BM-SC, it shall include all the parameters that have been changed according to the triggering Update MBMS Context Request, ref. fig. 35.'; 'The Called-Station-Id AVP, Calling-Station-Id AVP, Framed-IP-Address AVP, Framed-IPv6-Prefix AVP and Framed-Interface-Id AVP shall not be included,'"
+    },
+    "TS29.061.dadx#gmb-aar-trace-activation": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.1: 'When used for these purposes, the Additional-MBMS-Trace-Info AVP shall not be included.'; 'The AAR command is also used when the GGSN needs to activate a Trace Session in the BM-SC. In this case the Called-Station-Id AVP, Calling-Station-Id AVP, Framed-IP-Address AVP, Framed-IPv6-Prefix AVP, Framed-Interface-Id AVP, and RAI AVP shall not be included.'"
+    },
+    "TS29.061.dadx#gmb-asr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-rar-start-repetition-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.15: 'When the optional MBMS-Session-Identity AVP is included in the MBMS Session Start RAR (Start) command by the BM-SC, the BM-SC shall also provide the corresponding MBMS-Session-Repetition-Number AVP, and vice versa.'"
+    },
+    "TS29.061.dadx#gmb-rar-start-session-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.15: 'When the optional MBMS-Session-Identity AVP is included in the MBMS Session Start RAR (Start) command by the BM-SC, the BM-SC shall also provide the corresponding MBMS-Session-Repetition-Number AVP, and vice versa.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-service-area": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the GGSN(s) to update their session attributes. The updated MBMS-Service-Area AVP shall be included. The MBMS-StartStop-Indication AVP with the value UPDATE shall be included.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-session-duration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'The MBMS-Session-Duration AVP shall be included to indicate the duration of the remaining part of the MBMS session.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-sgsn-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'The 3GPP-SGSN-Address AVP and the 3GPP-SGSN-IPv6-Address AVP shall be included if the related lists of downstream nodes in the GGSN(s) have changed.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-time-to-data-transfer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'The MBMS-StartStop-Indication AVP with the value UPDATE shall be included. The MBMS-Time-To-Data-Transfer with the value set to 0 shall be included.'"
+    },
+    "TS29.061.dadx#gmb-str-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-str-trace-deactivation": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.3: 'The Gmb specific AVP Additonal-MBMS-Trace-Info shall be included in the STR command only in the case of a Trace Session deactivation.'"
+    },
+    "TS29.061.dadx#gw-ssm-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.5a.2: 'The MBMS-GW-SSM-IP-Address AVP (AVP code 924) is of type OctetString and contains the Sgi-mb (transport) plane IPv4 destination multicast address used by BM-SC for IP multicast encapsulation of application IP multicast datagrams.'"
+    },
+    "TS29.061.dadx#imeisv-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The GGSN or the P-GW converts IMEI(SV) into a sequence of UTF-8 characters.IMEI(SV) shall be encoded as defined in 3GPP TS 23.003 [40].'; 'n = 16 for IMEISV, where TAC = 8 digits SNR = 6 digits & SVN = 2 digits;'; 'n = 15 for IMEI, where TAC = 8 digits SNR = 6 digits & Spare = 1 digit;'; 'n = 14 for IMEI, where TAC = 8 digits SNR = 6 digits (Spare digit is not sent)'"
+    },
+    "TS29.061.dadx#imsi-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'A GGSN (or a P-GW) receives IMSI that is encoded according to 3GPP TS 29.060 [24] (or 3GPP TS 29.274 [81]) and converts IMSI into the UTF-8 characters, which are encoded as defined in 3GPP TS 23.003 [40]. There shall be no padding characters between the MCC and MNC, and between the MNC and MSIN. If the IMSI is less than 15 digits, the padding in the GTP information element shall be removed by the GGSN (or the P-GW) and not encoded in this sub-attribute.'"
+    },
+    "TS29.061.dadx#imsi-mcc-mnc-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'In accordance with 3GPP TS 29.060 [24] (for GGSN), 3GPP TS 29.274 [81] (for P-GW) and 3GPP TS 23.003 [40], the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC.'"
+    },
+    "TS29.061.dadx#mbms-cell-list-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.5a.12: 'The AVP shall consist of two octets indicating the number of cell identifiers in the list, followed by a sequence of maximum 4096 cell identifiers, coded as E-CGIs.'; 'Number N of ECGI codes coded as: 1 binary value is ‘0000 0000 0000 0000’ 4096 binary value is '0000 1111 1111 1111''; 'A consecutive list of N ECGI codes, each encoded according to subclause 8.21.5 of 3GPP TS 29.274 [81].'"
+    },
+    "TS29.061.dadx#mbms-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 20.5a.9.1: 'NOTE: Bits not defined in this table shall be cleared by the sending BM-SC and ignored by the receiving MBMS GW.'"
+    },
+    "TS29.061.dadx#mbms-flow-identifier-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.23: 'The MBMS-Flow-Identifier AVP (AVP code 920) is of type OctetString. Its length is two octets.'"
+    },
+    "TS29.061.dadx#mbms-ggsn-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.19: 'The MBMS-GGSN-Address AVP (AVP code 916) is of type OctetString, and contains the value of GGSN’s Ipv4 address for user plane data.'"
+    },
+    "TS29.061.dadx#mbms-ggsn-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.20: 'The MBMS-GGSN-Ipv6-Address AVP (AVP code 917) is of type OctetString, and contains the value of GGSN’s Ipv6 address for user plane data.'"
+    },
+    "TS29.061.dadx#mbms-required-qos-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.16: 'QoS Profile as specified by the Quality-of-Service information element, from octet 3 onwards, in 3GPP TS 24.008 [54].'"
+    },
+    "TS29.061.dadx#mbms-service-area-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.6: 'The length of an MBMS service area code is 2 octets.'; 'Number N of MBMS service area codes coded as: 1 binary value is ‘00000000’ 256 binary value is '11111111''; 'A consecutive list of N MBMS service area codes'; 'Each MBMS service area code shall only be present once in the list.'"
+    },
+    "TS29.061.dadx#mbms-session-duration-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.7: 'The MBMS-Session-Duration AVP (AVP code 904) is of type OctetString with a length of three octets and indicates the estimated session duration (MBMS Service data transmission).'; 'Bit 8 of octet 1 to bit 8 of octet 3 (17 bits) express seconds, for which the maximum allowed value is 86400 seconds. Bits 7 to 1 of octet 3 (7 bits) express days, for which the maximum allowed value is 18 days.'"
+    },
+    "TS29.061.dadx#mbms-session-identity-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.11: 'The MBMS-Session-Identity AVP (AVP code 908) is of type OctetString. Its length is one octet.'"
+    },
+    "TS29.061.dadx#ms-time-zone-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=4'; 'For GGSN, both fields are coded as specified in 3GPP TS 29.060 [24] and represented as Octet String type. For, P-GW, both fields are coded as specified in 3GPP TS 29.274 [81] in UE-Time Zone IE and represented as Octet String type.'"
+    },
+    "TS29.061.dadx#negotiated-dscp-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 3'; 'Negotiated DSCP value: Octet String'"
+    },
+    "TS29.061.dadx#negotiated-qos-profile-text": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The UTF-8 encoding of a QoS IE is defined as follows: each octet is described by 2 UTF-8 encoded characters, defining its hexadecimal representation.'"
+    },
+    "TS29.061.dadx#nsapi-character": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 3'; 'It is encoded as its hexadecimal representation, using one UTF-8 encoded character.'"
+    },
+    "TS29.061.dadx#packet-filter-all-or-none": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'When the GGSN/P-GW sends the packet filter information, the RADIUS message shall carry ALL (or none) of the packet filters.'"
+    },
+    "TS29.061.dadx#rai-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.12: 'Its value shall be encoded as a UTF-8 string on either 11 (if the MNC contains two digits) or 12 (if the MNC contains three digits) octets as follows:'"
+    },
+    "TS29.061.dadx#rat-type-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: '3GPP Length= 3'; 'RAT field: Radio Access Technology type values. RAT field is Octet String type.'"
+    },
+    "TS29.061.dadx#required-bearer-capabilities-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.3: 'The information contained in this AVP is UTF-8 encoded MBMS bearer capabilities as defined in 3GPP TS 24.008 [54].'"
+    },
+    "TS29.061.dadx#selection-mode-digit": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The format of this sub-attribute shall be a character that represents a single digit, mapping from the binary value of the selection mode in the Create PDP Context message (3GPP TS 29.060 [24]) for the GGSN, and the Create Session Request message (3GPP TS 29.274 [81]) for the P-GW.'"
+    },
+    "TS29.061.dadx#session-repetition-number-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.15: 'The MBMS-Session-Repetition-Number AVP (AVP code 912) is of type OctetString with a length of one octet.'"
+    },
+    "TS29.061.dadx#sgmb-asr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.1: 'The SGmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#sgmb-raa-heartbeat-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.2: 'For the MBMS Heartbeat procedure, RAA is sent by the BM-SC to the MBMS GW, or vice-versa. The RAA message shall contain the following AVPs:'; 'the MBMS-StartStop-Indication AVP set to the value \"heartbeat\";'"
+    },
+    "TS29.061.dadx#sgmb-raa-heartbeat-restart-counter": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.2: 'For the MBMS Heartbeat procedure, RAA is sent by the BM-SC to the MBMS GW, or vice-versa. The RAA message shall contain the following AVPs:'; 'the Restart-Counter AVP set to the local restart counter of the sender.'"
+    },
+    "TS29.061.dadx#sgmb-raa-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.7: 'On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'If the RAR command contains the Supported-Features AVP, the MBMS GW shall include the Supported-Features AVP in the RAA command, with the ‘M’ bit cleared, indicating only the features that both the BM-SC and MBMS GW support.'"
+    },
+    "TS29.061.dadx#sgmb-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.1: 'The SGmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#sgmb-rar-cell-list": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'If the MBMS Cell List feature is supported and the MBMS cell list needs to be changed, the MBMS-Cell-List AVP shall also be included.'"
+    },
+    "TS29.061.dadx#sgmb-rar-heartbeat-restart-counter": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Heartbeat procedure, RAR is sent by the BM-SC to the MBMS GW, or vice-versa. The RAR message shall contain the following AVPs:'; 'the MBMS-StartStop-Indication AVP set to the value \"heartbeat\";'; 'the Restart-Counter AVP set to the local restart counter of the sender.'"
+    },
+    "TS29.061.dadx#sgmb-rar-local-m1-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'The RAR message shall also contain the Local-M1-Information AVP if the BM-SC determines to use the local MBMS information as specified in 3GPP TS 23.285 [112].'"
+    },
+    "TS29.061.dadx#sgmb-rar-service-area": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Session Start procedure, RAR is sent by the BM-SC to the MBMS GW(s) that will deliver the MBMS service when it is ready to send data.'; 'The RAR message shall also contain the MBMS-Service-Area AVP.'; 'If the MBMS service area or the MBMS cell list needs to be changed, the MBMS-Service-Area AVP shall be included in the RAR.'"
+    },
+    "TS29.061.dadx#sgmb-rar-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.7: 'On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.061.dadx#sgmb-rar-time-to-data-transfer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Session Start procedure, RAR is sent by the BM-SC to the MBMS GW(s) that will deliver the MBMS service when it is ready to send data.'; 'The MBMS-Time-to-Data-Transfer AVP shall be included to indicate the expected time between the reception of the MBMS Session Start and the transmission of MBMS data flows.'; 'For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the MBMS GW(s) to update their session attributes.'; 'The MBMS-StartStop-Indication AVP with the value UPDATE shall be included. The MBMS-Time-To-Data-Transfer with AVP the value set to 0 shall be included.'"
+    },
+    "TS29.061.dadx#sgmb-rar-update-session-duration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the MBMS GW(s) to update their session attributes.'; 'The MBMS-StartStop-Indication AVP with the value UPDATE shall be included.'; 'The MBMS-Session-Duration AVP shall be included to indicate the duration of the remaining part of the MBMS session.'"
+    },
+    "TS29.061.dadx#sgmb-str-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.1: 'The SGmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#sgmb-str-path-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.3.3: 'If the MBMS GW detects the SGi-mb path failure as specified in subclause 20.3.2.1 of 3GPP TS 23.007 [104], the MBMS GW shall set the Termination-Cause to \"DIAMETER_LINK_BROKEN\" (see IETF RFC 6733 [111]) and shall include the Diagnostic-Info AVP set to \"User Plane Failure\" if it tears down the MBMS session as a result of detecting an SGi-mb path failure.'"
+    },
+    "TS29.061.dadx#sgsn-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'SGSN address value: Address type.'; 'type Address is 32 bit value and most significant octet is the first one.'"
+    },
+    "TS29.061.dadx#sgsn-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 18'; 'SGSN IPv6 address value: IPv6 Address.'"
+    },
+    "TS29.061.dadx#sgsn-mcc-mnc-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'In accordance with 3GPP TS 23.003 [40] and 3GPP TS 29.060 [24] (for the GGSN and P-GW connected to a Gn/Gp SGSN) and 3GPP TS 29.274 [81] (for the P-GW in GTP/PMIP S5/S8, S2a, S2b), the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC.'"
+    },
+    "TS29.061.dadx#time-to-data-transfer-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.14: 'The MBMS-Time-To-Data-Transfer AVP (AVP code 911) is of type OctetString. Its length is one octet.'; 'The coding is specified as per the Time to MBMS Data Transfer Value Part Coding of the Time to MBMS Data Transfer IE in 3GPP TS 48.018 [70].'"
+    },
+    "TS29.061.dadx#tmgi-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.2: 'The encoding of TMGI is specified in 3GPP TS 24.008 [54].'"
+    },
+    "TS29.061.dadx#twan-identifier-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The coding of this field shall be the same as for the GTP TWAN Identifier starting with Octet 5, as per clause 8.100 in 3GPP TS 29.274 [81].'"
+    },
+    "TS29.061.dadx#ue-local-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=7 or 19'; 'UE local IP address field: It is encoded in Octet String type, with 4 octets when the IP Type is UE local IPv4 address, or with 16 octets when the IP Type is UE local IPv6 address.'"
+    },
+    "TS29.061.dadx#ue-source-port-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=5'; 'Port Number field: It is encoded in Octet String type, with bit 8 of Octet 4 represents the most significant bit of the port number and bit 1 of Octet 5 represents the least significant bit.'"
+    },
+    "TS29.061.dadx#user-data-mode-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.18: 'The absence of this AVP indicates unicast mode of operation.'"
+    },
+    "TS29.061.dadx#user-location-info-coding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Geographic Location field is used to convey the actual geographic information as indicated in the Geographic Location Type. For GGSN, the coding of this field is as specified in 3GPP TS 29.060 [24]. For P-GW, the coding of this field shall be as follows:'; 'The Geographic Location Type values \"NCGI\", \"5GS TAI\", \"5GS TAI and NCGI\", \"NG-RAN Node ID\" and \"5GS TAI and NG-RAN Node ID\" are only introduced to extend the 3GPP-User-Location-Info AVP derived from the 3GPP Vendor-Specific RADIUS attributes and shall not apply for the present specification.'"
+    },
+    "TS29.061.dadx#user-location-info-time-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=6'; 'User Location Info time field is Unsigned32 type, it indicates the NTP time at which the UE was last known to be in the location which is reported during bearer deactivation or UE detach procedure.'"
+    },
     "TS29.061.py#acr-connect-info-spelling": {
      "kind": "correction",
      "reason": "clause 16a.4.3's ACR body copies the typo of RFC 4005's and RFC 7155's ACR (RFC 7155's verified erratum 5995); the AVP is Connect-Info, code 77, and the AAR body of clause 16a.4.1 spells it so"
@@ -210,6 +538,334 @@
   },
   "29061-j10": {
    "edits": {
+    "TS29.061.dadx#aar-reauthorization-authorize-only": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16a.3.1: 'In this case, the GGSN shall set the Session-Id to the value used in the initial access request, the Auth-Request-Type AVP to \"AUTHORIZE_ONLY\" and the 3GPP-Allocate-IP-Type AVP to the type of IP address to be allocated in the AA-Request message sent to the AAA server.'"
+    },
+    "TS29.061.dadx#acr-deferred-ipv4-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16a.2: 'For PDN/PDP type IPv4v6 and deferred IPv4 address allocation, when the IPv4 address is allocated or re-allocated, the accounting session that was established for the IPv6 prefix allocation shall be used to inform the accounting server about the allocated IPv4 address by sending Diameter Accounting-Request Interim-Update with Framed-IP-Address AVP and its value field containing the allocated IPv4 address.'"
+    },
+    "TS29.061.dadx#additional-mbms-trace-info-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.13: 'This AVP contains Trace Reference2, Trace Recording Session Reference, Triggering Events in BM-SC, Trace Depth for BM-SC, List of interfaces in BM-SC, Trace Activity Control For BM-SC which are all part of the Additional MBMS Trace Info IE as specified in TS 29.060 [24].'"
+    },
+    "TS29.061.dadx#allocate-ip-type-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: '3GPP Length= 3'; 'IP Type field: It is encoded in Octet String type and the following decimal equivalent values apply:'; 'If multiple Access-Request signalling towards a AAA server is needed during the lifetime of a PDN connection (e.g. for PDN/PDP type IPv4v6 and deferred IPv4 addressing), this sub-attribute shall be included in the Access-Request message to indicate how the AAA server needs to treat the request.'"
+    },
+    "TS29.061.dadx#asa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16a.6: 'The Experimental-Result AVP is a grouped AVP containing the Vendor-Id AVP set to the value of 3GPP’s vendor identifier (10415) and an Experimental-Result-Code AVP.'"
+    },
+    "TS29.061.dadx#bmsc-ssm-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.21: 'The MBMS-BMSC-SSM-IP-Address AVP (AVP code 918) is of type OctetString, and contains the value of BM-SC’s IPv4 address for Source Specific Multicasting.'"
+    },
+    "TS29.061.dadx#bmsc-ssm-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.22: 'The MBMS-BMSC-SSM-IPv6-Address AVP (AVP code 919) is of type OctetString, and contains the value of BM-SC’s IPv6 address for Source Specific Multicasting.'"
+    },
+    "TS29.061.dadx#camel-charging-info-container": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The coding of this field is as specified in 3GPP TS 29.060 [24] and represented as Octet String type.'"
+    },
+    "TS29.061.dadx#cg-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'Charging GW address value: Address type.'; 'type Address is 32 bit value and most significant octet is the first one.'"
+    },
+    "TS29.061.dadx#cg-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 18'; 'Charging GW IPv6 address value: IPv6 Address.'"
+    },
+    "TS29.061.dadx#charging-characteristics-characters": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'The charging characteristics is value of the 2 octets.'; 'Each octet of this IE field value is represented via 2 UTF-8 encoded character, defining its hexadecimal representation.'"
+    },
+    "TS29.061.dadx#charging-id-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'Charging ID value: 32 bits unsigned integer'"
+    },
+    "TS29.061.dadx#diagnostic-info-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 20.5a.11.1: 'NOTE: Bits not defined in this table shall be cleared by the sending MBMS GW and ignored by the receiving BM-SC.'"
+    },
+    "TS29.061.dadx#ggsn-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'GGSN address value: Address type.'; 'type Address is 32 bit value and most significant octet is the first one.'"
+    },
+    "TS29.061.dadx#ggsn-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 18'; 'GGSN IPv6 address value: IPv6 Address.'"
+    },
+    "TS29.061.dadx#ggsn-mcc-mnc-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'In accordance with 3GPP TS 23.003 [40] and 3GPP TS 29.060 [24] the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC.'"
+    },
+    "TS29.061.dadx#gmb-aaa-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-alternative-apn": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-bearer-capabilities": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aaa-trace-tmgi": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.2: 'When the AAA command is used to acknowledge an AAR that activated a Trace Session, the only Gmb specific AVP that shall be included is the 3GPP-IMSI AVP.'"
+    },
+    "TS29.061.dadx#gmb-aar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-aar-modification": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.1: 'When the AAR command is used by the GGSN to modify an MBMS UE context in the BM-SC, it shall include all the parameters that have been changed according to the triggering Update MBMS Context Request, ref. fig. 35.'; 'The Called-Station-Id AVP, Calling-Station-Id AVP, Framed-IP-Address AVP, Framed-IPv6-Prefix AVP and Framed-Interface-Id AVP shall not be included,'"
+    },
+    "TS29.061.dadx#gmb-aar-trace-activation": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.1: 'When used for these purposes, the Additional-MBMS-Trace-Info AVP shall not be included.'; 'The AAR command is also used when the GGSN needs to activate a Trace Session in the BM-SC. In this case the Called-Station-Id AVP, Calling-Station-Id AVP, Framed-IP-Address AVP, Framed-IPv6-Prefix AVP, Framed-Interface-Id AVP, and RAI AVP shall not be included.'"
+    },
+    "TS29.061.dadx#gmb-asr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-rar-start-repetition-number": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.15: 'When the optional MBMS-Session-Identity AVP is included in the MBMS Session Start RAR (Start) command by the BM-SC, the BM-SC shall also provide the corresponding MBMS-Session-Repetition-Number AVP, and vice versa.'"
+    },
+    "TS29.061.dadx#gmb-rar-start-session-identity": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.15: 'When the optional MBMS-Session-Identity AVP is included in the MBMS Session Start RAR (Start) command by the BM-SC, the BM-SC shall also provide the corresponding MBMS-Session-Repetition-Number AVP, and vice versa.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-service-area": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the GGSN(s) to update their session attributes. The updated MBMS-Service-Area AVP shall be included. The MBMS-StartStop-Indication AVP with the value UPDATE shall be included.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-session-duration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'The MBMS-Session-Duration AVP shall be included to indicate the duration of the remaining part of the MBMS session.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-sgsn-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'The 3GPP-SGSN-Address AVP and the 3GPP-SGSN-IPv6-Address AVP shall be included if the related lists of downstream nodes in the GGSN(s) have changed.'"
+    },
+    "TS29.061.dadx#gmb-rar-update-time-to-data-transfer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.5: 'The MBMS-StartStop-Indication AVP with the value UPDATE shall be included. The MBMS-Time-To-Data-Transfer with the value set to 0 shall be included.'"
+    },
+    "TS29.061.dadx#gmb-str-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17: 'The Gmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#gmb-str-trace-deactivation": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.6.3: 'The Gmb specific AVP Additonal-MBMS-Trace-Info shall be included in the STR command only in the case of a Trace Session deactivation.'"
+    },
+    "TS29.061.dadx#gw-ssm-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.5a.2: 'The MBMS-GW-SSM-IP-Address AVP (AVP code 924) is of type OctetString and contains the Sgi-mb (transport) plane IPv4 destination multicast address used by BM-SC for IP multicast encapsulation of application IP multicast datagrams.'"
+    },
+    "TS29.061.dadx#imeisv-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The GGSN or the P-GW converts IMEI(SV) into a sequence of UTF-8 characters.IMEI(SV) shall be encoded as defined in 3GPP TS 23.003 [40].'; 'n = 16 for IMEISV, where TAC = 8 digits SNR = 6 digits & SVN = 2 digits;'; 'n = 15 for IMEI, where TAC = 8 digits SNR = 6 digits & Spare = 1 digit;'; 'n = 14 for IMEI, where TAC = 8 digits SNR = 6 digits (Spare digit is not sent)'"
+    },
+    "TS29.061.dadx#imsi-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'A GGSN (or a P-GW) receives IMSI that is encoded according to 3GPP TS 29.060 [24] (or 3GPP TS 29.274 [81]) and converts IMSI into the UTF-8 characters, which are encoded as defined in 3GPP TS 23.003 [40]. There shall be no padding characters between the MCC and MNC, and between the MNC and MSIN. If the IMSI is less than 15 digits, the padding in the GTP information element shall be removed by the GGSN (or the P-GW) and not encoded in this sub-attribute.'"
+    },
+    "TS29.061.dadx#imsi-mcc-mnc-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'In accordance with 3GPP TS 29.060 [24] (for GGSN), 3GPP TS 29.274 [81] (for P-GW) and 3GPP TS 23.003 [40], the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC.'"
+    },
+    "TS29.061.dadx#mbms-cell-list-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.5a.12: 'The AVP shall consist of two octets indicating the number of cell identifiers in the list, followed by a sequence of maximum 4096 cell identifiers, coded as E-CGIs.'; 'Number N of ECGI codes coded as: 1 binary value is ‘0000 0000 0000 0000’ 4096 binary value is '0000 1111 1111 1111''; 'A consecutive list of N ECGI codes, each encoded according to subclause 8.21.5 of 3GPP TS 29.274 [81].'"
+    },
+    "TS29.061.dadx#mbms-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 20.5a.9.1: 'NOTE: Bits not defined in this table shall be cleared by the sending BM-SC and ignored by the receiving MBMS GW.'"
+    },
+    "TS29.061.dadx#mbms-flow-identifier-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.23: 'The MBMS-Flow-Identifier AVP (AVP code 920) is of type OctetString. Its length is two octets.'"
+    },
+    "TS29.061.dadx#mbms-ggsn-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.19: 'The MBMS-GGSN-Address AVP (AVP code 916) is of type OctetString, and contains the value of GGSN’s Ipv4 address for user plane data.'"
+    },
+    "TS29.061.dadx#mbms-ggsn-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.20: 'The MBMS-GGSN-Ipv6-Address AVP (AVP code 917) is of type OctetString, and contains the value of GGSN’s Ipv6 address for user plane data.'"
+    },
+    "TS29.061.dadx#mbms-required-qos-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.16: 'QoS Profile as specified by the Quality-of-Service information element, from octet 3 onwards, in 3GPP TS 24.008 [54].'"
+    },
+    "TS29.061.dadx#mbms-service-area-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.6: 'The length of an MBMS service area code is 2 octets.'; 'Number N of MBMS service area codes coded as: 1 binary value is ‘00000000’ 256 binary value is '11111111''; 'A consecutive list of N MBMS service area codes'; 'Each MBMS service area code shall only be present once in the list.'"
+    },
+    "TS29.061.dadx#mbms-session-duration-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.7: 'The MBMS-Session-Duration AVP (AVP code 904) is of type OctetString with a length of three octets and indicates the estimated session duration (MBMS Service data transmission).'; 'Bit 8 of octet 1 to bit 8 of octet 3 (17 bits) express seconds, for which the maximum allowed value is 86400 seconds. Bits 7 to 1 of octet 3 (7 bits) express days, for which the maximum allowed value is 18 days.'"
+    },
+    "TS29.061.dadx#mbms-session-identity-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.11: 'The MBMS-Session-Identity AVP (AVP code 908) is of type OctetString. Its length is one octet.'"
+    },
+    "TS29.061.dadx#ms-time-zone-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=4'; 'For GGSN, both fields are coded as specified in 3GPP TS 29.060 [24] and represented as Octet String type. For, P-GW, both fields are coded as specified in 3GPP TS 29.274 [81] in UE-Time Zone IE and represented as Octet String type.'"
+    },
+    "TS29.061.dadx#negotiated-dscp-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 3'; 'Negotiated DSCP value: Octet String'"
+    },
+    "TS29.061.dadx#negotiated-qos-profile-text": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The UTF-8 encoding of a QoS IE is defined as follows: each octet is described by 2 UTF-8 encoded characters, defining its hexadecimal representation.'"
+    },
+    "TS29.061.dadx#nsapi-character": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 3'; 'It is encoded as its hexadecimal representation, using one UTF-8 encoded character.'"
+    },
+    "TS29.061.dadx#packet-filter-all-or-none": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'When the GGSN/P-GW sends the packet filter information, the RADIUS message shall carry ALL (or none) of the packet filters.'"
+    },
+    "TS29.061.dadx#rai-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.12: 'Its value shall be encoded as a UTF-8 string on either 11 (if the MNC contains two digits) or 12 (if the MNC contains three digits) octets as follows:'"
+    },
+    "TS29.061.dadx#rat-type-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: '3GPP Length= 3'; 'RAT field: Radio Access Technology type values. RAT field is Octet String type.'"
+    },
+    "TS29.061.dadx#required-bearer-capabilities-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.3: 'The information contained in this AVP is UTF-8 encoded MBMS bearer capabilities as defined in 3GPP TS 24.008 [54].'"
+    },
+    "TS29.061.dadx#selection-mode-digit": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The format of this sub-attribute shall be a character that represents a single digit, mapping from the binary value of the selection mode in the Create PDP Context message (3GPP TS 29.060 [24]) for the GGSN, and the Create Session Request message (3GPP TS 29.274 [81]) for the P-GW.'"
+    },
+    "TS29.061.dadx#session-repetition-number-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.15: 'The MBMS-Session-Repetition-Number AVP (AVP code 912) is of type OctetString with a length of one octet.'"
+    },
+    "TS29.061.dadx#sgmb-asr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.1: 'The SGmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#sgmb-raa-heartbeat-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.2: 'For the MBMS Heartbeat procedure, RAA is sent by the BM-SC to the MBMS GW, or vice-versa. The RAA message shall contain the following AVPs:'; 'the MBMS-StartStop-Indication AVP set to the value \"heartbeat\";'"
+    },
+    "TS29.061.dadx#sgmb-raa-heartbeat-restart-counter": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.2: 'For the MBMS Heartbeat procedure, RAA is sent by the BM-SC to the MBMS GW, or vice-versa. The RAA message shall contain the following AVPs:'; 'the Restart-Counter AVP set to the local restart counter of the sender.'"
+    },
+    "TS29.061.dadx#sgmb-raa-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.7: 'On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'If the RAR command contains the Supported-Features AVP, the MBMS GW shall include the Supported-Features AVP in the RAA command, with the ‘M’ bit cleared, indicating only the features that both the BM-SC and MBMS GW support.'"
+    },
+    "TS29.061.dadx#sgmb-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.1: 'The SGmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#sgmb-rar-cell-list": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'If the MBMS Cell List feature is supported and the MBMS cell list needs to be changed, the MBMS-Cell-List AVP shall also be included.'"
+    },
+    "TS29.061.dadx#sgmb-rar-heartbeat-restart-counter": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Heartbeat procedure, RAR is sent by the BM-SC to the MBMS GW, or vice-versa. The RAR message shall contain the following AVPs:'; 'the MBMS-StartStop-Indication AVP set to the value \"heartbeat\";'; 'the Restart-Counter AVP set to the local restart counter of the sender.'"
+    },
+    "TS29.061.dadx#sgmb-rar-local-m1-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'The RAR message shall also contain the Local-M1-Information AVP if the BM-SC determines to use the local MBMS information as specified in 3GPP TS 23.285 [112].'"
+    },
+    "TS29.061.dadx#sgmb-rar-service-area": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Session Start procedure, RAR is sent by the BM-SC to the MBMS GW(s) that will deliver the MBMS service when it is ready to send data.'; 'The RAR message shall also contain the MBMS-Service-Area AVP.'; 'If the MBMS service area or the MBMS cell list needs to be changed, the MBMS-Service-Area AVP shall be included in the RAR.'"
+    },
+    "TS29.061.dadx#sgmb-rar-supported-features-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.7: 'On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
+    },
+    "TS29.061.dadx#sgmb-rar-time-to-data-transfer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Session Start procedure, RAR is sent by the BM-SC to the MBMS GW(s) that will deliver the MBMS service when it is ready to send data.'; 'The MBMS-Time-to-Data-Transfer AVP shall be included to indicate the expected time between the reception of the MBMS Session Start and the transmission of MBMS data flows.'; 'For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the MBMS GW(s) to update their session attributes.'; 'The MBMS-StartStop-Indication AVP with the value UPDATE shall be included. The MBMS-Time-To-Data-Transfer with AVP the value set to 0 shall be included.'"
+    },
+    "TS29.061.dadx#sgmb-rar-update-session-duration": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.4.1: 'For the MBMS Session Update procedure, RAR is sent by the BM-SC in order for the MBMS GW(s) to update their session attributes.'; 'The MBMS-StartStop-Indication AVP with the value UPDATE shall be included.'; 'The MBMS-Session-Duration AVP shall be included to indicate the duration of the remaining part of the MBMS session.'"
+    },
+    "TS29.061.dadx#sgmb-str-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.1: 'The SGmb application identifier value shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.061.dadx#sgmb-str-path-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 20.3.3: 'If the MBMS GW detects the SGi-mb path failure as specified in subclause 20.3.2.1 of 3GPP TS 23.007 [104], the MBMS GW shall set the Termination-Cause to \"DIAMETER_LINK_BROKEN\" (see IETF RFC 6733 [111]) and shall include the Diagnostic-Info AVP set to \"User Plane Failure\" if it tears down the MBMS session as a result of detecting an SGi-mb path failure.'"
+    },
+    "TS29.061.dadx#sgsn-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 6'; 'SGSN address value: Address type.'; 'type Address is 32 bit value and most significant octet is the first one.'"
+    },
+    "TS29.061.dadx#sgsn-ipv6-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length: 18'; 'SGSN IPv6 address value: IPv6 Address.'"
+    },
+    "TS29.061.dadx#sgsn-mcc-mnc-digits": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'In accordance with 3GPP TS 23.003 [40] and 3GPP TS 29.060 [24] (for the GGSN and P-GW connected to a Gn/Gp SGSN) and 3GPP TS 29.274 [81] (for the P-GW in GTP/PMIP S5/S8, S2a, S2b), the MCC shall be 3 digits and the MNC shall be either 2 or 3 digits. There shall be no padding characters between the MCC and MNC.'"
+    },
+    "TS29.061.dadx#time-to-data-transfer-octet": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.14: 'The MBMS-Time-To-Data-Transfer AVP (AVP code 911) is of type OctetString. Its length is one octet.'; 'The coding is specified as per the Time to MBMS Data Transfer Value Part Coding of the Time to MBMS Data Transfer IE in 3GPP TS 48.018 [70].'"
+    },
+    "TS29.061.dadx#tmgi-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.2: 'The encoding of TMGI is specified in 3GPP TS 24.008 [54].'"
+    },
+    "TS29.061.dadx#twan-identifier-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'The coding of this field shall be the same as for the GTP TWAN Identifier starting with Octet 5, as per clause 8.100 in 3GPP TS 29.274 [81].'"
+    },
+    "TS29.061.dadx#ue-local-ip-address-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=7 or 19'; 'UE local IP address field: It is encoded in Octet String type, with 4 octets when the IP Type is UE local IPv4 address, or with 16 octets when the IP Type is UE local IPv6 address.'"
+    },
+    "TS29.061.dadx#ue-source-port-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=5'; 'Port Number field: It is encoded in Octet String type, with bit 8 of Octet 4 represents the most significant bit of the port number and bit 1 of Octet 5 represents the least significant bit.'"
+    },
+    "TS29.061.dadx#user-data-mode-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 17.7.18: 'The absence of this AVP indicates unicast mode of operation.'"
+    },
+    "TS29.061.dadx#user-location-info-coding": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Geographic Location field is used to convey the actual geographic information as indicated in the Geographic Location Type. For GGSN, the coding of this field is as specified in 3GPP TS 29.060 [24]. For P-GW, the coding of this field shall be as follows:'; 'The Geographic Location Type values \"NCGI\", \"5GS TAI\", \"5GS TAI and NCGI\", \"NG-RAN Node ID\" and \"5GS TAI and NG-RAN Node ID\" are only introduced to extend the 3GPP-User-Location-Info AVP derived from the 3GPP Vendor-Specific RADIUS attributes and shall not apply for the present specification.'"
+    },
+    "TS29.061.dadx#user-location-info-time-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 16.4.7.2: 'Length=6'; 'User Location Info time field is Unsigned32 type, it indicates the NTP time at which the UE was last known to be in the location which is reported during bearer deactivation or UE detach procedure.'"
+    },
     "TS29.061.py#acr-connect-info-spelling": {
      "kind": "correction",
      "reason": "clause 16a.4.3's ACR body copies the typo of RFC 4005's and RFC 7155's ACR (RFC 7155's verified erratum 5995); the AVP is Connect-Info, code 77, and the AAR body of clause 16a.4.1 spells it so"
