@@ -183,6 +183,14 @@ DIAMETER_ERROR_ACME_UNKNOWN ;; corrected: (Private-ACME-HSS.py#code)
     present-if request/ACME-Flags bit "Withdraw Data" or ACME-Kind = request/ACME-Kind
 
 ; Type: Interpreted Constraints
+; AVP: Auth-Session-State
+; Command: ACME-Answer
+; Section: 6.2.4
+; Versions: 1.2.0
+"The server shall not include the Auth-Session-State AVP."
+    absent
+
+; Type: Interpreted Constraints
 ; AVP: ACME-Flags
 ; Section: 7.3.4
 ; Versions: 1.2.0

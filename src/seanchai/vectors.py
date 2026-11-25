@@ -805,6 +805,9 @@ class _Builder:
             for each in held:
                 for reading in each.readings:
                     for rule in reading.rules:
+                        if rule.kind == "absent":
+                            yield name, each, rule
+                            continue
                         if rule.kind == "equals":
                             if rule.reference and resolves(rule.reference):
                                 yield name, each, rule
@@ -887,6 +890,10 @@ class _Builder:
             if _reads_request(rule) and request is None:
                 continue
             subject = any(n.avp.name == name for n in nodes)
+            if rule.kind == "absent":
+                if subject:
+                    found.append((name, rule.kind, each))
+                continue
             if rule.kind == "equals":
                 assert rule.reference is not None
                 if subject and not self.equal(nodes, name, rule.reference, request):
@@ -1974,6 +1981,16 @@ class _Negatives:
                 continue  # `request_vectors`
             message = self.full()
             nodes = message.nodes
+            if rule.kind == "absent":
+                if self.add_absent(message, name, each):
+                    self.emit(
+                        message,
+                        f"constraint-absent/{name}/{each.section}",
+                        self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
+                        "constraint-absent",
+                        "note",
+                    )
+                continue
             if rule.kind == "values":
                 if self.break_values(nodes, self.scope, name, rule):
                     self.emit(
@@ -2024,6 +2041,34 @@ class _Negatives:
                 f"constraint-{rule.kind}",
                 "note",
             )
+
+    def add_absent(
+        self, message: _Message, name: str, each: dictionary.Constraint
+    ) -> bool:
+        """Add to `message` the AVP `name`, which an `absent` rule keeps out,
+        a member of the body or one its `* [ AVP ]` admits, and break nothing
+        else."""
+        member = next((m for m in self.scope.members if m.name == name), None)
+        identifier = (
+            member.avp
+            if member is not None
+            else next(iter(each.avp_ids), None)
+            if any(m.kind == "wildcard" for m in self.scope.members)
+            else None
+        )
+        if identifier is None or identifier not in self.builder.avps:
+            return False
+        try:
+            node = self.builder.avp(
+                self.builder.avps[identifier], self.scope, member, False, ()
+            )
+        except _Unbuildable:
+            return False
+        message.nodes.append(node)
+        broken = self.builder.broken(self.scope, message.nodes, message.asked)
+        return [(n, k) for n, k, _ in broken] == [(name, "absent")] and (
+            self.counts_hold(message.nodes)
+        )
 
     def request_vectors(self) -> None:
         """For each rule of the command's own scope reading the request: a

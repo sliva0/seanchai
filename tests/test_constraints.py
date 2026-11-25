@@ -483,30 +483,41 @@ _NAME = constraints.Avp("User-Name", DataType.UTF8_STRING, b"alice")
         ("requires request/User-Name", ["Example"], [_NAME], True),
         ("excludes request/Example-Flags = 2", ["Example"], [_FLAGS], False),
         ("values 3 if request/Example-Flags = 2", ["Example"], [_FLAGS], False),
-        ("equals request/User-Name", ["User-Name"], [_NAME], True),
-        ("equals request/User-Name", ["Other"], [_NAME], False),
-        ("equals request/User-Name", ["Other"], [], True),
+        ("equals request/User-Name", ["Example:alice"], [_NAME], True),
+        ("equals request/User-Name", ["Example:bob"], [_NAME], False),
+        ("equals request/User-Name", ["Example:bob"], [], True),
+        ("absent", ["Example"], [], False),
+        ("absent", ["User-Name"], [], True),
     ],
 )
 def test_a_rule_on_the_request_holds_of_the_request_given(text, scope, asked, holds):
     rule = _answer_rule(text)
-    payloads = {"User-Name": b"alice", "Other": b"bob", "Example": struct.pack("!I", 1)}
-    run = [
-        constraints.Avp(
-            "Example",
-            DataType.UTF8_STRING if name != "Example" else DataType.UNSIGNED32,
-            payloads[name],
+    # Each entry an AVP of the answer, Example the rule's own, `:` giving
+    # its payload as text.
+    run = []
+    for entry in scope:
+        name, _, text_payload = entry.partition(":")
+        run.append(
+            constraints.Avp(
+                name,
+                DataType.UNSIGNED32 if name == "Example" else DataType.UTF8_STRING,
+                text_payload.encode() if text_payload else struct.pack("!I", 1),
+            )
         )
-        for name in scope
-    ]
     found = constraints.holds(rule, "Example", run, asked)
     assert (found.holds, found.needs_request) == (holds, False), found
-    # With no request, it is not evaluated, and says so.
+    # With no request, one reading it is not evaluated, and says so.
     missing = constraints.holds(rule, "Example", run)
-    assert (missing.holds, missing.needs_request) == (None, True)
+    if ast.reads_request(rule):
+        assert (missing.holds, missing.needs_request) == (None, True)
+    else:
+        assert missing == found
 
 
 def test_check_reads_a_rule_on_the_request_alone_against_the_request():
+    assert constraints.check(_answer_rule("absent"), b"x", DataType.OCTET_STRING) == (
+        constraints.Check(False, "not allowed")
+    )
     rule = _answer_rule("absent-if request/Example-Flags bit 1")
     assert constraints.check(rule, b"x", DataType.OCTET_STRING).needs_request
     broken = constraints.check(rule, b"x", DataType.OCTET_STRING, request=[_FLAGS])

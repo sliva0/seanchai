@@ -1194,6 +1194,8 @@ def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
         return ast.TextOnly()
     if text == "unique":
         return ast.UniqueRule()
+    if text == "absent":
+        return ast.AbsentRule()
     with _validated(lineno):
         if match := _LENGTH_RE.match(text):
             if match["unit"] not in ast.LengthUnit:

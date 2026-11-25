@@ -706,6 +706,8 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
             return f"members {rule.relation} {' '.join(rule.members)}"
         case ast.UniqueRule():
             return "unique"
+        case ast.AbsentRule():
+            return "absent"
         case ast.ValuesRule():
             values = ", ".join(str(value) for value in rule.values)
             conditions = " or ".join(condition(each) for each in rule.conditions)

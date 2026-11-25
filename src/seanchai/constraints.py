@@ -4,7 +4,8 @@
 `check` tells whether one rule holds of a payload, as the Wireshark plugin
 checks it: length, range, exclude, bits, every codec, and an `element` as
 far as the element registry (`seanchai.elements`) reads its document.
-`holds` tells whether a predicate, a `values` or an `equals` rule holds of
+`holds` tells whether a predicate, an `absent`, a `values` or an `equals`
+rule holds of
 an AVP among the others of its run (`Avp`), and of the request its answer
 answers where the rule reads one; `check` does too where the request alone
 settles it, given the request. A rule reading the request with none given
@@ -392,6 +393,8 @@ def holds(
         return _NEEDS_REQUEST
     subject = next((each for each in scope if each.name == avp), None)
     match rule:
+        case ast.AbsentRule():
+            return Check(True) if subject is None else Check(False, "not allowed")
         case ast.EqualsRule():
             others = _reached(rule.reference, scope, request)
             if subject is None or not others:
@@ -502,6 +505,9 @@ def check(
                 return Check(problem is None, problem)
             problem = codec_problem(rule.codec, payload)
             return Check(problem is None, problem)
+        case ast.AbsentRule():
+            # A payload is an AVP present.
+            return Check(False, "not allowed")
         case ast.BitsRule():
             value = bits_value(data_type, payload)
             if value is None:

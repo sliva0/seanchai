@@ -92,13 +92,24 @@ _EVERY_RULE = _dad(
     "    absent-if request/Emergency-Services bit Emergency-Indication",
     "    requires request/QoS-Capability or Result-Code = request/Result-Code",
     "    equals request/User-Name",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Auth-Session-State",
+    "; Command: Diameter-EAP-Request",
+    "; Section: 5.2.4",
+    "; Versions: 19.0.0",
+    '"Shall not include the Auth-Session-State AVP."',
+    "    absent",
 )
 
 
 def test_every_rule_reads_and_writes_back():
     spec, comments = parser.parse_with_comments(_EVERY_RULE)
 
-    block, unique_block, asked = spec.sections
+    block, unique_block, asked, never = spec.sections
+    assert isinstance(never, ast.InterpretedConstraints)
+    assert never.body[1:] == (ast.AbsentRule(),)
     assert isinstance(asked, ast.InterpretedConstraints)
     assert asked.request_section == "8.2.2.3"
     present, _, requires, equals = asked.readings[0].rules
@@ -1291,3 +1302,48 @@ def test_the_model_resolves_the_request_an_answers_rules_read(tmp_path):
         ("Example-Flags",),
         0,
     )
+
+
+def test_the_linter_takes_an_avp_the_wildcard_admits_and_refuses_absent_required():
+    def found(avp: str, *rules: str) -> list[tuple[str, str]]:
+        from seanchai import linter
+
+        text = _ASKED + "\n".join(
+            (
+                "",
+                "",
+                "; Type: Message",
+                "; Name: Other-Request, OTR",
+                "; Section: 6.1.4",
+                "<Other-Request> ::= < Diameter Header: 10, REQ, 99 >",
+                "        < Session-Id >",
+                "        { Example-Flags }",
+                "      * [ AVP ]",
+                "",
+                "",
+                "; Type: Interpreted Constraints",
+                f"; AVP: {avp}",
+                "; Command: Other-Request",
+                "; Section: 6.3.2",
+                "; Versions: 19.0.0",
+                '"Q."',
+                *rules,
+                "",
+            )
+        )
+        return sorted(
+            (finding.rule, finding.message)
+            for finding in linter.lint(parser.parse(text))
+            if finding.rule.startswith("constraint-")
+        )
+
+    # Example-Number is no member, but `* [ AVP ]` admits it.
+    assert found("Example-Number", "    absent") == []
+    assert found("Example-Number", "    requires Example-Text") == []
+    assert found("Example-Flags", "    absent") == [
+        (
+            "constraint-contradiction",
+            "Example-Flags in Other-Request: absent, but the body of"
+            " Other-Request requires Example-Flags",
+        )
+    ]

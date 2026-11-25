@@ -191,7 +191,8 @@ class Rule(_Model):
     `unique`: no field; no two of the `within` grouped AVPs in one body hold
     the AVP with the same value. `values`: when one of `conditions` holds,
     the value is one of `values`. `equals`: `reference`, the AVP whose value
-    the AVP's equals where both are present. `text-only`: no field; a
+    the AVP's equals where both are present. `absent`: no field; the AVP is
+    never present in the constraint's scope. `text-only`: no field; a
     checker reports it unknown."""
 
     kind: Literal[
@@ -209,6 +210,7 @@ class Rule(_Model):
         "unique",
         "values",
         "equals",
+        "absent",
         "text-only",
     ]
     unit: ast.LengthUnit | None
@@ -811,6 +813,11 @@ class _Builder:
                         self.ids[member.avp]
                         for member in message.avps
                         if member.name == each.avp and member.avp in self.ids
+                    ]
+                    or [
+                        self.ids[avp]
+                        for avp in _admitted(self._built, message)
+                        if avp.name == each.avp and avp in self.ids
                     ],
                 )
                 for each in message.constraints
@@ -820,6 +827,21 @@ class _Builder:
                 for code in message.result_codes
             ),
         )
+
+
+def _admitted(built: model.Model, message: model.Message) -> list[model.Avp]:
+    """The readings of the AVPs a command's constraints name that its body
+    admits only through `* [ AVP ]`, as its document means them."""
+    names = {member.name for member in message.avps}
+    return [
+        avp
+        for each in message.constraints
+        if each.avp not in names
+        and (
+            avp := built.resolve(message.defined_in, each.avp, version=message.version)
+        )
+        is not None
+    ]
 
 
 def _is_cut(member: model.Member) -> bool:
@@ -941,7 +963,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
             fields["conditions"] = tuple(_condition(each) for each in rule.conditions)
         case ast.EqualsRule():
             fields["reference"] = _reference(rule.reference)
-        case ast.UniqueRule() | ast.TextOnly():
+        case ast.UniqueRule() | ast.AbsentRule() | ast.TextOnly():
             pass
     return Rule.model_validate(fields)
 
@@ -1322,6 +1344,10 @@ def build(
         resolved.copy(application.reference, application.version)
         for message in application.messages:
             builder.hold_members((*message.avps, *message.dropped))
+            admitted = _admitted(built, message)
+            builder.hold(admitted)
+            for each in admitted:
+                constraints.reading(each)
             for element in message.elements:
                 resolved.copy(element.reference, element.version)
         for reached in built.reached(application):

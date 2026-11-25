@@ -440,7 +440,9 @@ end
 -- siblings {avp=identity, t=text, v=value or b=bit or r=another AVP}, and a
 -- values rule's `v` and `c`, an equals rule's `r` and words `t`. A term has
 -- `q=true` where it names an AVP of the request the answer answers, and so
--- does a rule reading one. Every finding is a note marked `interpreted`,
+-- does a rule reading one. An absent rule's AVP is never present; a scoped
+-- constraint's `s` is its AVP's identity where the body admits it only
+-- through `* [ AVP ]`. Every finding is a note marked `interpreted`,
 -- citing its clause.
 
 -- A TBCD-string's decimal digits (TS 29.002 clause 17.7.8: the first digit in
@@ -852,6 +854,9 @@ local function check_constraints(ctx, avp, reading, path, scoped)
           if set then
             problem = bits_problem(rule, set, width)
           end
+        elseif rule.k == "absent" and list == lists[1] then
+          -- Wherever the document reads it; a scope's own, the predicates'.
+          problem = "not allowed"
         elseif rule.k == "members" and reading.type == "Grouped" then
           local held = {}
           for _, each in ipairs(parse_avps(ctx.pdu, avp.data, avp.data + avp.size,
@@ -979,12 +984,15 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
     held[identity] = held[identity] or avp
   end
   for name, list in pairs(scoped) do
-    local identity = identities[name]
-    local subject = identity and held[identity]
     for _, cons in ipairs(list) do
+      -- A member the body names, or one only its `* [ AVP ]` admits.
+      local identity = identities[name] or cons.s
+      local subject = identity and held[identity]
       for _, rule in ipairs(cons.rules) do
         local problem
-        if rule.q and not ctx.request then
+        if rule.k == "absent" then
+          problem = subject and "not allowed"
+        elseif rule.q and not ctx.request then
           -- Reads the request, which is not at hand: unchecked, said once
           -- for the answer (`result.request_unchecked`).
           ctx.request_unchecked = ctx.request_unchecked + 1

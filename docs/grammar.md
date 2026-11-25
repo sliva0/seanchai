@@ -708,7 +708,8 @@ reading       = 1*(quote-line NL) 1*(rule-line NL)
 quote-line    = DQUOTE 1*(name-char / SP) DQUOTE   ; as inline-text, escaped
 rule-line     = 4SP rule
 rule          = length / range / exclude / encoding / predicate / default
-              / bits / members / "unique" / values / equals / "text-only"
+              / bits / members / "unique" / values / equals / "absent"
+              / "text-only"
 length        = "length " bounds SP ("octets" / "digits" / "characters")
 range         = "range " bounds
 exclude       = "exclude " integer *(", " integer)
@@ -816,6 +817,14 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
 - `equals` says the AVP holds the value, octet for octet, of the one the
   path names wherever both are present: `equals request/User-Name`, an
   answer echoing the request's.
+- `absent` says the AVP is never present in the scope: a member of the
+  command, or of the grouped AVP, or with no scope anywhere the document
+  reads it. A grouped AVP's members are in its scope, not its command's:
+  TS 29.273's SWx commands carry no Session-Timeout, which their
+  Non-3GPP-User-Data does.
+- A block scoped to a command or grouped AVP names one of its members, or
+  an AVP its `* [ AVP ]` admits: clause 5.2.4 of TS 29.273 forbids
+  Auth-Session-State in STa commands that do not print it.
 - `text-only` is a rule the quote states that no kind expresses: one
   depending on an earlier message, a feature, the node or the subscriber,
   or on more than the kinds can say. It is a reading's only rule.

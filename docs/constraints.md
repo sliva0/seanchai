@@ -93,6 +93,7 @@ TS 29.272's file prints it:
 | `unique` | `unique` | no two of the `; Within:` grouped AVPs beside each other hold the AVP with the same value |
 | `values` | `values 1 if Monitoring-Type = 1` | the integer value is one of these when a condition holds |
 | `equals` | `equals request/User-Name` | the AVP holds, octet for octet, the value of the one named, where both are present |
+| `absent` | `absent` | the AVP is not present in the block's scope |
 | `text-only` | `text-only` | (a reader decides) |
 
 A predicate's conditions, and a `values` rule's, are alternatives (`or`), each
@@ -102,7 +103,11 @@ with a bit set (a number, or its bit table's name). Several predicates in one
 block must all hold. `absent-if` and `excludes` say the same of a presence
 condition, read from the other side; the kinds follow the clause's wording.
 Without a scope the rules hold wherever the document reads the AVP, and a
-predicate there has no siblings to test.
+predicate there has no siblings to test. A scope's AVP is a member its body
+prints or one its `* [ AVP ]` admits, so a block may hold a command to a
+sentence about an AVP its ABNF leaves to the wildcard; `absent` says such
+an AVP is never sent there. A member of a grouped AVP the command holds is
+the grouped AVP's scope, not the command's.
 
 In a block scoped to an answer, a name after `request/` is a member of the
 request the answer answers: the same command code with the R bit under the

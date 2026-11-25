@@ -652,6 +652,8 @@ def _constraint(
                     rules.append(
                         f"{{k='unique',i={lua_string(sibling.partition('@')[0])}}}"
                     )
+            elif kind == "absent":
+                rules.append("{k='absent'}")
             elif kind == "equals":
                 assert rule.reference is not None
                 term = _term(rule.reference, siblings, request, needed)
@@ -690,10 +692,21 @@ def _constraint(
                     )
     if not rules:
         return None
+    # The AVP's identity, where the scope's body admits it only through its
+    # `* [ AVP ]`, so names no member of it.
+    admitted = (
+        [f"s={lua_string(constraint.avp_ids[0].partition('@')[0])}"]
+        if siblings
+        and constraint.avp not in siblings
+        and (constraint.command or constraint.within)
+        and constraint.avp_ids
+        else []
+    )
     return (
         "{"
         + ",".join(
             [
+                *admitted,
                 *_cited("at", places.constraint(constraint)),
                 f"rules={{{','.join(rules)}}}",
             ]

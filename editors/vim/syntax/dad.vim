@@ -105,8 +105,8 @@ syn match dadConstraintQuote #^"\%([^"\\]\|\\["\\]\)*"\s*\%(;;.*\)\?$# contains=
 syn match dadQuote #^"\%([^"\\]\|\\["\\]\)*"# contained
 " The names in a constraint's rule, of a member, a sibling or a value (see
 " `dadConstraintRule`).
-syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadConstraintNumber,dadQuotedCell,dadComment
-syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|text-only\)\>" contained
+syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadConstraintNumber,dadQuotedCell,dadComment
+syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>" contained
 " A path's root, the request an answer answers, and the `/` between its
 " names.
 syn match dadConstraintRoot "\s\@1<=request\ze/" contained

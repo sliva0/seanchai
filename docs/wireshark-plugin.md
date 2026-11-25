@@ -96,7 +96,8 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   member's presence to its siblings (`constraint-present-if`, `-absent-if`,
   `-requires`, `-excludes`), a value a sibling's condition restricts
   (`constraint-values`), an answer's AVP echoing the request's
-  (`constraint-equals`), and a member two grouped AVPs beside each other
+  (`constraint-equals`), an AVP never sent in its scope
+  (`constraint-absent`), and a member two grouped AVPs beside each other
   hold with one value (`constraint-unique`). An element the registry has no
   entry for or checks nothing of is not checked, `text-only` not at all, and
   a rule naming a value or bit no table numbers is left out.

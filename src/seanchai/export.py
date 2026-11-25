@@ -745,7 +745,7 @@ def _constraint_readings(
                 fields["conditions"] = tuple(map(_condition, node.conditions))
             case ast.EqualsRule():
                 fields["reference"] = _reference(node.reference)
-            case ast.UniqueRule() | ast.TextOnly():
+            case ast.UniqueRule() | ast.AbsentRule() | ast.TextOnly():
                 pass
         rules.append(ConstraintRule(**fields))
     readings.append(ConstraintReading(quotes=tuple(quotes), rules=tuple(rules)))

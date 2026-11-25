@@ -399,7 +399,7 @@ class ConstraintRule(_Model):
     `absent-if`, `requires` and `excludes` their `conditions`, alternatives;
     `default` its `value`; `bits` its `relation` and `bits`; `members` its
     `relation` and `members`; `values` its `values` and `conditions`;
-    `equals` its `reference`; `unique` and `text-only` nothing."""
+    `equals` its `reference`; `unique`, `absent` and `text-only` nothing."""
 
     line: int
     kind: Literal[
@@ -417,6 +417,7 @@ class ConstraintRule(_Model):
         "unique",
         "values",
         "equals",
+        "absent",
         "text-only",
     ]
     unit: ast.LengthUnit | None = None

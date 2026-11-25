@@ -270,6 +270,7 @@ _SCOPED = [
     ("    members at-least-one", "ACME-Kind", "variable.other.avp"),
     ("    members only", "only", "keyword.operator.condition"),
     ("; Request-Section:", "6.2.1", "constant.other.section"),
+    ("    absent", "absent", "keyword.control.constraint"),
     ("    equals", "equals", "keyword.control.constraint"),
     ("    equals", "request", "keyword.other.root"),
     ("    equals", "/", "punctuation.separator.path"),

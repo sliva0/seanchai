@@ -301,7 +301,8 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   [constraints.md](constraints.md#elements)), a predicate's
   `conditions`, a default's `value`, a bits rule's `relation` and `bits`, a
   members rule's `relation` and `members`, a values rule's `values` and
-  `conditions`, and an equals rule's `reference`; `unique` has none. A
+  `conditions`, and an equals rule's `reference`; `unique` and `absent`
+  have none. A
   condition names its AVP by `root` and `path`: `path` the names from the
   constraint's scope down to it, `root` null for a sibling or `request` for
   a member of the request the answer answers, printed at the constraint's
@@ -416,7 +417,8 @@ suite, per command of the selection (`--application`, `--document`):
   plugin checks: a length, a range, an excluded value, a codec's layout,
   another document's element as the element registry checks it, a rule on
   bits, a predicate on a command's own member, a members, unique or values
-  rule, and an answer's rule on its request.
+  rule, an AVP an `absent` rule keeps out, and an answer's rule on its
+  request.
 
 An answer whose rules read the request it answers is sent with that request,
 `request` in the vector, the pair sharing Hop-by-Hop and End-to-End
@@ -1088,8 +1090,9 @@ for message in s6a.messages:
   quotes were checked against, and `readings`, each an `ast.Reading` of
   `quotes` and `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`,
   `EncodingRule`, `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`,
-  `UniqueRule`, `ValuesRule`, `EqualsRule`, `TextOnly`). A condition is an
-  `ast.Condition`, an `ast.Reference` (`root`, `path`) with a test.
+  `UniqueRule`, `ValuesRule`, `EqualsRule`, `AbsentRule`, `TextOnly`). A
+  condition is an `ast.Condition`, an `ast.Reference` (`root`, `path`) with
+  a test.
   `interpreted` is always True.
 - `seanchai.constraints.check(rule, payload, data_type, codec, request)`
   tells whether a value rule holds of a payload, and `holds(rule, avp,

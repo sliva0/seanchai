@@ -239,7 +239,7 @@
       }
     },
     "constraint-rule": {
-      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|members|unique|values|equals|text-only)\\b(.*?)(\\s*;;.*)?$",
+      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|members|unique|values|equals|absent|text-only)\\b(.*?)(\\s*;;.*)?$",
       "captures": {
         "2": { "name": "keyword.control.constraint.dad" },
         "3": {

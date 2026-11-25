@@ -144,11 +144,11 @@ document read states is not judged.
 |---|---|---|
 | `constraint-avp-unknown` | error | a name the block constrains, scopes or conditions on that the file does not hold |
 | `constraint-command-unknown` | error | a `; Command:` the file does not print, or prints for several applications with no `; Application-ID:`, or more than once for one with no `; Command-Section:`, or not at the clause it names |
-| `constraint-not-member` | error | an AVP, or one a rule reads, that the printed body of its command or grouped AVP does not hold, or a `request/` name the request's body does not; a member a `members` rule names that the grouped AVP's body does not hold |
+| `constraint-not-member` | error | an AVP, or one a rule reads, that the printed body of its command or grouped AVP neither holds nor admits through `* [ AVP ]`, or a `request/` name the request's body does not; a member a `members` rule names that the grouped AVP's body does not hold |
 | `constraint-type-mismatch` | error | a rule the AVP's type cannot meet: a range or `values` on an OctetString, a codec or a registered element for another type, an octet length on an integer, `bits` on neither an unsigned integer nor an OctetString, `members` on no grouped AVP; a condition testing a value or a bit of an AVP holding none, or a bit past its width; `equals`, or a condition's value read from another AVP, comparing AVPs of two types |
 | `constraint-request-unknown` | error | a rule reading the request (`request/`) in a block scoped to a request, or to an answer whose request the file does not print under its application, prints more than once there with no `; Request-Section:`, or does not print at the clause that names |
 | `constraint-value-unknown` | error | a condition naming a value or bit the AVP's values, result codes or bit table do not name |
-| `constraint-contradiction` | error | rules on one AVP in one place that cannot all hold: two codecs, lengths or ranges leaving nothing, a length beyond its codec's, an exclude covering its range, a bit both set and clear or set beside `only` others |
+| `constraint-contradiction` | error | rules on one AVP in one place that cannot all hold: two codecs, lengths or ranges leaving nothing, a length beyond its codec's, an exclude covering its range, a bit both set and clear or set beside `only` others, `absent` on a member the body requires |
 | `constraint-element-unknown` | note | an `encoding element` rule naming an element the element registry has no entry for, which nothing checks ([constraints.md](constraints.md#elements)) |
 
 Rules in one place are a block's with those of every block for the same AVP,

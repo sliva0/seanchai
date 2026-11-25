@@ -1407,7 +1407,9 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
             ),
             None,
         )
-    if body is not None and not any(rule.name == node.avp for rule in body):
+    # An AVP the body admits only through its `* [ AVP ]` is a member there
+    # too: TS 29.273's tables describe some, and clause 5.2.4 forbids one.
+    if body is not None and not any(rule.name in (node.avp, "AVP") for rule in body):
         raise CorrectionError(
             f"{described}: the body of {node.command or node.within} does not"
             f" hold {node.avp}"

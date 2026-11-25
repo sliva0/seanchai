@@ -475,7 +475,8 @@ def _constraints(
                     found("constraint-request-unknown", block, problem)
         if body is not None and block.avp in held:
             members = {rule.name for rule in body}
-            if block.avp not in members:
+            # The `* [ AVP ]` wildcard admits any AVP as a member.
+            if block.avp not in members and "AVP" not in members:
                 where = block.command or block.within
                 found(
                     "constraint-not-member",
@@ -494,7 +495,7 @@ def _constraints(
                         f"a rule reads {formatter.reference(reference)}, which"
                         " the body of the request does not hold",
                     )
-            elif body is not None and first not in {rule.name for rule in body}:
+            elif body is not None and not {first, "AVP"} & {r.name for r in body}:
                 found(
                     "constraint-not-member",
                     block,
@@ -584,6 +585,19 @@ def _constraints(
                         block,
                         f"{condition.avp} names no bit {condition.bit!r}",
                     )
+        if body is not None and any(isinstance(rule, ast.AbsentRule) for rule in rules):
+            required = [
+                rule
+                for rule in body
+                if rule.name == block.avp and rule.presence is not ast.Presence.OPTIONAL
+            ]
+            if required:
+                found(
+                    "constraint-contradiction",
+                    block,
+                    f"absent, but the body of {block.command or block.within}"
+                    f" requires {block.avp}",
+                )
         # Two AVPs a rule compares hold values of one type.
         pairs = [
             (block.avp, rule.reference.avp)

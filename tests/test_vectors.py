@@ -372,6 +372,15 @@ _ASKED = """\
     equals request/Example-Id
 
 
+; Type: Interpreted Constraints
+; AVP: Example-Never
+; Command: Example-Answer
+; Section: 6.1.2
+; Versions: 19.0.0
+"It is never sent, though * [ AVP ] admits it."
+    absent
+
+
 ; Type: AVP Table
 ; Section: 6.3.1
 ; Columns: Name     Code   Section   Type          Must
@@ -380,6 +389,7 @@ Example-Id          2      6.3.3     UTF8String    M,V
 Example-Report      3      6.3.4     OctetString   M,V
 Example-Data        4      6.3.5     OctetString   M,V
 Example-Kept        5      6.3.6     OctetString   M,V
+Example-Never       6      6.3.7     OctetString   M,V
 """
 
 
@@ -424,6 +434,10 @@ def test_an_answer_reading_its_request_is_sent_with_it(asked):
         assert broken.expected == (
             vectors.Expected(rule=f"constraint-{kind}", severity="note"),
         )
+    # An AVP only `* [ AVP ]` admits, which a rule keeps out.
+    (never,) = [v for v in found.vectors if "/constraint-absent/" in v.id]
+    assert never.id == "16777999/EXA/negative/constraint-absent/Example-Never/6.1.2"
+    assert never.tree[-1].name == "Example-Never"
     # A pair shares its identifiers, which no other vector's are.
     identifiers = [bytes.fromhex(v.octets)[12:20] for v in found.vectors]
     assert len(set(identifiers)) == len(identifiers)
@@ -521,4 +535,5 @@ def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_p
         work / "plugin.lua", capture, "seanchai.request_missing", "seanchai.rule"
     )
     assert rows and all(missing == "4" for missing, _ in rows)
-    assert not any(rule.startswith("constraint-") for _, rule in rows)
+    reading = {"present-if", "absent-if", "requires", "equals"}
+    assert not any(rule.removeprefix("constraint-") in reading for _, rule in rows)

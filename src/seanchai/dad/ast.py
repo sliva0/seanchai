@@ -34,6 +34,7 @@ __all__ = [
     "REUSED_COLUMNS",
     "SPEC_REF_PATTERN",
     "SPEC_REF_RE",
+    "AbsentRule",
     "AnswerMessage",
     "ApplicationScope",
     "AvpColumn",
@@ -1763,6 +1764,17 @@ class EqualsRule(Node):
     reference: Reference
 
 
+class AbsentRule(Node):
+    """`absent`: the AVP is never present in the block's scope, a member of
+    its command or grouped AVP, or with none wherever the document reads it
+    ("the Diameter client and server shall not include the
+    Auth-Session-State AVP, either in the request or in the response
+    messages", TS 29.273 clause 5.2.4). A grouped AVP's member is in its own
+    scope, not its command's."""
+
+    kind: Literal["absent"] = "absent"
+
+
 class TextOnly(Node):
     """`text-only`: a rule the quote states that no kind expresses, such as
     one depending on an earlier message, a negotiated feature or the
@@ -1783,6 +1795,7 @@ ConstraintRule = Annotated[
     | UniqueRule
     | ValuesRule
     | EqualsRule
+    | AbsentRule
     | TextOnly,
     Field(discriminator="kind"),
 ]
