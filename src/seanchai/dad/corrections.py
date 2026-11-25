@@ -1363,11 +1363,13 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
     held = _held(spec)
     node = interpret.node
     names = [node.avp, *([node.within] if node.within else [])]
+    # A path's first name only: a member's member may be the grouped AVP's
+    # as another document prints it, which the linter reads with the corpus.
     names.extend(
-        condition.avp
+        reference.path[0]
         for rule in node.body
         if not isinstance(rule, ast.Quote)
-        for condition in ast.conditions_of(rule)
+        for reference in ast.references_of(rule)
     )
     names.extend(
         member

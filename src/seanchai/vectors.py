@@ -10,7 +10,9 @@ value, a bit no document names, UTF-8 that is not, an integer of the wrong
 length, an AVP the rule does not admit, an E-bit answer with a Result-Code
 that is no protocol error, and each interpreted constraint the Wireshark
 plugin checks (length, range, exclude, encoding, bits, the predicates of a
-command's own members, and the members, unique and values rules).
+command's own members, and the members, unique and values rules). An answer
+whose rules read the request it answers carries the request (`Request`), and
+each such rule gets a valid pair and one breaking it.
 
 Values are valid for their type and every constraint read for the AVP: a
 codec's layout (`seanchai.constraints`), a length, a range, a predicate's
@@ -41,6 +43,7 @@ __all__ = [
     "Breaks",
     "Expected",
     "Node",
+    "Request",
     "Skipped",
     "Vector",
     "Vectors",
@@ -94,14 +97,25 @@ class Expected(_Model):
     severity: Severity
 
 
+class Request(_Model):
+    """The request an answer vector answers, sent before it with the same
+    Hop-by-Hop and End-to-End identifiers: its octets in hex and its tree."""
+
+    octets: str
+    tree: tuple[Node, ...]
+
+
 class Vector(_Model):
     """One message. `id` is `application/abbreviation/kind[/what]`; `kind`
     is `minimal`, `maximal` or `negative`. `octets` is the whole message in
-    hex. A valid vector has no `breaks` and expects nothing: the plugin
-    reports no error or warning for it, and no note but what the corpus leaves
-    it unable to check, a note of an interpreted rule never. A negative one
-    breaks one rule and expects one finding, a note for an interpreted
-    rule."""
+    hex, its Hop-by-Hop and End-to-End identifiers the vector's own. An
+    answer whose rules read the request it answers has the request in
+    `request`, which a checker reads first: the pair is valid, or breaks
+    one rule, as a whole. A valid vector has no `breaks` and expects
+    nothing: the plugin reports no error or warning for it, and no note but
+    what the corpus leaves it unable to check, a note of an interpreted rule
+    never. A negative one breaks one rule and expects one finding, a note
+    for an interpreted rule."""
 
     id: str
     kind: Literal["minimal", "maximal", "negative"]
@@ -115,6 +129,7 @@ class Vector(_Model):
     section: str
     octets: str
     tree: tuple[Node, ...]
+    request: Request | None
     breaks: Breaks | None
     expected: tuple[Expected, ...]
 
@@ -537,11 +552,26 @@ class _Unbuildable(SeanchaiError):
 
 @dataclasses.dataclass(frozen=True)
 class _Scope:
-    """A body and the constraints its owner holds for its members, by name."""
+    """A body and the constraints its owner holds for its members, by name;
+    for an answer whose rules read its request, the request's scope."""
 
     members: tuple[dictionary.Member, ...]
     rules: Mapping[str, tuple[dictionary.Constraint, ...]]
     name: str
+    request: _Scope | None = None
+
+
+def _reads_request(rule: dictionary.Rule) -> bool:
+    """Whether `rule` reads an AVP of the request its answer answers."""
+    references: list[dictionary.Reference] = [*rule.conditions]
+    references += [
+        each.value
+        for each in rule.conditions
+        if isinstance(each.value, dictionary.Reference)
+    ]
+    if rule.reference is not None:
+        references.append(rule.reference)
+    return any(each.root is not None for each in references)
 
 
 class _Builder:
@@ -716,7 +746,11 @@ class _Builder:
         raise _Unbuildable(f"{scope.name} requires an AVP it does not list")
 
     def body(
-        self, scope: _Scope, maximal: bool, path: tuple[str, ...] = ()
+        self,
+        scope: _Scope,
+        maximal: bool,
+        path: tuple[str, ...] = (),
+        request: Sequence[_Avp] | None = None,
     ) -> list[_Avp]:
         nodes: list[_Avp] = []
         for member in scope.members:
@@ -743,7 +777,7 @@ class _Builder:
                     if member.min_occurs:
                         raise
                     break
-        self.satisfy(scope, nodes, maximal)
+        self.satisfy(scope, nodes, maximal, request)
         self.vary(nodes)
         return nodes
 
@@ -752,15 +786,29 @@ class _Builder:
     def predicates(
         self, scope: _Scope
     ) -> Iterator[tuple[str, dictionary.Constraint, dictionary.Rule]]:
-        """The predicates the plugin checks in `scope`: those whose every
-        condition names a sibling and, for a value or a bit, a number."""
+        """The predicates, `values` and `equals` rules the plugin checks in
+        `scope`: those whose every name is a sibling's, or the request's
+        member's, and every value or bit a number."""
         siblings = {
             m.name: self.avps[m.avp] for m in scope.members if m.avp is not None
         }
+        asked = {
+            m.name: self.avps[m.avp]
+            for m in (scope.request.members if scope.request else ())
+            if m.avp is not None
+        }
+
+        def resolves(reference: dictionary.Reference) -> dictionary.Avp | None:
+            return (asked if reference.root else siblings).get(reference.avp)
+
         for name, held in scope.rules.items():
             for each in held:
                 for reading in each.readings:
                     for rule in reading.rules:
+                        if rule.kind == "equals":
+                            if rule.reference and resolves(rule.reference):
+                                yield name, each, rule
+                            continue
                         if rule.kind not in (
                             "present-if",
                             "absent-if",
@@ -770,42 +818,81 @@ class _Builder:
                         ):
                             continue
                         if all(
-                            c.avp in siblings
+                            (avp := resolves(c)) is not None
                             and (
                                 c.value is None
-                                or self.values.number(siblings[c.avp], c.value)
-                                is not None
+                                or (
+                                    resolves(c.value) is not None
+                                    if isinstance(c.value, dictionary.Reference)
+                                    else self.values.number(avp, c.value) is not None
+                                )
                             )
                             and (
-                                c.bit is None
-                                or self.values.bit(siblings[c.avp], c.bit) is not None
+                                c.bit is None or self.values.bit(avp, c.bit) is not None
                             )
                             for c in rule.conditions
                         ):
                             yield name, each, rule
 
-    def condition(self, nodes: Sequence[_Avp], condition: dictionary.Condition) -> bool:
-        held = next((n for n in nodes if n.avp.name == condition.avp), None)
-        if held is None:
+    def reached(
+        self,
+        nodes: Sequence[_Avp],
+        reference: dictionary.Reference,
+        request: Sequence[_Avp] | None,
+    ) -> list[_Avp]:
+        """The AVPs `reference` names: the first of `nodes` of its name, or
+        every one of the request's."""
+        if reference.root is not None:
+            return [n for n in request or () if n.avp.name == reference.avp]
+        return [n for n in nodes if n.avp.name == reference.avp][:1]
+
+    def condition(
+        self,
+        nodes: Sequence[_Avp],
+        condition: dictionary.Condition,
+        request: Sequence[_Avp] | None = None,
+    ) -> bool:
+        found = self.reached(nodes, condition, request)
+        if not found:
             return False
+        if isinstance(condition.value, dictionary.Reference):
+            others = {n.payload for n in self.reached(nodes, condition.value, request)}
+            return any(n.payload in others for n in found)
         if condition.value is None and condition.bit is None:
             return True
-        value = constraints.integer_value(held.avp.data_type, held.payload or b"")
-        if value is None:
-            return False
-        if condition.value is not None:
-            return value == self.values.number(held.avp, condition.value)
-        bit = self.values.bit(held.avp, condition.bit)
-        return bit is not None and bool(value >> bit & 1)
+        for held in found:
+            value = constraints.integer_value(held.avp.data_type, held.payload or b"")
+            if value is None:
+                continue
+            if condition.value is not None:
+                if value == self.values.number(held.avp, condition.value):
+                    return True
+                continue
+            bit = self.values.bit(held.avp, condition.bit)
+            if bit is not None and value >> bit & 1:
+                return True
+        return False
 
     def broken(
-        self, scope: _Scope, nodes: Sequence[_Avp]
+        self,
+        scope: _Scope,
+        nodes: Sequence[_Avp],
+        request: Sequence[_Avp] | None = None,
     ) -> list[tuple[str, str, dictionary.Constraint]]:
-        """The predicates of `scope` that `nodes` break: name, kind, constraint."""
+        """The predicates of `scope` that `nodes` break: name, kind,
+        constraint. One reading the request is held to `request`, and with
+        none is not evaluated, as the plugin leaves it."""
         found = []
         for name, each, rule in self.predicates(scope):
+            if _reads_request(rule) and request is None:
+                continue
             subject = any(n.avp.name == name for n in nodes)
-            holds = any(self.condition(nodes, c) for c in rule.conditions)
+            if rule.kind == "equals":
+                assert rule.reference is not None
+                if subject and not self.equal(nodes, name, rule.reference, request):
+                    found.append((name, rule.kind, each))
+                continue
+            holds = any(self.condition(nodes, c, request) for c in rule.conditions)
             if (
                 (rule.kind == "present-if" and holds and not subject)
                 or (rule.kind == "absent-if" and holds and subject)
@@ -821,6 +908,19 @@ class _Builder:
                 found.append((name, rule.kind, each))
         return found
 
+    def equal(
+        self,
+        nodes: Sequence[_Avp],
+        name: str,
+        reference: dictionary.Reference,
+        request: Sequence[_Avp] | None,
+    ) -> bool:
+        """Whether the AVP `name` of `nodes` holds the value of one the
+        reference names, or none is there to compare."""
+        held = next(n for n in nodes if n.avp.name == name)
+        others = self.reached(nodes, reference, request)
+        return not others or any(n.payload == held.payload for n in others)
+
     def allowed(self, nodes: Sequence[_Avp], name: str, rule: dictionary.Rule) -> bool:
         """Whether the AVP `name` of `nodes` holds one of a values rule's
         values, or a value the plugin cannot read."""
@@ -828,23 +928,37 @@ class _Builder:
         value = constraints.integer_value(held.avp.data_type, held.payload or b"")
         return value is None or value in rule.values
 
-    def satisfy(self, scope: _Scope, nodes: list[_Avp], maximal: bool) -> None:
+    def satisfy(
+        self,
+        scope: _Scope,
+        nodes: list[_Avp],
+        maximal: bool,
+        request: Sequence[_Avp] | None = None,
+    ) -> None:
         """Mend what the predicates of `scope` say of `nodes`: drop an
-        optional subject that may not be there, add one that must."""
+        optional subject that may not be there, add one that must, give one
+        the value it must hold."""
         optional = {m.name for m in scope.members if m.min_occurs == 0}
         for _ in range(8):
-            broken = self.broken(scope, nodes)
+            broken = self.broken(scope, nodes, request)
             if not broken:
                 return
             for name, kind, each in broken:
-                if kind == "values":
+                rule = next(
+                    rule
+                    for reading in each.readings
+                    for rule in reading.rules
+                    if rule.kind == kind
+                )
+                if kind == "equals":
+                    assert rule.reference is not None
                     held = next(n for n in nodes if n.avp.name == name)
-                    rule = next(
-                        rule
-                        for reading in each.readings
-                        for rule in reading.rules
-                        if rule.kind == "values"
-                    )
+                    other = self.reached(nodes, rule.reference, request)
+                    if held.payload is None or other[0].payload is None:
+                        raise _Unbuildable(f"{name} cannot take the value it echoes")
+                    held.payload = other[0].payload
+                elif kind == "values":
+                    held = next(n for n in nodes if n.avp.name == name)
                     if held.avp.data_type not in _FIXED:
                         raise _Unbuildable(f"{name} holds no integer to set")
                     held.payload = _integer(held.avp.data_type, rule.values[0])
@@ -861,11 +975,17 @@ class _Builder:
                     nodes[:] = [n for n in nodes if n.avp.name != name]
                 else:
                     raise _Unbuildable(f"{name} is required and a predicate forbids it")
-        if self.broken(scope, nodes):
+        if self.broken(scope, nodes, request):
             raise _Unbuildable("the predicates cannot all hold")
 
 
 # --- vectors ---------------------------------------------------------------
+
+
+# The Hop-by-Hop and End-to-End identifiers of the first vector; each next
+# vector's are one more, so that a capture pairs an answer with its own
+# request alone.
+_IDENTIFIERS = 0x5EA4C4A1
 
 
 @dataclasses.dataclass
@@ -874,8 +994,15 @@ class _Message:
     command: dictionary.Command
     nodes: list[_Avp]
     error_bit: bool = False
+    # The request an answer answers, where its rules read one.
+    request: _Message | None = None
 
-    def encode(self) -> bytes:
+    @property
+    def asked(self) -> list[_Avp] | None:
+        """The request's AVPs, None for no request."""
+        return None if self.request is None else self.request.nodes
+
+    def encode(self, identifiers: int = _IDENTIFIERS) -> bytes:
         flags = 0
         if self.command.is_request:
             flags |= _HEADER_FLAGS["R"]
@@ -890,12 +1017,16 @@ class _Message:
             + (20 + len(body)).to_bytes(3, "big")
             + bytes([flags])
             + self.command.command_code.to_bytes(3, "big")
-            + struct.pack("!III", application, 0x5EA4C4A1, 0x5EA4C4A1)
+            + struct.pack("!III", application, identifiers, identifiers)
             + body
         )
 
     def copy(self) -> _Message:
-        return dataclasses.replace(self, nodes=[n.copy() for n in self.nodes])
+        return dataclasses.replace(
+            self,
+            nodes=[n.copy() for n in self.nodes],
+            request=None if self.request is None else self.request.copy(),
+        )
 
 
 class _Pages:
@@ -956,12 +1087,48 @@ class _Generator:
     ) -> str:
         return f"{_application_name(application)}/{command.abbreviation}"
 
-    def scope(self, command: dictionary.Command) -> _Scope:
+    def scope(
+        self,
+        command: dictionary.Command,
+        request: dictionary.Command | None = None,
+    ) -> _Scope:
         rules: dict[str, list[dictionary.Constraint]] = {}
         for each in command.constraints:
             rules.setdefault(each.avp, []).append(each)
         return _Scope(
-            command.members, {k: tuple(v) for k, v in rules.items()}, command.name
+            command.members,
+            {k: tuple(v) for k, v in rules.items()},
+            command.name,
+            None if request is None else self.scope(request),
+        )
+
+    def request_of(
+        self, application: dictionary.Application, command: dictionary.Command
+    ) -> dictionary.Command | None:
+        """The request an answer's rules read, by the clause their
+        constraints give it, or None where none reads one."""
+        sections = {
+            each.request_section
+            for each in command.constraints
+            if each.request_section is not None
+            and any(
+                _reads_request(rule)
+                for reading in each.readings
+                for rule in reading.rules
+            )
+        }
+        if command.is_request or len(sections) != 1:
+            return None
+        (section,) = sections
+        return next(
+            (
+                each
+                for each in application.commands
+                if each.is_request
+                and each.command_code == command.command_code
+                and each.section == section
+            ),
+            None,
         )
 
     def where(
@@ -988,6 +1155,8 @@ class _Generator:
     ) -> None:
         label = self.label(message.application, message.command)
         identifier = f"{label}/{kind}" + (f"/{what}" if what else "")
+        identifiers = (_IDENTIFIERS + len(self.vectors)) % 2**32
+        request = message.request
         self.vectors.append(
             Vector(
                 id=identifier,
@@ -1000,8 +1169,14 @@ class _Generator:
                 error_bit=message.error_bit,
                 document=message.command.defined_in,
                 section=message.command.section,
-                octets=message.encode().hex(),
+                octets=message.encode(identifiers).hex(),
                 tree=tuple(node.node() for node in message.nodes),
+                request=None
+                if request is None
+                else Request(
+                    octets=request.encode(identifiers).hex(),
+                    tree=tuple(node.node() for node in request.nodes),
+                ),
                 breaks=breaks,
                 expected=tuple(expected),
             )
@@ -1011,11 +1186,26 @@ class _Generator:
         self, application: dictionary.Application, command: dictionary.Command
     ) -> None:
         label = self.label(application, command)
-        scope = self.scope(command)
+        asked = self.request_of(application, command)
+        scope = self.scope(command, asked)
+        # The request an answer's rules read: the fullest one buildable, so
+        # that what it may carry is there for the rules to read.
+        request = None
+        if asked is not None and scope.request is not None:
+            for maximal in (True, False):
+                try:
+                    request = _Message(
+                        application, asked, self.builder.body(scope.request, maximal)
+                    )
+                    break
+                except _Unbuildable:
+                    continue
         built = {}
         for maximal in (False, True):
             try:
-                nodes = self.builder.body(scope, maximal)
+                nodes = self.builder.body(
+                    scope, maximal, request=None if request is None else request.nodes
+                )
             except _Unbuildable as error:
                 self.skipped.append(
                     Skipped(
@@ -1025,7 +1215,12 @@ class _Generator:
                     )
                 )
                 continue
-            message = _Message(application, command, nodes)
+            message = _Message(
+                application,
+                command,
+                nodes,
+                request=None if request is None else request.copy(),
+            )
             built[maximal] = message
             self.emit(message, "maximal" if maximal else "minimal")
         if not built:
@@ -1111,7 +1306,7 @@ class _Negatives:
                 continue
             trial = message.copy()
             trial.nodes = [n for n in trial.nodes if n.avp.name != member.name]
-            if self.builder.broken(self.scope, trial.nodes):
+            if self.builder.broken(self.scope, trial.nodes, trial.asked):
                 continue
             bracket = "< >" if member.presence == "fixed" else "{ }"
             self.emit(
@@ -1472,6 +1667,7 @@ class _Negatives:
                             "note",
                         )
         self.predicate_vectors()
+        self.request_vectors()
         self.grouped_vectors()
 
     def each_grouped(
@@ -1619,7 +1815,10 @@ class _Negatives:
             self.builder.values.number(self.builder.avps[m.avp], c.value) is not None
             for c in rule.conditions
             for m in inner.members
-            if m.name == c.avp and m.avp is not None and c.value is not None
+            if m.name == c.avp
+            and m.avp is not None
+            and c.value is not None
+            and not isinstance(c.value, dictionary.Reference)
         ):
             return False
         if not self.make_hold(children, rule.conditions[0], inner):
@@ -1771,6 +1970,8 @@ class _Negatives:
         """One vector per predicate of the command's own scope the plugin
         checks: the subject placed, or not, against its conditions."""
         for name, each, rule in self.builder.predicates(self.scope):
+            if _reads_request(rule):
+                continue  # `request_vectors`
             message = self.full()
             nodes = message.nodes
             if rule.kind == "values":
@@ -1824,8 +2025,136 @@ class _Negatives:
                 "note",
             )
 
-    def counts_hold(self, nodes: Sequence[_Avp]) -> bool:
-        for member in self.scope.members:
+    def request_vectors(self) -> None:
+        """For each rule of the command's own scope reading the request: a
+        valid pair, the rule's conditions met and the rule kept, and a
+        negative pair breaking it and nothing else."""
+        if self.scope.request is None:
+            return
+        for name, each, rule in self.builder.predicates(self.scope):
+            if not _reads_request(rule):
+                continue
+            what = f"{rule.kind}/{name}/{each.section}"
+            made = self.pair(name, rule)
+            if made is None:
+                self.skip(
+                    f"constraint-{what}",
+                    "no request and answer meet the rule's conditions and keep"
+                    " every other rule",
+                )
+                continue
+            valid, negative = made
+            self.generator.emit(valid, "maximal", f"request/{what}")
+            self.emit(
+                negative,
+                f"constraint-{what}",
+                self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
+                f"constraint-{rule.kind}",
+                "note",
+            )
+
+    def run_of(
+        self, message: _Message, reference: dictionary.Reference
+    ) -> tuple[list[_Avp], _Scope] | None:
+        """The run of AVPs `reference` names one of, and its scope: the
+        answer's, or the request's."""
+        if reference.root is None:
+            return message.nodes, self.scope
+        if message.request is None or self.scope.request is None:
+            return None
+        return message.request.nodes, self.scope.request
+
+    def holds_but(self, message: _Message, broken: list[tuple[str, str]]) -> bool:
+        """Whether `message` and its request break no rule but `broken`, the
+        answer's predicates' names and kinds."""
+        request = message.request
+        if request is None or self.scope.request is None:
+            return False
+        found = self.builder.broken(self.scope, message.nodes, request.nodes)
+        return (
+            [(n, k) for n, k, _ in found] == broken
+            and not self.builder.broken(self.scope.request, request.nodes)
+            and self.counts_hold(message.nodes)
+            and self.counts_hold(request.nodes, self.scope.request)
+        )
+
+    def pair(
+        self, name: str, rule: dictionary.Rule
+    ) -> tuple[_Message, _Message] | None:
+        """A valid request and answer for `rule` on the answer's AVP `name`,
+        its conditions met, and the same pair breaking the rule."""
+        valid = self.full()
+        member = next(m for m in self.scope.members if m.name == name)
+
+        def present(message: _Message) -> _Avp | None:
+            return self.sibling(message.nodes, name)
+
+        def absent(message: _Message) -> bool:
+            if member.min_occurs:
+                return False
+            message.nodes[:] = [n for n in message.nodes if n.avp.name != name]
+            return True
+
+        if rule.kind == "equals":
+            assert rule.reference is not None
+            found = self.run_of(valid, rule.reference)
+            subject = present(valid)
+            if found is None or subject is None or subject.payload is None:
+                return None
+            other = self.sibling(found[0], rule.reference.avp, found[1])
+            if other is None or other.payload is None:
+                return None
+            if not self.keeps_rules(subject, self.scope, other.payload):
+                return None
+            subject.payload = other.payload
+            negative = valid.copy()
+            target = next(n for n in negative.nodes if n.avp.name == name)
+            payload = next(
+                (
+                    each
+                    for each in _variants(target.avp, other.payload)
+                    if each != other.payload
+                    and self.keeps_rules(target, self.scope, each)
+                ),
+                None,
+            )
+            if payload is None:
+                return None
+            target.payload = payload
+        else:
+            first = rule.conditions[0]
+            found = self.run_of(valid, first)
+            if found is None or not self.make_hold(found[0], first, found[1]):
+                return None
+            if rule.kind in ("present-if", "requires"):
+                if present(valid) is None:
+                    return None
+            elif not absent(valid):
+                return None
+            negative = valid.copy()
+            if rule.kind == "present-if":
+                if not absent(negative):
+                    return None
+            elif rule.kind == "requires":
+                for condition in rule.conditions:
+                    found = self.run_of(negative, condition)
+                    if found is None or not self.make_fail(
+                        found[0], condition, found[1]
+                    ):
+                        return None
+            elif rule.kind in ("absent-if", "excludes"):
+                if present(negative) is None:
+                    return None
+            else:
+                return None
+        if not self.holds_but(valid, []) or not self.holds_but(
+            negative, [(name, rule.kind)]
+        ):
+            return None
+        return valid, negative
+
+    def counts_hold(self, nodes: Sequence[_Avp], scope: _Scope | None = None) -> bool:
+        for member in (scope or self.scope).members:
             if member.avp is None:
                 continue
             count = sum(1 for n in nodes if n.avp.name == member.name)
@@ -1860,6 +2189,8 @@ class _Negatives:
         condition: dictionary.Condition,
         scope: _Scope | None = None,
     ) -> bool:
+        if isinstance(condition.value, dictionary.Reference):
+            return False
         node = self.sibling(nodes, condition.avp, scope)
         if node is None:
             return False
@@ -1875,8 +2206,16 @@ class _Negatives:
         node.payload = _integer(node.avp.data_type, number)
         return True
 
-    def make_fail(self, nodes: list[_Avp], condition: dictionary.Condition) -> bool:
-        member = next((m for m in self.scope.members if m.name == condition.avp), None)
+    def make_fail(
+        self,
+        nodes: list[_Avp],
+        condition: dictionary.Condition,
+        scope: _Scope | None = None,
+    ) -> bool:
+        scope = scope or self.scope
+        if isinstance(condition.value, dictionary.Reference):
+            return False
+        member = next((m for m in scope.members if m.name == condition.avp), None)
         if member is None:
             return False
         if condition.value is None and condition.bit is None:
@@ -2030,12 +2369,20 @@ def json_schema() -> dict[str, Any]:
 
 def pcap(vectors: Vectors) -> bytes:
     """Every vector as one capture: each message in its own TCP segment to
-    port 3868, over IPv4 and Ethernet, in the file's order."""
+    port 3868, over IPv4 and Ethernet, in the file's order, an answer's
+    request just before it."""
     out = struct.pack("!IHHiIII", 0xA1B2C3D4, 2, 4, 0, 0, 65535, 1)
     sequence = 1000
     frames = 0
-    for index, vector in enumerate(vectors.vectors):
-        message = bytes.fromhex(vector.octets)
+    messages = [
+        bytes.fromhex(each)
+        for vector in vectors.vectors
+        for each in (
+            *([vector.request.octets] if vector.request else []),
+            vector.octets,
+        )
+    ]
+    for index, message in enumerate(messages):
         # A message longer than a segment is split, as TCP would.
         for start in range(0, len(message), _SEGMENT):
             payload = message[start : start + _SEGMENT]

@@ -972,6 +972,7 @@ class _Comparison:
                     c.command,
                     c.application_id,
                     c.command_section,
+                    c.request_section,
                     c.within,
                 ): c
                 for c in built.constraints

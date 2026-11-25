@@ -37,10 +37,12 @@ __all__ = [
     "avp_line",
     "avp_table_cell",
     "commented_avp_rule",
+    "condition",
     "constraint_rule",
     "format_interpretations",
     "format_spec",
     "marks_cell",
+    "reference",
     "value_name",
 ]
 
@@ -180,6 +182,7 @@ def _directives(
             ("Command", "command", section.command),
             ("Application-ID", "application_id", section.application_id),
             ("Command-Section", "command_section", section.command_section),
+            ("Request-Section", "request_section", section.request_section),
             ("Within", "within", section.within),
         ):
             if value is not None:
@@ -659,12 +662,21 @@ def _value_ref(value: int | str) -> str:
     return str(value) if isinstance(value, int) else value_name(value)
 
 
-def _condition(condition: ast.Condition) -> str:
-    if condition.value is not None:
-        return f"{condition.avp} = {_value_ref(condition.value)}"
-    if condition.bit is not None:
-        return f"{condition.avp} bit {_value_ref(condition.bit)}"
-    return condition.avp
+def reference(reference: ast.Reference) -> str:
+    """A path as a rule prints it: `request/User-Name`."""
+    names = "/".join(reference.path)
+    return names if reference.root is None else f"{reference.root}/{names}"
+
+
+def condition(each: ast.Condition) -> str:
+    """A condition as a rule prints it: `request/Foo = 1`."""
+    if isinstance(each.value, ast.Reference):
+        return f"{reference(each)} = {reference(each.value)}"
+    if each.value is not None:
+        return f"{reference(each)} = {_value_ref(each.value)}"
+    if each.bit is not None:
+        return f"{reference(each)} bit {_value_ref(each.bit)}"
+    return reference(each)
 
 
 def constraint_rule(rule: ast.ConstraintRule) -> str:
@@ -684,7 +696,7 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
                 parts.append(_quoted(rule.element))
             return " ".join(parts)
         case ast.PredicateRule():
-            conditions = " or ".join(_condition(each) for each in rule.conditions)
+            conditions = " or ".join(condition(each) for each in rule.conditions)
             return f"{rule.kind} {conditions}"
         case ast.DefaultRule():
             return f"default {_value_ref(rule.value)}"
@@ -696,8 +708,10 @@ def constraint_rule(rule: ast.ConstraintRule) -> str:
             return "unique"
         case ast.ValuesRule():
             values = ", ".join(str(value) for value in rule.values)
-            conditions = " or ".join(_condition(each) for each in rule.conditions)
+            conditions = " or ".join(condition(each) for each in rule.conditions)
             return f"values {values} if {conditions}"
+        case ast.EqualsRule():
+            return f"equals {reference(rule.reference)}"
         case ast.TextOnly():
             return "text-only"
 

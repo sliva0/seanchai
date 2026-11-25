@@ -694,7 +694,8 @@ interpreted-constraints = "; Type: Interpreted Constraints" NL
                           "; AVP: " avp-name NL
                           ["; Command: " avp-name NL
                            ["; Application-ID: " application-id NL]
-                           ["; Command-Section: " section-number NL]]
+                           ["; Command-Section: " section-number NL]
+                           ["; Request-Section: " section-number NL]]
                           ["; Within: " avp-name NL]
                           "; Section: " section-number NL
                           ["; Table: " inline-text NL]
@@ -707,7 +708,7 @@ reading       = 1*(quote-line NL) 1*(rule-line NL)
 quote-line    = DQUOTE 1*(name-char / SP) DQUOTE   ; as inline-text, escaped
 rule-line     = 4SP rule
 rule          = length / range / exclude / encoding / predicate / default
-              / bits / members / "unique" / values / "text-only"
+              / bits / members / "unique" / values / equals / "text-only"
 length        = "length " bounds SP ("octets" / "digits" / "characters")
 range         = "range " bounds
 exclude       = "exclude " integer *(", " integer)
@@ -722,7 +723,10 @@ codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
               / "ip-address" / "time-zone" / "mac-address"
 predicate     = predicate-kind SP condition *(" or " condition)
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
-condition     = avp-name [" = " value-ref / " bit " value-ref]
+condition     = path [" = " (value-ref / rooted) / " bit " value-ref]
+path          = [root "/"] avp-name
+rooted        = root "/" avp-name
+root          = "request"
 value-ref     = integer / enum-name
 default       = "default " value-ref
 bits          = "bits " ("at-most-one" / "at-least-one") 2*(SP 1*DIGIT)
@@ -730,6 +734,7 @@ bits          = "bits " ("at-most-one" / "at-least-one") 2*(SP 1*DIGIT)
 members       = "members " ("at-least-one" / "only") 1*(SP avp-name)
 values        = "values " integer *(", " integer) " if " condition
                 *(" or " condition)
+equals        = "equals " path
 ```
 
 What a clause states in prose about one AVP's value or presence, as a person
@@ -772,6 +777,12 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   Elements block chooses), or `; Within:`, a grouped AVP, scopes them to the
   AVP as a member there; a predicate's conditions are its siblings. With
   neither, the rules hold wherever the document reads the AVP.
+- In a block scoped to an answer, a name after `request/` is a member of
+  the request the answer answers: the same command code with the R bit,
+  under the same application, printed at `; Request-Section:` where the
+  file prints that request more than once there (TS 29.273's Diameter-EAP-
+  Request for STa and SWd); otherwise the one print is meant, and the
+  directive is not written.
 - A quote is one or more sentences of the clause, or an information
   element's description where `; Table:` names its table, as printed once
   whitespace is collapsed; `\"` and `\\` are its escapes. `; Versions:` is
@@ -786,8 +797,11 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   joining alternatives: `present-if` (present when one holds), `absent-if`
   (absent when one holds), `requires` (one holds when it is present) and
   `excludes` (none holds when it is present). A condition is a sibling's
-  presence, its value, a number or a name its values or result codes give
-  it, or a bit, by number or by its bit table's name.
+  presence, or the request's member's, its value, a number or a name its
+  values or result codes give it, or the value of a member of the request
+  (`Result-Code = request/Result-Code`, octet for octet), or a bit, by
+  number or by its bit table's name. Of the request's members of a name,
+  any one meeting it does.
 - `default` is what the AVP is read as when absent, a number or a name its
   values give. `bits` is a rule on the AVP's own bits, numbered as its bit
   table numbers them, bit 0 the least significant, an OctetString's octets
@@ -799,6 +813,9 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   hold the AVP with the same value; it needs `; Within:`.
 - `values` restricts the AVP's integer value to those listed when one of
   the conditions holds, conditions as a predicate's.
+- `equals` says the AVP holds the value, octet for octet, of the one the
+  path names wherever both are present: `equals request/User-Name`, an
+  answer echoing the request's.
 - `text-only` is a rule the quote states that no kind expresses: one
   depending on an earlier message, a feature, the node or the subscriber,
   or on more than the kinds can say. It is a reading's only rule.
@@ -876,7 +893,9 @@ Checked by the AST after parsing:
   `; Within:`; a condition tests a value or a bit, not both; only `element`
   takes a document, and it needs one; a `bits` rule names a bit once, and
   two or more for `at-most-one` and `at-least-one`; a `members` rule names a
-  member once, a `values` rule a value once; `unique` needs `; Within:`.
+  member once, a `values` rule a value once; `unique` needs `; Within:`; a
+  rule reading the request needs `; Command:`, and `; Request-Section:` a
+  rule reading the request; a value read from another AVP starts at a root.
 - Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
   value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
   and at least 1.

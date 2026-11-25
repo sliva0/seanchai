@@ -42,6 +42,7 @@ __all__ = [
     "ConstraintCondition",
     "ConstraintQuote",
     "ConstraintReading",
+    "ConstraintReference",
     "ConstraintRule",
     "Correction",
     "CrossRelease",
@@ -370,12 +371,21 @@ class ConstraintQuote(_Model):
     text: str
 
 
-class ConstraintCondition(_Model):
-    """A predicate's condition: the sibling `avp` present, holding `value`,
-    or with `bit` set, a number or a name."""
+class ConstraintReference(_Model):
+    """An AVP a rule reads beside its own, by `path`, the names from the
+    block's scope down to it, or with `root` `request` from the request
+    its answer answers, the block's `request_target`."""
 
-    avp: str
-    value: int | str | None = None
+    root: Literal["request"] | None = None
+    path: tuple[str, ...]
+
+
+class ConstraintCondition(ConstraintReference):
+    """A predicate's condition: the AVP `root` and `path` name present,
+    holding `value` (a number, a name, or the value of the AVP a
+    `ConstraintReference` names), or with `bit` set, a number or a name."""
+
+    value: int | str | ConstraintReference | None = None
     bit: int | str | None = None
 
 
@@ -389,7 +399,7 @@ class ConstraintRule(_Model):
     `absent-if`, `requires` and `excludes` their `conditions`, alternatives;
     `default` its `value`; `bits` its `relation` and `bits`; `members` its
     `relation` and `members`; `values` its `values` and `conditions`;
-    `unique` and `text-only` nothing."""
+    `equals` its `reference`; `unique` and `text-only` nothing."""
 
     line: int
     kind: Literal[
@@ -406,6 +416,7 @@ class ConstraintRule(_Model):
         "members",
         "unique",
         "values",
+        "equals",
         "text-only",
     ]
     unit: ast.LengthUnit | None = None
@@ -422,6 +433,7 @@ class ConstraintRule(_Model):
     relation: ast.BitsRelation | None = None
     bits: tuple[int, ...] = ()
     members: tuple[str, ...] = ()
+    reference: ConstraintReference | None = None
 
 
 class ConstraintReading(_Model):
@@ -458,8 +470,10 @@ class Block(_Model):
       Elements block's;
     - `interpreted`, `avp_target` and `readings` for an Interpreted
       Constraints block, `name` being the AVP it constrains, `avp_target`
-      where its `; AVP:` line links, and `fields` its scope (`Command`,
-      `Application-ID`, `Command-Section` or `Within`) and `Versions`.
+      where its `; AVP:` line links, `request_target` where the request
+      its rules read is printed, for a block scoped to an answer whose
+      rules read one, and `fields` its scope (`Command`, `Application-ID`,
+      `Command-Section`, `Request-Section` or `Within`) and `Versions`.
       `interpreted` is true only here: a person read the block in the
       clause's prose, and no document prints it as structure.
 
@@ -493,6 +507,7 @@ class Block(_Model):
     described_by: tuple[ElementTableRef, ...] = ()
     interpreted: bool = False
     readings: tuple[ConstraintReading, ...] = ()
+    request_target: Target | None = None
     commands: tuple[CommandSpan, ...] = ()
 
 

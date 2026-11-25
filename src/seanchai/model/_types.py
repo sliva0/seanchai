@@ -134,7 +134,11 @@ class Constraint(_Plain):
     the command's block where the document prints it more than once) or
     `within` names where the AVP is constrained as a member, and where a
     predicate's conditions are its siblings; with neither, wherever the
-    document reads it. `versions` is
+    document reads it. `request_section` is the clause of the request a
+    rule of a block scoped to an answer reads (`ast.Root.REQUEST`): the one
+    the block names, else the one print of the request under the answer's
+    application, None where the block reads no request or the document
+    prints none or several. `versions` is
     the range of the document's versions the quotes were checked against.
     """
 
@@ -150,7 +154,13 @@ class Constraint(_Plain):
     within: str | None
     versions: str
     readings: tuple[ast.Reading, ...]
+    request_section: str | None = None
     interpreted: bool = True
+
+    @property
+    def reads_request(self) -> bool:
+        """Whether a rule reads the request the answer answers."""
+        return any(ast.reads_request(rule) for rule in self.rules)
 
     @property
     def rules(self) -> tuple[ast.ConstraintRule, ...]:
@@ -166,7 +176,11 @@ class Constraint(_Plain):
         )
 
 
-def _constraint(entry: corpus.Entry, block: ast.InterpretedConstraints) -> Constraint:
+def _constraint(
+    entry: corpus.Entry,
+    block: ast.InterpretedConstraints,
+    request_section: str | None = None,
+) -> Constraint:
     return Constraint(
         avp=block.avp,
         reference=entry.reference,
@@ -180,6 +194,7 @@ def _constraint(entry: corpus.Entry, block: ast.InterpretedConstraints) -> Const
         within=block.within,
         versions=block.versions,
         readings=block.readings,
+        request_section=request_section,
     )
 
 

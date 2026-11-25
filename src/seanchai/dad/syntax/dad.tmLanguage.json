@@ -239,7 +239,7 @@
       }
     },
     "constraint-rule": {
-      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|members|unique|values|text-only)\\b(.*?)(\\s*;;.*)?$",
+      "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|members|unique|values|equals|text-only)\\b(.*?)(\\s*;;.*)?$",
       "captures": {
         "2": { "name": "keyword.control.constraint.dad" },
         "3": {
@@ -282,6 +282,16 @@
               "comment": "Between the values of `exclude` and `values`.",
               "match": ",",
               "name": "punctuation.separator.comma.dad"
+            },
+            {
+              "comment": "A path's root: the request an answer answers.",
+              "match": "(?<=\\s)request(?=/)",
+              "name": "keyword.other.root.dad"
+            },
+            {
+              "comment": "Between the names of a path.",
+              "match": "/",
+              "name": "punctuation.separator.path.dad"
             },
             {
               "comment": "A member or a sibling, a value's or a bit's name.",

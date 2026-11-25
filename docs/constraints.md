@@ -92,6 +92,7 @@ TS 29.272's file prints it:
 | `members` | `members at-least-one SCEF-Reference-ID SCEF-Reference-ID-Ext`, `members only IMEI Software-Version` | of the grouped AVP's members, at least one of these is present (one name: it is), or none but these |
 | `unique` | `unique` | no two of the `; Within:` grouped AVPs beside each other hold the AVP with the same value |
 | `values` | `values 1 if Monitoring-Type = 1` | the integer value is one of these when a condition holds |
+| `equals` | `equals request/User-Name` | the AVP holds, octet for octet, the value of the one named, where both are present |
 | `text-only` | `text-only` | (a reader decides) |
 
 A predicate's conditions, and a `values` rule's, are alternatives (`or`), each
@@ -102,6 +103,20 @@ block must all hold. `absent-if` and `excludes` say the same of a presence
 condition, read from the other side; the kinds follow the clause's wording.
 Without a scope the rules hold wherever the document reads the AVP, and a
 predicate there has no siblings to test.
+
+In a block scoped to an answer, a name after `request/` is a member of the
+request the answer answers: the same command code with the R bit under the
+same application, printed at the block's `; Request-Section:` where the
+document prints that request more than once there, as TS 29.273 prints
+Diameter-EAP-Request for STa and SWd under one application. A condition may
+test it as it tests a sibling (`absent-if request/Emergency-Services bit
+Emergency-Indication`), or compare a sibling's value with it
+(`Result-Code = request/Result-Code`), and `equals` holds the AVP to it. Of
+the request's members of a name, any one meeting the condition does. A rule
+reading the request is checked only where the request is at hand: what
+reads the answer alone reports it unchecked, never broken. A rule across
+more than one exchange (an earlier answer, a session's state) has no form:
+it is `text-only`.
 
 A `bits` rule numbers bits as the AVP's bit table does, bit 0 the least
 significant; an OctetString's bits are those of its octets read as one
@@ -142,12 +157,19 @@ values from (`TS32.422 5.10.19 "Positioning Method"`).
 `seanchai.constraints` checks a payload in Python: `codec_problem(codec,
 payload)` says why a payload is no such layout, `digit_count` counts its
 digits, `element_problem(rule, payload, data_type)` why it is not the element
-an `encoding element` rule names, and `check(rule, payload, data_type, codec)`
-tells whether a length, range, exclude, encoding or bits rule holds, None
-where the payload alone cannot tell (a predicate, a `values`, `members` or
-`unique` rule, an element the registry does not have or checks nothing of, a
-`default`, `text-only`). A `bits` rule holds of an unsigned integer's payload
-or an OctetString's (`bits_value`, `bits_problem`).
+an `encoding element` rule names, and `check(rule, payload, data_type, codec,
+request)` tells whether a length, range, exclude, encoding or bits rule
+holds, and a rule reading only the request where `request`, the request's
+AVPs, is given; None where the payload alone cannot tell (another predicate,
+a `values`, `members` or `unique` rule, an element the registry does not
+have or checks nothing of, a `default`, `text-only`). `holds(rule, avp,
+scope, request)` tells whether a predicate, a `values` or an `equals` rule
+holds of the AVP named `avp` in `scope`, its run of AVPs (`Avp`: a name, a
+type, a payload or members, and the numbers its names stand for). A rule
+reading the request with no request given is not evaluated: its `Check` is
+None with `needs_request`, neither a pass nor a breach. A `bits` rule holds
+of an unsigned integer's payload or an OctetString's (`bits_value`,
+`bits_problem`).
 
 ## Elements
 
@@ -298,8 +320,9 @@ TS 29.273's 6 name 6 entries, of which 4 check something:
   ([linter.md](linter.md#interpreted-constraints)).
 - The Wireshark plugin checks lengths, ranges, exclusions, the codecs, an
   `element` as far as its registry entry does, `bits`, `members` and `unique`
-  rules, and the predicates and `values` rules whose names resolve; a
-  `default` breaks nothing on the wire
+  rules, and the predicates, `values` and `equals` rules whose names
+  resolve, those reading the request against the request the capture holds;
+  a `default` breaks nothing on the wire
   ([wireshark-plugin.md](wireshark-plugin.md#what-it-checks)).
 
 ## The interpretations file
@@ -328,7 +351,8 @@ a reviewer reads it beside the specification:
 ```
 
 - A person writes the scope (`; AVP:`, `; Within:` or `; Command:` with
-  `; Application-ID:` and `; Command-Section:`, `; Section:`, `; Table:`),
+  `; Application-ID:`, `; Command-Section:` and `; Request-Section:`,
+  `; Section:`, `; Table:`),
   the quotes and the rules, and `; Versions:`, the range the quotes were
   checked against. `; Command-Section:` names the clause of the command's
   block where the document prints the command more than once for one

@@ -269,6 +269,13 @@ _SCOPED = [
     ("    default FIRST", "FIRST", "variable.other.avp"),
     ("    members at-least-one", "ACME-Kind", "variable.other.avp"),
     ("    members only", "only", "keyword.operator.condition"),
+    ("; Request-Section:", "6.2.1", "constant.other.section"),
+    ("    equals", "equals", "keyword.control.constraint"),
+    ("    equals", "request", "keyword.other.root"),
+    ("    equals", "/", "punctuation.separator.path"),
+    ("    equals", "ACME-Id", "variable.other.avp"),
+    ("    present-if request", "request", "keyword.other.root", "= "),
+    ("    present-if request", "ACME-Kind", "variable.other.avp", "/"),
     (";; deleted:", "deleted", "keyword.other.note"),
 ]
 

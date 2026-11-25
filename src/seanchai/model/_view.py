@@ -117,8 +117,15 @@ class _View:
                 view.elements.append(section)
             elif isinstance(section, ast.CommandResultCodes):
                 view.result_codes.append(section)
-            elif isinstance(section, ast.InterpretedConstraints):
-                view.constraints.append(_constraint(entry, section))
+        # After every message is met: a block reading an information
+        # element's description stands in clause order before the command.
+        view.constraints = [
+            _constraint(
+                entry, section, ast.request_section(entry.spec.sections, section)
+            )
+            for section in entry.spec.sections
+            if isinstance(section, ast.InterpretedConstraints)
+        ]
         return view
 
     def cited_in(self, name: str) -> tuple[str, ...]:

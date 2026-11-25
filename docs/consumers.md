@@ -228,8 +228,9 @@ value_tables[]     kind (result-codes, bits, features, values), avp, avp_ids,
                    applications, reference, version, vendor_id, section, page,
                    table, application, feature_list_id, rows[]
 constraints[]      interpreted, avp, avp_ids, command, application_id,
-                   command_section, within, reference, version, section,
-                   table, page, versions, readings[]: quotes, rules[]
+                   command_section, request_section, within, reference,
+                   version, section, table, page, versions,
+                   readings[]: quotes, rules[]
 conflicts[]        vendor_id, code, defining, fields, obsolete,
                    readings[]: avp, obsoleted_by, paths[]
 ```
@@ -298,9 +299,15 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   `check` in words, `depth`, `unchecked`, what it leaves and why, and
   `sources`, each `document`, `edition`, `clause` and `where`;
   [constraints.md](constraints.md#elements)), a predicate's
-  `conditions` (`avp`, and `value` or `bit`), a default's `value`, a bits
-  rule's `relation` and `bits`, a members rule's `relation` and `members`,
-  and a values rule's `values` and `conditions`; `unique` has none.
+  `conditions`, a default's `value`, a bits rule's `relation` and `bits`, a
+  members rule's `relation` and `members`, a values rule's `values` and
+  `conditions`, and an equals rule's `reference`; `unique` has none. A
+  condition names its AVP by `root` and `path`: `path` the names from the
+  constraint's scope down to it, `root` null for a sibling or `request` for
+  a member of the request the answer answers, printed at the constraint's
+  `request_section`; it has `value` (a number, a name, or a reference,
+  `root` and `path`, to the AVP whose value it tests against) or `bit`, or
+  neither for presence. A reference is the same `root` and `path`.
 - `resolved` lists each document copy an AVP, hole, table, application or
   error answer of the output comes from, cited copies included: the copy of
   the document printing an error answer that its base resolved to.
@@ -409,7 +416,13 @@ suite, per command of the selection (`--application`, `--document`):
   plugin checks: a length, a range, an excluded value, a codec's layout,
   another document's element as the element registry checks it, a rule on
   bits, a predicate on a command's own member, a members, unique or values
-  rule.
+  rule, and an answer's rule on its request.
+
+An answer whose rules read the request it answers is sent with that request,
+`request` in the vector, the pair sharing Hop-by-Hop and End-to-End
+identifiers no other vector has; a checker reads the request first. Each
+such rule gets a valid pair, `maximal/request/<kind>/<AVP>/<clause>`, its
+conditions met and the rule kept, and a negative one breaking it.
 
 Values are valid for their type and for every constraint read of the AVP: a
 codec's layout (a PLMN identity is MCC 123, MNC 45), an element's, a length, a
@@ -425,9 +438,11 @@ format_version     1, changes when a reader would have to
 seanchai_version, corpus_version, application_ids
 vectors[]          id (application/abbreviation/kind[/what]), kind, application_id,
                    command, abbreviation, command_code, is_request, error_bit,
-                   document, section, octets (hex), tree[], breaks, expected[]
+                   document, section, octets (hex), tree[], request,
+                   breaks, expected[]
   tree[]           name, code, vendor_id (null without V), flags, data (hex),
                    children[]
+  request          null, or the request an answer answers: octets, tree[]
   breaks           rule, reference, version, section, page, table
   expected[]       rule and severity (error, warn, note): the finding the
                    Wireshark plugin reports, a note for a constraint- rule
@@ -435,7 +450,8 @@ skipped[]          command, what, reason
 ```
 
 `--pcap FILE` also writes the messages as a capture, each over TCP to port
-3868, which Wireshark opens with the plugin. `--schema FILE` writes the JSON
+3868, an answer's request just before it, which Wireshark opens with the
+plugin. `--schema FILE` writes the JSON
 Schema. From Python, `seanchai.vectors.build(dictionary)` returns the same.
 
 The vectors are the plugin's end-to-end test (`tests/test_vectors.py`): each
@@ -1065,16 +1081,22 @@ for message in s6a.messages:
   like `value_tables` it is not part of the reading's identity.
   `Grouped.member_constraints` holds what it read of the grouped AVP's
   members, `Message.constraints` of the command's.
-- A `model.Constraint` has the `avp`, its scope (`command` and
-  `application_id`, or `within`), `reference`, `version`, `section`,
-  `table` and `page`, `versions`, the range of versions the quotes were
-  checked against, and `readings`, each an `ast.Reading` of `quotes` and
-  `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`, `EncodingRule`,
-  `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`, `UniqueRule`,
-  `ValuesRule`, `TextOnly`). `interpreted` is always True.
-- `seanchai.constraints.check(rule, payload, data_type, codec)` tells
-  whether a value rule holds of a payload, `codec_problem` why a payload is
-  no such layout ([constraints.md](constraints.md#codecs)), and
+- A `model.Constraint` has the `avp`, its scope (`command`,
+  `application_id` and `command_section`, or `within`), `request_section`,
+  the clause of the request an answer's rules read, `reference`, `version`,
+  `section`, `table` and `page`, `versions`, the range of versions the
+  quotes were checked against, and `readings`, each an `ast.Reading` of
+  `quotes` and `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`,
+  `EncodingRule`, `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`,
+  `UniqueRule`, `ValuesRule`, `EqualsRule`, `TextOnly`). A condition is an
+  `ast.Condition`, an `ast.Reference` (`root`, `path`) with a test.
+  `interpreted` is always True.
+- `seanchai.constraints.check(rule, payload, data_type, codec, request)`
+  tells whether a value rule holds of a payload, and `holds(rule, avp,
+  scope, request)` whether a predicate, `values` or `equals` rule holds of
+  a run of `constraints.Avp`s; one reading the request with none given is
+  not evaluated (`Check.needs_request`). `codec_problem` says why a payload
+  is no such layout ([constraints.md](constraints.md#codecs)), and
   `element_problem` why it is not the element an `encoding element` rule
   names, as `seanchai.elements` reads its document
   ([constraints.md](constraints.md#elements)).

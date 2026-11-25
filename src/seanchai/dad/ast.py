@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import enum
 import re
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import Annotated, Any, Literal
 
 import pydantic
@@ -61,6 +61,7 @@ __all__ = [
     "EnumValue",
     "EnumValueName",
     "EnumeratedAvp",
+    "EqualsRule",
     "ExcludeRule",
     "GroupedAvp",
     "InformationElements",
@@ -84,6 +85,7 @@ __all__ = [
     "Quote",
     "RangeRule",
     "Reading",
+    "Reference",
     "Registry",
     "RegistryColumn",
     "RegistryKind",
@@ -96,6 +98,7 @@ __all__ = [
     "ReusedAvps",
     "ReusedColumn",
     "ReusedTableColumn",
+    "Root",
     "Section",
     "SectionNumber",
     "SourceRef",
@@ -127,6 +130,10 @@ __all__ = [
     "is_reprint",
     "mark_column",
     "node_at",
+    "reads_request",
+    "references_of",
+    "request_prints",
+    "request_section",
     "section_sort_key",
     "spec_ref",
 ]
@@ -1554,14 +1561,40 @@ ValueRef = Annotated[
 ]
 
 
-class Condition(Node):
-    """What a predicate tests of another AVP in the same command or grouped
-    AVP: that it is present (`Foo`), that it holds a value (`Foo = 1`,
-    `Foo = TRUE`), or that a bit is set (`Foo bit 3`, `Foo bit "Trace Data
-    Withdrawal"`)."""
+class Root(enum.StrEnum):
+    """Where a path starts other than the block's scope.
 
-    avp: AvpName
-    value: ValueRef | None = None
+    - `request`: the request an answer answers, in a block scoped to an
+      answer command (`request/User-Name`): the members of the request's
+      printed body, which `; Request-Section:` names where the document
+      prints the request more than once for the application.
+    """
+
+    REQUEST = "request"
+
+
+class Reference(Node):
+    """An AVP a rule reads beside its own, by `path`: a member of the
+    block's command or grouped AVP (`Result-Code`), or with `root` a member
+    of another message (`request/Server-Assignment-Type`)."""
+
+    root: Root | None = None
+    path: Annotated[tuple[AvpName, ...], Field(min_length=1, max_length=1)]
+
+    @property
+    def avp(self) -> str:
+        """The AVP the path ends at."""
+        return self.path[-1]
+
+
+class Condition(Reference):
+    """What a predicate tests of an AVP the block's command or grouped AVP
+    holds, or with `root` of one the request holds: that it is present
+    (`Foo`), that it holds a value (`Foo = 1`, `Foo = TRUE`, or the value of
+    an AVP of the request, `Foo = request/Foo`), or that a bit is set (`Foo
+    bit 3`, `Foo bit "Trace Data Withdrawal"`)."""
+
+    value: ValueRef | Reference | None = None
     bit: ValueRef | None = None
 
     @pydantic.model_validator(mode="after")
@@ -1570,7 +1603,19 @@ class Condition(Node):
             raise ValueError(f"{self.avp}: a condition tests a value or a bit")
         if isinstance(self.bit, int) and self.bit < 0:
             raise ValueError(f"{self.avp}: bit {self.bit} is negative")
+        if isinstance(self.value, Reference) and self.value.root is None:
+            raise ValueError(
+                f"{self.avp}: a value read from another AVP starts at a root"
+            )
         return self
+
+    @property
+    def references(self) -> tuple[Reference, ...]:
+        """The AVPs the condition reads: its own, and the one its value is
+        read from."""
+        if isinstance(self.value, Reference):
+            return (self, self.value)
+        return (self,)
 
 
 class PredicateKind(enum.StrEnum):
@@ -1709,6 +1754,15 @@ class ValuesRule(Node):
         return self
 
 
+class EqualsRule(Node):
+    """`equals request/User-Name`: when the AVP and the one `reference` names
+    are both present, they hold the same value, octet for octet ("the same
+    as in the request")."""
+
+    kind: Literal["equals"] = "equals"
+    reference: Reference
+
+
 class TextOnly(Node):
     """`text-only`: a rule the quote states that no kind expresses, such as
     one depending on an earlier message, a negotiated feature or the
@@ -1728,17 +1782,35 @@ ConstraintRule = Annotated[
     | MembersRule
     | UniqueRule
     | ValuesRule
+    | EqualsRule
     | TextOnly,
     Field(discriminator="kind"),
 ]
 
 
 def conditions_of(rule: ConstraintRule) -> tuple[Condition, ...]:
-    """The conditions on siblings a rule tests: a predicate's or a `values`
-    rule's, none for another kind."""
+    """The conditions a rule tests: a predicate's or a `values` rule's, none
+    for another kind."""
     if isinstance(rule, PredicateRule | ValuesRule):
         return rule.conditions
     return ()
+
+
+def references_of(rule: ConstraintRule) -> tuple[Reference, ...]:
+    """Every AVP a rule reads beside its own: each condition's, the AVP a
+    condition's value is read from, and an `equals` rule's."""
+    if isinstance(rule, EqualsRule):
+        return (rule.reference,)
+    return tuple(
+        reference
+        for condition in conditions_of(rule)
+        for reference in condition.references
+    )
+
+
+def reads_request(rule: ConstraintRule) -> bool:
+    """Whether a rule reads an AVP of the request its answer answers."""
+    return any(each.root is Root.REQUEST for each in references_of(rule))
 
 
 class Quote(Node):
@@ -1775,9 +1847,13 @@ class InterpretedConstraints(Node):
     more than once for one application or for none) or `within`, a grouped
     AVP, scopes them to where the AVP appears there, and is where a
     predicate's conditions are looked up; with neither, the rules hold
-    wherever the document reads the AVP. `table` names the table
-    printing the quote, an information element's description. `versions` is
-    the range of document versions the quotes were checked against.
+    wherever the document reads the AVP. In a block scoped to an answer, a
+    path rooted at `request` reads the request the answer answers: the same
+    command code with the R bit, under the same application, printed at
+    `request_section` where the document prints it more than once there.
+    `table` names the table printing the quote, an information element's
+    description. `versions` is the range of document versions the quotes
+    were checked against.
 
     Only the document's interpretations file writes the block
     (`InterpretationBlock`, merged in as the corrections are applied), so
@@ -1790,6 +1866,7 @@ class InterpretedConstraints(Node):
     command: AvpName | None = None
     application_id: Unsigned32 | None = None
     command_section: SectionNumber | None = None
+    request_section: SectionNumber | None = None
     within: AvpName | None = None
     table: TableLabel | None = None
     source: SourceRef
@@ -1806,6 +1883,13 @@ class InterpretedConstraints(Node):
             raise ValueError("Application-ID chooses among a command's applications")
         if self.command_section is not None and self.command is None:
             raise ValueError("Command-Section chooses among a command's prints")
+        reading = any(
+            reads_request(rule) for rule in self.body if not isinstance(rule, Quote)
+        )
+        if self.request_section is not None and not reading:
+            raise ValueError("Request-Section names the request no rule reads")
+        if reading and self.command is None:
+            raise ValueError("a rule reads the request in a block scoped to no answer")
         if not isinstance(self.body[0], Quote):
             raise ValueError("the body opens with the quote its rules are read from")
         if isinstance(self.body[-1], Quote):
@@ -1882,6 +1966,52 @@ class Interpretations(Node):
                 raise ValueError(f"the id {each.id!r} names two blocks")
             seen.add(each.id)
         return self
+
+
+def request_prints(
+    sections: Iterable[Any], block: InterpretedConstraints
+) -> tuple[list[Message], list[Message]]:
+    """The prints among `sections` of the answer `block` is scoped to, and
+    of the requests of its command code under its application, those at
+    the block's `; Request-Section:` where it names one: what a path rooted
+    at `request` reads."""
+    messages = [section for section in sections if isinstance(section, Message)]
+    answers = [
+        message
+        for message in messages
+        if message.name == block.command
+        and CommandFlag.REQUEST not in message.flags
+        and block.application_id in (None, message.application_id)
+        and block.command_section in (None, message.source.section)
+    ]
+    requests = [
+        message
+        for message in messages
+        if CommandFlag.REQUEST in message.flags
+        and any(
+            message.command_code == answer.command_code
+            and message.application_id == answer.application_id
+            for answer in answers
+        )
+        and block.request_section in (None, message.source.section)
+    ]
+    return answers, requests
+
+
+def request_section(
+    sections: Iterable[Any], block: InterpretedConstraints
+) -> str | None:
+    """The clause of the request `block`'s rules read: the one it names,
+    else the request's one print under its answer's application; None where
+    no rule reads the request, or the document prints it not once there."""
+    if block.request_section is not None:
+        return block.request_section
+    if not any(
+        reads_request(rule) for rule in block.body if not isinstance(rule, Quote)
+    ):
+        return None
+    _, requests = request_prints(sections, block)
+    return requests[0].source.section if len(requests) == 1 else None
 
 
 def node_at(root: Node, path: TreePath) -> Any:

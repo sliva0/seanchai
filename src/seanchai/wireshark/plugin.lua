@@ -12,6 +12,10 @@
 --   seanchai.rule == "avp-missing"
 --   seanchai.document == "TS29.272"
 --   seanchai.cited == "TS29.061"  findings citing a document
+--   seanchai.request_missing     answers whose rules on the request went
+--                                unchecked, the request not in the capture
+--   seanchai.request_frame       the request an answer's findings were read
+--                                against
 --
 -- A post-dissector cannot add to the items Wireshark's Diameter dissector
 -- drew, so the findings are listed in the subtree, each on its AVP's octets
@@ -49,12 +53,17 @@ local fields = {
   cited = ProtoField.string("seanchai.cited", "Cited document"),
   url = ProtoField.string("seanchai.url", "Specification"),
   explorer = ProtoField.string("seanchai.explorer", "Explorer"),
+  request_missing = ProtoField.uint32("seanchai.request_missing",
+    "Rules on the request unchecked"),
+  request_frame = ProtoField.framenum("seanchai.request_frame", "Request",
+    base.NONE, frametype and frametype.REQUEST or nil),
 }
 proto.fields = {
   fields.command, fields.document, fields.section, fields.form, fields.errors,
   fields.warnings, fields.notes, fields.finding, fields.rule, fields.path,
   fields.element, fields.candidate,
   fields.corpus, fields.reference, fields.cited, fields.url, fields.explorer,
+  fields.request_missing, fields.request_frame,
 }
 
 local experts = {
@@ -83,6 +92,71 @@ proto.prefs.explorer_url = Pref.string("Explorer address", EXPLORER,
   .. " such links")
 
 local diameter = Field.new("diameter")
+-- The request frame Wireshark's own Diameter dissector pairs an answer with,
+-- by conversation, Hop-by-Hop and End-to-End identifiers.
+local answer_to = Field.new("diameter.answer_to")
+
+-- What the rules read of each request met (`core.request_values`), until
+-- its answer comes: by the request's frame and identifiers, as Wireshark
+-- pairs them, and by its endpoints and identifiers, for an answer Wireshark
+-- did not pair. Kept from the first pass, so a frame dissected again finds
+-- the request whatever the order; at most MAX_KEPT requests, the oldest
+-- dropped first, and cleared with each capture.
+local MAX_KEPT = 100000
+local kept_by_frame, kept_by_peer, kept_order, kept_first = {}, {}, {}, 1
+
+function proto.init()
+  kept_by_frame, kept_by_peer, kept_order, kept_first = {}, {}, {}, 1
+end
+
+-- The two endpoints, either way round, and the identifiers: an answer
+-- travels back the way its request came, or, captured at a relay, on.
+local function peer_key(pinfo, ids)
+  local one = tostring(pinfo.src) .. "/" .. tostring(pinfo.src_port)
+  local other = tostring(pinfo.dst) .. "/" .. tostring(pinfo.dst_port)
+  if other < one then
+    one, other = other, one
+  end
+  return one .. "|" .. other .. "|" .. ids
+end
+
+local function keep(pinfo, ids, values)
+  local frame = pinfo.number
+  local entry = { frame = frame, values = values }
+  kept_by_frame[frame] = kept_by_frame[frame] or {}
+  kept_by_frame[frame][ids] = entry
+  local peer = peer_key(pinfo, ids)
+  kept_by_peer[peer] = entry
+  kept_order[#kept_order + 1] = { frame = frame, ids = ids, peer = peer }
+  if #kept_order - kept_first + 1 > MAX_KEPT then
+    local oldest = kept_order[kept_first]
+    kept_order[kept_first] = nil
+    kept_first = kept_first + 1
+    local frames = kept_by_frame[oldest.frame]
+    if frames then
+      frames[oldest.ids] = nil
+    end
+    if kept_by_peer[oldest.peer] and kept_by_peer[oldest.peer].frame == oldest.frame then
+      kept_by_peer[oldest.peer] = nil
+    end
+  end
+end
+
+-- The request kept for an answer: the frame Wireshark pairs it with, else
+-- the last request between the same endpoints with its identifiers.
+local function kept_for(pinfo, ids, paired)
+  for _, frame in ipairs(paired) do
+    local frames = kept_by_frame[frame]
+    if frames and frames[ids] then
+      return frames[ids]
+    end
+  end
+  local entry = kept_by_peer[peer_key(pinfo, ids)]
+  if entry and entry.frame < pinfo.number then
+    return entry
+  end
+  return nil
+end
 
 local LABELS = { error = "Error", warn = "Warning", note = "Note" }
 
@@ -148,10 +222,25 @@ function proto.dissector(tvb, pinfo, tree)
     wildcard_notes = proto.prefs.wildcard_notes,
     explorer = proto.prefs.explorer_url,
   }
+  local paired = {}
+  for _, each in ipairs({ answer_to() }) do
+    paired[#paired + 1] = each.value
+  end
   local total_errors = 0
   for _, info in ipairs(pdus) do
     local range = info.range
-    local result = core.validate(RULES, range:bytes():raw(), prefs)
+    local bytes = range:bytes():raw()
+    -- The Hop-by-Hop and End-to-End identifiers, octets 13 to 20.
+    local ids = bytes:sub(13, 20)
+    local values = core.request_values(RULES, bytes)
+    if values and not pinfo.visited then
+      keep(pinfo, ids, values)
+    end
+    local request
+    if #bytes >= 20 and range:range(4, 1):uint() < 128 then
+      request = kept_for(pinfo, ids, paired)
+    end
+    local result = core.validate(RULES, bytes, prefs, request and request.values)
     local subtree = tree:add(proto, range)
     local counts = { error = 0, warn = 0, note = 0 }
     for _, each in ipairs(result.findings) do
@@ -172,6 +261,13 @@ function proto.dissector(tvb, pinfo, tree)
     if result.where then
       subtree:add(fields.form, clamp(range, 0, 0), result.where)
     end
+    if request then
+      subtree:add(fields.request_frame, clamp(range, 0, 0), request.frame)
+        :set_generated()
+    elseif result.request_unchecked and result.request_unchecked > 0 then
+      subtree:add(fields.request_missing, clamp(range, 0, 0), result.request_unchecked)
+        :set_generated()
+    end
     subtree:add(fields.errors, clamp(range, 0, 0), counts.error)
     subtree:add(fields.warnings, clamp(range, 0, 0), counts.warn)
     subtree:add(fields.notes, clamp(range, 0, 0), counts.note)
@@ -185,6 +281,9 @@ function proto.dissector(tvb, pinfo, tree)
       if each.element then
         -- The element another document defines, and where it was read.
         item:add(fields.element, at, each.element):set_generated()
+      end
+      if each.request and request then
+        item:add(fields.request_frame, at, request.frame):set_generated()
       end
       cite(item, at, each.reference)
       item:add_proto_expert_info(

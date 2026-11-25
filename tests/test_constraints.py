@@ -449,3 +449,73 @@ def test_the_plugin_reads_bits_as_python_does(lua, tmp_path):
         "ok" if constraints.check(rule, payload, data_type).holds else "no"
         for rule, payload, data_type in cases
     ]
+
+
+def _answer_rule(text: str) -> ast.ConstraintRule:
+    """One rule of a block scoped to an answer, which may read its request."""
+    spec = parser.parse(
+        "; Specification: 3GPP TS 29.999\n; Vendor-ID: 10415\n\n\n"
+        "; Type: Interpreted Constraints\n; AVP: Example\n"
+        "; Command: Example-Answer\n; Section: 7.3.1\n"
+        f'; Versions: *..*\n"Read."\n    {text}\n'
+    )
+    block = spec.sections[0]
+    assert isinstance(block, ast.InterpretedConstraints)
+    rule = block.body[1]
+    assert not isinstance(rule, ast.Quote)
+    return rule
+
+
+_FLAGS = constraints.Avp(
+    "Example-Flags", DataType.UNSIGNED32, struct.pack("!I", 2), bits={"Asked": 1}
+)
+_NAME = constraints.Avp("User-Name", DataType.UTF8_STRING, b"alice")
+
+
+@pytest.mark.parametrize(
+    ("text", "scope", "asked", "holds"),
+    [
+        ("present-if request/Example-Flags bit Asked", [], [_FLAGS], False),
+        ("present-if request/Example-Flags bit Asked", ["Example"], [_FLAGS], True),
+        ("present-if request/Example-Flags bit 0", [], [_FLAGS], True),
+        ("absent-if request/Example-Flags bit 1", ["Example"], [_FLAGS], False),
+        ("requires request/User-Name", ["Example"], [], False),
+        ("requires request/User-Name", ["Example"], [_NAME], True),
+        ("excludes request/Example-Flags = 2", ["Example"], [_FLAGS], False),
+        ("values 3 if request/Example-Flags = 2", ["Example"], [_FLAGS], False),
+        ("equals request/User-Name", ["User-Name"], [_NAME], True),
+        ("equals request/User-Name", ["Other"], [_NAME], False),
+        ("equals request/User-Name", ["Other"], [], True),
+    ],
+)
+def test_a_rule_on_the_request_holds_of_the_request_given(text, scope, asked, holds):
+    rule = _answer_rule(text)
+    payloads = {"User-Name": b"alice", "Other": b"bob", "Example": struct.pack("!I", 1)}
+    run = [
+        constraints.Avp(
+            "Example",
+            DataType.UTF8_STRING if name != "Example" else DataType.UNSIGNED32,
+            payloads[name],
+        )
+        for name in scope
+    ]
+    found = constraints.holds(rule, "Example", run, asked)
+    assert (found.holds, found.needs_request) == (holds, False), found
+    # With no request, it is not evaluated, and says so.
+    missing = constraints.holds(rule, "Example", run)
+    assert (missing.holds, missing.needs_request) == (None, True)
+
+
+def test_check_reads_a_rule_on_the_request_alone_against_the_request():
+    rule = _answer_rule("absent-if request/Example-Flags bit 1")
+    assert constraints.check(rule, b"x", DataType.OCTET_STRING).needs_request
+    broken = constraints.check(rule, b"x", DataType.OCTET_STRING, request=[_FLAGS])
+    assert broken == constraints.Check(
+        False, "not allowed with request/Example-Flags bit 1"
+    )
+    assert constraints.check(rule, b"x", DataType.OCTET_STRING, request=[]).holds
+    # A rule reading the answer's own AVPs too needs them: unknown.
+    both = _answer_rule("requires request/User-Name or Result-Code = 2001")
+    assert constraints.check(both, b"x", DataType.OCTET_STRING, request=[]) == (
+        constraints.Check(None)
+    )

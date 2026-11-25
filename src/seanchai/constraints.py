@@ -3,25 +3,31 @@
 
 `check` tells whether one rule holds of a payload, as the Wireshark plugin
 checks it: length, range, exclude, bits, every codec, and an `element` as
-far as the element registry (`seanchai.elements`) reads its document. A
-predicate, a `values`, `members` or `unique` rule needs the message around
-the AVP, an element the registry does not have or checks nothing of its
-document's layout, and `text-only` a reader, so `check` answers None for
-them: unknown, never a guess. docs/constraints.md#codecs gives each codec's
-clause, and docs/constraints.md#elements each element's.
+far as the element registry (`seanchai.elements`) reads its document.
+`holds` tells whether a predicate, a `values` or an `equals` rule holds of
+an AVP among the others of its run (`Avp`), and of the request its answer
+answers where the rule reads one; `check` does too where the request alone
+settles it, given the request. A rule reading the request with none given
+is not evaluated, `Check.needs_request`. A `members` or `unique` rule, an
+element the registry does not have or checks nothing of its document's
+layout, and `text-only` a reader, so both answer None for them: unknown,
+never a guess. docs/constraints.md#codecs gives each codec's clause, and
+docs/constraints.md#elements each element's.
 """
 
 from __future__ import annotations
 
+import dataclasses
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import NamedTuple
 
 from . import elements
-from .dad import ast
+from .dad import ast, formatter
 
 __all__ = [
     "CODEC_TYPES",
+    "Avp",
     "Check",
     "bits_problem",
     "bits_value",
@@ -32,6 +38,7 @@ __all__ = [
     "digit_count",
     "element_of",
     "element_problem",
+    "holds",
     "integer_bounds",
     "integer_value",
 ]
@@ -283,10 +290,148 @@ def bits_problem(
 
 class Check(NamedTuple):
     """Whether a rule holds of a payload: True, False with the reason, or
-    None where the payload alone cannot tell."""
+    None where the payload alone cannot tell; `needs_request` where that is
+    because the rule reads the request and none was given."""
 
     holds: bool | None
     reason: str | None = None
+    needs_request: bool = False
+
+
+_NEEDS_REQUEST = Check(None, "reads the request, which was not given", True)
+
+
+@dataclasses.dataclass(frozen=True)
+class Avp:
+    """An AVP of a message as `holds` reads it: its name and data type, its
+    payload, or a grouped AVP's `members`, and the numbers its values,
+    result codes and bits are named by, which a condition may name."""
+
+    name: str
+    data_type: ast.DataType | None = None
+    payload: bytes = b""
+    members: tuple[Avp, ...] = ()
+    values: Mapping[str, int] = dataclasses.field(default_factory=dict)
+    bits: Mapping[str, int] = dataclasses.field(default_factory=dict)
+
+
+def _reached(
+    reference: ast.Reference, scope: Sequence[Avp], request: Sequence[Avp] | None
+) -> list[Avp]:
+    """The AVPs `reference` names: of `scope`, or of the request's."""
+    run = request if reference.root is ast.Root.REQUEST else scope
+    return [avp for avp in run or () if avp.name == reference.avp]
+
+
+def _number(value: int | str, names: Mapping[str, int]) -> int | None:
+    return value if isinstance(value, int) else names.get(value)
+
+
+def _condition_holds(
+    condition: ast.Condition, scope: Sequence[Avp], request: Sequence[Avp] | None
+) -> bool | None:
+    """Whether `condition` holds: True, False, or None where a value it tests
+    cannot be read. An AVP it names is the first of its name, or any of the
+    request's."""
+    found = _reached(condition, scope, request)
+    if condition.root is None:
+        found = found[:1]
+    if not found:
+        return False
+    if isinstance(condition.value, ast.Reference):
+        others = {avp.payload for avp in _reached(condition.value, scope, request)}
+        return any(avp.payload in others for avp in found)
+    if condition.value is None and condition.bit is None:
+        return True
+    unknown = False
+    for avp in found:
+        value = (
+            None if avp.data_type is None else integer_value(avp.data_type, avp.payload)
+        )
+        wanted = (
+            _number(condition.value, avp.values)
+            if condition.value is not None
+            else None
+            if condition.bit is None
+            else _number(condition.bit, avp.bits)
+        )
+        if value is None or wanted is None:
+            unknown = True
+        elif value == wanted if condition.value is not None else value >> wanted & 1:
+            return True
+    return None if unknown else False
+
+
+def _any_holds(
+    conditions: Sequence[ast.Condition],
+    scope: Sequence[Avp],
+    request: Sequence[Avp] | None,
+) -> bool | None:
+    """Whether one of `conditions`, alternatives, holds."""
+    unknown = False
+    for condition in conditions:
+        found = _condition_holds(condition, scope, request)
+        if found:
+            return True
+        unknown = unknown or found is None
+    return None if unknown else False
+
+
+def holds(
+    rule: ast.ConstraintRule,
+    avp: str,
+    scope: Sequence[Avp],
+    request: Sequence[Avp] | None = None,
+) -> Check:
+    """Whether a predicate, a `values` or an `equals` rule on the AVP named
+    `avp` holds of `scope`, the run of AVPs holding it (its command's, or its
+    grouped AVP's members) and, for a rule reading the request, of
+    `request`, the request's AVPs. With no request, such a rule is not
+    evaluated (`needs_request`). Another kind is None: `check` reads it."""
+    if ast.reads_request(rule) and request is None:
+        return _NEEDS_REQUEST
+    subject = next((each for each in scope if each.name == avp), None)
+    match rule:
+        case ast.EqualsRule():
+            others = _reached(rule.reference, scope, request)
+            if subject is None or not others:
+                return Check(True)
+            if any(other.payload == subject.payload for other in others):
+                return Check(True)
+            text = formatter.reference(rule.reference)
+            return Check(False, f"not the value of {text}")
+        case ast.PredicateRule() | ast.ValuesRule():
+            met = _any_holds(rule.conditions, scope, request)
+        case _:
+            return Check(None)
+    said = " or ".join(formatter.condition(each) for each in rule.conditions)
+    match rule:
+        case ast.PredicateRule(kind=ast.PredicateKind.PRESENT_IF) if (
+            met and subject is None
+        ):
+            return Check(False, f"missing {avp}, required with {said}")
+        case ast.PredicateRule(
+            kind=ast.PredicateKind.ABSENT_IF | ast.PredicateKind.EXCLUDES
+        ) if met and subject is not None:
+            return Check(False, f"not allowed with {said}")
+        case ast.PredicateRule(kind=ast.PredicateKind.REQUIRES) if (
+            subject is not None and met is False
+        ):
+            return Check(False, f"not allowed without {said}")
+        case ast.ValuesRule() if met and subject is not None:
+            value = (
+                None
+                if subject.data_type is None
+                else integer_value(subject.data_type, subject.payload)
+            )
+            if value is None:
+                return Check(None)
+            if value not in rule.values:
+                listed = ", ".join(map(str, rule.values))
+                return Check(False, f"{value}, but only {listed} with {said}")
+    if met is None:
+        return Check(None)
+    return Check(True)
 
 
 def _within(count: int, low: int | None, high: int | None) -> bool:
@@ -308,9 +453,20 @@ def check(
     payload: bytes,
     data_type: ast.DataType,
     codec: ast.Codec | None = None,
+    request: Sequence[Avp] | None = None,
 ) -> Check:
     """Whether `rule` holds of an AVP's data `payload`, the AVP being of
-    `data_type` and, for a `digits` length, encoded as `codec`."""
+    `data_type` and, for a `digits` length, encoded as `codec`. A rule
+    reading only the request, and no other AVP of the AVP's own message, is
+    held to `request`, the request's AVPs, as `holds` holds it; with none
+    given it is not evaluated (`needs_request`)."""
+    if ast.reads_request(rule):
+        if request is None:
+            return _NEEDS_REQUEST
+        if all(each.root is ast.Root.REQUEST for each in ast.references_of(rule)):
+            own = Avp("", data_type, payload)
+            return holds(rule, "", (own,), request)
+        return Check(None)
     match rule:
         case ast.LengthRule(unit=ast.LengthUnit.OCTETS):
             count = len(payload)

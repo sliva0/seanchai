@@ -105,8 +105,12 @@ syn match dadConstraintQuote #^"\%([^"\\]\|\\["\\]\)*"\s*\%(;;.*\)\?$# contains=
 syn match dadQuote #^"\%([^"\\]\|\\["\\]\)*"# contained
 " The names in a constraint's rule, of a member, a sibling or a value (see
 " `dadConstraintRule`).
-syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadConstraintNumber,dadQuotedCell,dadComment
-syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|text-only\)\>" contained
+syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadConstraintNumber,dadQuotedCell,dadComment
+syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|text-only\)\>" contained
+" A path's root, the request an answer answers, and the `/` between its
+" names.
+syn match dadConstraintRoot "\s\@1<=request\ze/" contained
+syn match dadConstraintPath "/" contained
 syn match dadConstraintWord "\s\zs\%(or\|if\|bit\|at-most-one\|at-least-one\|set\|clear\|only\)\ze\s" contained
 syn match dadConstraintOp "\.\.\|\%(\s\|\.\.\)\@2<=\*\|\s\@1<==\ze\s" contained
 " A codec after `encoding`, a length's unit after its bounds.
@@ -231,6 +235,8 @@ hi def link dadCodec          Type
 hi def link dadUnit           Constant
 hi def link dadConstraintNumber Number
 hi def link dadConstraintName Identifier
+hi def link dadConstraintRoot Keyword
+hi def link dadConstraintPath Delimiter
 hi def link dadElementClause  Constant
 hi def link dadConstraintOp   Operator
 hi def link dadElementAvp     Identifier

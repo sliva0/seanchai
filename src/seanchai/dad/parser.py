@@ -1112,10 +1112,16 @@ _MEMBERS_RE = re.compile(
 _VALUES_RE = re.compile(
     r"^values (?P<values>-?[0-9]+(?:, -?[0-9]+)*) if (?P<conditions>.+)$"
 )
+# A path: AVP names joined by `/`, from the block's scope or a root
+# (`request/User-Name`). A value read from another AVP starts at a root, so
+# that a bare name stays a value's.
+_PATH = r"(?:(?:request)/)?[A-Za-z0-9][A-Za-z0-9_-]*"
+_ROOTED = r"(?:request)/[A-Za-z0-9][A-Za-z0-9_-]*"
 _CONDITION_RE = re.compile(
-    r"(?P<avp>[A-Za-z0-9][A-Za-z0-9_-]*)"
-    rf"(?: = (?P<value>{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
+    rf"(?P<path>{_PATH})"
+    rf"(?: = (?P<value>{_ROOTED}|{_NAME_OR_NUMBER})| bit (?P<bit>{_NAME_OR_NUMBER}))?"
 )
+_EQUALS_RE = re.compile(rf"^equals (?P<path>{_PATH})$")
 
 
 def _bound(text: str | None) -> int | None:
@@ -1140,6 +1146,20 @@ def _name_or_number(text: str | None) -> int | str | None:
     return text
 
 
+def _reference(text: str) -> ast.Reference:
+    """A path: its root, where it names one, and its names."""
+    names = text.split("/")
+    if names[0] in ast.Root:
+        return ast.Reference(root=ast.Root(names[0]), path=tuple(names[1:]))
+    return ast.Reference(path=tuple(names))
+
+
+def _value(text: str | None) -> int | str | ast.Reference | None:
+    if text is not None and re.fullmatch(_ROOTED, text):
+        return _reference(text)
+    return _name_or_number(text)
+
+
 def _conditions(text: str, lineno: int) -> tuple[ast.Condition, ...]:
     """Conditions joined by ` or `, each read at its own position so a quoted
     name may hold the word."""
@@ -1150,10 +1170,12 @@ def _conditions(text: str, lineno: int) -> tuple[ast.Condition, ...]:
         if match is None:
             raise DadParseError(lineno, f"malformed condition at {text[position:]!r}")
         with _validated(lineno):
+            path = _reference(match["path"])
             conditions.append(
                 ast.Condition(
-                    avp=match["avp"],
-                    value=_name_or_number(match["value"]),
+                    root=path.root,
+                    path=path.path,
+                    value=_value(match["value"]),
                     bit=_name_or_number(match["bit"]),
                 )
             )
@@ -1235,6 +1257,8 @@ def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
                 else ast.BitsRelation.AT_LEAST_ONE,
                 members=tuple(match["members"].split()),
             )
+        if match := _EQUALS_RE.match(text):
+            return ast.EqualsRule(reference=_reference(match["path"]))
         if match := _VALUES_RE.match(text):
             return ast.ValuesRule(
                 values=tuple(int(value) for value in match["values"].split(", ")),
@@ -1257,6 +1281,7 @@ def _parse_interpreted_constraints(
     command = directives.pop("Command", None)
     application_id = directives.pop("Application-ID", None)
     command_section = directives.pop("Command-Section", None)
+    request_section = directives.pop("Request-Section", None)
     within = directives.pop("Within", None)
     table = directives.pop("Table", None)
     versions = _pop(directives, "Versions", lineno)
@@ -1265,9 +1290,10 @@ def _parse_interpreted_constraints(
     number = None
     if application_id is not None:
         number = _number(application_id.value, application_id.lineno, "Application-ID")
-    if command_section is not None:
-        with _validated(command_section.lineno):
-            _SECTION_NUMBER.validate_python(command_section.value)
+    for section in (command_section, request_section):
+        if section is not None:
+            with _validated(section.lineno):
+                _SECTION_NUMBER.validate_python(section.value)
     if table is not None:
         with _validated(table.lineno):
             _INLINE_TEXT.validate_python(table.value)
@@ -1291,6 +1317,7 @@ def _parse_interpreted_constraints(
             command=None if command is None else command.value,
             application_id=number,
             command_section=None if command_section is None else command_section.value,
+            request_section=None if request_section is None else request_section.value,
             within=None if within is None else within.value,
             table=None if table is None else table.value,
             source=source,
@@ -1346,6 +1373,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Reprints": ("reprints",),
     "Command": ("command",),
     "Command-Section": ("command_section",),
+    "Request-Section": ("request_section",),
     "From": ("origin",),
     "AVP": ("avp",),
     "Kind": ("kind",),

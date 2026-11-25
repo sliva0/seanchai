@@ -14,6 +14,8 @@
 --   cites[n]        a place in one: document number, clause, page or false,
 --                   the table's label or false, and true for a clause the
 --                   corpus places nothing in, which the explorer cannot show
+--   requests[key]   for a request's "app:code", the identities its answer's
+--                   rules read (`M.request_values`)
 --   base[kind]      the RFC 6733 sections the header and format checks cite
 --   explorer        the explorer site's address, or nil (`--rules-only`
 --                   writes it; the plugin passes its preference instead)
@@ -435,8 +437,11 @@ end
 -- entry's number in the rules' `elements` (`element_problem`), a bits rule's
 -- relation `r` and bits `b`, a members rule's `r` and member identities `m`,
 -- a unique rule's member identity `i`, a predicate's `c`, conditions on
--- siblings {avp=identity, t=text, v=value or b=bit}, and a values rule's `v`
--- and `c`. Every finding is a note marked `interpreted`, citing its clause.
+-- siblings {avp=identity, t=text, v=value or b=bit or r=another AVP}, and a
+-- values rule's `v` and `c`, an equals rule's `r` and words `t`. A term has
+-- `q=true` where it names an AVP of the request the answer answers, and so
+-- does a rule reading one. Every finding is a note marked `interpreted`,
+-- citing its clause.
 
 -- A TBCD-string's decimal digits (TS 29.002 clause 17.7.8: the first digit in
 -- bits 1-4, "1111" filling the last octet's bits 5-8 after an odd count), or
@@ -889,25 +894,59 @@ local function check_constraints(ctx, avp, reading, path, scoped)
   end
 end
 
--- Whether a predicate's condition holds of a run's AVPs: `held[identity]`
--- the first AVP of that identity.
-local function condition_holds(ctx, held, condition)
-  local avp = held[condition.avp]
+-- The data of the AVPs a term {avp=identity, q=true for the request's} names:
+-- the run's first AVP of the identity (`held[identity]`), or every one of the
+-- request's (`ctx.request`, `M.request_values`).
+local function term_data(ctx, held, term)
+  if term.q then
+    return ctx.request and ctx.request[term.avp] or {}
+  end
+  local avp = held[term.avp]
   if not avp then
+    return {}
+  end
+  return { data_text(ctx.pdu, avp) }
+end
+
+-- Whether a predicate's condition holds of a run's AVPs: true, false, or nil
+-- where a value it tests cannot be read. A value read from another AVP (`r`)
+-- holds where the two have the same octets.
+local function condition_holds(ctx, held, condition)
+  local list = term_data(ctx, held, condition)
+  if #list == 0 then
+    return false
+  end
+  if condition.r then
+    for _, other in ipairs(term_data(ctx, held, condition.r)) do
+      for _, data in ipairs(list) do
+        if data == other then
+          return true
+        end
+      end
+    end
     return false
   end
   if condition.v == nil and condition.b == nil then
     return true
   end
   local reading = ctx.rules.avps[condition.avp]
-  local value = reading and integer_value(reading.type, data_text(ctx.pdu, avp))
-  if value == nil then
+  local unknown = false
+  for _, data in ipairs(list) do
+    local value = reading and integer_value(reading.type, data)
+    if value == nil then
+      unknown = true
+    elseif condition.v ~= nil then
+      if value == condition.v then
+        return true
+      end
+    elseif has(value, 2 ^ condition.b) then
+      return true
+    end
+  end
+  if unknown then
     return nil
   end
-  if condition.v ~= nil then
-    return value == condition.v
-  end
-  return has(value, 2 ^ condition.b)
+  return false
 end
 
 -- The conditions joined by "or", a bit of the AVP the one before names
@@ -944,7 +983,23 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
     local subject = identity and held[identity]
     for _, cons in ipairs(list) do
       for _, rule in ipairs(cons.rules) do
-        if rule.c then
+        local problem
+        if rule.q and not ctx.request then
+          -- Reads the request, which is not at hand: unchecked, said once
+          -- for the answer (`result.request_unchecked`).
+          ctx.request_unchecked = ctx.request_unchecked + 1
+        elseif rule.k == "equals" then
+          local others = term_data(ctx, held, rule.r)
+          if subject and #others > 0 then
+            local mine, same = data_text(ctx.pdu, subject), false
+            for _, other in ipairs(others) do
+              same = same or other == mine
+            end
+            if not same then
+              problem = "not the value of " .. rule.t
+            end
+          end
+        elseif rule.c then
           local any, unknown = false, false
           for _, condition in ipairs(rule.c) do
             local holds = condition_holds(ctx, held, condition)
@@ -954,7 +1009,6 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
               any = true
             end
           end
-          local problem
           local said = conditions_text(rule.c)
           if rule.k == "present-if" and any and not subject then
             problem = string.format("missing %s, required with %s", name, said)
@@ -980,12 +1034,18 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
               end
             end
           end
-          if problem and subject then
-            interpreted(ctx, cons, rule.k, problem, subject.offset, subject.length,
-              join(path, name), name)
-          elseif problem then
-            interpreted(ctx, cons, rule.k, problem, anchor[1], anchor[2], here, name)
-          end
+        end
+        local found
+        if problem and subject then
+          found = interpreted(ctx, cons, rule.k, problem, subject.offset,
+            subject.length, join(path, name), name)
+        elseif problem then
+          found = interpreted(ctx, cons, rule.k, problem, anchor[1], anchor[2], here,
+            name)
+        end
+        if found and rule.q then
+          -- Read against the request: the plugin links it.
+          found.request = true
         end
       end
     end
@@ -1447,8 +1507,10 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
 end
 
 -- One candidate: validates the message's AVPs against `body`.
-local function run(rules, prefs, pdu, avps, header_findings, form, anchor)
+local function run(rules, prefs, pdu, avps, header_findings, form, anchor, request)
   local ctx = {
+    request = request,
+    request_unchecked = 0,
     rules = rules,
     prefs = prefs,
     pdu = pdu,
@@ -1540,7 +1602,42 @@ local function find_candidates(rules, application, code, request)
   return nil, nil
 end
 
--- Validates one Diameter PDU, a string of its octets. Returns a table:
+-- What an answer's rules read of a request, kept from the request until its
+-- answer comes: the data of every AVP of an identity `rules.requests` lists
+-- for the request's "app:code" (or "*:code" for a command printed with no
+-- application), as {[identity]={data, ...}}, an empty list for one it lacks.
+-- Nil for an answer, a header too short, or a request no rule reads.
+function M.request_values(rules, pdu)
+  if #pdu < 20 or not rules.requests or not has(u8(pdu, 5), CMD_R) then
+    return nil
+  end
+  local code = u24(pdu, 6)
+  local application = u32(pdu, 9)
+  local avps = parse_avps(pdu, 20, math.min(u24(pdu, 2), #pdu), {}, nil, rules)
+  if application == RELAY then
+    application = relayed_application(pdu, avps) or application
+  end
+  local kept, any = {}, false
+  for _, key in ipairs({ application .. ":" .. code, "*:" .. code }) do
+    for _, identity in ipairs(rules.requests[key] or {}) do
+      kept[identity], any = {}, true
+    end
+  end
+  if not any then
+    return nil
+  end
+  for _, avp in ipairs(avps) do
+    local list = kept[avp.vendor .. ":" .. avp.code]
+    if list then
+      list[#list + 1] = data_text(pdu, avp)
+    end
+  end
+  return kept
+end
+
+-- Validates one Diameter PDU, a string of its octets, and for an answer
+-- `asked`, what `M.request_values` kept of the request it answers, nil where
+-- that is not at hand. Returns a table:
 --   command     the chosen candidate {name, abbreviation, document, section}
 --   reference   where the command is defined (`M.reference`), or nil
 --   form        "command", "answer-message" or nil when nothing matched
@@ -1554,7 +1651,10 @@ end
 --               abbreviation, "answer-message" or nil
 --   others      the other candidates, each {candidate, errors, warnings, notes}
 --   header      code, flags, application, length
-function M.validate(rules, pdu, prefs)
+--   request_unchecked  how many rules reading the request were left unchecked
+--               for want of it; a finding of one that was checked has
+--               `request` true
+function M.validate(rules, pdu, prefs, asked)
   prefs = prefs or {}
   local header_findings = {}
   local result = { findings = header_findings, others = {} }
@@ -1659,7 +1759,7 @@ function M.validate(rules, pdu, prefs)
   local best, best_ctx, best_score
   local runs = {}
   for _, form in ipairs(forms) do
-    local ctx = run(rules, prefs, pdu, avps, header_findings, form, { 5, 3 })
+    local ctx = run(rules, prefs, pdu, avps, header_findings, form, { 5, 3 }, asked)
     local errors, warnings, notes, interpreted = score(ctx.findings)
     runs[#runs + 1] = {
       form = form, ctx = ctx, errors = errors, warnings = warnings, notes = notes,
@@ -1722,6 +1822,7 @@ function M.validate(rules, pdu, prefs)
   end
 
   result.command = best.candidate
+  result.request_unchecked = best_ctx.request_unchecked
   result.form = best.form
   result.where = best.where
   result.label = best.label

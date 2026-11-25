@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from .. import constraints as checks
 from .. import elements
-from ..dad import ast
+from ..dad import ast, formatter
 from ._elements import _application_id, _grouped
 from ._findings import Finding, Severity
 from ._index import _Index
@@ -25,6 +25,7 @@ CONSTRAINT_RULES = frozenset(
         "constraint-value-unknown",
         "constraint-contradiction",
         "constraint-element-unknown",
+        "constraint-request-unknown",
     }
 )
 
@@ -149,6 +150,47 @@ def _body(
         grouped = _grouped(_documents(spec, block.within, cited), block.within)
         return (None if grouped is None else grouped.avps), None
     return None, None
+
+
+def _request_body(
+    spec: ast.Specification, block: ast.InterpretedConstraints
+) -> tuple[tuple[ast.AvpRule, ...] | None, str | None]:
+    """The printed body of the request `block`'s rules read, and why there
+    is none: the block's command is no answer, or the file prints no such
+    request, or several with no `; Request-Section:` choosing one."""
+    answers, requests = ast.request_prints(spec.sections, block)
+    if len(answers) != 1:
+        # The command itself is unknown or ambiguous: reported as such.
+        return None, None
+    answer = answers[0]
+    if block.request_section is not None and not requests:
+        return None, (
+            f"reads the request, which Request-Section names at clause"
+            f" {block.request_section}, where the file prints no request of"
+            f" {block.command}"
+        )
+    if not requests:
+        return None, (
+            f"reads the request of {block.command}, command {answer.command_code},"
+            " which the file does not print"
+        )
+    if len(requests) > 1:
+        sections = ", ".join(each.source.section for each in requests)
+        return None, (
+            f"reads the request of {block.command}, which the file prints at"
+            f" clauses {sections}; Request-Section names one"
+        )
+    return requests[0].avps, None
+
+
+def _is_request(spec: ast.Specification, block: ast.InterpretedConstraints) -> bool:
+    """Whether every print of the command `block` is scoped to is a request."""
+    found = [
+        section
+        for section in spec.sections
+        if isinstance(section, ast.Message) and section.name == block.command
+    ]
+    return bool(found) and all(ast.CommandFlag.REQUEST in each.flags for each in found)
 
 
 # Integer kinds a value or a bit can be read from.
@@ -330,10 +372,15 @@ def _constraints(
     conditions on that the file does not hold. `constraint-command-unknown`
     (error): a command the file does not print, or prints for several
     applications with no `; Application-ID:`. `constraint-not-member`
-    (error): an AVP the printed body of its command or grouped AVP does not
-    hold. `constraint-type-mismatch` (error): a rule no value of the AVP's
-    type can meet, as a range on an OctetString or a codec for another
-    type, or a condition testing a value or bit of an AVP that has none.
+    (error): an AVP, or one a rule reads, the printed body of its command or
+    grouped AVP does not hold, or a `request/` name the request's body does
+    not. `constraint-request-unknown` (error): a rule reading the request in
+    a block scoped to a request, or to an answer whose request the file
+    prints not once under its application with no `; Request-Section:`
+    choosing one. `constraint-type-mismatch` (error): a rule no value of the
+    AVP's type can meet, as a range on an OctetString or a codec for another
+    type, a condition testing a value or bit of an AVP that has none, or two
+    AVPs a rule compares of two types.
     `constraint-value-unknown` (error): a condition naming a value or bit
     the AVP's values, result codes or bit table do not name, and a default
     or bits rule naming a value or bit the AVP's own do not. A members rule
@@ -390,11 +437,12 @@ def _constraints(
         return facts[name]
 
     for block in blocks:
+        rules = [rule for rule in block.body if not isinstance(rule, ast.Quote)]
         conditions = [
-            condition
-            for rule in block.body
-            if not isinstance(rule, ast.Quote)
-            for condition in ast.conditions_of(rule)
+            condition for rule in rules for condition in ast.conditions_of(rule)
+        ]
+        references = [
+            reference for rule in rules for reference in ast.references_of(rule)
         ]
         listed = [
             name
@@ -404,7 +452,7 @@ def _constraints(
         ]
         names = dict.fromkeys(
             [block.avp, *([block.within] if block.within else [])]
-            + [condition.avp for condition in conditions]
+            + [reference.path[0] for reference in references]
             + listed
         )
         for name in names:
@@ -413,6 +461,18 @@ def _constraints(
         body, unknown = _body(spec, block, cited)
         if unknown is not None:
             found("constraint-command-unknown", block, unknown)
+        request: tuple[ast.AvpRule, ...] | None = None
+        if any(each.root is ast.Root.REQUEST for each in references):
+            if _is_request(spec, block):
+                found(
+                    "constraint-request-unknown",
+                    block,
+                    f"reads the request, but {block.command} is a request",
+                )
+            elif unknown is None:
+                request, problem = _request_body(spec, block)
+                if problem is not None:
+                    found("constraint-request-unknown", block, problem)
         if body is not None and block.avp in held:
             members = {rule.name for rule in body}
             if block.avp not in members:
@@ -422,14 +482,25 @@ def _constraints(
                     block,
                     f"the body of {where} does not hold {block.avp}",
                 )
-            for condition in conditions:
-                if condition.avp in held and condition.avp not in members:
+        for reference in dict.fromkeys(references):
+            first = reference.path[0]
+            if first not in held:
+                continue
+            if reference.root is ast.Root.REQUEST:
+                if request is not None and first not in {r.name for r in request}:
                     found(
                         "constraint-not-member",
                         block,
-                        f"a condition tests {condition.avp}, which the body of"
-                        f" {block.command or block.within} does not hold",
+                        f"a rule reads {formatter.reference(reference)}, which"
+                        " the body of the request does not hold",
                     )
+            elif body is not None and first not in {rule.name for rule in body}:
+                found(
+                    "constraint-not-member",
+                    block,
+                    f"a rule reads {first}, which the body of"
+                    f" {block.command or block.within} does not hold",
+                )
         if listed and block.avp in held:
             grouped = _grouped(_documents(spec, block.avp, cited), block.avp)
             members = set() if grouped is None else {rule.name for rule in grouped.avps}
@@ -471,7 +542,9 @@ def _constraints(
             if condition.avp not in held:
                 continue
             known = fact(condition.avp)
-            if condition.value is not None:
+            if condition.value is not None and not isinstance(
+                condition.value, ast.Reference
+            ):
                 if known.data_type is not None and known.data_type not in _INTEGERS:
                     found(
                         "constraint-type-mismatch",
@@ -511,6 +584,27 @@ def _constraints(
                         block,
                         f"{condition.avp} names no bit {condition.bit!r}",
                     )
+        # Two AVPs a rule compares hold values of one type.
+        pairs = [
+            (block.avp, rule.reference.avp)
+            for rule in rules
+            if isinstance(rule, ast.EqualsRule)
+        ] + [
+            (condition.avp, condition.value.avp)
+            for condition in conditions
+            if isinstance(condition.value, ast.Reference)
+        ]
+        for one, other in pairs:
+            if one not in held or other not in held:
+                continue
+            first, second = fact(one).data_type, fact(other).data_type
+            if first is not None and second is not None and first != second:
+                found(
+                    "constraint-type-mismatch",
+                    block,
+                    f"a rule compares {one}, of type {first}, with {other}, of"
+                    f" type {second}",
+                )
     # Rules on one AVP in one place: its blocks there, with those holding
     # wherever the document reads it.
     places: dict[tuple[str, str | None, int | None, str | None, str | None], list] = {}

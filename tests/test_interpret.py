@@ -79,13 +79,47 @@ _EVERY_RULE = _dad(
     "; Versions: 19.0.0",
     '"Unique."',
     "    unique",
+    "",
+    "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Non-3GPP-User-Data",
+    "; Command: Server-Assignment-Answer",
+    "; Request-Section: 8.2.2.3",
+    "; Section: 8.1.2.2.2.1",
+    "; Versions: 19.0.0",
+    '"As the request asked."',
+    "    present-if request/Server-Assignment-Type = REGISTRATION",
+    "    absent-if request/Emergency-Services bit Emergency-Indication",
+    "    requires request/QoS-Capability or Result-Code = request/Result-Code",
+    "    equals request/User-Name",
 )
 
 
 def test_every_rule_reads_and_writes_back():
     spec, comments = parser.parse_with_comments(_EVERY_RULE)
 
-    block, unique_block = spec.sections
+    block, unique_block, asked = spec.sections
+    assert isinstance(asked, ast.InterpretedConstraints)
+    assert asked.request_section == "8.2.2.3"
+    present, _, requires, equals = asked.readings[0].rules
+    assert present == ast.PredicateRule(
+        kind=ast.PredicateKind.PRESENT_IF,
+        conditions=(
+            ast.Condition(
+                root=ast.Root.REQUEST,
+                path=("Server-Assignment-Type",),
+                value="REGISTRATION",
+            ),
+        ),
+    )
+    assert isinstance(requires, ast.PredicateRule)
+    assert requires.conditions[1].value == ast.Reference(
+        root=ast.Root.REQUEST, path=("Result-Code",)
+    )
+    assert equals == ast.EqualsRule(
+        reference=ast.Reference(root=ast.Root.REQUEST, path=("User-Name",))
+    )
+    assert all(ast.reads_request(rule) for rule in asked.readings[0].rules)
     assert isinstance(block, ast.InterpretedConstraints)
     assert isinstance(unique_block, ast.InterpretedConstraints)
     assert unique_block.body[1:] == (ast.UniqueRule(),)
@@ -123,8 +157,8 @@ def test_every_rule_reads_and_writes_back():
         ast.ValuesRule(
             values=(1, 2),
             conditions=(
-                ast.Condition(avp="Monitoring-Type", value="UE_REACHABILITY"),
-                ast.Condition(avp="Flags", bit="A b"),
+                ast.Condition(path=("Monitoring-Type",), value="UE_REACHABILITY"),
+                ast.Condition(path=("Flags",), bit="A b"),
             ),
         ),
     )
@@ -257,6 +291,35 @@ def test_every_rule_reads_and_writes_back():
             "missing directive 'Versions'",
             id="versions",
         ),
+        pytest.param(
+            _block(
+                '"Q."',
+                "    range 1",
+                scope=("; Command: Example-Answer", "; Request-Section: 6.1.1"),
+            ),
+            6,
+            "Request-Section names the request no rule reads",
+            id="request-section-unread",
+        ),
+        pytest.param(
+            _block(
+                '"Q."',
+                "    requires request/Example-Flags",
+                scope=("; Within: Example-Group",),
+            ),
+            6,
+            "reads the request in a block scoped to no answer",
+            id="request-within",
+        ),
+        pytest.param(
+            _block('"Q."', "    requires Example = Other/Flags"),
+            11,
+            "malformed condition",
+            id="value-from-unrooted",
+        ),
+        pytest.param(
+            _block('"Q."', "    equals"), 11, "malformed rule", id="equals-bare"
+        ),
     ],
 )
 def test_a_malformed_block_is_refused_at_its_line(text, lineno, fact):
@@ -352,7 +415,7 @@ def test_an_interpretations_file_reads_and_writes_back():
             ast.Quote(text="Only with the flag."),
             ast.PredicateRule(
                 kind=ast.PredicateKind.REQUIRES,
-                conditions=(ast.Condition(avp="Example-Flags", bit=0),),
+                conditions=(ast.Condition(path=("Example-Flags",), bit=0),),
             ),
         ),
     )
@@ -1072,3 +1135,159 @@ def test_the_linter_asks_a_command_printed_twice_for_its_clause():
         "Example-Flags in Example-Request: names command Example-Request at"
         " clause 6.1.3, which the file does not print there"
     ]
+
+
+_ASKED = _dad(
+    "; Type: Message",
+    "; Name: Example-Request, EXR",
+    "; Section: 6.1.1",
+    "<Example-Request> ::= < Diameter Header: 9, REQ, 99 >",
+    "        < Session-Id >",
+    "        [ Example-Flags ]",
+    "        [ Example-Text ]",
+    "",
+    "",
+    "; Type: Message",
+    "; Name: Example-Answer, EXA",
+    "; Section: 6.1.2",
+    "<Example-Answer> ::= < Diameter Header: 9, 99 >",
+    "        < Session-Id >",
+    "        [ Example-Number ]",
+    "        [ Example-Flags ]",
+    "",
+    "",
+    "; Type: AVP Table",
+    "; Section: 6.3.1",
+    "; Columns: Name Code Section Type Must",
+    "Example-Number 1 6.3.2 OctetString V",
+    "Example-Flags 2 6.3.4 Unsigned32 V",
+    "Example-Text 5 6.3.7 UTF8String V",
+)
+
+
+def _asked(*scope_and_rules: str, twice: bool = False) -> list[tuple[str, str]]:
+    from seanchai import linter
+
+    scope = [line for line in scope_and_rules if line.startswith(";")]
+    rules = [line for line in scope_and_rules if not line.startswith(";")]
+    again = (
+        [
+            "",
+            "",
+            "; Type: Message",
+            "; Name: Example-Request, EXR",
+            "; Section: 6.1.3",
+            "<Example-Request> ::= < Diameter Header: 9, REQ, 99 >",
+            "        < Session-Id >",
+        ]
+        if twice
+        else []
+    )
+    text = _ASKED + "\n".join(
+        (
+            *again,
+            "",
+            "",
+            "; Type: Interpreted Constraints",
+            "; AVP: Example-Number",
+            *scope,
+            "; Section: 6.3.2",
+            "; Versions: 19.0.0",
+            '"Q."',
+            *rules,
+            "",
+        )
+    )
+    return sorted(
+        (finding.rule, finding.message)
+        for finding in linter.lint(parser.parse(text))
+        if finding.rule.startswith("constraint-")
+    )
+
+
+def test_the_linter_holds_a_rule_on_the_request_to_the_answers_request():
+    answer = "; Command: Example-Answer"
+    assert _asked(answer, "    requires request/Example-Flags bit 0") == []
+    assert _asked(answer, "    equals request/Example-Text") == [
+        (
+            "constraint-type-mismatch",
+            "Example-Number in Example-Answer: a rule compares Example-Number,"
+            " of type OctetString, with Example-Text, of type UTF8String",
+        )
+    ]
+    assert _asked(answer, "    requires request/Example-Number") == [
+        (
+            "constraint-not-member",
+            "Example-Number in Example-Answer: a rule reads"
+            " request/Example-Number, which the body of the request does not hold",
+        )
+    ]
+    assert _asked(
+        "; Command: Example-Request", "    requires request/Example-Flags"
+    ) == [
+        (
+            "constraint-not-member",
+            "Example-Number in Example-Request: the body of Example-Request does"
+            " not hold Example-Number",
+        ),
+        (
+            "constraint-request-unknown",
+            "Example-Number in Example-Request: reads the request, but"
+            " Example-Request is a request",
+        ),
+    ]
+    assert _asked(answer, "    requires request/Example-Flags", twice=True) == [
+        (
+            "constraint-request-unknown",
+            "Example-Number in Example-Answer: reads the request of"
+            " Example-Answer, which the file prints at clauses 6.1.1, 6.1.3;"
+            " Request-Section names one",
+        )
+    ]
+    chosen = (answer, "; Request-Section: 6.1.1", "    requires request/Example-Flags")
+    assert _asked(*chosen, twice=True) == []
+    assert _asked(
+        answer, "; Request-Section: 6.1.9", "    requires request/Example-Flags"
+    ) == [
+        (
+            "constraint-request-unknown",
+            "Example-Number in Example-Answer: reads the request, which"
+            " Request-Section names at clause 6.1.9, where the file prints no"
+            " request of Example-Answer",
+        )
+    ]
+
+
+def test_the_model_resolves_the_request_an_answers_rules_read(tmp_path):
+    from seanchai import dictionary
+    from seanchai.corpus import Corpus
+    from seanchai.model import HolePolicy, Model
+
+    text = _ASKED + "\n".join(
+        (
+            "",
+            "",
+            "; Type: Interpreted Constraints",
+            "; AVP: Example-Number",
+            "; Command: Example-Answer",
+            "; Section: 6.3.2",
+            "; Versions: 19.0.0",
+            '"Q."',
+            "    present-if request/Example-Flags bit 0",
+            "",
+        )
+    )
+    (tmp_path / "29999-j00.dad").write_text(text, "utf-8")
+    built = Model.build(Corpus.load(tmp_path), holes=HolePolicy.ANY)
+    (constraint,) = built.constraints("TS29.999")
+    assert constraint.request_section == "6.1.1"
+    output = dictionary.build(built, documents=["TS29.999"], application_ids=[99])
+    answer = next(c for c in output.applications[0].commands if not c.is_request)
+    (scoped,) = answer.constraints
+    assert scoped.request_section == "6.1.1"
+    (condition,) = scoped.readings[0].rules[0].conditions
+    assert (condition.root, condition.path, condition.bit) == (
+        "request",
+        ("Example-Flags",),
+        0,
+    )

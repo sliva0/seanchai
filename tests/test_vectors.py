@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+from seanchai_corpus import CORPUS_DIR
 
 from seanchai import dictionary, vectors, wireshark
 from seanchai.cli import main
@@ -132,8 +133,9 @@ local function unhex(text)
   return (text:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end))
 end
 for line in io.lines(arg[3]) do
-  local pin, octets = line:match("^(%S+)\\t(%x+)$")
-  local result = core.validate(rules, unhex(octets), { pin = pin })
+  local pin, octets, request = line:match("^(%S+)\\t(%x+)\\t(%x*)$")
+  local values = request ~= "" and core.request_values(rules, unhex(request)) or nil
+  local result = core.validate(rules, unhex(octets), { pin = pin }, values)
   local parts = { result.command and result.command.document or "-" }
   for _, each in ipairs(result.findings) do
     parts[#parts + 1] = each.severity .. " " .. each.rule
@@ -160,7 +162,12 @@ def checked(built, tmp_path_factory):
         v for v in _vectors(built, *_APPLICATIONS).vectors if v.document not in obsolete
     ]
     lines = work / "vectors.txt"
-    lines.write_text("".join(f"{v.document}\t{v.octets}\n" for v in kept))
+    lines.write_text(
+        "".join(
+            f"{v.document}\t{v.octets}\t{v.request.octets if v.request else ''}\n"
+            for v in kept
+        )
+    )
     runner = work / "runner.lua"
     runner.write_text(_RUNNER, "utf-8")
     return kept, rules, lines, runner
@@ -253,7 +260,9 @@ def test_tshark_reads_the_capture_as_the_core_does(s6a, tmp_path):
     errors = [
         int(line.split("\t")[0]) for line in shown.stdout.splitlines() if line.strip()
     ]
-    assert len(errors) == len(s6a.vectors)
+    # An answer's request is a frame of its own, just before it.
+    paired = sum(1 for v in s6a.vectors if v.request is not None)
+    assert len(errors) == len(s6a.vectors) + paired
     failing = [v for v in s6a.vectors if any(e.severity == "error" for e in v.expected)]
     assert sum(1 for count in errors if count) == len(failing)
     # A breach of an interpreted rule is expert info of its own, a note.
@@ -286,3 +295,230 @@ def test_tshark_reads_the_capture_as_the_core_does(s6a, tmp_path):
     # PI_NOTE among the frame's expert infos, which Wireshark's own Diameter
     # dissector adds to.
     assert all(str(0x00400000) in line.split(",") for line in lines)
+
+
+# A document whose answer's rules read the request it answers, one of each
+# form: a bit of a request's flags, a request's AVP present, and an echo.
+_ASKED = """\
+; Specification: 3GPP TS 29.999
+; Version: 19.0.0
+; Vendor-ID: 10415
+; Bases: RFC6733
+
+
+; Type: Message
+; Name: Example-Request, EXR
+; Section: 6.1.1
+<Example-Request> ::= < Diameter Header: 9, REQ, PXY, 16777999 >
+        < Session-Id >
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        { Destination-Realm }
+        [ Example-Flags ]
+        [ Example-Id ]
+        *[ AVP ]
+
+
+; Type: Message
+; Name: Example-Answer, EXA
+; Section: 6.1.2
+<Example-Answer> ::= < Diameter Header: 9, PXY, 16777999 >
+        < Session-Id >
+        { Auth-Session-State }
+        { Origin-Host }
+        { Origin-Realm }
+        [ Result-Code ]
+        [ Example-Id ]
+        [ Example-Report ]
+        [ Example-Data ]
+        [ Example-Kept ]
+        *[ AVP ]
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Report
+; Command: Example-Answer
+; Section: 6.1.2
+; Versions: 19.0.0
+"It is present if the request asks for it."
+    present-if request/Example-Flags bit 0
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Data
+; Command: Example-Answer
+; Section: 6.1.2
+; Versions: 19.0.0
+"It is absent if the request withholds it."
+    absent-if request/Example-Flags bit 1
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Kept
+; Command: Example-Answer
+; Section: 6.1.2
+; Versions: 19.0.0
+"It is sent only if the request carried an identity."
+    requires request/Example-Id
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Id
+; Command: Example-Answer
+; Section: 6.1.2
+; Versions: 19.0.0
+"It is the request's."
+    equals request/Example-Id
+
+
+; Type: AVP Table
+; Section: 6.3.1
+; Columns: Name     Code   Section   Type          Must
+Example-Flags       1      6.3.2     Unsigned32    M,V
+Example-Id          2      6.3.3     UTF8String    M,V
+Example-Report      3      6.3.4     OctetString   M,V
+Example-Data        4      6.3.5     OctetString   M,V
+Example-Kept        5      6.3.6     OctetString   M,V
+"""
+
+
+@pytest.fixture(scope="module")
+def asked(tmp_path_factory):
+    """Vectors, rules and a plugin for `_ASKED` beside RFC 6733."""
+    work = tmp_path_factory.mktemp("asked")
+    shutil.copy(CORPUS_DIR / "rfc" / "rfc6733.dad", work / "rfc6733.dad")
+    (work / "29999-j00.dad").write_text(_ASKED, "utf-8")
+    options = ["--corpus", str(work), "--application", "16777999"]
+    for command in (
+        [
+            "vectors",
+            *options,
+            "-o",
+            str(work / "v.json"),
+            "--pcap",
+            str(work / "v.pcap"),
+        ],
+        ["wireshark-plugin", *options, "--rules-only", "-o", str(work / "rules.lua")],
+        ["wireshark-plugin", *options, "-o", str(work / "plugin.lua")],
+    ):
+        done = CliRunner().invoke(main, command)
+        assert done.exit_code == 0, done.output
+    found = vectors.Vectors.model_validate_json((work / "v.json").read_text("utf-8"))
+    return work, found
+
+
+def test_an_answer_reading_its_request_is_sent_with_it(asked):
+    _, found = asked
+    paired = {v.id: v for v in found.vectors if v.request is not None}
+    # Each rule reading the request: a valid pair and a pair breaking it.
+    for kind, name in (
+        ("present-if", "Example-Report"),
+        ("absent-if", "Example-Data"),
+        ("requires", "Example-Kept"),
+        ("equals", "Example-Id"),
+    ):
+        valid = paired[f"16777999/EXA/maximal/request/{kind}/{name}/6.1.2"]
+        broken = paired[f"16777999/EXA/negative/constraint-{kind}/{name}/6.1.2"]
+        assert valid.expected == ()
+        assert broken.expected == (
+            vectors.Expected(rule=f"constraint-{kind}", severity="note"),
+        )
+    # A pair shares its identifiers, which no other vector's are.
+    identifiers = [bytes.fromhex(v.octets)[12:20] for v in found.vectors]
+    assert len(set(identifiers)) == len(identifiers)
+    for vector in paired.values():
+        assert vector.request is not None
+        request = bytes.fromhex(vector.request.octets)
+        assert (
+            request[4] & 0x80 and request[12:20] == bytes.fromhex(vector.octets)[12:20]
+        )
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_core_reads_an_answer_against_its_request(lua, asked):
+    work, found = asked
+    lines = work / "lines.txt"
+    lines.write_text(
+        "".join(
+            f"{v.document}\t{v.octets}\t{v.request.octets if v.request else ''}\n"
+            for v in found.vectors
+        )
+    )
+    runner = work / "runner.lua"
+    runner.write_text(_RUNNER, "utf-8")
+    done = subprocess.run(
+        [lua, str(runner), str(CORE), str(work / "rules.lua"), str(lines)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    for vector, line in zip(found.vectors, done.stdout.splitlines(), strict=True):
+        _, *reported = line.split("\t")
+        assert sorted(reported) == sorted(
+            f"{e.severity} {e.rule}" for e in vector.expected
+        ), vector.id
+
+
+def _shown(plugin: Path, capture: Path, *fields: str) -> list[list[str]]:
+    shown = subprocess.run(
+        [
+            "tshark",
+            "-n",
+            "-r",
+            str(capture),
+            "-X",
+            f"lua_script:{plugin}",
+            "-T",
+            "fields",
+            *(arg for field in fields for arg in ("-e", field)),
+            "-Y",
+            "seanchai and diameter.flags.request == 0",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "Lua" not in shown.stderr, shown.stderr
+    return [line.split("\t") for line in shown.stdout.splitlines()]
+
+
+@pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")
+def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_path):
+    work, found = asked
+    answers = [v for v in found.vectors if not v.is_request]
+    rows = _shown(
+        work / "plugin.lua",
+        work / "v.pcap",
+        "frame.number",
+        "seanchai.request_frame",
+        "seanchai.request_missing",
+        "seanchai.rule",
+    )
+    assert len(rows) == len(answers)
+    for vector, (frame, request, missing, rules) in zip(answers, rows, strict=True):
+        assert sorted(filter(None, rules.split(","))) == sorted(
+            e.rule for e in vector.expected
+        ), vector.id
+        if vector.request is not None:
+            # The request is the frame before; each finding links it too.
+            assert set(request.split(",")) == {str(int(frame) - 1)}
+            assert missing == ""
+    # Without the requests, the answers' rules on them go unchecked, said
+    # once per answer, and no finding of them is reported.
+    alone = vectors.Vectors.model_validate(
+        {
+            **found.model_dump(),
+            "vectors": [
+                {**v.model_dump(), "request": None} for v in answers if v.request
+            ],
+        }
+    )
+    capture = tmp_path / "alone.pcap"
+    capture.write_bytes(vectors.pcap(alone))
+    rows = _shown(
+        work / "plugin.lua", capture, "seanchai.request_missing", "seanchai.rule"
+    )
+    assert rows and all(missing == "4" for missing, _ in rows)
+    assert not any(rule.startswith("constraint-") for _, rule in rows)

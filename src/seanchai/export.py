@@ -54,6 +54,7 @@ from .export_schema import (
     ConstraintCondition,
     ConstraintQuote,
     ConstraintReading,
+    ConstraintReference,
     ConstraintRule,
     Document,
     DocumentSummary,
@@ -619,6 +620,11 @@ def _blocks(
             fields["interpreted"] = True
             fields["avp_target"] = links.names.get(section.avp)
             fields["readings"] = _constraint_readings(placed, index, section)
+            requested = ast.request_section(spec.sections, section)
+            if requested is not None:
+                fields["request_target"] = Target(
+                    document=document_id(links.entry), section=requested
+                )
         elif not isinstance(section, ast.AvpTable | ast.ReusedAvps | ast.Registry):
             fields["name"] = getattr(section, "name", None)
         if isinstance(section, _RULED):
@@ -677,6 +683,22 @@ def _blocks(
     return tuple(blocks)
 
 
+def _reference(each: ast.Reference) -> ConstraintReference:
+    return ConstraintReference(
+        root=None if each.root is None else each.root.value, path=each.path
+    )
+
+
+def _condition(each: ast.Condition) -> ConstraintCondition:
+    value = each.value
+    return ConstraintCondition(
+        root=None if each.root is None else each.root.value,
+        path=each.path,
+        value=_reference(value) if isinstance(value, ast.Reference) else value,
+        bit=each.bit,
+    )
+
+
 def _constraint_readings(
     placed: _Placed, index: int, section: ast.InterpretedConstraints
 ) -> tuple[ConstraintReading, ...]:
@@ -711,10 +733,7 @@ def _constraint_readings(
                     "element_entry": _json.element_entry(node),
                 }
             case ast.PredicateRule():
-                fields["conditions"] = tuple(
-                    ConstraintCondition(avp=each.avp, value=each.value, bit=each.bit)
-                    for each in node.conditions
-                )
+                fields["conditions"] = tuple(map(_condition, node.conditions))
             case ast.DefaultRule():
                 fields["value"] = node.value
             case ast.BitsRule():
@@ -723,10 +742,9 @@ def _constraint_readings(
                 fields |= {"relation": node.relation, "members": node.members}
             case ast.ValuesRule():
                 fields["values"] = node.values
-                fields["conditions"] = tuple(
-                    ConstraintCondition(avp=each.avp, value=each.value, bit=each.bit)
-                    for each in node.conditions
-                )
+                fields["conditions"] = tuple(map(_condition, node.conditions))
+            case ast.EqualsRule():
+                fields["reference"] = _reference(node.reference)
             case ast.UniqueRule() | ast.TextOnly():
                 pass
         rules.append(ConstraintRule(**fields))

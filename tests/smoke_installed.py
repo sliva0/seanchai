@@ -45,7 +45,7 @@ assert all(item["reason"] for item in reasons.values()), reasons
 
 # The plugin's Lua comes with the library: its checks and its Wireshark side.
 plugin = wireshark.generate(books, application_ids=[0]).text
-assert "function M.validate(rules, pdu, prefs)" in plugin, "core.lua is missing"
+assert "function M.validate(rules, pdu, prefs, asked)" in plugin, "core.lua is missing"
 assert "register_postdissector(proto)" in plugin, "plugin.lua is missing"
 assert wireshark.EXPLORER_LINE.findall(plugin) == [wireshark.EXPLORER]
 assert wireshark.VERSIONS_LINE.findall(plugin) == [

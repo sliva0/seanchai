@@ -95,14 +95,45 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   a member of the command or grouped AVP holding it; the predicates tying a
   member's presence to its siblings (`constraint-present-if`, `-absent-if`,
   `-requires`, `-excludes`), a value a sibling's condition restricts
-  (`constraint-values`), and a member two grouped AVPs beside each other
+  (`constraint-values`), an answer's AVP echoing the request's
+  (`constraint-equals`), and a member two grouped AVPs beside each other
   hold with one value (`constraint-unique`). An element the registry has no
   entry for or checks nothing of is not checked, `text-only` not at all, and
   a rule naming a value or bit no table numbers is left out.
+- An answer's rules on the request it answers
+  ([constraints.md](constraints.md#the-block)), against that request where
+  the capture holds it ([Requests](#requests)).
 
 It cannot check what the documents say only in prose and no one has read as
-a constraint, what depends on negotiated features, or anything across
-messages.
+a constraint, what depends on negotiated features, or anything across more
+than a request and its answer.
+
+## Requests
+
+A rule of an answer may read the request it answers (`request/` in
+[grammar.md](grammar.md#interpreted-constraints)). The plugin keeps, of
+each request it meets, the data of the AVPs some loaded rule reads of that
+command's requests, and nothing of a request no rule reads; the generated
+rules list them per application and command code (`requests` in the rules).
+
+- An answer is paired with the request Wireshark's own Diameter dissector
+  pairs it with (`diameter.answer_to`, by conversation, Hop-by-Hop and
+  End-to-End identifiers), and among that frame's PDUs the one with the
+  answer's identifiers. Where Wireshark pairs none, it takes the last
+  request before it between the same two endpoints, either way round, with
+  the same identifiers.
+- Requests are kept from the first pass, so a frame dissected again in any
+  order, or an answer the second pass of `tshark -2` sees before its
+  request, finds its request. A request retransmitted with the T bit, or
+  seen twice on two links, is kept once per frame; the pairing picks one.
+- At most 100,000 requests are kept, the oldest dropped first, and the
+  store is cleared with each capture.
+- An answer whose request the capture does not hold, or whose rules read a
+  request that was dropped, leaves those rules unchecked: no finding, and
+  `seanchai.request_missing` on the message's subtree counts them, once per
+  answer, for a display filter. An answer read against its request has
+  `seanchai.request_frame` on its subtree and under each finding of a rule
+  on the request, linking that frame.
 
 ## Findings
 
@@ -292,6 +323,8 @@ the two lines.
 | `seanchai.cited`     | that document, as `TS29.061`                          |
 | `seanchai.url`       | the publisher's copy at that place                    |
 | `seanchai.explorer`  | the explorer site at that clause                      |
+| `seanchai.request_frame` | the request an answer was read against            |
+| `seanchai.request_missing` | how many rules on the request went unchecked, the request not in the capture |
 
 The findings are expert info too ([Findings](#findings)).
 
@@ -304,5 +337,7 @@ line rewritten. `tests/test_vectors.py` runs it over the
 [test messages](consumers.md#test-messages) of eight applications, each
 pinned to its document: every valid one draws no error, warning or note of an
 interpreted rule and every negative one exactly the finding it expects, an
-interpreted rule's as `seanchai.interpreted` under tshark. Both skip what is
-not installed.
+interpreted rule's as `seanchai.interpreted` under tshark, and a synthetic
+document's request and answer pairs, each answer read against its request
+in the core and paired by the plugin in a capture, and left unchecked
+without it. Both skip what is not installed.

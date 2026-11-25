@@ -18,7 +18,7 @@ not a candidate.
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -564,6 +564,8 @@ def _constraint(
     names: _Names,
     siblings: dict[str, str],
     subject: dictionary.Avp | None = None,
+    request: dict[str, str] | None = None,
+    needed: set[str] | None = None,
 ) -> str | None:
     """A constraint as `{at=n, rules={...}}`, each rule `{k=kind, ...}`:
     `u`, `lo`, `hi` for a length, `lo` and `hi` for a range, `v` for exclude,
@@ -572,14 +574,16 @@ def _constraint(
     `r` and `m` for a members rule's relation and the identities of the
     members it names, `i` for a unique rule's member identity, `c` for a
     predicate's conditions, and `v` and `c` for a values rule, each condition
-    `{avp=, t=, v=}` (a value) or `{avp=, t=, b=}` (a bit) or `{avp=, t=}`
-    (present). `siblings` maps a member name to its reading's id, where the
-    scope has members; `subject` is the AVP's own reading where the caller
-    knows it, else its sibling's. A condition's `t` is as the file spells
-    it. A predicate whose names do not resolve, an `element` the registry
-    does not have or checks nothing of, a `default` and `text-only` are left
-    out: what the plugin cannot check it does not report. None for a
-    constraint left with no rule."""
+    as `_condition` writes it, `r` for an `equals` rule's AVP, and `q=true`
+    on a rule reading the request. `siblings` maps a member name to its
+    reading's id, where the scope has members, and `request` a member of
+    the request the constraint reads, whose identities `needed` collects;
+    `subject` is the AVP's own reading where the caller knows it, else its
+    sibling's. A condition's `t` is as the file spells it. A predicate whose
+    names do not resolve, an `element` the registry does not have or checks
+    nothing of, a `default` and `text-only` are left out: what the plugin
+    cannot check it does not report. None for a constraint left with no
+    rule."""
     if subject is None and constraint.avp in siblings:
         subject = names.avps.get(siblings[constraint.avp])
     rules = []
@@ -648,44 +652,41 @@ def _constraint(
                     rules.append(
                         f"{{k='unique',i={lua_string(sibling.partition('@')[0])}}}"
                     )
+            elif kind == "equals":
+                assert rule.reference is not None
+                term = _term(rule.reference, siblings, request, needed)
+                if term is not None:
+                    said = lua_string(
+                        formatter.reference(_ast_reference(rule.reference))
+                    )
+                    rules.append(
+                        f"{{k='equals',r={term},t={said}"
+                        f"{',q=true' if rule.reference.root else ''}}}"
+                    )
             elif kind != "text-only":
                 conditions = []
                 for condition in rule.conditions:
-                    sibling = siblings.get(condition.avp)
-                    if condition.value is not None:
-                        number = names.value(sibling, condition.avp, condition.value)
-                        test = None if number is None else f"v={number}"
-                    elif condition.bit is not None:
-                        number = names.bit(sibling, condition.bit)
-                        test = None if number is None else f"b={number}"
-                    else:
-                        test = ""
-                    if sibling is None or test is None:
+                    found = _condition(condition, siblings, request, needed, names)
+                    if found is None:
                         break
-                    said = formatter.constraint_rule(
-                        ast.PredicateRule(
-                            kind=ast.PredicateKind.REQUIRES,
-                            conditions=(
-                                ast.Condition(
-                                    avp=condition.avp,
-                                    value=condition.value,
-                                    bit=condition.bit,
-                                ),
-                            ),
-                        )
-                    ).removeprefix("requires ")
-                    conditions.append(
-                        f"{{avp={lua_string(sibling.partition('@')[0])},"
-                        f"t={lua_string(said)}{',' + test if test else ''}}}"
-                    )
+                    conditions.append(found)
                 else:
                     values = (
                         ",v={" + ",".join(str(each) for each in rule.values) + "}"
                         if kind == "values"
                         else ""
                     )
+                    reads = any(
+                        each.root is not None
+                        or (
+                            isinstance(each.value, dictionary.Reference)
+                            and each.value.root is not None
+                        )
+                        for each in rule.conditions
+                    )
                     rules.append(
-                        f"{{k={lua_string(kind)}{values},c={{{','.join(conditions)}}}}}"
+                        f"{{k={lua_string(kind)}{values},c={{{','.join(conditions)}}}"
+                        f"{',q=true' if reads else ''}}}"
                     )
     if not rules:
         return None
@@ -698,6 +699,83 @@ def _constraint(
             ]
         )
         + "}"
+    )
+
+
+def _term(
+    reference: dictionary.Reference,
+    siblings: dict[str, str],
+    request: dict[str, str] | None,
+    needed: set[str] | None,
+) -> str | None:
+    """`{avp=identity}` for the AVP `reference` names, `q=true` where it is
+    the request's, whose identity `needed` collects; None where it does not
+    resolve: a request no print of which the constraint names, or a name
+    the body does not hold."""
+    scope = request if reference.root is not None else siblings
+    found = None if scope is None else scope.get(reference.avp)
+    if found is None:
+        return None
+    identity = found.partition("@")[0]
+    if reference.root is None:
+        return f"{{avp={lua_string(identity)}}}"
+    if needed is not None:
+        needed.add(identity)
+    return f"{{avp={lua_string(identity)},q=true}}"
+
+
+def _condition(
+    condition: dictionary.Condition,
+    siblings: dict[str, str],
+    request: dict[str, str] | None,
+    needed: set[str] | None,
+    names: _Names,
+) -> str | None:
+    """A condition as `{avp=, t=, v=}` (a value), `{avp=, t=, b=}` (a bit),
+    `{avp=, t=, r={...}}` (the value of another AVP) or `{avp=, t=}`
+    (present), with `q=true` for the request's; None where its names or its
+    value do not resolve."""
+    term = _term(condition, siblings, request, needed)
+    if term is None:
+        return None
+    scope = request if condition.root is not None else siblings
+    reading = None if scope is None else scope.get(condition.avp)
+    if isinstance(condition.value, dictionary.Reference):
+        other = _term(condition.value, siblings, request, needed)
+        if other is None:
+            return None
+        test = f"r={other}"
+    elif condition.value is not None:
+        number = names.value(reading, condition.avp, condition.value)
+        test = None if number is None else f"v={number}"
+    elif condition.bit is not None:
+        number = names.bit(reading, condition.bit)
+        test = None if number is None else f"b={number}"
+    else:
+        test = ""
+    if test is None:
+        return None
+    said = formatter.condition(_ast_condition(condition))
+    return term[:-1] + f",t={lua_string(said)}{',' + test if test else ''}" + "}"
+
+
+def _ast_reference(reference: dictionary.Reference) -> ast.Reference:
+    return ast.Reference(
+        root=None if reference.root is None else ast.Root(reference.root),
+        path=reference.path,
+    )
+
+
+def _ast_condition(condition: dictionary.Condition) -> ast.Condition:
+    """A condition as the file writes it, for its words."""
+    value = condition.value
+    return ast.Condition(
+        root=None if condition.root is None else ast.Root(condition.root),
+        path=condition.path,
+        value=_ast_reference(value)
+        if isinstance(value, dictionary.Reference)
+        else value,
+        bit=condition.bit,
     )
 
 
@@ -724,12 +802,24 @@ def _scoped(
     places: Places,
     names: _Names,
     members: Iterable[dictionary.Member],
+    requests: Mapping[str, Iterable[dictionary.Member]] | None = None,
+    needed: set[str] | None = None,
 ) -> str | None:
-    """Constraints on members, as `{[name]={...}}`, or None for none."""
+    """Constraints on members, as `{[name]={...}}`, or None for none.
+    `requests` gives the request prints an answer's constraints may read,
+    by clause, and `needed` collects the request's identities they read."""
     siblings = {member.name: member.avp for member in members if member.avp is not None}
     by_name: dict[str, list[str]] = defaultdict(list)
     for each in constraints:
-        found = _constraint(each, places, names, siblings)
+        printed = (requests or {}).get(each.request_section or "")
+        request = (
+            None
+            if printed is None
+            else {m.name: m.avp for m in printed if m.avp is not None}
+        )
+        found = _constraint(
+            each, places, names, siblings, request=request, needed=needed
+        )
         if found is not None:
             by_name[each.avp].append(found)
     if not by_name:
@@ -818,7 +908,7 @@ def rules_chunk(
         "end",
         "local avps, commands, answers = {}, {}, {}",
         "local result_codes, bits, bits_at, values, values_at = {}, {}, {}, {}, {}",
-        "local docs, cites, base, elements = {}, {}, {}, {}",
+        "local docs, cites, base, elements, requests = {}, {}, {}, {}, {}",
     ]
     readings: dict[str, list[str]] = defaultdict(list)
     names = _Names(built)
@@ -834,6 +924,9 @@ def rules_chunk(
     for identity, ids in readings.items():
         if identity not in ids:
             lines.append(f"avps[{lua_string(identity)}]=avps[{lua_string(ids[0])}]")
+    # The request identities an answer's rules read, by the request's
+    # "app:code", which the core keeps of each request it meets.
+    requested: dict[str, set[str]] = defaultdict(set)
     for key, entries in sorted(_candidates(built.applications, resolved).items()):
         candidates = []
         for application, command in entries:
@@ -852,7 +945,20 @@ def rules_chunk(
             ]
             if command.answer_message is not None:
                 fields.append(f"answer={lua_string(command.answer_message)}")
-            scoped = _scoped(command.constraints, places, names, command.members)
+            prints = {
+                each.section: each.members
+                for each in application.commands
+                if each.is_request
+                and each.command_code == command.command_code
+                and not command.is_request
+            }
+            needed: set[str] = set()
+            scoped = _scoped(
+                command.constraints, places, names, command.members, prints, needed
+            )
+            if needed:
+                app = key.partition(":")[0]
+                requested[f"{app}:{command.command_code}"].update(needed)
             if scoped is not None:
                 fields.append(f"cons={scoped}")
             candidates.append("{" + ",".join(fields) + "}")
@@ -906,6 +1012,9 @@ def rules_chunk(
         lines.append(f"values[{lua_string(identity)}]={{{entries}}}")
     for identity, at in sorted(valued_at.items()):
         lines.append(f"values_at[{lua_string(identity)}]={at}")
+    for key, identities in sorted(requested.items()):
+        entries = ",".join(lua_string(each) for each in sorted(identities))
+        lines.append(f"requests[{lua_string(key)}]={{{entries}}}")
     for kind, (clause, page) in BASE_SECTIONS.items():
         if (at := places.base(clause, page)) is not None:
             lines.append(f"base.{kind}={at}")
@@ -915,7 +1024,7 @@ def rules_chunk(
         "return {avps=avps, commands=commands, answers=answers,"
         " result_codes=result_codes, bits=bits, bits_at=bits_at, values=values,"
         " values_at=values_at, docs=docs,"
-        " elements=elements,"
+        " elements=elements, requests=requests,"
         f" cites=cites, base=base, base_answer={lua_string(BASE_ANSWER)},"
         f" explorer={lua_string(explorer) if explorer else 'nil'},"
         f" corpus={lua_string(versions(built))}}}"

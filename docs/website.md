@@ -190,7 +190,9 @@ and in its raw mirror alike, each describing its own file's lines. Every
   fields of the dictionary's rule ([consumers.md](consumers.md#the-dictionary)),
   an `encoding element` rule's `element_entry` being omitted where the
   element registry has no entry for the element
-  ([constraints.md](constraints.md#elements)).
+  ([constraints.md](constraints.md#elements)); and `request_target`, where
+  the request its rules read is printed, for a block scoped to an answer
+  whose rules read one (`root` `request` on a condition or reference).
   A clause nothing printed stands in, as a simple-typed AVP's, reads
   "Interpreted Constraints IMEI" in `sections`.
 

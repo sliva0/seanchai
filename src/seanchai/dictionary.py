@@ -53,6 +53,7 @@ __all__ = [
     "Member",
     "Path",
     "Reading",
+    "Reference",
     "ResultCode",
     "Rule",
     "TwoReadingsError",
@@ -148,13 +149,28 @@ class Element(_Model):
     page: int | None
 
 
-class Condition(_Model):
-    """A predicate's condition on a sibling AVP: present (`value` and `bit`
-    null), holding `value` (a number, or the name its values give it), or
-    with `bit` set (a number, or its bit table's name)."""
+class Reference(_Model):
+    """An AVP a rule reads beside its own, by `path`, the names from the
+    constraint's scope down to it: a member of its command or grouped AVP,
+    or with `root` `request` a member of the request its answer answers
+    (the request printed at the constraint's `request_section`)."""
 
-    avp: str
-    value: int | str | None
+    root: Literal["request"] | None
+    path: tuple[str, ...]
+
+    @property
+    def avp(self) -> str:
+        """The AVP the path ends at."""
+        return self.path[-1]
+
+
+class Condition(Reference):
+    """A predicate's condition on the AVP `root` and `path` name: present
+    (`value` and `bit` null), holding `value` (a number, the name its values
+    give it, or the value of the AVP a `Reference` names), or with `bit` set
+    (a number, or its bit table's name)."""
+
+    value: int | str | Reference | None
     bit: int | str | None
 
 
@@ -174,8 +190,9 @@ class Rule(_Model):
     (`at-least-one`, `only`) of the grouped AVP's `members`, by name.
     `unique`: no field; no two of the `within` grouped AVPs in one body hold
     the AVP with the same value. `values`: when one of `conditions` holds,
-    the value is one of `values`. `text-only`: no field; a checker reports
-    it unknown."""
+    the value is one of `values`. `equals`: `reference`, the AVP whose value
+    the AVP's equals where both are present. `text-only`: no field; a
+    checker reports it unknown."""
 
     kind: Literal[
         "length",
@@ -191,6 +208,7 @@ class Rule(_Model):
         "members",
         "unique",
         "values",
+        "equals",
         "text-only",
     ]
     unit: ast.LengthUnit | None
@@ -207,6 +225,7 @@ class Rule(_Model):
     relation: ast.BitsRelation | None
     bits: tuple[int, ...]
     members: tuple[str, ...]
+    reference: Reference | None
 
 
 class Reading(_Model):
@@ -223,6 +242,8 @@ class Constraint(_Model):
     `command_section`, the clause of the command's block where the document
     prints it more than once) or `within` names where the AVP is
     constrained as a member; with neither, wherever the document reads it.
+    `request_section` is the clause of the request a rule of an answer's
+    constraint reads, where one does (`Reference.root`).
     `avp_ids` are the readings carrying it: the AVP's own, the grouped AVP's
     for `within`, and the command's members of that name for `command`.
     `versions` is the range of the document's
@@ -234,6 +255,7 @@ class Constraint(_Model):
     command: str | None
     application_id: int | None
     command_section: str | None
+    request_section: str | None
     within: str | None
     reference: str
     version: str | None
@@ -854,6 +876,24 @@ def _value(fields: dict[str, Any]) -> Value:
     return Value.model_validate({name: fields.get(name) for name in Value.model_fields})
 
 
+def _reference(each: ast.Reference) -> Reference:
+    """`each` as the dictionary carries it."""
+    return Reference(
+        root=None if each.root is None else each.root.value, path=each.path
+    )
+
+
+def _condition(each: ast.Condition) -> Condition:
+    """`each` as the dictionary carries it."""
+    value = each.value
+    return Condition(
+        root=None if each.root is None else each.root.value,
+        path=each.path,
+        value=_reference(value) if isinstance(value, ast.Reference) else value,
+        bit=each.bit,
+    )
+
+
 def _rule(rule: ast.ConstraintRule) -> Rule:
     fields: dict[str, Any] = {
         "kind": str(rule.kind),
@@ -871,6 +911,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
         "relation": None,
         "bits": (),
         "members": (),
+        "reference": None,
     }
     match rule:
         case ast.LengthRule():
@@ -888,10 +929,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
                 "element_entry": _json.element_entry(rule),
             }
         case ast.PredicateRule():
-            fields["conditions"] = tuple(
-                Condition(avp=each.avp, value=each.value, bit=each.bit)
-                for each in rule.conditions
-            )
+            fields["conditions"] = tuple(_condition(each) for each in rule.conditions)
         case ast.DefaultRule():
             fields["value"] = rule.value
         case ast.BitsRule():
@@ -900,10 +938,9 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
             fields |= {"relation": rule.relation, "members": rule.members}
         case ast.ValuesRule():
             fields["values"] = rule.values
-            fields["conditions"] = tuple(
-                Condition(avp=each.avp, value=each.value, bit=each.bit)
-                for each in rule.conditions
-            )
+            fields["conditions"] = tuple(_condition(each) for each in rule.conditions)
+        case ast.EqualsRule():
+            fields["reference"] = _reference(rule.reference)
         case ast.UniqueRule() | ast.TextOnly():
             pass
     return Rule.model_validate(fields)
@@ -917,6 +954,7 @@ def _constraint(constraint: model.Constraint, ids: Iterable[str]) -> Constraint:
         command=constraint.command,
         application_id=constraint.application_id,
         command_section=constraint.command_section,
+        request_section=constraint.request_section,
         within=constraint.within,
         reference=constraint.reference,
         version=constraint.version,
