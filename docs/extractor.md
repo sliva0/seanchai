@@ -197,7 +197,10 @@ quirk; `grep -l '"<quirk>"' edits/sources/*.toml` lists them all.
 #### Docx: enumerated values
 
 Each departure from `NAME (n)` needs its own quirk, and a line with two needs
-both.
+both. `NAME` is letters, digits, `_` and `-`, with a parenthesised run of
+letters and digits inside it read as part of it, as TS 29.212 prints
+`H(E)NB_LOCAL_IP_ADDRESS_CHANGE (44)` and `EUTRAN(LEO) (1011)`; `.dad`
+quotes such a name.
 
 | Quirk | Reads | Example |
 |---|---|---|

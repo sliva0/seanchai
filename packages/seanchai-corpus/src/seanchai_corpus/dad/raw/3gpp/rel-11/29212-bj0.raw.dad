@@ -1021,6 +1021,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
         APPLICATION_STOP                                = 40
         CS_TO_PS_HANDOVER                               = 42
         UE_LOCAL_IP_ADDRESS_CHANGE                      = 43
+        "H(E)NB_LOCAL_IP_ADDRESS_CHANGE"                = 44
         ACCESS_NETWORK_INFO_REPORT                      = 45
 
 

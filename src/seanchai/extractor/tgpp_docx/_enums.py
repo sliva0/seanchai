@@ -14,7 +14,12 @@ from .. import sources
 from ..errors import ExtractionError
 from ._base import _Section
 
-_ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
+# A value's name: letters, digits, `_` and `-`, and a parenthesised run of
+# letters and digits inside it, as TS 29.212 prints Event-Trigger's
+# "H(E)NB_LOCAL_IP_ADDRESS_CHANGE (44)" (clause 5.3.7) and RAT-Type's
+# "EUTRAN(LEO) (1011)" (clause 5.3.31). `.dad` quotes such a name.
+_ENUM_NAME = r"[A-Za-z0-9](?:[A-Za-z0-9_-]|\([A-Za-z0-9]+\))*"
+_ENUM_VALUE_RE = re.compile(rf"^(?P<name>{_ENUM_NAME})\s*\((?P<value>\d+)\)$")
 # A value line in the shapes the quirks below read, each part optional so the
 # reading can say which quirk a line needed. Prose can end in "(n)" too, so
 # every departure from `NAME (n)` is declared per document:
@@ -31,7 +36,7 @@ _ENUM_VALUE_RE = re.compile(r"^(?P<name>[A-Za-z0-9_-]+)\s*\((?P<value>\d+)\)$")
 #   it, "- (0) Private user identity." (TS 29.109 clause 6.3.1.13).
 _LOOSE_ENUM_VALUE_RE = re.compile(
     r"(?P<dash>- )?"
-    r"(?P<name>[A-Za-z0-9][A-Za-z0-9_-]*(?P<words>(?:,? [A-Za-z0-9_-]+)+)?)?"
+    rf"(?P<name>{_ENUM_NAME}(?P<words>(?:,? [A-Za-z0-9_-]+)+)?)?"
     r"\s*\((?:(?P<value>\d+)|0x(?P<hex>[0-9A-Fa-f]+))\)"
     r"\s*(?P<rest>.*)"
 )
