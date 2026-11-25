@@ -558,7 +558,8 @@ class _Placed:
                 case ("sections", int(section)):
                     heads[section] = lineno - 1
                 case ("sections", int(section), str(field), int(item)):
-                    items[section, field, item] = lineno - 1
+                    # A rule wrapped over several lines is at its first.
+                    items.setdefault((section, field, item), lineno - 1)
         return cls(text.splitlines(), spec, layout, links, items, heads)
 
     def cells(self, line: int) -> tuple[str, ...]:

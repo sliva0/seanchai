@@ -186,16 +186,16 @@ and in its raw mirror alike, each describing its own file's lines. Every
   `avp_target` that line links to; `interpreted`, true only here, for a block
   a person read in the clause's prose ([constraints.md](constraints.md));
   its scope and `Versions` in `fields`; and `readings`, each `quotes` (`line`
-  and `text`, unescaped) and `rules`, each at its `line`, with `kind` and the
-  fields of the dictionary's rule ([consumers.md](consumers.md#the-dictionary)),
-  an `encoding element` rule's `element_entry` being omitted where the
-  element registry has no entry for the element
-  ([constraints.md](constraints.md#elements)); and `request_target`, where
-  the request its rules read is printed, for a block scoped to an answer
-  whose rules read one (`root` `request` on a condition or reference). A
-  condition carries `value`, `bit`, or `values`, an `in` list's numbers,
-  names and ranges `{"low", "high"}`, as the dictionary's does
-  ([consumers.md](consumers.md#the-dictionary)).
+  and `text`, unescaped) and `rules`, each at its `line`, the first of a rule
+  wrapped over several, with `kind` and the fields of the dictionary's rule
+  ([consumers.md](consumers.md#the-dictionary)), an `encoding element`
+  rule's `element_entry` being omitted where the element registry has no
+  entry for the element ([constraints.md](constraints.md#elements)); and
+  `request_target`, where the request its rules read is printed, for a
+  block scoped to an answer whose rules read one (`root` `request` on a
+  condition or reference). A condition carries `value`, `bit`, or
+  `values`, an `in` list's numbers, names and ranges `{"low", "high"}`, as
+  the dictionary's does ([consumers.md](consumers.md#the-dictionary)).
   A clause nothing printed stands in, as a simple-typed AVP's, reads
   "Interpreted Constraints IMEI" in `sections`.
 

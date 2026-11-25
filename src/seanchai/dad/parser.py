@@ -1492,8 +1492,9 @@ class Layout(NamedTuple):
     """Where a file prints what its tree holds, by 1-based line number.
 
     `paths` gives the `TreePath` each line states, as comments attach to it:
-    a directive its field, a header rule its section, a body line its item.
-    A line that is all comment has none. `sections` places each section, and
+    a directive its field, a header rule its section, a body line its item,
+    each line of a rule wrapped over several. A line that is all comment has
+    none. `sections` places each section, and
     `cells` holds each table row's cells as `(start, end)` offsets into its
     line, a quoted cell with its quotes.
     """
@@ -1609,14 +1610,18 @@ def parse_interpretations(
 ) -> tuple[ast.Interpretations, Mapping[ast.TreePath, int]]:
     """Parse a `.dadx` file, one document's interpretations, discarding its
     `;;` comments. Returns the tree and the 1-based line each path prints
-    on, so a check of a block can name the line it holds against.
+    on, a rule wrapped over several lines at its first, so a check of a
+    block can name the line it holds against.
 
     The file is a `; Interprets:` header, the document's title as its
     `; Specification:` reads, then Interpreted Constraints blocks, each with
     an `; Id:` and no `; Page:`, in the document's clause order.
     """
     tree, layout = _parse_interpretations(_blocks(_runs(text)))
-    return tree, {path: lineno for lineno, path in layout.paths.items()}
+    lines: dict[ast.TreePath, int] = {}
+    for lineno, path in layout.paths.items():
+        lines.setdefault(path, lineno)
+    return tree, lines
 
 
 def parse_interpretations_with_comments(

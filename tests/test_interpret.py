@@ -930,7 +930,12 @@ def test_an_in_list_reads_and_wraps_at_its_commas():
         '        DIAMETER_ERROR_TWO, 3GPP_X, "16", 5000..5999 or not Example-Kind'
         " in 1, 2\n"
     ) in written
-    assert interpretations.parse(written)[0] == tree
+    reread, (item,) = interpretations.parse(written)
+    assert reread == tree
+    # The wrapped rule is at its first line, where its kind opens.
+    lines = written.splitlines()
+    assert lines[item.lines[2] - 1].startswith("    absent-if ")
+    assert lines[item.lines[2]].startswith("        DIAMETER_ERROR_TWO")
     for listed, fact in (
         ("1, 2, 1", "lists a value once"),
         ("1, 0..5", "is in range"),

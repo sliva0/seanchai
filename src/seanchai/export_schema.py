@@ -402,7 +402,8 @@ class ConstraintCondition(ConstraintReference):
 
 
 class ConstraintRule(_Model):
-    """A rule of an Interpreted Constraints block at `line`, by `kind`, as
+    """A rule of an Interpreted Constraints block at `line`, a rule wrapped
+    over several lines at its first, by `kind`, as
     the dictionary's `Rule`: `length` has `unit`, `low` and `high`; `range`
     `low` and `high`; `exclude` `values`; `encoding` `codec`, and an
     `element`'s `document`, `clause` and `element`, with `element_entry`,

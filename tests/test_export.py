@@ -1002,6 +1002,39 @@ def test_a_private_document_exports_as_its_own_publishers(tmp_path):
     assert (acme.publisher, acme.release) == ("Private", None)
 
 
+def test_a_wrapped_rule_is_at_the_line_its_kind_opens_on(tmp_path):
+    """A rule the formatter wraps after an in-list's comma is one rule, at
+    its first line, not at the last it runs on to."""
+    corpus = tmp_path / "dad"
+    corpus.mkdir()
+    source = _CORPUS_DIR / "rfc" / "rfc6733.dad"
+    (corpus / source.name).write_bytes(source.read_bytes())
+    text = (
+        "; Specification: Private ACME-HSS\n; Vendor-ID: 99999\n"
+        "; Bases: RFC6733\n\n\n; Type: AVP Table\n; Section: 2\n"
+        "; Columns: Name Code Type\nACME-Data 1 Grouped\nACME-Token 2"
+        " OctetString\nACME-Kind 3 Unsigned32\n\n\n; Type: Grouped AVP\n"
+        "; Name: ACME-Data\n; Section: 2\n"
+        "ACME-Data ::= < AVP header: 1 99999 >\n         [ ACME-Token ]\n"
+        "         [ ACME-Kind ]\n\n\n; Type: Interpreted Constraints\n"
+        "; AVP: ACME-Token\n; Within: ACME-Data\n; Section: 2\n"
+        '"The token is sent only with a kind of one to nine."\n'
+        "    requires ACME-Kind in 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,"
+        " 14, 15, 16,\n        17, 18, 19\n    length 1..* octets\n"
+    )
+    (corpus / "acme.dad").write_text(text, "utf-8")
+
+    export_corpus(Corpus.load([corpus]), tmp_path / "out")
+
+    doc = json.loads((tmp_path / "out/documents/acme.json").read_text("utf-8"))
+    (block,) = [each for each in doc["blocks"] if each.get("interpreted")]
+    (reading,) = block["readings"]
+    lines = text.splitlines()
+    wrapped, after = reading["rules"]
+    assert lines[wrapped["line"]].startswith("    requires ACME-Kind in 1,")
+    assert lines[after["line"]] == "    length 1..* octets"
+
+
 def test_a_self_hosted_export_copies_each_pdf_from_where_the_download_puts_it(
     tmp_path,
 ):
