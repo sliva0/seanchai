@@ -108,8 +108,9 @@ unknown is unknown, an `and` of a false one is false. Several predicates in one
 block must all hold. `absent-if` and `excludes` say the same of a presence
 condition, read from the other side; the kinds follow the clause's wording.
 Without a scope the rules hold wherever the document reads the AVP, and a
-predicate there has no siblings to test. A scope's AVP is a member its body
-prints or one its `* [ AVP ]` admits, so a block may hold a command to a
+predicate there has no siblings to test, only the AVP's own members through
+a path. A scope's AVP is a member its body prints or one its `* [ AVP ]`
+admits, so a block may hold a command to a
 sentence about an AVP its ABNF leaves to the wildcard; `absent` says such
 an AVP is never sent there. A member of a grouped AVP the command holds is
 the grouped AVP's scope, not the command's.
@@ -119,9 +120,10 @@ to the block's scope: `MIP6-Agent-Info/MIP-Home-Agent-Host` tests the
 MIP-Home-Agent-Host member of the command's MIP6-Agent-Info, which a sibling
 condition cannot, and reaches a member of a grouped AVP the document re-uses
 from another, as the defining document prints its body. With no scope a
-path starts at the block's AVP itself, though the Wireshark plugin checks a
-predicate only in a scope. Of the AVPs a path names, any one meeting the
-condition does. A `members` rule may name a member of a grouped
+path starts at the block's AVP itself, present wherever the rule is checked,
+so the predicate is a grouped AVP's on its own members. Of the AVPs a path
+names, any one meeting the condition does. A `members` rule may name a
+member of a grouped
 AVP another document defines (IMEI in TS 29.272's Terminal-Information, as
 TS 29.273 re-uses it).
 

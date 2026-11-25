@@ -443,12 +443,13 @@ def _avp(
             # A clause citing its values elsewhere, which no correction
             # supplied (TS 29.272's Report-Interval): any number may be one.
             parts.append("values_open=true")
-    # Interpreted constraints: the reading's own, and its members'.
+    # Interpreted constraints: the reading's own, and its members'. With no
+    # scope a path starts at the AVP itself.
     own = _constraints(
         (each for each in constraints.get(avp.id, ()) if each.within is None),
         places,
         names,
-        {},
+        {avp.name: avp.id},
         avp,
     )
     if own:

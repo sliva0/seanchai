@@ -10,7 +10,8 @@ value, a bit no document names, UTF-8 that is not, an integer of the wrong
 length, an AVP the rule does not admit, an E-bit answer with a Result-Code
 that is no protocol error, and each interpreted constraint the Wireshark
 plugin checks (length, range, exclude, encoding, bits, the predicates of a
-command's own members, and the members, unique and values rules). An answer
+command's own members and of a grouped AVP's, and the members, unique and
+values rules). An answer
 whose rules read the request it answers carries the request (`Request`), and
 each such rule gets a valid pair and one breaking it.
 
@@ -501,12 +502,14 @@ class _Avp:
     # The member it fills, for predicates and positions.
     member: dictionary.Member | None = None
 
+    def data(self) -> bytes:
+        """The AVP's data: its payload, or its members encoded."""
+        if self.payload is not None:
+            return self.payload
+        return b"".join(child.encode() for child in self.children)
+
     def encode(self) -> bytes:
-        data = (
-            self.payload
-            if self.payload is not None
-            else b"".join(child.encode() for child in self.children)
-        )
+        data = self.data()
         vendor = self.flags & _V
         length = (12 if vendor else 8) + len(data)
         out = struct.pack("!I", self.avp.code) + bytes([self.flags])
@@ -714,31 +717,51 @@ class _Builder:
                     (c for c in node.children if c.member and c.member.name == name),
                     None,
                 )
-                if child is None or child.payload is None:
+                if child is None:
                     continue
                 taken = seen.setdefault((node.avp.id, name), set())
-                if child.payload in taken:
-                    rules = _value_rules(
-                        self.rules_for(child.avp, self.scope_of(node.avp), name)
-                    )
-                    codec = _codec_of(rules)
-                    payload = next(
-                        (
-                            candidate
-                            for candidate in _variants(child.avp, child.payload)
-                            if candidate not in taken
-                            and all(
-                                _holds(r, candidate, child.avp.data_type, codec)
-                                for r in rules
-                            )
-                        ),
-                        None,
-                    )
-                    if payload is None:
-                        nodes.remove(node)
-                        break
-                    child.payload = payload
-                taken.add(child.payload)
+                if child.data() in taken and not self.vary_one(
+                    child, node.avp, name, taken
+                ):
+                    nodes.remove(node)
+                    break
+                taken.add(child.data())
+
+    def vary_one(
+        self, child: _Avp, parent: dictionary.Avp, name: str, taken: set[bytes]
+    ) -> bool:
+        """Give `child`, the member `name` of a `parent`, data none of `taken`
+        holds: another value of its own, or for a grouped member another value
+        of one of its members, as the plugin compares a grouped member's
+        octets whole; False where no such value holds its rules."""
+        for leaf, owner, member in self.leaves(child, parent, name):
+            kept = leaf.payload
+            assert kept is not None
+            rules = _value_rules(self.rules_for(leaf.avp, self.scope_of(owner), member))
+            codec = _codec_of(rules)
+            for candidate in _variants(leaf.avp, kept):
+                if not all(
+                    _holds(r, candidate, leaf.avp.data_type, codec) for r in rules
+                ):
+                    continue
+                leaf.payload = candidate
+                if child.data() not in taken:
+                    return True
+            leaf.payload = kept
+        return False
+
+    def leaves(
+        self, node: _Avp, parent: dictionary.Avp, name: str
+    ) -> Iterator[tuple[_Avp, dictionary.Avp, str]]:
+        """`node`, the member `name` of a `parent`, or else each AVP with a
+        payload it holds at any depth, with the grouped AVP and member name
+        holding it."""
+        if node.payload is not None:
+            yield node, parent, name
+            return
+        for each in node.children:
+            if each.member is not None:
+                yield from self.leaves(each, node.avp, each.member.name)
 
     def filler(self, scope: _Scope) -> _Avp:
         """An AVP the body does not list, for a `* { AVP }` that requires one:
@@ -1013,6 +1036,9 @@ class _Builder:
                         raise _Unbuildable(f"{name} holds no integer to set")
                     held.payload = _integer(held.avp.data_type, rule.values[0])
                 elif kind == "present-if":
+                    if any(n.avp.name == name for n in nodes):
+                        # Added for another block on it in this pass.
+                        continue
                     member = next(m for m in scope.members if m.name == name)
                     if member.avp is None:
                         raise _Unbuildable(
@@ -1333,23 +1359,41 @@ class _Negatives:
         """The clause of another print of the command under the application
         (TS 29.273's S6b AA-Answer, clauses 9.2.2.2.2 and 9.2.2.5.2) holding
         no rule of the kind a negative breaks on its AVP, which this print
-        holds as its member's: the plugin may hold the message to that print,
-        which it breaks nothing of. None where no such print is."""
+        holds as its member's, or as the AVP's wherever read where it lists
+        the member and the other leaves it to `* [ AVP ]` (TS 29.273's
+        Visited-Network-Identifier in STa's and SWa's Diameter-EAP-Request):
+        the plugin may hold the message to that print, which it breaks
+        nothing of. None where no such print is."""
         if not rule.startswith("constraint-") or "/" not in what:
             return None
         kind, name = rule.removeprefix("constraint-"), what.split("/")[1]
         # An element's rule is an encoding's.
         kind = "encoding" if kind == "element" else kind
 
+        def of_kind(each: dictionary.Constraint) -> bool:
+            return any(
+                each_rule.kind == kind
+                for reading in each.readings
+                for each_rule in reading.rules
+            )
+
+        # The AVP-wide rules of each reading of the AVP: a print listing the
+        # member holds them, one leaving it to `* [ AVP ]` does not.
+        wide = {
+            avp_id
+            for each in self.generator.built.constraints
+            if each.avp == name
+            and each.command is None
+            and each.within is None
+            and of_kind(each)
+            for avp_id in each.avp_ids
+        }
+
         def holds(command: dictionary.Command) -> bool:
             return any(
-                each.avp == name
-                and any(
-                    each_rule.kind == kind
-                    for reading in each.readings
-                    for each_rule in reading.rules
-                )
-                for each in command.constraints
+                each.avp == name and of_kind(each) for each in command.constraints
+            ) or any(
+                member.name == name and member.avp in wide for member in command.members
             )
 
         if not holds(self.command):
@@ -2075,78 +2119,105 @@ class _Negatives:
         return None
 
     def predicate_vectors(self) -> None:
-        """One vector per predicate of the command's own scope the plugin
-        checks: the subject placed, or not, against its conditions."""
+        """One vector per predicate the plugin checks, of the command's own
+        scope and of each grouped AVP's the full message holds: the subject
+        placed, or not, against its conditions."""
+        done: set[tuple[str, str, str]] = set()
         for name, each, rule in self.builder.predicates(self.scope):
             if _reads_request(rule):
                 continue  # `request_vectors`
             message = self.full()
-            nodes = message.nodes
-            if rule.kind == "absent":
-                if self.add_absent(message, name, each):
-                    self.emit(
-                        message,
-                        f"constraint-absent/{name}/{each.section}",
-                        self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
-                        "constraint-absent",
-                        "note",
-                    )
-                continue
-            if rule.kind == "values":
-                if self.break_values(nodes, self.scope, name, rule):
-                    self.emit(
-                        message,
-                        f"constraint-values/{name}/{each.section}",
-                        self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
-                        "constraint-values",
-                        "note",
-                    )
-                continue
-            member = next((m for m in self.scope.members if m.name == name), None)
+            self.predicate_vector(message, message.nodes, self.scope, name, each, rule)
+        full = self.full()
+        for index, (node, _scope, _run) in enumerate(self.each_grouped(full)):
+            inner = self.builder.scope_of(node.avp)
+            for name, each, rule in self.builder.predicates(inner):
+                key = (each.section, name, rule.kind)
+                # A grouped AVP's values rules are `grouped_vectors`'.
+                if key in done or rule.kind == "values" or _reads_request(rule):
+                    continue
+                message = full.copy()
+                target, _, _ = list(self.each_grouped(message))[index]
+                if self.predicate_vector(
+                    message, target.children, inner, name, each, rule
+                ):
+                    done.add(key)
+
+    def predicate_vector(
+        self,
+        message: _Message,
+        nodes: list[_Avp],
+        scope: _Scope,
+        name: str,
+        each: dictionary.Constraint,
+        rule: dictionary.Rule,
+    ) -> bool:
+        """Break `rule` on `name` in `nodes`, the run of `message` `scope`
+        reads, and nothing else, and emit the vector; False where it cannot."""
+        top = nodes is message.nodes
+        if rule.kind == "absent":
+            if not top or not self.add_absent(message, name, each):
+                return False
+        elif rule.kind == "values":
+            if not self.break_values(nodes, scope, name, rule):
+                return False
+            if not top and self.builder.broken(
+                self.scope, message.nodes, message.asked
+            ):
+                return False
+        else:
+            member = next((m for m in scope.members if m.name == name), None)
             if member is None:
-                continue  # only `* [ AVP ]` admits it
+                return False  # only `* [ AVP ]` admits it
             subject = [n for n in nodes if n.avp.name == name]
             if rule.kind in ("absent-if", "excludes", "present-if"):
-                if not all(self.make_hold(nodes, c) for c in rule.conditions[0]):
-                    continue
+                if not all(self.make_hold(nodes, c, scope) for c in rule.conditions[0]):
+                    return False
                 if rule.kind == "present-if":
                     if member.min_occurs:
-                        continue
+                        return False
                     nodes[:] = [n for n in nodes if n.avp.name != name]
                 elif not subject:
                     if member.avp is None:
-                        continue
+                        return False
                     nodes.append(
                         self.builder.avp(
-                            self.builder.avps[member.avp], self.scope, member, False, ()
+                            self.builder.avps[member.avp], scope, member, False, ()
                         )
                     )
             else:  # requires
                 if not subject:
                     if member.avp is None:
-                        continue
+                        return False
                     nodes.append(
                         self.builder.avp(
-                            self.builder.avps[member.avp], self.scope, member, False, ()
+                            self.builder.avps[member.avp], scope, member, False, ()
                         )
                     )
                 if not all(
-                    any(self.make_fail(nodes, c) for c in conjunction)
+                    any(self.make_fail(nodes, c, scope) for c in conjunction)
                     for conjunction in rule.conditions
                 ):
-                    continue
-            broken = self.builder.broken(self.scope, nodes)
+                    return False
+            broken = self.builder.broken(scope, nodes)
             if [(n, k) for n, k, _ in broken] != [(name, rule.kind)]:
-                continue
-            if not self.counts_hold(nodes):
-                continue
-            self.emit(
-                message,
-                f"constraint-{rule.kind}/{name}/{each.section}",
-                self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
-                f"constraint-{rule.kind}",
-                "note",
-            )
+                return False
+            if not self.counts_hold(nodes, scope):
+                return False
+            if not top and (
+                self.builder.broken(self.scope, message.nodes, message.asked)
+                or not self.counts_hold(message.nodes)
+            ):
+                # The run's change breaks a rule on a path into it.
+                return False
+        self.emit(
+            message,
+            f"constraint-{rule.kind}/{name}/{each.section}",
+            self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
+            f"constraint-{rule.kind}",
+            "note",
+        )
+        return True
 
     def add_absent(
         self, message: _Message, name: str, each: dictionary.Constraint

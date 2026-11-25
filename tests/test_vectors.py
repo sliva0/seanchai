@@ -5,6 +5,8 @@ exactly the finding it expects, under
 each Lua on PATH; the generated plugin under tshark reads the capture alike.
 """
 
+import dataclasses
+import gc
 import json
 import shutil
 import subprocess
@@ -18,28 +20,11 @@ from seanchai import dictionary, vectors, wireshark
 from seanchai.cli import main
 from seanchai.corpus import Corpus
 from seanchai.model import Model
+from seanchai.wireshark import _rules as generator
 
 CORE = Path(wireshark.__file__).parent / "core.lua"
 LUAS = [name for name in ("lua5.1", "lua5.2", "lua5.3", "lua5.4") if shutil.which(name)]
 S6A = 16777251
-# The base protocol, DCCA (several documents' CCR), EAP (TS 29.234's DEA lists
-# User-Name twice), Cx, Gx, S6a, PC3a's WiFi-P2P-Assistance-Info (a member
-# listed twice), T6a (APN-Rate-Control-Status, typed Grouped by a table
-# that prints no rule), SWm (Auth-Session-State absent in every command but
-# the ASR) and S6b (answers read against the request, AA-Answer printed
-# twice).
-_APPLICATIONS = (
-    0,
-    4,
-    5,
-    16777216,
-    16777238,
-    S6A,
-    16777264,
-    16777272,
-    16777340,
-    16777346,
-)
 
 
 @pytest.fixture(scope="module")
@@ -169,29 +154,58 @@ end
 """
 
 
+@dataclasses.dataclass(frozen=True)
+class _Kept:
+    """What the plugin's test reads of a vector."""
+
+    id: str
+    document: str
+    expected: tuple[vectors.Expected, ...]
+
+
 @pytest.fixture(scope="module")
 def checked(built, tmp_path_factory):
-    """The vectors of `_APPLICATIONS` but an obsoleted document's, which
-    the plugin holds to the newer one, and the plugin's rules for them."""
-    _, model = built
+    """The vectors of every application the corpus holds, so of every
+    document with interpreted rules, but an obsoleted document's, which the
+    plugin holds to the newer one, and the plugin's rules for them, from one
+    dictionary; of each vector only what the test reads is kept."""
+    books, model = built
     work = tmp_path_factory.mktemp("vectors")
+    whole = dictionary.build(model, corpus_version=books.version)
     rules = work / "rules.lua"
-    options = [arg for each in _APPLICATIONS for arg in ("--application", str(each))]
-    done = CliRunner().invoke(
-        main, ["wireshark-plugin", *options, "--rules-only", "-o", str(rules)]
+    rules.write_text(
+        generator.rules_chunk(whole, model, generator.Places(books)), "utf-8"
     )
-    assert done.exit_code == 0, done.output
     obsolete = {r for r in model.references() if model.obsoleted_by(r)}
-    kept = [
-        v for v in _vectors(built, *_APPLICATIONS).vectors if v.document not in obsolete
-    ]
+    # Each interpreted document's applications are among them.
+    assert {each.application_id for each in whole.applications} >= {
+        16777217,  # TS 29.329's Sh
+        16777250,  # TS 29.273's STa and SWd, SWa's commands with them
+        16777251,  # TS 29.272's S6a/S6d
+        16777252,  # S13
+        16777264,  # SWm
+        16777265,  # SWx
+        16777272,  # S6b
+        16777308,  # S7a/S7d
+    }
+    # The whole dictionary's vectors, one application id at a time: all at
+    # once hold over a gigabyte.
+    groups: dict[int | None, list[dictionary.Application]] = {}
+    for each in whole.applications:
+        groups.setdefault(each.application_id, []).append(each)
+    pages = vectors.pages_of(books)
+    kept: list[_Kept] = []
     lines = work / "vectors.txt"
-    lines.write_text(
-        "".join(
-            f"{v.document}\t{v.octets}\t{v.request.octets if v.request else ''}\n"
-            for v in kept
-        )
-    )
+    with lines.open("w") as out:
+        for key in sorted(groups, key=lambda key: (key is None, key or 0)):
+            part = whole.model_copy(update={"applications": groups[key]})
+            for v in vectors.build(part, pages).vectors:
+                if v.document in obsolete:
+                    continue
+                request = v.request.octets if v.request else ""
+                out.write(f"{v.document}\t{v.octets}\t{request}\n")
+                kept.append(_Kept(v.id, v.document, v.expected))
+            gc.collect()
     runner = work / "runner.lua"
     runner.write_text(_RUNNER, "utf-8")
     return kept, rules, lines, runner
@@ -360,6 +374,7 @@ _ASKED = """\
         [ Example-Kept ]
         [ Ex-Set ]
         [ Example-Note ]
+        [ Ex-Pair ]
         *[ AVP ]
 
 
@@ -424,6 +439,31 @@ Ex-Set ::= < AVP header: 7 10415 >
         [ Example-Flags ]
 
 
+; Type: Grouped AVP
+; Name: Ex-Pair
+; Section: 6.3.12
+Ex-Pair ::= < AVP header: 11 10415 >
+        [ Example-Mode ]
+        [ Example-Count ]
+
+
+; Type: Interpreted Constraints
+; AVP: Example-Count
+; Within: Ex-Pair
+; Section: 6.3.12
+; Versions: 19.0.0
+"A count goes with a mode."
+    requires Example-Mode
+
+
+; Type: Interpreted Constraints
+; AVP: Ex-Pair
+; Section: 6.3.12
+; Versions: 19.0.0
+"It is not sent with mode 2."
+    excludes Ex-Pair/Example-Mode = 2
+
+
 ; Type: AVP Table
 ; Section: 6.3.1
 ; Columns: Name     Code   Section   Type          Must
@@ -435,6 +475,9 @@ Example-Kept        5      6.3.6     OctetString   M,V
 Example-Never       6      6.3.7     OctetString   M,V
 Ex-Set       7      6.3.8     Grouped       M,V
 Example-Note        8      6.3.9     OctetString   M,V
+Example-Mode        9      6.3.10    Unsigned32    M,V
+Example-Count       10     6.3.11    Unsigned32    M,V
+Ex-Pair      11     6.3.12    Grouped       M,V
 """
 
 
@@ -480,6 +523,13 @@ def test_an_answer_reading_its_request_is_sent_with_it(asked):
         assert broken.expected == (
             vectors.Expected(rule=f"constraint-{kind}", severity="note"),
         )
+    # A predicate of a grouped AVP's scope, broken in the answer's Ex-Pair.
+    (count,) = [
+        v for v in found.vectors if "/constraint-requires/Example-Count" in v.id
+    ]
+    assert count.id == "16777999/EXA/negative/constraint-requires/Example-Count/6.3.12"
+    (pair,) = [node for node in count.tree if node.name == "Ex-Pair"]
+    assert [node.name for node in pair.children] == ["Example-Count"]
     # An AVP only `* [ AVP ]` admits, which a rule keeps out.
     (never,) = [v for v in found.vectors if "/constraint-absent/" in v.id]
     assert never.id == "16777999/EXA/negative/constraint-absent/Example-Never/6.1.2"
@@ -566,12 +616,15 @@ def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_p
             assert set(request.split(",")) == {str(int(frame) - 1)}
             assert missing == ""
     # Without the requests, the answers' rules on them go unchecked, said
-    # once per answer, and no finding of them is reported.
+    # once per answer, and no finding of them is reported (Example-Count's
+    # reads the answer's Ex-Pair alone).
     alone = vectors.Vectors.model_validate(
         {
             **found.model_dump(),
             "vectors": [
-                {**v.model_dump(), "request": None} for v in answers if v.request
+                {**v.model_dump(), "request": None}
+                for v in answers
+                if v.request and "/Example-Count/" not in v.id
             ],
         }
     )
@@ -583,3 +636,39 @@ def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_p
     assert rows and all(missing == "5" for missing, _ in rows)
     reading = {"present-if", "absent-if", "requires", "equals"}
     assert not any(rule.removeprefix("constraint-") in reading for _, rule in rows)
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_core_checks_a_predicate_of_a_block_with_no_scope(lua, asked, tmp_path):
+    work, found = asked
+    # Ex-Pair's own rule, wherever read: its path starts at Ex-Pair itself.
+    held = next(
+        v
+        for v in found.vectors
+        if v.kind == "maximal" and not v.is_request and "Ex-Pair" in str(v.tree)
+    )
+    mode = "00000009c0000010000028af"  # Example-Mode, V and M, vendor 10415
+    assert held.octets.count(mode + "00000000") == 1
+    lines = tmp_path / "lines.txt"
+    request = held.request.octets if held.request else ""
+    lines.write_text(
+        "".join(
+            f"{held.document}\t{octets}\t{request}\n"
+            for octets in (
+                held.octets,
+                held.octets.replace(mode + "00000000", mode + "00000002"),
+            )
+        )
+    )
+    runner = tmp_path / "runner.lua"
+    runner.write_text(_RUNNER, "utf-8")
+    done = subprocess.run(
+        [lua, str(runner), str(CORE), str(work / "rules.lua"), str(lines)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    valid, broken = done.stdout.splitlines()
+    assert valid.split("\t")[1:] == []
+    assert broken.split("\t")[1:] == ["note constraint-excludes"]

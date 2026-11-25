@@ -418,15 +418,19 @@ suite, per command of the selection (`--application`, `--document`):
   protocol error, and each interpreted constraint the
   plugin checks: a length, a range, an excluded value, a codec's layout,
   another document's element as the element registry checks it, a rule on
-  bits, a predicate on a command's own member, a members, unique or values
-  rule, an AVP an `absent` rule keeps out, and an answer's rule on its
+  bits, a predicate on a command's own member or a grouped AVP's, a
+  members, unique or values rule, an AVP an `absent` rule keeps out, and
+  an answer's rule on its
   request.
 
 A negative breaking an interpreted rule of a command's print that another
 print of the command under its application id does not hold (TS 29.273's two
-S6b AA-Answers, STa's and SWd's Diameter-EAP-Answer) is listed in `skipped`:
-a checker may hold the message to the other print, which it breaks nothing
-of; so is one whose breaking value breaks a predicate on a path to it too.
+S6b AA-Answers, STa's and SWd's Diameter-EAP-Answer), or that it leaves to
+its `* [ AVP ]` where the rule is the AVP's wherever read (SWa's
+Diameter-EAP-Request, which prints no Visited-Network-Identifier), is listed
+in `skipped`: a checker may hold the message to the other print, which it
+breaks nothing of; so is one whose breaking value breaks a predicate on a
+path to it too.
 
 An answer whose rules read the request it answers is sent with that request,
 `request` in the vector, the pair sharing Hop-by-Hop and End-to-End
@@ -464,9 +468,10 @@ skipped[]          command, what, reason
 plugin. `--schema FILE` writes the JSON
 Schema. From Python, `seanchai.vectors.build(dictionary)` returns the same.
 
-The vectors are the plugin's end-to-end test (`tests/test_vectors.py`): each
-valid one draws no error, warning or note of an interpreted rule, each
-negative one exactly the finding it expects, under every Lua and tshark.
+The vectors are the plugin's end-to-end test (`tests/test_vectors.py`): of
+every application the corpus holds, each valid one draws no error, warning
+or note of an interpreted rule, each negative one exactly the finding it
+expects, under every Lua, and S6a's under tshark.
 Read through python-diameter's codec, which checks types and no rule, the
 library refuses exactly the vectors breaking a data format.
 

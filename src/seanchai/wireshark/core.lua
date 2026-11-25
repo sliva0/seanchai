@@ -801,105 +801,6 @@ local function members_text(reading, ids)
   return string.format("%s, %s and %d more", named[1], named[2], #named - 2), all
 end
 
--- Checks one AVP's data against its reading's constraints and `scoped`,
--- those its command or grouped AVP holds for it. `path` names the AVP.
-local function check_constraints(ctx, avp, reading, path, scoped)
-  local lists = { reading.cons or {}, scoped or {} }
-  local data = data_text(ctx.pdu, avp)
-  local codec
-  for _, list in ipairs(lists) do
-    for _, cons in ipairs(list) do
-      for _, rule in ipairs(cons.rules) do
-        if rule.k == "encoding" and codec == nil then
-          codec = rule.codec
-        end
-      end
-    end
-  end
-  for _, list in ipairs(lists) do
-    for _, cons in ipairs(list) do
-      for _, rule in ipairs(cons.rules) do
-        local problem, detail, element
-        if rule.k == "length" then
-          local count
-          if rule.u == "octets" then
-            count = #data
-          elseif rule.u == "characters" then
-            count = character_count(data)
-          elseif codec then
-            count = digit_count(codec, data)
-          end
-          if count and not within(count, rule.lo, rule.hi) then
-            problem = string.format("%d %s, not %s", count, rule.u,
-              bounds(rule.lo, rule.hi))
-          end
-        elseif rule.k == "range" or rule.k == "exclude" then
-          local value = integer_value(reading.type, data)
-          if value and rule.k == "range" and not within(value, rule.lo, rule.hi) then
-            problem = string.format("%s, not %s", number(value),
-              bounds(rule.lo, rule.hi))
-          elseif value and rule.k == "exclude" then
-            for _, excluded in ipairs(rule.v) do
-              if value == excluded then
-                problem = string.format("%s is excluded", number(value))
-              end
-            end
-          end
-        elseif rule.k == "encoding" then
-          problem = codec_problem(rule.codec, data)
-        elseif rule.k == "element" then
-          element = ctx.rules.elements[rule.e]
-          problem = element and element_problem(element, data, reading.type)
-        elseif rule.k == "bits" then
-          local set, width = bit_reader(reading.type, data)
-          if set then
-            problem = bits_problem(rule, set, width)
-          end
-        elseif rule.k == "absent" and list == lists[1] then
-          -- Wherever the document reads it; a scope's own, the predicates'.
-          problem = "not allowed"
-        elseif rule.k == "members" and reading.type == "Grouped" then
-          local held = {}
-          for _, each in ipairs(parse_avps(ctx.pdu, avp.data, avp.data + avp.size,
-            {}, path)) do
-            held[each.vendor .. ":" .. each.code] = true
-          end
-          local listed, any = {}, false
-          for _, identity in ipairs(rule.m) do
-            listed[identity] = true
-            any = any or held[identity] == true
-          end
-          local short, all = members_text(reading, rule.m)
-          if rule.r == "at-least-one" and not any and #rule.m == 1 then
-            problem = "missing " .. all
-          elseif rule.r == "at-least-one" and not any then
-            problem = string.format("none of %s, one must be held", short)
-            detail = string.format("none of %s, one must be held", all)
-          elseif rule.r == "only" then
-            for identity in pairs(held) do
-              if not listed[identity] then
-                problem = string.format("holds a member besides %s", short)
-                detail = string.format("holds a member besides %s", all)
-                break
-              end
-            end
-          end
-        end
-        if problem then
-          local found = interpreted(ctx, cons, rule.k, problem, avp.data, avp.size,
-            path, reading.name)
-          found.detail = detail
-          if rule.k == "element" then
-            -- Beneath the line, the element and where its layout is read.
-            found.element = string.format("%s (%s): %s", element.said,
-              element.read, element.check)
-          end
-        end
-      end
-    end
-  end
-end
-
 -- The data of the AVPs a term names: every AVP of the run of its identity
 -- (`held[identity]`), and on through the members of the identities `p`
 -- lists, one a level; with `q`, every one of the request's at its path
@@ -1020,6 +921,160 @@ local function alternatives_hold(ctx, held, alternatives)
   return false
 end
 
+-- What breaks an equals rule, a predicate or a values rule on the AVP
+-- `subject` (nil where absent), named `name` with identity `identity`, of
+-- the run whose AVPs by identity are `held`: the problem's words, or nil.
+local function predicate_problem(ctx, rule, held, subject, name, identity)
+  if rule.k == "equals" then
+    local others = term_data(ctx, held, rule.r)
+    if subject and #others > 0 then
+      local mine, same = data_text(ctx.pdu, subject), false
+      for _, other in ipairs(others) do
+        same = same or other == mine
+      end
+      if not same then
+        return "not the value of " .. rule.t
+      end
+    end
+    return nil
+  end
+  if not rule.c then
+    return nil
+  end
+  local holds = alternatives_hold(ctx, held, rule.c)
+  local any, unknown = holds == true, holds == nil
+  local said = conditions_text(rule.c)
+  if rule.k == "present-if" and any and not subject then
+    return string.format("missing %s, required with %s", name, said)
+  elseif rule.k == "absent-if" and any and subject then
+    return "not allowed with " .. said
+  elseif rule.k == "requires" and subject and not any and not unknown then
+    return "not allowed without " .. said
+  elseif rule.k == "excludes" and subject and any then
+    return "not allowed with " .. said
+  elseif rule.k == "values" and subject and any then
+    local reading = ctx.rules.avps[identity]
+    local value = reading
+      and integer_value(reading.type, data_text(ctx.pdu, subject))
+    if value then
+      local allowed, listed = false, {}
+      for _, each in ipairs(rule.v) do
+        allowed = allowed or value == each
+        listed[#listed + 1] = number(each)
+      end
+      if not allowed then
+        return string.format("%s, but only %s with %s", number(value),
+          table.concat(listed, ", "), said)
+      end
+    end
+  end
+  return nil
+end
+
+-- Checks one AVP's data against its reading's constraints and `scoped`,
+-- those its command or grouped AVP holds for it. `path` names the AVP.
+local function check_constraints(ctx, avp, reading, path, scoped)
+  local lists = { reading.cons or {}, scoped or {} }
+  local data = data_text(ctx.pdu, avp)
+  local codec
+  for _, list in ipairs(lists) do
+    for _, cons in ipairs(list) do
+      for _, rule in ipairs(cons.rules) do
+        if rule.k == "encoding" and codec == nil then
+          codec = rule.codec
+        end
+      end
+    end
+  end
+  for _, list in ipairs(lists) do
+    for _, cons in ipairs(list) do
+      for _, rule in ipairs(cons.rules) do
+        local problem, detail, element
+        if rule.k == "length" then
+          local count
+          if rule.u == "octets" then
+            count = #data
+          elseif rule.u == "characters" then
+            count = character_count(data)
+          elseif codec then
+            count = digit_count(codec, data)
+          end
+          if count and not within(count, rule.lo, rule.hi) then
+            problem = string.format("%d %s, not %s", count, rule.u,
+              bounds(rule.lo, rule.hi))
+          end
+        elseif rule.k == "range" or rule.k == "exclude" then
+          local value = integer_value(reading.type, data)
+          if value and rule.k == "range" and not within(value, rule.lo, rule.hi) then
+            problem = string.format("%s, not %s", number(value),
+              bounds(rule.lo, rule.hi))
+          elseif value and rule.k == "exclude" then
+            for _, excluded in ipairs(rule.v) do
+              if value == excluded then
+                problem = string.format("%s is excluded", number(value))
+              end
+            end
+          end
+        elseif rule.k == "encoding" then
+          problem = codec_problem(rule.codec, data)
+        elseif rule.k == "element" then
+          element = ctx.rules.elements[rule.e]
+          problem = element and element_problem(element, data, reading.type)
+        elseif rule.k == "bits" then
+          local set, width = bit_reader(reading.type, data)
+          if set then
+            problem = bits_problem(rule, set, width)
+          end
+        elseif rule.k == "absent" and list == lists[1] then
+          -- Wherever the document reads it; a scope's own, the predicates'.
+          problem = "not allowed"
+        elseif (rule.c or rule.k == "equals") and list == lists[1] then
+          -- A block with no scope: its paths start at the AVP itself.
+          local identity = avp.vendor .. ":" .. avp.code
+          problem = predicate_problem(ctx, rule, { [identity] = { avp } }, avp,
+            reading.name, identity)
+        elseif rule.k == "members" and reading.type == "Grouped" then
+          local held = {}
+          for _, each in ipairs(parse_avps(ctx.pdu, avp.data, avp.data + avp.size,
+            {}, path)) do
+            held[each.vendor .. ":" .. each.code] = true
+          end
+          local listed, any = {}, false
+          for _, identity in ipairs(rule.m) do
+            listed[identity] = true
+            any = any or held[identity] == true
+          end
+          local short, all = members_text(reading, rule.m)
+          if rule.r == "at-least-one" and not any and #rule.m == 1 then
+            problem = "missing " .. all
+          elseif rule.r == "at-least-one" and not any then
+            problem = string.format("none of %s, one must be held", short)
+            detail = string.format("none of %s, one must be held", all)
+          elseif rule.r == "only" then
+            for identity in pairs(held) do
+              if not listed[identity] then
+                problem = string.format("holds a member besides %s", short)
+                detail = string.format("holds a member besides %s", all)
+                break
+              end
+            end
+          end
+        end
+        if problem then
+          local found = interpreted(ctx, cons, rule.k, problem, avp.data, avp.size,
+            path, reading.name)
+          found.detail = detail
+          if rule.k == "element" then
+            -- Beneath the line, the element and where its layout is read.
+            found.element = string.format("%s (%s): %s", element.said,
+              element.read, element.check)
+          end
+        end
+      end
+    end
+  end
+end
+
 -- Checks the predicates `scoped` (constraints by member name) states of a
 -- run of AVPs: `identities` gives each name's identity in the body. `path`
 -- names what holds the run, nil for the message, `here` names it either way,
@@ -1047,45 +1102,8 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
           -- Reads the request, which is not at hand: unchecked, said once
           -- for the answer (`result.request_unchecked`).
           ctx.request_unchecked = ctx.request_unchecked + 1
-        elseif rule.k == "equals" then
-          local others = term_data(ctx, held, rule.r)
-          if subject and #others > 0 then
-            local mine, same = data_text(ctx.pdu, subject), false
-            for _, other in ipairs(others) do
-              same = same or other == mine
-            end
-            if not same then
-              problem = "not the value of " .. rule.t
-            end
-          end
-        elseif rule.c then
-          local holds = alternatives_hold(ctx, held, rule.c)
-          local any, unknown = holds == true, holds == nil
-          local said = conditions_text(rule.c)
-          if rule.k == "present-if" and any and not subject then
-            problem = string.format("missing %s, required with %s", name, said)
-          elseif rule.k == "absent-if" and any and subject then
-            problem = "not allowed with " .. said
-          elseif rule.k == "requires" and subject and not any and not unknown then
-            problem = "not allowed without " .. said
-          elseif rule.k == "excludes" and subject and any then
-            problem = "not allowed with " .. said
-          elseif rule.k == "values" and subject and any then
-            local reading = ctx.rules.avps[identity]
-            local value = reading
-              and integer_value(reading.type, data_text(ctx.pdu, subject))
-            if value then
-              local allowed, listed = false, {}
-              for _, each in ipairs(rule.v) do
-                allowed = allowed or value == each
-                listed[#listed + 1] = number(each)
-              end
-              if not allowed then
-                problem = string.format("%s, but only %s with %s", number(value),
-                  table.concat(listed, ", "), said)
-              end
-            end
-          end
+        else
+          problem = predicate_problem(ctx, rule, held, subject, name, identity)
         end
         local found
         if problem and subject then
