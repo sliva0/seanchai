@@ -247,6 +247,35 @@ def test_a_grouped_avps_block_may_name_the_application_it_holds_in():
     assert formatter.format_spec(spec, comments) == text
 
 
+def test_a_block_may_hold_in_every_answer():
+    # RFC 6733 section 6.2: "If the Session-Id is present in the request, it
+    # MUST be included in the answer", of every answer of any application.
+    text = _block(
+        '"Q."',
+        "    present-if request/Session-Id",
+        "    equals request/Session-Id",
+        scope=("; Messages: answers",),
+    )
+    spec, comments = parser.parse_with_comments(text)
+    (block,) = spec.sections
+    assert isinstance(block, ast.InterpretedConstraints)
+    assert block.messages is ast.Messages.ANSWERS
+    assert formatter.format_spec(spec, comments) == text
+    for scope, fact in (
+        (("; Messages: requests",), "no answer"),
+        (("; Messages: answers", "; Command: Example-Answer"), "of no command"),
+        (("; Messages: replies",), "answers or requests"),
+    ):
+        with pytest.raises(parser.DadParseError, match=fact):
+            parser.parse(
+                _block(
+                    '"Q."',
+                    "    present-if request/Session-Id",
+                    scope=scope,
+                )
+            )
+
+
 @pytest.mark.parametrize(
     ("text", "lineno", "fact"),
     [

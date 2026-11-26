@@ -87,29 +87,29 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   every code, and none lists the protocol errors an agent returns.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
-- Interpreted constraints ([constraints.md](constraints.md)), what a person
-  read in the clauses' prose, each a note whose line ends in `interpreted`,
-  since the reading is ours however firmly the quote words it:
-  a length in octets, digits or characters, a range, an excluded value, an
-  encoding, another document's element as far as the element registry reads
-  it ([constraints.md](constraints.md#elements)), a rule on the AVP's own
-  bits, the members a grouped AVP holds (`constraint-length`, `-range`,
-  `-exclude`, `-encoding`, `-element`, `-bits`, `-members`), for the AVP
-  wherever its reading's document reads it and as
-  a member of the command or grouped AVP holding it, a grouped AVP's rules
-  read for one application (`; Application-ID:`) only in a message whose
-  header, or a relayed message's application-id AVPs, name that
-  application; the predicates tying a
-  member's presence to its siblings, on each instance of it, a path from it
-  reading that one, or with no scope an AVP's to its own
-  members (`constraint-present-if`, `-absent-if`, `-requires`, `-excludes`),
-  a value a sibling's condition restricts
-  (`constraint-values`), an answer's AVP echoing the request's
-  (`constraint-equals`), an AVP never sent in its scope
-  (`constraint-absent`), and a member two grouped AVPs beside each other
-  hold with one value (`constraint-unique`). An element the registry has no
-  entry for or checks nothing of is not checked, `text-only` not at all, and
-  a rule naming a value or bit no table numbers is left out.
+- Interpreted constraints ([constraints.md](constraints.md)), what a person read
+  in the clauses' prose, each a note whose line ends in `interpreted`, since the
+  reading is ours however firmly the quote words it: a length in octets, digits
+  or characters, a range, an excluded value, an encoding, another document's
+  element as far as the element registry reads it
+  ([constraints.md](constraints.md#elements)), a rule on the AVP's own bits, the
+  members a grouped AVP holds (`constraint-length`, `-range`, `-exclude`,
+  `-encoding`, `-element`, `-bits`, `-members`), for the AVP wherever its
+  reading's document reads it and as a member of the command or grouped AVP
+  holding it, a grouped AVP's rules read for one application
+  (`; Application-ID:`) only in a message whose header, or a relayed message's
+  application-id AVPs, name that application; the predicates tying a member's
+  presence to its siblings, on each instance of it, a path from it reading that
+  one, or with no scope an AVP's to its own members (`constraint-present-if`,
+  `-absent-if`, `-requires`, `-excludes`), a value a sibling's condition
+  restricts (`constraint-values`), an answer's AVP echoing the request's
+  (`constraint-equals`), an AVP never sent in its scope (`constraint-absent`),
+  RFC 6733's rules on every answer in each answer of any application, an
+  `<answer-message>` with the E bit set holding those that read no request, and
+  a member two grouped AVPs beside each other hold with one value
+  (`constraint-unique`). An element the registry has no entry for or checks
+  nothing of is not checked, `text-only` not at all, and a rule naming a value
+  or bit no table numbers is left out.
 - An answer's rules on the request it answers
   ([constraints.md](constraints.md#the-block)), against that request where
   the capture holds it ([Requests](#requests)).

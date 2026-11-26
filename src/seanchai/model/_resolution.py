@@ -352,6 +352,7 @@ class _Resolver:
                 if each.avp == found.name
                 and each.command is None
                 and each.within is None
+                and each.messages is None
             )
             members = tuple(
                 each for each in view.constraints if each.within == found.name

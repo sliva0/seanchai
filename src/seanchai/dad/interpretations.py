@@ -130,6 +130,8 @@ class Interpretation:
             return f"{block.avp} in {block.within} (application {block.application_id})"
         if block.within is not None:
             return f"{block.avp} in {block.within}"
+        if block.messages is not None:
+            return f"{block.avp} in every {block.messages.value[:-1]}"
         return block.avp
 
 

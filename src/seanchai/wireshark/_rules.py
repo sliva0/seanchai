@@ -446,7 +446,11 @@ def _avp(
     # Interpreted constraints: the reading's own, and its members'. With no
     # scope a path starts at the AVP itself.
     own = _constraints(
-        (each for each in constraints.get(avp.id, ()) if each.within is None),
+        (
+            each
+            for each in constraints.get(avp.id, ())
+            if each.within is None and each.messages is None
+        ),
         places,
         names,
         {avp.name: avp.id},
@@ -708,7 +712,7 @@ def _constraint(
         ]
         if siblings
         and constraint.avp not in siblings
-        and (constraint.command or constraint.within)
+        and (constraint.command or constraint.within or constraint.messages)
         and constraint.avp_ids
         else []
     )
@@ -1065,6 +1069,11 @@ def rules_chunk(
             f"members={_body(answer.members)}",
             *_cited("at", places.clause(answer.defined_in, answer.section)),
         ]
+        # The rules holding in every answer that read no request: an
+        # <answer-message> answers any.
+        scoped = _scoped(answer.constraints, places, names, answer.members)
+        if scoped is not None:
+            fields.append(f"cons={scoped}")
         lines.append(f"answers[{lua_string(answer.id)}]={{{','.join(fields)}}}")
     codes: dict[int, dict[int, str]] = defaultdict(dict)
     masks: dict[str, set[int]] = defaultdict(set)

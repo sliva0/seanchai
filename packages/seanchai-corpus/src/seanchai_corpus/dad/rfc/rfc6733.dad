@@ -450,63 +450,19 @@ Disconnect-Cause ::= < Enumerated AVP header: 273 >
     absent
 
 
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-session-id-the-requests)
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#answer-session-id-the-requests)
 ; AVP: Session-Id
-; Command: Re-Auth-Answer
+; Messages: answers
 ; Section: 6.2
 ; Page: 80
 "If the Session-Id is present in the request, it MUST be included in the answer."
+    present-if request/Session-Id
     equals request/Session-Id
 
 
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-session-id-the-requests)
-; AVP: Session-Id
-; Command: Abort-Session-Answer
-; Section: 6.2
-; Page: 80
-"If the Session-Id is present in the request, it MUST be included in the answer."
-    equals request/Session-Id
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-session-id-the-requests)
-; AVP: Session-Id
-; Command: Session-Termination-Answer
-; Section: 6.2
-; Page: 80
-"If the Session-Id is present in the request, it MUST be included in the answer."
-    equals request/Session-Id
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-proxy-info-the-requests)
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#answer-proxy-info-the-requests)
 ; AVP: Proxy-Info
-; Command: Re-Auth-Answer
-; Section: 6.2
-; Page: 80
-"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
-    present-if request/Proxy-Info
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-proxy-info-the-requests)
-; AVP: Proxy-Info
-; Command: Abort-Session-Answer
-; Section: 6.2
-; Page: 80
-"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
-    present-if request/Proxy-Info
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-proxy-info-the-requests)
-; AVP: Proxy-Info
-; Command: Session-Termination-Answer
-; Section: 6.2
-; Page: 80
-"Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
-    present-if request/Proxy-Info
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-proxy-info-the-requests)
-; AVP: Proxy-Info
-; Command: Accounting-Answer
+; Messages: answers
 ; Section: 6.2
 ; Page: 80
 "Any Proxy-Info AVPs in the request MUST be added to the answer message, in the same order they were present in the request."
@@ -521,126 +477,18 @@ Disconnect-Cause ::= < Enumerated AVP header: 273 >
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-destination-host-absent)
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#answer-destination-host-absent)
 ; AVP: Destination-Host
-; Command: Capabilities-Exchange-Answer
+; Messages: answers
 ; Section: 6.5
 ; Page: 82
 "This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
     absent
 
 
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-destination-host-absent)
-; AVP: Destination-Host
-; Command: Disconnect-Peer-Answer
-; Section: 6.5
-; Page: 82
-"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-destination-host-absent)
-; AVP: Destination-Host
-; Command: Device-Watchdog-Answer
-; Section: 6.5
-; Page: 82
-"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-destination-host-absent)
-; AVP: Destination-Host
-; Command: Re-Auth-Answer
-; Section: 6.5
-; Page: 82
-"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-destination-host-absent)
-; AVP: Destination-Host
-; Command: Abort-Session-Answer
-; Section: 6.5
-; Page: 82
-"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-destination-host-absent)
-; AVP: Destination-Host
-; Command: Session-Termination-Answer
-; Section: 6.5
-; Page: 82
-"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-destination-host-absent)
-; AVP: Destination-Host
-; Command: Accounting-Answer
-; Section: 6.5
-; Page: 82
-"This AVP MUST be present in all unsolicited agent initiated messages, MAY be present in request messages, and MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-destination-realm-absent)
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#answer-destination-realm-absent)
 ; AVP: Destination-Realm
-; Command: Capabilities-Exchange-Answer
-; Section: 6.6
-; Page: 82
-"The Destination-Realm AVP MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-destination-realm-absent)
-; AVP: Destination-Realm
-; Command: Disconnect-Peer-Answer
-; Section: 6.6
-; Page: 82
-"The Destination-Realm AVP MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-destination-realm-absent)
-; AVP: Destination-Realm
-; Command: Device-Watchdog-Answer
-; Section: 6.6
-; Page: 82
-"The Destination-Realm AVP MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-destination-realm-absent)
-; AVP: Destination-Realm
-; Command: Re-Auth-Answer
-; Section: 6.6
-; Page: 82
-"The Destination-Realm AVP MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-destination-realm-absent)
-; AVP: Destination-Realm
-; Command: Abort-Session-Answer
-; Section: 6.6
-; Page: 82
-"The Destination-Realm AVP MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-destination-realm-absent)
-; AVP: Destination-Realm
-; Command: Session-Termination-Answer
-; Section: 6.6
-; Page: 82
-"The Destination-Realm AVP MUST NOT be present in answer messages."
-    absent
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-destination-realm-absent)
-; AVP: Destination-Realm
-; Command: Accounting-Answer
+; Messages: answers
 ; Section: 6.6
 ; Page: 82
 "The Destination-Realm AVP MUST NOT be present in answer messages."
@@ -730,10 +578,11 @@ Vendor-Specific-Application-Id ::= < AVP header: 260 >
 
 ; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#redirect-host-redirect-indication)
 ; AVP: Redirect-Host
+; Messages: answers
 ; Section: 6.12
 ; Page: 85
 "One or more instances of this AVP MUST be present if the answer message's 'E' bit is set and the Result-Code AVP is set to DIAMETER_REDIRECT_INDICATION."
-    text-only
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION
 
 
 ; Type: Enumerated AVP
@@ -752,10 +601,11 @@ Redirect-Host-Usage ::= < Enumerated AVP header: 261 >
 
 ; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#redirect-max-cache-time-redirect-indication)
 ; AVP: Redirect-Max-Cache-Time
+; Messages: answers
 ; Section: 6.14
 ; Page: 87
 "This AVP MUST be present in answer messages whose 'E' bit is set, whose Result-Code AVP is set to DIAMETER_REDIRECT_INDICATION, and whose Redirect-Host-Usage AVP set to a non-zero value."
-    text-only
+    present-if Result-Code = DIAMETER_REDIRECT_INDICATION and Redirect-Host-Usage and not Redirect-Host-Usage = DONT_CACHE
 
 
 ; Type: Value Table
@@ -806,147 +656,9 @@ DIAMETER_NO_COMMON_SECURITY        = 5017 ; 7.1.5
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#cea-failed-avp-with-the-error)
+; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#answer-failed-avp-with-the-error)
 ; AVP: Failed-AVP
-; Command: Capabilities-Exchange-Answer
-; Section: 7.1.5
-; Page: 92
-"DIAMETER_AVP_UNSUPPORTED 5001"
-"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
-"DIAMETER_INVALID_AVP_VALUE 5004"
-"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
-"DIAMETER_CONTRADICTING_AVPS 5007"
-"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
-"DIAMETER_AVP_NOT_ALLOWED 5008"
-"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
-"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
-"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
-"DIAMETER_INVALID_AVP_LENGTH 5014"
-"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
-    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
-        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
-        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
-        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dpa-failed-avp-with-the-error)
-; AVP: Failed-AVP
-; Command: Disconnect-Peer-Answer
-; Section: 7.1.5
-; Page: 92
-"DIAMETER_AVP_UNSUPPORTED 5001"
-"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
-"DIAMETER_INVALID_AVP_VALUE 5004"
-"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
-"DIAMETER_CONTRADICTING_AVPS 5007"
-"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
-"DIAMETER_AVP_NOT_ALLOWED 5008"
-"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
-"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
-"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
-"DIAMETER_INVALID_AVP_LENGTH 5014"
-"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
-    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
-        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
-        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
-        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#dwa-failed-avp-with-the-error)
-; AVP: Failed-AVP
-; Command: Device-Watchdog-Answer
-; Section: 7.1.5
-; Page: 92
-"DIAMETER_AVP_UNSUPPORTED 5001"
-"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
-"DIAMETER_INVALID_AVP_VALUE 5004"
-"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
-"DIAMETER_CONTRADICTING_AVPS 5007"
-"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
-"DIAMETER_AVP_NOT_ALLOWED 5008"
-"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
-"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
-"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
-"DIAMETER_INVALID_AVP_LENGTH 5014"
-"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
-    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
-        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
-        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
-        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#raa-failed-avp-with-the-error)
-; AVP: Failed-AVP
-; Command: Re-Auth-Answer
-; Section: 7.1.5
-; Page: 92
-"DIAMETER_AVP_UNSUPPORTED 5001"
-"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
-"DIAMETER_INVALID_AVP_VALUE 5004"
-"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
-"DIAMETER_CONTRADICTING_AVPS 5007"
-"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
-"DIAMETER_AVP_NOT_ALLOWED 5008"
-"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
-"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
-"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
-"DIAMETER_INVALID_AVP_LENGTH 5014"
-"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
-    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
-        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
-        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
-        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#asa-failed-avp-with-the-error)
-; AVP: Failed-AVP
-; Command: Abort-Session-Answer
-; Section: 7.1.5
-; Page: 92
-"DIAMETER_AVP_UNSUPPORTED 5001"
-"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
-"DIAMETER_INVALID_AVP_VALUE 5004"
-"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
-"DIAMETER_CONTRADICTING_AVPS 5007"
-"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
-"DIAMETER_AVP_NOT_ALLOWED 5008"
-"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
-"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
-"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
-"DIAMETER_INVALID_AVP_LENGTH 5014"
-"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
-    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
-        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
-        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
-        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#sta-failed-avp-with-the-error)
-; AVP: Failed-AVP
-; Command: Session-Termination-Answer
-; Section: 7.1.5
-; Page: 92
-"DIAMETER_AVP_UNSUPPORTED 5001"
-"A Diameter message with this error MUST contain one or more Failed-AVP AVPs containing the AVPs that caused the failure."
-"DIAMETER_INVALID_AVP_VALUE 5004"
-"A Diameter message indicating this error MUST include the offending AVPs within a Failed-AVP AVP."
-"DIAMETER_CONTRADICTING_AVPS 5007"
-"The Failed-AVP AVP MUST be present, which contain the AVPs that contradicted each other."
-"DIAMETER_AVP_NOT_ALLOWED 5008"
-"The Failed-AVP AVP MUST be included and contain a copy of the offending AVP."
-"DIAMETER_AVP_OCCURS_TOO_MANY_TIMES 5009"
-"The Failed-AVP AVP MUST be included and contain a copy of the first instance of the offending AVP that exceeded the maximum number of occurrences."
-"DIAMETER_INVALID_AVP_LENGTH 5014"
-"DIAMETER_INVALID_AVP_BIT_COMBO 5016"
-    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
-        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
-        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
-        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
-
-
-; Type: Interpreted Constraints ;; interpreted: (RFC6733.dadx#aca-failed-avp-with-the-error)
-; AVP: Failed-AVP
-; Command: Accounting-Answer
+; Messages: answers
 ; Section: 7.1.5
 ; Page: 92
 "DIAMETER_AVP_UNSUPPORTED 5001"

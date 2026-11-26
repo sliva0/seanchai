@@ -98,29 +98,34 @@ TS 29.272's file prints it:
 | `text-only` | `text-only` | (a reader decides) |
 
 A predicate's conditions, and a `values` rule's, are alternatives (`or`), each
-one or more conditions that must all hold (`and`, which binds tighter; there
-are no parentheses), each on a sibling in the block's `; Command:` or
-`; Within:` grouped AVP: present, holding a value (a number, or a name its
-values or result codes give it), holding one of several (`Result-Code in
-DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH`, names, numbers and ranges such
-as `5000..5999`, which holds as the `or` of each value's `=` would), or with
-a bit set (a number, or its bit table's name), or with `not` none of these
+one or more conditions that must all hold (`and`, which binds tighter; there are
+no parentheses), each on a sibling in the block's `; Command:` or `; Within:`
+grouped AVP: present, holding a value (a number, or a name its values or result
+codes give it), holding one of several
+(`Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH`, names, numbers
+and ranges such as `5000..5999`, which holds as the `or` of each value's `=`
+would), or with a bit set (a number, or its bit table's name), or with `not`
+none of these
 (`present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host`,
-`absent-if not Result-Code in DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS`).
-A condition resting on a value that cannot be read is unknown, and so is
-what it decides: `not` of an unknown is unknown, an `and` of a false one is
-false. Several predicates in one
-block must all hold. `absent-if` and `excludes` say the same of a presence
-condition, read from the other side; the kinds follow the clause's wording.
-`; Application-ID:` after `; Within:` holds them only where a message of
-that application, by its header's id, carries the grouped AVP. Without a
-scope the rules hold wherever the document reads the AVP, and a
-predicate there has no siblings to test, only the AVP's own members through
-a path. A scope's AVP is a member its body prints or one its `* [ AVP ]`
-admits, so a block may hold a command to a
-sentence about an AVP its ABNF leaves to the wildcard; `absent` says such
-an AVP is never sent there. A member of a grouped AVP the command holds is
-the grouped AVP's scope, not the command's.
+`absent-if not Result-Code in DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS`). A
+condition resting on a value that cannot be read is unknown, and so is what it
+decides: `not` of an unknown is unknown, an `and` of a false one is false.
+Several predicates in one block must all hold. `absent-if` and `excludes` say
+the same of a presence condition, read from the other side; the kinds follow the
+clause's wording. `; Application-ID:` after `; Within:` holds them only where a
+message of that application, by its header's id, carries the grouped AVP.
+`; Messages: answers` (or `requests`), with no other scope, holds them in every
+answer (or request) of any application whose document is built on the reading
+one (`; Bases:`), an answer with the E bit set, which takes the
+`<answer-message>`, among them, a condition on a member of the message and, in
+an answer, `request/` on the request it answers: RFC 6733's "MUST NOT be present
+in answer messages" (section 6.5). Without a scope the rules hold wherever the
+document reads the AVP, and a predicate there has no siblings to test, only the
+AVP's own members through a path. A scope's AVP is a member its body prints or
+one its `* [ AVP ]` admits, so a block may hold a command to a sentence about an
+AVP its ABNF leaves to the wildcard; `absent` says such an AVP is never sent
+there. A member of a grouped AVP the command holds is the grouped AVP's scope,
+not the command's.
 
 A name may be a path through grouped AVPs, `/` between the names, relative
 to the block's scope: `MIP6-Agent-Info/MIP-Home-Agent-Host` tests the
@@ -455,22 +460,28 @@ TS 29.173's 1 names 1 entry, which checks something:
 ## Precedence
 
 A rule belongs to the document whose clause it reads, and holds where that
-document's reading reaches: a block on a command, the command's print; a
-block within a grouped AVP, that AVP wherever the document reads it; a
-block with no scope, the AVP wherever the document reads it. A document
-reading an AVP or grouped AVP another defines reads the origin's rules with
-it, unless it reads that AVP itself, in the same scope: its blocks on the
-AVP with no scope set aside the origin's with no scope, and its blocks on a
-member within the grouped AVP the origin's on that member. So RFC 6733's
-reading of Vendor-Specific-Application-Id's Auth-Application-Id holds in
-TS 32.299, which reads only its Vendor-Id there, and a document that says
-otherwise of an AVP than its origin does writes its own reading of it,
-which is the one checked where it reads the AVP. A block within a grouped
-AVP for one application (`; Application-ID:`) holds in that application's
-messages alone, and sets the origin's rules on the member aside as one for
-every application does. A block on a command never
-reaches another document's print of it: RFC 6733's rules on its STR bind
-no application's own Session-Termination-Request.
+document's reading reaches: a block on a command, the command's print; a block
+within a grouped AVP, that AVP wherever the document reads it; a block with no
+scope, the AVP wherever the document reads it. A document reading an AVP or
+grouped AVP another defines reads the origin's rules with it, unless it reads
+that AVP itself, in the same scope: its blocks on the AVP with no scope set
+aside the origin's with no scope, and its blocks on a member within the grouped
+AVP the origin's on that member. So RFC 6733's reading of
+Vendor-Specific-Application-Id's Auth-Application-Id holds in TS 32.299, which
+reads only its Vendor-Id there, and a document that says otherwise of an AVP
+than its origin does writes its own reading of it, which is the one checked
+where it reads the AVP. A block within a grouped AVP for one application
+(`; Application-ID:`) holds in that application's messages alone, and sets the
+origin's rules on the member aside as one for every application does. A block
+holding in every answer or request (`; Messages:`) holds in each command of a
+document built on its own, relays', proxies' and redirect agents' answers among
+them, unless the command's document reads the AVP in a block of its own on the
+command, which sets it aside there: RFC 6733's Session-Id echo of section 6.2
+holds in S6a's ULA, and its ACA reads Session-Id in clause 9.7.2 instead. An
+answer with the E bit set holds the rules that read no request, since its
+`<answer-message>` answers any. A block on a command never reaches another
+document's print of it: RFC 6733's rules on its STR bind no application's own
+Session-Termination-Request.
 
 ## The interpretations file
 
@@ -498,23 +509,21 @@ specification:
     requires Non-IP-PDN-Type-Indicator = TRUE
 ```
 
-- A person writes the scope (`; AVP:`, `; Within:` with
-  `; Application-ID:`, or `; Command:` with `; Application-ID:`,
-  `; Command-Section:` and `; Request-Section:`, `; Section:`, `; Table:`),
-  the quotes and the rules, and `; Versions:`, the range the quotes were
-  checked against, which an RFC's file, with no version to name, leaves out
-  (a block naming one, or a 3GPP block naming none, is refused).
-  `; Application-ID:` names the application of the
-  command's print: its header's id, or where the header names none, the
-  one the application scope covering its clause gives it, as TS 29.212's
-  Gx and Gxx prints of CC-Request take theirs. After `; Within:` it names
-  the application whose messages, by their header's id, carry the grouped
-  AVP the rules hold in: where a document sets a member's value "for the
-  SWm application" in a clause of each application, as TS 29.273 sets
-  Feature-List-ID. `; Command-Section:` names
-  the clause of the command's block where the document prints the command
-  more than once for one application: TS 29.273 prints Diameter-EAP-Answer
-  for STa and SWd under STa's application.
+- A person writes the scope (`; AVP:`, `; Within:` with `; Application-ID:`,
+  `; Messages:`, or `; Command:` with `; Application-ID:`, `; Command-Section:`
+  and `; Request-Section:`, `; Section:`, `; Table:`), the quotes and the rules,
+  and `; Versions:`, the range the quotes were checked against, which an RFC's
+  file, with no version to name, leaves out (a block naming one, or a 3GPP block
+  naming none, is refused). `; Application-ID:` names the application of the
+  command's print: its header's id, or where the header names none, the one the
+  application scope covering its clause gives it, as TS 29.212's Gx and Gxx
+  prints of CC-Request take theirs. After `; Within:` it names the application
+  whose messages, by their header's id, carry the grouped AVP the rules hold in:
+  where a document sets a member's value "for the SWm application" in a clause
+  of each application, as TS 29.273 sets Feature-List-ID. `; Command-Section:`
+  names the clause of the command's block where the document prints the command
+  more than once for one application: TS 29.273 prints Diameter-EAP-Answer for
+  STa and SWd under STa's application.
 - `; Id:` names the block: a kebab-case name, unique in the file, naming what
   is read (`imei-digits`), not where. The corrected file's note and the
   corrections record cite it as `TS29.272.dadx#imei-digits`, so it stays put
@@ -1702,18 +1711,20 @@ codes, which are what the HSS answers with.
 RFC 6733 is read for what it says of the base protocol's AVPs and its own
 commands: sections 3 to 9, and section 10.1's occurrence table. The base
 protocol's AVPs are read by every application, so a block with no scope says
-only what the RFC says of the AVP wherever it is sent; what it says of a
-message is read on its own prints of CER/CEA, DWR/DWA, DPR/DPA, RAR/RAA,
-STR/STA, ASR/ASA and ACR/ACA, which no application's own print of a command
-shares ([Precedence](#precedence)). An RFC has one edition, so no block names
+only what the RFC says of the AVP wherever it is sent; what it says of
+answer messages in general is read in every answer of any application
+(`; Messages: answers`), and what it says of one of its commands on its own
+prints of CER/CEA, DWR/DWA, DPR/DPA, RAR/RAA, STR/STA, ASR/ASA and ACR/ACA,
+which no application's own print of a command shares
+([Precedence](#precedence)). An RFC has one edition, so no block names
 `; Versions:`.
 
 | | |
 |---|---|
-| sections 5.3 to 9.8 (capabilities, routing, errors, sessions, accounting) | 62 blocks |
+| sections 5.3 to 9.8 (capabilities, routing, errors, sessions, accounting) | 39 blocks |
 | section 10.1's table, each "0" cell of an AVP the command's body admits only through `* [ AVP ]` | 321 blocks |
-| blocks | 383: 360 within a command, 1 within a grouped AVP, 22 on an AVP wherever read |
-| readings | 386 |
+| blocks | 360: 332 within a command, 7 in every answer, 1 within a grouped AVP, 20 on an AVP wherever read |
+| readings | 363 |
 
 | Rules | |
 |---|---|
@@ -1722,11 +1733,11 @@ shares ([Precedence](#precedence)). An RFC has one edition, so no block names
 | `default` | 1: Inband-Security-Id NO_INBAND_SECURITY |
 | `members` | 1: `at-least-one`, Vendor-Specific-Application-Id's Auth- and Acct-Application-Id |
 | `excludes` | 1: the two within Vendor-Specific-Application-Id, exactly one of them |
-| `present-if` | 11: Proxy-Info in RAA, ASA, STA and ACA after the request's, Failed-AVP with the seven permanent failures whose clause requires one, in each of the seven answers |
-| `equals` | 4: Session-Id in RAA, ASA, STA (section 6.2) and ACA (9.7.2), the request's |
-| `absent` | 341: Destination-Host and Destination-Realm in the seven answers (sections 6.5, 6.6) and in CER, DPR and DWR, which cannot be proxied (6.1), and table 10.1's other "0" cells |
-| reading the request | 8: the answers' Session-Id and Proxy-Info |
-| `text-only` | 24 |
+| `present-if` | 5, in every answer: Session-Id and Proxy-Info after the request's (section 6.2), Failed-AVP with the seven permanent failures whose clause requires one (7.1.5), Redirect-Host with DIAMETER_REDIRECT_INDICATION (6.12) and Redirect-Max-Cache-Time beside a Redirect-Host-Usage other than DONT_CACHE (6.14) |
+| `equals` | 2: Session-Id in every answer (section 6.2) and in ACA (9.7.2), the request's |
+| `absent` | 329: Destination-Host and Destination-Realm in every answer (sections 6.5, 6.6) and in CER, DPR and DWR, which cannot be proxied (6.1), and table 10.1's other "0" cells |
+| reading the request | 4: the answers' Session-Id and Proxy-Info, ACA's Session-Id |
+| `text-only` | 22 |
 
 The header's fields and flags (sections 3 and 7.2: the version, the R, P, E
 and T bits, a protocol error's E bit, the P bit an answer shares with its
@@ -1736,10 +1747,13 @@ reads them; nor sections 4.2 and 4.3.1's data formats, which the plugin
 checks by type. A Session-Id begins with its sender's DiameterIdentity,
 the `session-id` codec, whatever follows its first `;`. An answer with the E
 bit set conforms to section 7.2's `<answer-message>`, not to its command's
-CCF, and no block's scope names the answer-message: Redirect-Host and
-Redirect-Max-Cache-Time with DIAMETER_REDIRECT_INDICATION (sections 6.12,
-6.14) are `text-only`, and the answers' Failed-AVP rules hold of an answer
-without the E bit.
+CCF, and holds the rules in every answer that read no request: Redirect-Host
+and Redirect-Max-Cache-Time with DIAMETER_REDIRECT_INDICATION (sections
+6.12, 6.14), whose answer is a protocol error's and so sets the E bit
+(7.1.3), Destination-Host and Destination-Realm absent, and Failed-AVP with
+the permanent failures, which section 7.1.5 lets such an answer carry. The
+Session-Id and Proxy-Info echo holds of each command's answer, against its
+own request; an `<answer-message>` answers any, and is not held to one.
 
 The text-only rules are conditions on the transport (Host-IP-Address per
 address over SCTP), the node (an unsolicited agent-initiated request's

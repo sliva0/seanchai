@@ -638,6 +638,9 @@ class _Builder:
         # grouped AVP's rules read for one application hold in.
         self.application: int | None = None
         for each in built.constraints:
+            if each.messages is not None:
+                # Every answer's or request's: each command carries it.
+                continue
             for identifier in each.avp_ids:
                 if each.within is None:
                     self.own.setdefault(identifier, []).append(each)
@@ -1637,6 +1640,7 @@ class _Negatives:
             if each.avp == name
             and each.command is None
             and each.within is None
+            and each.messages is None
             and of_kind(each)
             for avp_id in each.avp_ids
         }
@@ -1667,6 +1671,12 @@ class _Negatives:
             ):
                 return other.section
         return None
+
+    def elsewhere(self, each: dictionary.Constraint) -> bool:
+        """Whether `each` holds in every answer or request and is another
+        document's than the command's: its negatives are its own document's
+        commands', and every other command's valid vectors keep it."""
+        return each.messages is not None and each.reference != self.command.defined_in
 
     def skip(self, what: str, reason: str) -> None:
         self.generator.skipped.append(
@@ -2009,7 +2019,12 @@ class _Negatives:
         answer = self.generator.answers.get(self.command.answer_message)
         if answer is None:
             return
-        scope = _Scope(answer.members, {}, "answer-message")
+        rules: dict[str, list[dictionary.Constraint]] = {}
+        for each in answer.constraints:
+            rules.setdefault(each.avp, []).append(each)
+        scope = _Scope(
+            answer.members, {k: tuple(v) for k, v in rules.items()}, "answer-message"
+        )
         try:
             nodes = self.builder.body(scope, False)
         except _Unbuildable as error:
@@ -2450,6 +2465,8 @@ class _Negatives:
         for name, each, rule in self.builder.predicates(self.scope):
             if _reads_request(rule):
                 continue  # `request_vectors`
+            if self.elsewhere(each):
+                continue
             message = self.full()
             why = self.predicate_vector(
                 message, message.nodes, self.scope, name, each, rule
@@ -2550,6 +2567,10 @@ class _Negatives:
                     return "its conditions cannot be made to fail"
             # The rules reading the request too, which the plugin holds the
             # answer to where the capture has it.
+            if top and not message.error_bit and self.protocol_error(nodes):
+                # RFC 6733 section 7.1.3: such an answer sets the E bit and
+                # is the <answer-message>, which no negative is built of.
+                return "its conditions make a protocol error, sent with the E bit"
             broken = self.builder.broken(scope, nodes, message.asked if top else None)
             if [(n, k) for n, k, _ in broken] != [(name, rule.kind)]:
                 return "breaking it breaks another predicate too"
@@ -2586,6 +2607,15 @@ class _Negatives:
             "note",
         )
         return None
+
+    def protocol_error(self, nodes: Sequence[_Avp]) -> bool:
+        """Whether `nodes` hold a Result-Code of a protocol error (3xxx)."""
+        return any(
+            n.avp.name == "Result-Code"
+            and n.payload is not None
+            and 3000 <= int.from_bytes(n.payload, "big") < 4000
+            for n in nodes
+        )
 
     def beside(
         self,
@@ -2648,7 +2678,7 @@ class _Negatives:
         if self.scope.request is None:
             return
         for name, each, rule in self.builder.predicates(self.scope):
-            if not _reads_request(rule):
+            if not _reads_request(rule) or self.elsewhere(each):
                 continue
             what = f"{rule.kind}/{name}/{each.section}"
             made = self.pair(name, rule, each)

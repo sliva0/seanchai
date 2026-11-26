@@ -307,6 +307,8 @@ _SCOPED_DADX = [
     ("    length 1..15", "the octets", "comment.line.double-semicolon"),
     ("; Versions: 1.0.0", "..", "keyword.operator.range"),
     ("; Command-Section:", "6.1.1", "constant.other.section"),
+    ("; Messages:", "Messages", "keyword.other.directive"),
+    ("; Messages:", "answers", "string.unquoted.directive-value"),
     ("    absent-if ACME-Code in", "in", "keyword.operator.condition"),
     ("        5000..5999", "or", "keyword.operator.condition"),
     ("        5000..5999", "ACME-Flags", "variable.other.avp"),

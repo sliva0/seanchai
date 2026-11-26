@@ -1021,6 +1021,7 @@ class _Comparison:
                     c.command_section,
                     c.request_section,
                     c.within,
+                    c.messages,
                 ): c
                 for c in built.constraints
             }
@@ -1031,6 +1032,8 @@ class _Comparison:
             constraint = now or was
             assert constraint is not None
             scope = constraint.command or constraint.within
+            if constraint.messages is not None:
+                scope = f"every {constraint.messages[:-1]}"
             subject = constraint.avp + (f" in {scope}" if scope else "")
             where = {
                 "old": None if was is None else _constraint_where(was),

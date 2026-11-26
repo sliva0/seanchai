@@ -488,7 +488,8 @@ class Block(_Model):
       where its `; AVP:` line links, `request_target` where the request
       its rules read is printed, for a block scoped to an answer whose
       rules read one, and `fields` its scope (`Command`, `Application-ID`,
-      `Command-Section`, `Request-Section` or `Within`) and `Versions`.
+      `Command-Section`, `Request-Section`, `Within` or `Messages`) and
+      `Versions`.
       `interpreted` is true only here: a person read the block in the
       clause's prose, and no document prints it as structure.
       `quoted_from_pdf` is true for a hand transcription's block, its quotes

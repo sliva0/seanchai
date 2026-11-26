@@ -398,7 +398,9 @@ def test_a_cited_reading_is_what_the_citing_documents_commands_name(tmp_path):
 
 def test_an_application_keeps_what_its_commands_and_error_answers_use(tmp_path, built):
     """TS 29.229 clause 7.3.1's `<answer-message>`, and 3GPP2 X.S0013-006's,
-    whose Cx shares the id."""
+    whose Cx shares the id, and the AVPs a command's constraints name that
+    its body admits through `* [ AVP ]`: RFC 6733's Redirect-Host and
+    Redirect-Max-Cache-Time, which the rules on every answer name."""
     used = set()
     for application in built.applications(application_id=16777216):
         answer = built.answer_message(application.reference)
@@ -406,6 +408,13 @@ def test_an_application_keeps_what_its_commands_and_error_answers_use(tmp_path, 
         for member in (*application.walk(), *answer.walk()):
             if member.avp is not None:
                 used.add(member.avp.identity)
+        for message in application.messages:
+            names = {member.name for member in message.avps}
+            for each in message.constraints:
+                if each.avp not in names:
+                    found = built.resolve(application.reference, each.avp)
+                    if found is not None:
+                        used.add(found.identity)
 
     data = _dictionary(tmp_path, "--application", "16777216")
 

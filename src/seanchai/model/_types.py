@@ -135,8 +135,11 @@ class Constraint(_Plain):
     `within` names where the AVP is constrained as a member, and where a
     predicate's conditions are its siblings; with neither, wherever the
     document reads it. With `within`, `application_id` names the application
-    whose messages carry the grouped AVP the rules hold in.
-    `request_section` is the clause of the request a
+    whose messages carry the grouped AVP the rules hold in. `messages`
+    (`answers`, `requests`), with no other scope, holds them in every answer
+    or request of a document built on the reading one (`; Bases:`), which
+    each command's `Message.constraints` carries unless its own document
+    reads the AVP there. `request_section` is the clause of the request a
     rule of a block scoped to an answer reads (`ast.Root.REQUEST`): the one
     the block names, else the one print of the request under the answer's
     application, None where the block reads no request or the document
@@ -160,6 +163,7 @@ class Constraint(_Plain):
     versions: str | None
     readings: tuple[ast.Reading, ...]
     request_section: str | None = None
+    messages: str | None = None
     interpreted: bool = True
     quoted_from_pdf: bool = False
 
@@ -201,6 +205,7 @@ def _constraint(
         versions=block.versions,
         readings=block.readings,
         request_section=request_section,
+        messages=None if block.messages is None else block.messages.value,
         quoted_from_pdf=entry.spec.transcribed is not None,
     )
 
@@ -725,7 +730,9 @@ class Message(_Plain):
     # commands), in file order; each member holds those mapping it.
     elements: tuple[Element, ...] = ()
     # The document's constraints on the command's members
-    # (`Constraint.command`), in file order. Interpreted, not printed.
+    # (`Constraint.command`), in file order, then those holding in every
+    # answer or request (`Constraint.messages`) on an AVP the document's own
+    # leave unread. Interpreted, not printed.
     constraints: tuple[Constraint, ...] = ()
     # The codes the tables of the command's result codes list, its own
     # document's or a citing document's (TS 29.228's for TS 29.229's PPA), in
@@ -779,6 +786,9 @@ class AnswerMessage(_Plain):
     # The version of `defined_in` where the base it was taken from resolved
     # to an older copy, as a citation of the read-through document means it.
     defined_version: str | None = None
+    # The constraints holding in every answer (`Constraint.messages`) that
+    # read no request, of `read_through` and its bases.
+    constraints: tuple[Constraint, ...] = ()
 
     @property
     def document(self) -> str:

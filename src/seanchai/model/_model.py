@@ -365,13 +365,7 @@ class Model(_Resolver):
             dropped=dropped,
             version=self._older(view),
             elements=elements,
-            constraints=tuple(
-                each
-                for each in view.constraints
-                if each.command == message.name
-                and each.application_id in (None, message.application_id)
-                and each.command_section in (None, message.source.section)
-            ),
+            constraints=self._command_constraints(view, message),
             result_codes=tuple(
                 code
                 for printing, block in self._listed.get(id(message), ())
@@ -608,6 +602,61 @@ class Model(_Resolver):
         no document prints one. `version` selects an older held copy."""
         return self._answer_of(self._view(reference, version))
 
+    def _command_constraints(
+        self, view: _View, message: ast.Message
+    ) -> tuple[Constraint, ...]:
+        """The constraints on a command's members: its document's on it, and
+        those holding in every answer or request of the documents it is
+        built on (`; Messages:`) on an AVP its document reads in none of its
+        blocks on the command (Precedence)."""
+        own = tuple(
+            each
+            for each in view.constraints
+            if each.command == message.name
+            and each.application_id in (None, message.application_id)
+            and each.command_section in (None, message.source.section)
+        )
+        requesting = ast.CommandFlag.REQUEST in message.flags
+        wide = [
+            each
+            for each in self._message_wide(view, ())
+            if each.messages == ("requests" if requesting else "answers")
+            and each.avp not in {mine.avp for mine in own}
+        ]
+        if not wide:
+            return own
+        # The request a rule reads is the command's own: its one print under
+        # the answer's application, as an answer's own block reads it.
+        application = _effective_id(message, _scope(view, message))
+        asked = [
+            each
+            for each in view.messages
+            if ast.CommandFlag.REQUEST in each.flags
+            and each.command_code == message.command_code
+            and _effective_id(each, _scope(view, each)) == application
+        ]
+        section = asked[0].source.section if len(asked) == 1 else None
+        return own + tuple(
+            replace(each, request_section=section) if each.reads_request else each
+            for each in wide
+        )
+
+    def _message_wide(
+        self, view: _View, seen: tuple[Path, ...]
+    ) -> tuple[Constraint, ...]:
+        """The constraints holding in every answer or request (`; Messages:`)
+        of `view`'s document and of its `; Bases:` documents, depth first:
+        RFC 6733's, which every document built on it takes."""
+        found = [each for each in view.constraints if each.messages is not None]
+        for base in view.entry.spec.bases:
+            cited, _ = self._cited(view, base)
+            if cited is None or cited.entry.path in seen:
+                continue
+            for each in self._message_wide(cited, (*seen, view.entry.path)):
+                if each not in found:
+                    found.append(each)
+        return tuple(found)
+
     def _answer_of(self, view: _View) -> AnswerMessage | None:
         found = self._answering(view, ())
         if found is None:
@@ -622,6 +671,13 @@ class Model(_Resolver):
             dropped=dropped,
             version=self._older(view),
             defined_version=self._older(printing),
+            # A rule reading the request is a command's: an <answer-message>
+            # answers any.
+            constraints=tuple(
+                each
+                for each in self._message_wide(view, ())
+                if each.messages == "answers" and not each.reads_request
+            ),
         )
 
     def _answering(

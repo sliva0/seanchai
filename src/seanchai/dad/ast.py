@@ -79,6 +79,7 @@ __all__ = [
     "Marks",
     "MembersRule",
     "Message",
+    "Messages",
     "Node",
     "PageNumber",
     "PredicateKind",
@@ -1585,6 +1586,21 @@ class Root(enum.StrEnum):
     REQUEST = "request"
 
 
+class Messages(enum.StrEnum):
+    """The messages a block scoped to no command holds in, whatever document
+    prints them, the `<answer-message>` of an answer with the E bit set
+    among them (RFC 6733's "The Destination-Host and Destination-Realm AVPs
+    MUST NOT be present in the answer message", section 6.2).
+
+    - `answers`: every answer, a path rooted at `request` reading the
+      request it answers;
+    - `requests`: every request.
+    """
+
+    ANSWERS = "answers"
+    REQUESTS = "requests"
+
+
 class Reference(Node):
     """An AVP a rule reads beside its own, by `path`: a member of the
     block's command or grouped AVP (`Result-Code`), or with `root` a member
@@ -1920,7 +1936,10 @@ class InterpretedConstraints(Node):
     conditions are looked up; with neither, the rules hold wherever the
     document reads the AVP. With `within`, `application_id` holds them where a
     message of that application carries the grouped AVP ("set to 1 for the SWm
-    application", TS 29.273 clause 7.2.3.2). In a block scoped to an answer, a
+    application", TS 29.273 clause 7.2.3.2). `messages`, with no other
+    scope, holds them in every answer or request of any document built on
+    this one, a path rooted at `request` in an answer reading its request.
+    In a block scoped to an answer, a
     path rooted at `request` reads the request the answer answers: the same
     command code with the R bit, under the same application, printed at
     `request_section` where the document prints it more than once there.
@@ -1942,6 +1961,7 @@ class InterpretedConstraints(Node):
     command_section: SectionNumber | None = None
     request_section: SectionNumber | None = None
     within: AvpName | None = None
+    messages: Messages | None = None
     table: TableLabel | None = None
     source: SourceRef
     versions: VersionsText | None = None
@@ -1953,6 +1973,20 @@ class InterpretedConstraints(Node):
     def _shape(self) -> InterpretedConstraints:
         if self.command is not None and self.within is not None:
             raise ValueError("a block is scoped to a command or a grouped AVP")
+        if (
+            self.messages is not None
+            and (
+                self.command,
+                self.within,
+                self.application_id,
+                self.command_section,
+                self.request_section,
+            )
+            != (None,) * 5
+        ):
+            raise ValueError(
+                "Messages holds a block in every answer or request, of no command"
+            )
         if self.application_id is not None and self.command is self.within is None:
             raise ValueError(
                 "Application-ID chooses among a command's applications, or the"
@@ -1965,7 +1999,7 @@ class InterpretedConstraints(Node):
         )
         if self.request_section is not None and not reading:
             raise ValueError("Request-Section names the request no rule reads")
-        if reading and self.command is None:
+        if reading and self.command is None and self.messages is not Messages.ANSWERS:
             raise ValueError("a rule reads the request in a block scoped to no answer")
         if not isinstance(self.body[0], Quote):
             raise ValueError("the body opens with the quote its rules are read from")
@@ -2102,6 +2136,9 @@ def request_section(
     no rule reads the request, or the document prints it not once there."""
     if block.request_section is not None:
         return block.request_section
+    if block.messages is not None:
+        # Every answer's own request: each command's (`model.Message`).
+        return None
     if not any(
         reads_request(rule) for rule in block.body if not isinstance(rule, Quote)
     ):

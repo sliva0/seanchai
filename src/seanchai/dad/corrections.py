@@ -1314,6 +1314,7 @@ def _placed_constraints(
         node.application_id,
         node.command_section,
         node.within,
+        node.messages,
     )
     for _, section in sections:
         if (
@@ -1324,6 +1325,7 @@ def _placed_constraints(
                 section.application_id,
                 section.command_section,
                 section.within,
+                section.messages,
             )
             == scope
             and section.source.section == node.source.section

@@ -1031,9 +1031,12 @@ def test_interpreted_constraints_are_checked_and_cited(lua, s6a_rules, tmp_path)
     assert [rule for rule, _ in _constraint_findings(broken_sgsn)] == [
         "constraint-encoding"
     ]
-    ((rule, text),) = _constraint_findings(failed_ula)
-    assert rule == "constraint-requires"
-    assert "Result-Code = DIAMETER_SUCCESS" in text
+    # RFC 6733 section 7.1.5's Failed-AVP holds in S6a's answers too:
+    # DIAMETER_AVP_UNSUPPORTED (5001) without one breaks it.
+    failed = dict(_constraint_findings(failed_ula))
+    assert sorted(failed) == ["constraint-present-if", "constraint-requires"]
+    assert "Result-Code = DIAMETER_SUCCESS" in failed["constraint-requires"]
+    assert failed["constraint-present-if"].startswith("ULA: missing Failed-AVP")
     assert sorted(rule for rule, _ in _constraint_findings(broken_dsr)) == [
         "constraint-exclude",
         "constraint-requires",
@@ -1148,3 +1151,47 @@ def test_a_grouped_avps_rule_read_for_one_application_holds_there(
             clause
         ]
     assert not [text for _, text in _constraint_findings(vendor) if "Feature" in text]
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_base_protocols_rules_on_every_answer_hold_in_each(
+    lua, s6a_rules, tmp_path
+):
+    """RFC 6733's "MUST NOT be present in answer messages" (section 6.5)
+    holds in S6a's ULA, which TS 29.272 prints, and section 7.1.5's
+    Failed-AVP in an <answer-message> with the E bit set."""
+    destination = message(
+        316,
+        P,
+        S6A,
+        avp(263, b"mme;1;2"),
+        avp(260, avp(266, u32(TGPP)) + avp(258, u32(S6A))),
+        avp(268, u32(2001)),
+        avp(277, u32(1)),
+        avp(264, b"hss.example.com"),
+        avp(296, b"example.com"),
+        avp(293, b"mme.example.com"),
+        avp(1406, u32(0), vendor=TGPP),
+    )
+    error = message(
+        316,
+        P | E,
+        S6A,
+        avp(263, b"mme;1;2"),
+        avp(264, b"hss.example.com"),
+        avp(296, b"example.com"),
+        avp(268, u32(5004)),
+    )
+    ula, answer = _validate(lua, s6a_rules, tmp_path, destination, error)
+    assert (
+        "constraint-absent",
+        "Destination-Host: not allowed [RFC 6733 6.5, interpreted]",
+    ) in _constraint_findings(ula)
+    found = [
+        text
+        for rule, text in _constraint_findings(answer)
+        if rule == "constraint-present-if"
+    ]
+    assert len(found) == 1 and "missing Failed-AVP" in found[0], found
+    assert "[RFC 6733 7.1.5, interpreted]" in found[0]

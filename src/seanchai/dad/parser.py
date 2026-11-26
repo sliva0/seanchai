@@ -1346,6 +1346,7 @@ def _parse_interpreted_constraints(
     command_section = directives.pop("Command-Section", None)
     request_section = directives.pop("Request-Section", None)
     within = directives.pop("Within", None)
+    messages = directives.pop("Messages", None)
     table = directives.pop("Table", None)
     # Absent for a document with no version, an RFC.
     versions = directives.pop("Versions", None)
@@ -1361,6 +1362,15 @@ def _parse_interpreted_constraints(
     if table is not None:
         with _validated(table.lineno):
             _INLINE_TEXT.validate_python(table.value)
+    kind = None
+    if messages is not None:
+        try:
+            kind = ast.Messages(messages.value)
+        except ValueError:
+            raise DadParseError(
+                messages.lineno,
+                f"Messages is answers or requests, not {messages.value!r}",
+            ) from None
     items: list[ast.Quote | ast.ConstraintRule] = []
     for item_lineno, line in body:
         if match := _QUOTE_LINE_RE.match(line):
@@ -1384,6 +1394,7 @@ def _parse_interpreted_constraints(
             command_section=None if command_section is None else command_section.value,
             request_section=None if request_section is None else request_section.value,
             within=None if within is None else within.value,
+            messages=kind,
             table=None if table is None else table.value,
             source=source,
             versions=None if versions is None else versions.value,
@@ -1445,6 +1456,7 @@ _DIRECTIVE_PATHS: dict[str, ast.TreePath] = {
     "Feature-List-ID": ("feature_list_id",),
     "Application": ("application",),
     "Within": ("within",),
+    "Messages": ("messages",),
     "Versions": ("versions",),
     "Id": ("id",),
 }

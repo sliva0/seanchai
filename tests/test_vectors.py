@@ -732,7 +732,8 @@ def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_p
             assert missing == ""
     # Without the requests, the answers' rules on them go unchecked, said
     # once per answer, and no finding of them is reported (Example-Count's
-    # reads the answer's Ex-Pair alone).
+    # reads the answer's Ex-Pair alone): the five of the document's own and
+    # RFC 6733's two on every answer's Session-Id (section 6.2).
     alone = vectors.Vectors.model_validate(
         {
             **found.model_dump(),
@@ -748,7 +749,7 @@ def test_the_plugin_pairs_an_answer_with_its_request_in_the_capture(asked, tmp_p
     rows = _shown(
         work / "plugin.lua", capture, "seanchai.request_missing", "seanchai.rule"
     )
-    assert rows and all(missing == "5" for missing, _ in rows)
+    assert rows and all(missing == "7" for missing, _ in rows)
     reading = {"present-if", "absent-if", "requires", "equals"}
     assert not any(rule.removeprefix("constraint-") in reading for _, rule in rows)
 
@@ -1015,3 +1016,22 @@ def test_a_rule_on_each_instance_is_broken_beside_one_keeping_it(built):
         if node.name == "Monitoring-Event-Report"
     ]
     assert sorted("SCEF-ID" in each for each in held) == [False, True]
+
+
+def test_the_base_protocols_rules_on_every_answer_hold_in_each(built):
+    """RFC 6733 section 6.2's echo of the request's Session-Id and Proxy-Info
+    holds in every answer: S6a's valid answers carry the request's, and
+    their negatives are the base protocol's own commands', not S6a's."""
+    s6a = _vectors(built, 16777251)
+    (ula,) = [v for v in s6a.vectors if v.id == "16777251/ULA/maximal"]
+    assert ula.request is not None
+    asked = [n for n in ula.request.tree if n.name == "Proxy-Info"]
+    assert asked
+    assert [n for n in ula.tree if n.name == "Proxy-Info"] == asked
+    session = [n.data for n in ula.tree if n.name == "Session-Id"]
+    assert session == [n.data for n in ula.request.tree if n.name == "Session-Id"]
+    assert not [v.id for v in s6a.vectors if v.id.endswith(("/6.2", "/6.5", "/6.6"))]
+    base = _vectors(built, 0)
+    assert any(
+        v.id.endswith("/constraint-absent/Destination-Host/6.5") for v in base.vectors
+    )

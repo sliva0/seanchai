@@ -184,6 +184,7 @@ def _directives(
             ("AVP", "avp", section.avp),
             ("Command", "command", section.command),
             ("Within", "within", section.within),
+            ("Messages", "messages", section.messages),
             ("Application-ID", "application_id", section.application_id),
             ("Command-Section", "command_section", section.command_section),
             ("Request-Section", "request_section", section.request_section),

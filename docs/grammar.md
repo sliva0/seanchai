@@ -699,7 +699,8 @@ interpreted-constraints = "; Type: Interpreted Constraints" NL
                            ["; Command-Section: " section-number NL]
                            ["; Request-Section: " section-number NL]
                           / "; Within: " avp-name NL
-                           ["; Application-ID: " application-id NL]]
+                           ["; Application-ID: " application-id NL]
+                          / "; Messages: " ("answers" / "requests") NL]
                           "; Section: " section-number NL
                           ["; Table: " inline-text NL]
                           ["; Page: " 1*DIGIT NL]
@@ -780,19 +781,24 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   holds one. It stands in clause order after the last block of its clause or
   one before it, beside the clause it reads.
 - `; AVP:` is the AVP the rules constrain. `; Command:`, with
-  `; Application-ID:` where the file prints the command for several
-  applications (the header's id, else the one of the application scope
-  covering the command's clause, as TS 29.212's CC-Request for Gx and Gxx)
-  and `; Command-Section:`, the clause of the command's block, where it
-  prints the command more than once for one application or for none (TS
-  29.273's Diameter-EAP-Request for STa and SWd, as an Information
-  Elements block chooses), or `; Within:`, a grouped AVP, scopes them to the
-  AVP as a member there; a predicate's conditions are its siblings. With
-  neither, the rules hold wherever the document reads the AVP. After
-  `; Within:`, `; Application-ID:` holds the rules where a message of that
+  `; Application-ID:` where the file prints the command for several applications
+  (the header's id, else the one of the application scope covering the command's
+  clause, as TS 29.212's CC-Request for Gx and Gxx) and `; Command-Section:`,
+  the clause of the command's block, where it prints the command more than once
+  for one application or for none (TS 29.273's Diameter-EAP-Request for STa and
+  SWd, as an Information Elements block chooses), or `; Within:`, a grouped AVP,
+  scopes them to the AVP as a member there; a predicate's conditions are its
+  siblings. With neither, the rules hold wherever the document reads the AVP.
+  After `; Within:`, `; Application-ID:` holds the rules where a message of that
   application, its header's id, carries the grouped AVP: TS 29.273's
-  Feature-List-ID within Supported-Features, set to 1 "for the SWm
-  application" in a clause of its own (7.2.3.2).
+  Feature-List-ID within Supported-Features, set to 1 "for the SWm application"
+  in a clause of its own (7.2.3.2). `; Messages: answers` or
+  `; Messages: requests`, with no other scope, holds the rules in every answer,
+  or request, of any document built on this one (`; Bases:`), an answer's
+  `<answer-message>` among them: RFC 6733's "The Destination-Realm AVP MUST NOT
+  be present in answer messages" (section 6.6). A document's own block on the
+  AVP in a command sets such a rule aside there
+  ([constraints.md](constraints.md#precedence)).
 - A path names an AVP from the scope through the grouped AVPs before it,
   one name a level: `MIP6-Agent-Info/MIP-Home-Agent-Host` is the
   MIP-Home-Agent-Host of the block's command's MIP6-Agent-Info, as the
@@ -947,8 +953,8 @@ Checked by the AST after parsing:
   bit once, and two or more for `at-most-one` and `at-least-one`; a `members`
   rule names a member once, a `values` rule a value once; `unique` needs
   `; Within:`; a rule reading the request needs `; Command:`, and
-  `; Request-Section:` a rule reading the request; a value read from another AVP
-  starts at a root; `not` is said once of a condition.
-- Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
-  value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
-  and at least 1.
+  `; Request-Section:` a rule reading the request; `; Messages:` takes no other
+  scope, and a rule reading the request `answers`; a value read from another AVP
+  starts at a root; `not` is said once of a condition. - Command codes are
+  24-bit. Codes, vendor ids, application ids, enum values, value-table numbers
+  and Feature-List-IDs are 32-bit. Page numbers are 32-bit and at least 1.

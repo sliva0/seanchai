@@ -12,9 +12,10 @@ and the same corpus and options give the same bytes.
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import re
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Annotated, Any, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal, cast
 
 import pydantic
 from pydantic.json_schema import models_json_schema
@@ -261,7 +262,11 @@ class Constraint(_Model):
     carry the grouped AVP the rules hold in, and a dictionary of other
     applications leaves the constraint out. `request_section` is the clause
     of the request a rule of an answer's constraint reads, where one does
-    (`Reference.root`).
+    (`Reference.root`). `messages` (`answers`, `requests`), with no other
+    scope, holds it in every answer or request of a document built on the
+    reading one: each command carries it in its `constraints` unless its own
+    document reads the AVP there, and an `<answer-message>` those reading no
+    request.
     `avp_ids` are the readings carrying it: the AVP's own, the grouped AVP's
     for `within`, and the command's members of that name for `command`.
     `versions` is the range of the document's
@@ -286,6 +291,7 @@ class Constraint(_Model):
     versions: str | None
     readings: tuple[Reading, ...]
     quoted_from_pdf: bool = False
+    messages: Literal["answers", "requests"] | None = None
 
 
 class Value(_Model):
@@ -415,6 +421,9 @@ class AnswerMessage(_Model):
     members: tuple[Member, ...]
     dropped: tuple[Member, ...]
     walk: tuple[str, ...]
+    # The constraints holding in every answer that read no request
+    # (`Constraint.messages`).
+    constraints: tuple[Constraint, ...] = ()
 
 
 class Marks(_Model):
@@ -809,6 +818,23 @@ class _Builder:
             members=self.members(answer.avps),
             dropped=self.members(answer.dropped),
             walk=self.walk(answer.walk()),
+            constraints=tuple(
+                _constraint(
+                    each,
+                    [
+                        self.ids[member.avp]
+                        for member in answer.avps
+                        if member.name == each.avp and member.avp in self.ids
+                    ]
+                    # One its `* [ AVP ]` admits, as the document reads it.
+                    or [
+                        self.ids[avp]
+                        for avp in [self._built.resolve(answer.read_through, each.avp)]
+                        if avp is not None and avp in self.ids
+                    ],
+                )
+                for each in answer.constraints
+            ),
         )
 
     def command(
@@ -1023,6 +1049,7 @@ def _constraint(constraint: model.Constraint, ids: Iterable[str]) -> Constraint:
             for reading in constraint.readings
         ),
         quoted_from_pdf=constraint.quoted_from_pdf,
+        messages=cast(Literal["answers", "requests"] | None, constraint.messages),
     )
 
 
@@ -1380,6 +1407,11 @@ def build(
             builder.hold(admitted)
             for each in admitted:
                 constraints.reading(each)
+            # Those holding in every answer or request, listed once: the
+            # command's copy names its own request's clause.
+            for each in message.constraints:
+                if each.messages is not None:
+                    constraints.add(dataclasses.replace(each, request_section=None))
             for element in message.elements:
                 resolved.copy(element.reference, element.version)
         for reached in built.reached(application):
@@ -1411,7 +1443,7 @@ def build(
             for avp in listed:
                 constraints.reading(avp)
             for each in built.constraints(reference, version=version):
-                if each.command is None:
+                if each.command is None and each.messages is None:
                     constraints.add(each)
             for hole in built.holes(reference, version=version):
                 builder.holes.setdefault(_hole_id(hole), hole)

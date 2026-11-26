@@ -218,7 +218,7 @@ applications[]     id, reference, version, application_id, clause, name,
   marks[]          name, avp, table, section, marks: what the application's
                    tables mark about the names it reaches
 answer_messages[]  id, defined_in, defined_version, section, read_through,
-                   version, members[], dropped[], walk[]
+                   version, members[], dropped[], walk[], constraints[]
 avps[]             id, defining, kind (plain, grouped, enumerated), name,
                    vendor_id, code, data_type, basic_type, flag_rules,
                    may_encrypt, defined_in, version, section, read_through,
@@ -232,7 +232,7 @@ value_tables[]     kind (result-codes, bits, features, values), avp, avp_ids,
 constraints[]      interpreted, avp, avp_ids, command, application_id,
                    command_section, request_section, within, reference,
                    version, section, table, page, versions,
-                   quoted_from_pdf, readings[]: quotes, rules[]
+                   quoted_from_pdf, messages, readings[]: quotes, rules[]
 conflicts[]        vendor_id, code, defining, fields, obsolete,
                    readings[]: avp, obsoleted_by, paths[]
 ```
@@ -1120,32 +1120,32 @@ for message in s6a.messages:
         print(message.abbreviation, constraint.avp, constraint.table)
 ```
 
-- `Avp.constraints` holds what the document reading the AVP read of it
-  wherever it appears, or failing any, its origin's, as `value_tables` does;
-  like `value_tables` it is not part of the reading's identity. A document
-  reading an AVP it re-uses with constraints of its own, on the AVP or its
-  members, reads it through itself (`read_through`), so they hold where it
-  reads the AVP and not wherever the definition is read: TS 29.272 clause
-  7.3.43's rules on RFC 4004's MIP-Home-Agent-Host bind S6a's commands, not
-  RFC 4004's AA-Mobile-Node-Request.
-  `Grouped.member_constraints` holds what it read of the grouped AVP's
-  members, each member it reads as it says and the others as the origin
-  does, `Message.constraints` of the command's.
-- A `model.Constraint` has the `avp`, its scope (`command`,
-  `application_id` and `command_section`, or `within` and the
-  `application_id` whose messages it holds in), `request_section`,
-  the clause of the request an answer's rules read, `reference`, `version`,
-  `section`, `table` and `page`, `versions`, the range of versions the
-  quotes were checked against (None for an RFC, which has one edition and
-  no version), `quoted_from_pdf`, True for a hand transcription's, whose
-  quotes are held to the PDF it was copied from, and `readings`, each an
-  `ast.Reading` of
-  `quotes` and `rules` (`ast.LengthRule`, `RangeRule`, `ExcludeRule`,
-  `EncodingRule`, `PredicateRule`, `DefaultRule`, `BitsRule`, `MembersRule`,
-  `UniqueRule`, `ValuesRule`, `EqualsRule`, `AbsentRule`, `TextOnly`). A
-  condition is an `ast.Condition`, an `ast.Reference` (`root`, `path`) with
-  a test.
-  `interpreted` is always True.
+- `Avp.constraints` holds what the document reading the AVP read of it wherever
+  it appears, or failing any, its origin's, as `value_tables` does; like
+  `value_tables` it is not part of the reading's identity. A document reading an
+  AVP it re-uses with constraints of its own, on the AVP or its members, reads
+  it through itself (`read_through`), so they hold where it reads the AVP and
+  not wherever the definition is read: TS 29.272 clause 7.3.43's rules on RFC
+  4004's MIP-Home-Agent-Host bind S6a's commands, not RFC 4004's
+  AA-Mobile-Node-Request. `Grouped.member_constraints` holds what it read of the
+  grouped AVP's members, each member it reads as it says and the others as the
+  origin does, `Message.constraints` of the command's, then those holding in
+  every answer or request (`messages`, RFC 6733's) on an AVP the command's own
+  leave unread, each naming the command's request at `request_section`;
+  `AnswerMessage.constraints` those of every answer that read no request.
+- A `model.Constraint` has the `avp`, its scope (`command`, `application_id` and
+  `command_section`, or `within` and the `application_id` whose messages it
+  holds in, or `messages`, `answers` or `requests`, every one of any document
+  built on its own), `request_section`, the clause of the request an answer's
+  rules read, `reference`, `version`, `section`, `table` and `page`, `versions`,
+  the range of versions the quotes were checked against (None for an RFC, which
+  has one edition and no version), `quoted_from_pdf`, True for a hand
+  transcription's, whose quotes are held to the PDF it was copied from, and
+  `readings`, each an `ast.Reading` of `quotes` and `rules` (`ast.LengthRule`,
+  `RangeRule`, `ExcludeRule`, `EncodingRule`, `PredicateRule`, `DefaultRule`,
+  `BitsRule`, `MembersRule`, `UniqueRule`, `ValuesRule`, `EqualsRule`,
+  `AbsentRule`, `TextOnly`). A condition is an `ast.Condition`, an
+  `ast.Reference` (`root`, `path`) with a test. `interpreted` is always True.
 - `seanchai.constraints.check(rule, payload, data_type, codec, request)`
   tells whether a value rule holds of a payload, and `holds(rule, avp,
   scope, request)` whether a predicate, `values` or `equals` rule holds of

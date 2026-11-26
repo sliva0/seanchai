@@ -7,6 +7,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from .. import constraints as checks
 from .. import elements
@@ -739,7 +740,7 @@ def _constraints(
                 )
     # Rules on one AVP in one place: its blocks there, with those holding
     # wherever the document reads it.
-    places: dict[tuple[str, str | None, int | None, str | None, str | None], list] = {}
+    places: dict[tuple[Any, ...], list] = {}
     for block in blocks:
         places.setdefault(
             (
@@ -748,10 +749,11 @@ def _constraints(
                 block.application_id,
                 block.command_section,
                 block.within,
+                block.messages,
             ),
             [],
         ).append(block)
-    for (avp, command, application, _, within), here in places.items():
+    for (avp, command, application, _, within, _messages), here in places.items():
         rules = [
             rule
             for block in here
@@ -761,7 +763,7 @@ def _constraints(
         if command is not None or within is not None:
             rules += [
                 rule
-                for block in places.get((avp, None, None, None, None), ())
+                for block in places.get((avp, None, None, None, None, None), ())
                 for rule in block.body
                 if not isinstance(rule, ast.Quote)
             ]
@@ -769,7 +771,7 @@ def _constraints(
             # Those holding in every application's commands hold in this one's.
             rules += [
                 rule
-                for block in places.get((avp, None, None, None, within), ())
+                for block in places.get((avp, None, None, None, within, None), ())
                 for rule in block.body
                 if not isinstance(rule, ast.Quote)
             ]
@@ -790,4 +792,6 @@ def _element_text(rule: ast.EncodingRule) -> str:
 
 def _scope(block: ast.InterpretedConstraints) -> str:
     where = block.command or block.within
+    if block.messages is not None:
+        where = f"every {block.messages.value[:-1]}"
     return f"{block.avp} in {where}" if where else block.avp

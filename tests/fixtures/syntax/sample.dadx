@@ -35,3 +35,13 @@
 "It is absent with one of the ACME codes or a 5xxx one."
     absent-if ACME-Code in DIAMETER_ERROR_ACME, "ACME odd code", 3GPP_ACME_CODE,
         5000..5999 or not ACME-Flags in 1, 2
+
+
+; Type: Interpreted Constraints
+; Id: answer-trace-echo
+; AVP: ACME-Trace
+; Messages: answers
+; Section: 7.3.8
+; Versions: 1.2.0
+"Every answer carries the request's ACME-Trace."
+    present-if request/ACME-Trace

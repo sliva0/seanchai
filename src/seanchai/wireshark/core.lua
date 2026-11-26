@@ -2064,6 +2064,7 @@ function M.validate(rules, pdu, prefs, asked)
               .. answer.section,
             label = "answer-message",
             cite = answer.at,
+            cons = answer.cons,
           }
         end
       else
@@ -2090,6 +2091,7 @@ function M.validate(rules, pdu, prefs, asked)
         .. answer.section,
       label = "answer-message",
       cite = answer.at,
+      cons = answer.cons,
     }
   end
   if #forms == 0 then
