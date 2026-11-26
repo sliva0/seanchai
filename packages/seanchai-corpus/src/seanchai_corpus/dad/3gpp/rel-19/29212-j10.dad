@@ -2082,7 +2082,7 @@ Reporting-Level ::= < Enumerated AVP header: 1011 10415 >
 "Direction shall be set to \"out\"."
 "No options shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ; Type: Grouped AVP
@@ -2754,7 +2754,7 @@ Flow-Information ::= < AVP header: 1058 10415 > ;; corrected: (TS29.212.py#vendo
 "Direction shall be set to \"out\"."
 "No options shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ; Type: Grouped AVP
@@ -2971,7 +2971,7 @@ Routing-Filter ::= < AVP header: 1078 10415 > ;; corrected: (TS29.212.py#vendor-
 ; Page: 168
 ; Versions: 18.2.0..19.1.0
 "The direction information contained in the Flow-Description AVP shall be \"out\"."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#routing-ip-address-family)
@@ -3641,7 +3641,7 @@ CnHealthMonitor               = 15 ; O
 "Direction shall be keyword \"out\"."
 "No \"options\" shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ; Type: Value Table

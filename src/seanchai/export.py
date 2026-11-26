@@ -741,6 +741,11 @@ def _constraint_readings(
                     "clause": node.clause,
                     "element": node.element,
                     "element_entry": _json.element_entry(node),
+                    "filter": None
+                    if node.filter is None
+                    else export_schema.ConstraintIpFilter.model_validate(
+                        node.filter.model_dump()
+                    ),
                 }
             case ast.PredicateRule():
                 fields["conditions"] = tuple(

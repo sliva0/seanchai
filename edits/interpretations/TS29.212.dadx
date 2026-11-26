@@ -612,7 +612,7 @@
 "Direction shall be set to \"out\"."
 "No options shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ; Type: Interpreted Constraints
@@ -923,7 +923,7 @@
 "Direction shall be set to \"out\"."
 "No options shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ;; A deletion's Packet-Filter-Information holds a Packet-Filter-Identifier
@@ -1001,7 +1001,7 @@
 ; Section: 5.3.72
 ; Versions: 18.2.0..19.1.0
 "The direction information contained in the Flow-Description AVP shall be \"out\"."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ; Type: Interpreted Constraints
@@ -1356,7 +1356,7 @@
 "Direction shall be keyword \"out\"."
 "No \"options\" shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter-out
+    encoding ip-filter out
 
 
 ;; Clause 5.5.1, the Experimental-Result of every Gx answer.

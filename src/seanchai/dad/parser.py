@@ -1105,6 +1105,16 @@ _ENCODING_RE = re.compile(
     r"(?: (?P<document>[^\s\"]+)(?: (?P<clause>[^\s\"]+))?)?"
     rf"(?: (?P<element>{_QUOTED}))?$"
 )
+# An `ip-filter`'s restrictions: a direction, then each end's keywords and
+# the form of its ports, `from` the source's and `to` the destination's.
+_IP_FILTER_END = (
+    r"(?P<{0}>(?: (?:any|assigned))*)(?: (?P<{0}_ports>port-or-range|ports|port))?"
+)
+_IP_FILTER_RE = re.compile(
+    r"^encoding ip-filter(?: (?P<direction>in|out))?"
+    rf"(?: from{_IP_FILTER_END.format('source')})?"
+    rf"(?: to{_IP_FILTER_END.format('destination')})?$"
+)
 _PREDICATE_RE = re.compile(r"^(?P<kind>[a-z-]+) (?P<conditions>.+)$")
 _DEFAULT_RE = re.compile(rf"^default (?P<value>{_NAME_OR_NUMBER})$")
 _BITS_RE = re.compile(r"^bits (?P<relation>[a-z-]+) (?P<bits>[0-9]+(?: [0-9]+)*)$")
@@ -1160,6 +1170,31 @@ def _continued(
 
 def _bound(text: str | None) -> int | None:
     return None if text is None or text == "*" else int(text)
+
+
+def _ip_filter_end(match: re.Match[str], end: str) -> ast.IpFilterEnd:
+    """One end of an `ip-filter`'s restrictions, as `match` read it: every
+    keyword and any port form where the end is not named."""
+    if match[end] is None:
+        return ast.IpFilterEnd()
+    return ast.IpFilterEnd(
+        keywords=tuple(ast.IpFilterKeyword(word) for word in match[end].split()),
+        ports=ast.IpFilterPorts(match[f"{end}_ports"] or ast.IpFilterPorts.PORTS),
+    )
+
+
+def _ip_filter_rule(match: re.Match[str], lineno: int) -> ast.EncodingRule:
+    """`encoding ip-filter out from any to assigned`: the codec and the
+    restrictions `match` read."""
+    with _validated(lineno):
+        restrictions = ast.IpFilter(
+            direction=None
+            if match["direction"] is None
+            else ast.IpFilterDirection(match["direction"]),
+            source=_ip_filter_end(match, "source"),
+            destination=_ip_filter_end(match, "destination"),
+        )
+    return ast.EncodingRule(codec=ast.Codec.IP_FILTER, filter=restrictions)
 
 
 def _bounds(match: re.Match[str]) -> tuple[int | None, int | None]:
@@ -1274,6 +1309,15 @@ def _constraint_rule(text: str, lineno: int) -> ast.ConstraintRule:
         if match := _EXCLUDE_RE.match(text):
             return ast.ExcludeRule(
                 values=tuple(int(value) for value in match["values"].split(", "))
+            )
+        if text.startswith("encoding ip-filter "):
+            if match := _IP_FILTER_RE.match(text):
+                return _ip_filter_rule(match, lineno)
+            raise DadParseError(
+                lineno,
+                "an ip-filter's restrictions are a direction, 'in' or 'out',"
+                " then 'from' and 'to', each with 'any', 'assigned' and the"
+                " ports 'port-or-range', 'ports' or 'port', in this order",
             )
         if match := _ENCODING_RE.match(text):
             if match["codec"] not in ast.Codec:

@@ -399,6 +399,15 @@ def _contradictions(rules: Sequence[ast.ConstraintRule]) -> Iterable[str]:
     }
     if len(codecs) > 1:
         yield f"encodings {', '.join(sorted(codecs))} cannot both hold"
+    directions = {
+        rule.filter.direction
+        for rule in rules
+        if isinstance(rule, ast.EncodingRule)
+        and rule.filter is not None
+        and rule.filter.direction is not None
+    }
+    if len(directions) > 1:
+        yield "ip-filter directions in and out cannot both hold"
     for unit in ast.LengthUnit:
         bounds = [
             (rule.low, rule.high)

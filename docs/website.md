@@ -193,7 +193,8 @@ and in its raw mirror alike, each describing its own file's lines. Every
   wrapped over several, with `kind` and the fields of the dictionary's rule
   ([consumers.md](consumers.md#the-dictionary)), an `encoding element`
   rule's `element_entry` being omitted where the element registry has no
-  entry for the element ([constraints.md](constraints.md#elements)); and
+  entry for the element ([constraints.md](constraints.md#elements)), and an
+  `ip-filter` rule's `filter` where it has no further restrictions; and
   `request_target`, where the request its rules read is printed, for a
   block scoped to an answer whose rules read one (`root` `request` on a
   condition or reference). A condition carries `value`, `bit`, or

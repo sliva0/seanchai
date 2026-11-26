@@ -17,6 +17,7 @@
     { "include": "#avp-rule" },
     { "include": "#constraint-quote" },
     { "include": "#constraint-element" },
+    { "include": "#constraint-ip-filter" },
     { "include": "#constraint-rule" },
     { "include": "#constraint-continued" },
     { "include": "#enum-value" },
@@ -239,6 +240,23 @@
         "7": { "patterns": [{ "include": "#comment" }] }
       }
     },
+    "constraint-ip-filter": {
+      "comment": "An IPFilterRule's restrictions after its codec: a direction, then each end's keywords and the form of its ports, `encoding ip-filter out from any port-or-range to assigned port-or-range`.",
+      "match": "^(    )(encoding) (ip-filter)((?: (?:in|out|from|to|any|assigned|port-or-range|ports|port))*)(\\s*;;.*)?$",
+      "captures": {
+        "2": { "name": "keyword.control.constraint.dad" },
+        "3": { "name": "support.type.codec.dad" },
+        "4": {
+          "patterns": [
+            {
+              "match": "(port-or-range|ports|port|in|out|from|to|any|assigned)(?![\\w-])",
+              "name": "keyword.other.ip-filter.dad"
+            }
+          ]
+        },
+        "5": { "patterns": [{ "include": "#comment" }] }
+      }
+    },
     "constraint-rule": {
       "match": "^(    )(length|range|exclude|encoding|present-if|absent-if|requires|excludes|default|bits|members|unique|values|equals|absent|text-only)\\b(.*?)(\\s*;;.*)?$",
       "captures": {
@@ -267,7 +285,7 @@
           "name": "constant.language.unit.dad"
         },
         {
-          "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|ip-filter-out|ip-filter-flow|session-id|ip-filter|ip-address|time-zone|mac-address|element)(?=\\s|$)",
+          "match": "(?<=encoding )(e164-tbcd|plmn-id-prefix|plmn-id|digits|labels|apn|epc-plmn-domain|plmn-domain|session-id|ip-filter|ip-address|time-zone|mac-address|element)(?=\\s|$)",
           "name": "support.type.codec.dad"
         },
         {

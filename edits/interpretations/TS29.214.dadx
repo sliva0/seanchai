@@ -368,10 +368,11 @@
     text-only
 
 
-;; Clause 5.3.8's restrictions, read as `ip-filter-flow`. "Lists or ranges
-;; shall not be used" stands in the source port's item and is read of the
-;; source port alone; "a single IP flow" says what the filter describes, which
-;; a destination port list does not tell from several flows.
+;; Clause 5.3.8's restrictions: no `assigned` at either end, and the source
+;; port one port. "Lists or ranges shall not be used" stands in the source
+;; port's item and is read of the source port alone; "a single IP flow" says
+;; what the filter describes, which a destination port list does not tell
+;; from several flows.
 ; Type: Interpreted Constraints
 ; Id: flow-description-rx
 ; AVP: Flow-Description
@@ -382,7 +383,7 @@
 "No \"options\" shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
 "The keyword \"assigned\" shall not be used."
-    encoding ip-filter-flow
+    encoding ip-filter from any port to any
 "For the Rx interface, the Flow description AVP shall be used to describe a single IP flow."
     text-only
 

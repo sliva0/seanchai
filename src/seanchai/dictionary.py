@@ -195,7 +195,12 @@ class Rule(_Model):
     `exclude`: `values`. `encoding`: `codec`, and for an `element` the
     `document`, `clause` and `element` name, with `element_entry`, the
     element registry's entry for it (its check in words, how deep it goes and
-    the documents read), null where the registry has none. `present-if`,
+    the documents read), null where the registry has none; for an
+    `ip-filter`, `filter`, its further restrictions, null where it has none:
+    the one `direction` it takes (`in`, `out`, null for either), and its
+    `source` and `destination`, each the `keywords` its address may be
+    (`any`, `assigned`) and the form of its `ports` (`ports`, a list;
+    `port-or-range`; `port`). `present-if`,
     `absent-if`, `requires` and `excludes`: `conditions`, alternatives, each
     conditions every one of which holds (`and`).
     `default`: `value`,
@@ -237,6 +242,7 @@ class Rule(_Model):
     clause: str | None
     element: str | None
     element_entry: _json.ElementEntry | None
+    filter: ast.IpFilter | None
     conditions: tuple[tuple[Condition, ...], ...]
     value: int | str | None
     relation: ast.BitsRelation | None
@@ -982,6 +988,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
         "clause": None,
         "element": None,
         "element_entry": None,
+        "filter": None,
         "conditions": (),
         "value": None,
         "relation": None,
@@ -1003,6 +1010,7 @@ def _rule(rule: ast.ConstraintRule) -> Rule:
                 "clause": rule.clause,
                 "element": rule.element,
                 "element_entry": _json.element_entry(rule),
+                "filter": rule.filter,
             }
         case ast.PredicateRule():
             fields["conditions"] = tuple(

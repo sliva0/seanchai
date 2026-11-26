@@ -194,9 +194,7 @@ name. A layout no clause states is not here.
 | `ip-address` | an Address of family 1 (IPv4, 4 octets) or 2 (IPv6, 16) | RFC 6733 clause 4.3.1, as TS 29.272 clauses 7.3.98 and 7.3.109 restrict it |
 | `time-zone` | a sign and decimal digits, the offset from UTC in 15 minutes: `+8`, a zero offset `+0`, never `-0` | TS 29.272 clause 7.3.163 |
 | `mac-address` | a 6-octet MAC address as text, each octet two upper-case hexadecimal digits, joined by dashes: `00-10-A4-23-19-C0` | TS 29.273 clauses 5.2.3.23 and 5.2.3.30 |
-| `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports and port ranges; no options, no `!` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it |
-| `ip-filter-out` | an `ip-filter` of the direction `out`: `permit out 17 from 192.0.2.10/32 5060 to assigned` | TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2 |
-| `ip-filter-flow` | an `ip-filter` describing one IP flow: no `assigned`, and the source port, where given, one port, no list or range: `permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060` | RFC 6733 clause 4.3.1, as TS 29.214 clause 5.3.8 restricts it |
+| `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports, a list of ports and port ranges; no options, no `!`. A clause restricting it further says so after the codec: the direction (`out`), and for the source (`from`) and the destination (`to`) the keywords the address may be, `any`, `assigned`, both or neither, and the ports `port` (one) or `port-or-range` (one port or one range), so that `encoding ip-filter out from any to assigned` admits `permit out 17 from 192.0.2.10/32 5060 to assigned` and refuses `permit out ip from any to any` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it; further, TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2, TS 29.214 clause 5.3.8, ETSI TS 183 017 clause 7.3.17 |
 | `session-id` | a Session-Id's text: the sender's DiameterIdentity (a host name in ASCII, its labels of letters, digits and inner hyphens, at most 63 octets each and 255 in all), then nothing or a `;` and any text: `aaa.example.com;1876543210;523` | RFC 6733 clauses 8.8 and 9.8.5 |
 | `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
@@ -985,7 +983,7 @@ it omits (clause 5.3.4), and an ADC rule's ADC-Rule-Definition likewise
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 11: `ip-address` 6 (AN-GW-Address, CoA-IP-Address, Routing-IP-Address, TDF-IP-Address, HeNB-Local-IP-Address, UE-Local-IP-Address), `ip-filter-out` 4 (TFT-Filter, Packet-Filter-Content, Flow-Description wherever read and in Routing-Filter), `ip-filter` (Tunnel-Header-Filter) |
+| `encoding`, a codec | 11: `ip-address` 6 (AN-GW-Address, CoA-IP-Address, Routing-IP-Address, TDF-IP-Address, HeNB-Local-IP-Address, UE-Local-IP-Address), `ip-filter` 5 (`out`: TFT-Filter, Packet-Filter-Content, Flow-Description wherever read and in Routing-Filter; Tunnel-Header-Filter) |
 | `encoding element` | 4, naming 4 entries of the registry, all checked ([above](#elements)) |
 | `length` | 1: ToS-Traffic-Class, 2 octets |
 | `range` | 2: Priority-Level 1 to 15, Routing-Filter's Flow-Direction BIDIRECTIONAL |
@@ -1085,7 +1083,7 @@ or a modifying request must carry is `text-only`.
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 1: `ip-filter-flow` (Flow-Description) |
+| `encoding`, a codec | 1: `ip-filter from any port to any` (Flow-Description) |
 | `encoding element` | 5, naming 5 entries of the registry, 4 checked ([above](#elements)) |
 | `length` | 3, in octets: Framed-IPv6-Prefix 18, ToS-Traffic-Class 2, GLI-Identifier at most 200 |
 | `range` | 9: Auth-Application-Id 16777236, the 8 extended bandwidth AVPs at least 4294968 |
@@ -1110,8 +1108,9 @@ AAA the same Auth-Session-State; clause 4.4.12's AAR, which its MPS-Action
 AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING tells apart, an MPS-Identifier, a
 Media-Component-Description and the UE's address. Clause 4.4.10 holds every
 extended bandwidth AVP to more than 2^32-1 bit/s, at least 4294968 kbit/s.
-Flow-Description is clause 5.3.8's `ip-filter-flow`, the restrictions of
-TS 29.212's `ip-filter` with no `assigned` and the source port one port:
+Flow-Description is clause 5.3.8's `ip-filter from any port to any`, the
+restrictions of TS 29.212's `ip-filter` with no `assigned` and the source
+port one port:
 "Lists or ranges shall not be used" stands in the source port's item.
 
 The text-only rules are mostly conditions on an earlier message, the
@@ -2307,7 +2306,7 @@ present in the request" is read on the AF's requests, the AAR and STR, as
 the Destination-Host present beside the Destination-Realm their bodies
 require; the SPDF's RAR and ASR require both already. Flow-Description is
 `ip-filter`: "permit", no options and no "!", the keyword "assigned" the
-clause forbids too being one the codec admits, since `ip-filter-flow`,
+clause forbids too being one the codec admits, since TS 29.214's reading,
 which forbids it, also refuses a source port list, which clause 7.3.17's
 "Source and destination port (list or ranges)" allows.
 

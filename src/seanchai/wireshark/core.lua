@@ -460,7 +460,8 @@ end
 -- carries `cons`, its own; a grouped reading `member_cons[name]`, its
 -- members'; a command candidate `cons[name]`, its members'. Each is {at=n,
 -- rules={...}}, a rule {k=kind, ...}: a length's `u`, `lo` and `hi`, a range's
--- `lo` and `hi`, exclude's `v`, an encoding's `codec`, an element's `e`, its
+-- `lo` and `hi`, exclude's `v`, an encoding's `codec` and an ip-filter's
+-- restrictions `f` (`ip_filter_problem`), an element's `e`, its
 -- entry's number in the rules' `elements` (`element_problem`), a bits rule's
 -- relation `r` and bits `b`, a members rule's `r` and member identities `m`,
 -- a unique rule's member identity `i`, a predicate's `c`, conditions on
@@ -576,15 +577,21 @@ local function ipv6_ok(text)
   return ipv6_groups(text, true) == 8
 end
 
--- Why `token` is no IPFilterRule address: "any", "assigned" (unless
--- `no_assigned`), or an IPv4 or IPv6 number with an optional mask width
--- valid for its version.
-local function ip_filter_address(token, no_assigned)
-  if token == "any" or (token == "assigned" and not no_assigned) then
-    return nil
-  end
-  if token == "assigned" then
-    return "the keyword 'assigned' is used"
+-- Whether `keywords`, the keywords an `ip-filter` end may take joined by
+-- spaces, nil for both, holds `word`.
+local function ip_filter_keyword(keywords, word)
+  return keywords == nil or (" " .. keywords .. " "):find(" " .. word .. " ", 1, true)
+end
+
+-- Why `token` is no IPFilterRule address: one of `keywords` ("any",
+-- "assigned"), as `ip_filter_keyword` reads them, or an IPv4 or IPv6
+-- number with an optional mask width valid for its version.
+local function ip_filter_address(token, keywords)
+  if token == "any" or token == "assigned" then
+    if ip_filter_keyword(keywords, token) then
+      return nil
+    end
+    return string.format("the keyword '%s' is used", token)
   end
   local number, bits = token:match("^([^/]*)/(.*)$")
   number = number or token
@@ -618,11 +625,14 @@ local function ip_filter_ports(token)
 end
 
 -- Why `text` is no IPFilterRule (RFC 6733 clause 4.3.1) as the documents
--- restrict it: "permit", a direction ("out" where `out_only`), a protocol
--- number or "ip", "from" a source and "to" a destination, each an address
--- and optional ports, no options and no "!"; for one `flow`, no
--- "assigned" and the source port one port.
-local function ip_filter_problem(text, out_only, flow)
+-- restrict it: "permit", a direction, a protocol number or "ip", "from" a
+-- source and "to" a destination, each an address and optional ports, no
+-- options and no "!"; and as an encoding rule's `f` restricts it further,
+-- nil for nothing: its direction `d`, and the source's keywords `sk` and
+-- form of its ports `sp` ("port", "port-or-range"), the destination's `dk`
+-- and `dp`, a keyword list nil for both and a form nil for any list.
+local function ip_filter_problem(text, f)
+  f = f or {}
   if text:find("!", 1, true) then
     return "the invert modifier '!' is used"
   end
@@ -633,8 +643,11 @@ local function ip_filter_problem(text, out_only, flow)
   if tokens[1] ~= "permit" then
     return "the action is not 'permit'"
   end
-  if not (tokens[2] == "out" or (tokens[2] == "in" and not out_only)) then
-    return out_only and "the direction is not 'out'" or "no direction 'in' or 'out'"
+  if not (tokens[2] == "out" or tokens[2] == "in") then
+    return "no direction 'in' or 'out'"
+  end
+  if f.d and tokens[2] ~= f.d then
+    return string.format("the direction is not '%s'", f.d)
   end
   local protocol = tokens[3]
   if not (protocol == "ip" or (protocol and protocol:match("^%d+$")
@@ -642,28 +655,33 @@ local function ip_filter_problem(text, out_only, flow)
     return "no protocol number or 'ip'"
   end
   local position = 4
-  for _, keyword in ipairs({ "from", "to" }) do
+  for _, end_ in ipairs({ { "from", f.sk, f.sp, "source" },
+    { "to", f.dk, f.dp, "destination" } }) do
+    local keyword, keywords, ports, name = end_[1], end_[2], end_[3], end_[4]
     if tokens[position] ~= keyword then
       return string.format("no '%s'", keyword)
     end
     if not tokens[position + 1] then
       return string.format("no address after '%s'", keyword)
     end
-    local problem = ip_filter_address(tokens[position + 1], flow)
+    local problem = ip_filter_address(tokens[position + 1], keywords)
     if problem then
-      return problem
+      return problem .. " as the " .. name
     end
     position = position + 2
-    if tokens[position] and tokens[position] ~= "to" then
-      if not ip_filter_ports(tokens[position]) then
+    local given = tokens[position]
+    if given and given ~= "to" then
+      if not ip_filter_ports(given) then
         if keyword == "to" then
           return "options are used"
         end
-        return string.format("'%s' are no ports", tokens[position])
+        return string.format("'%s' are no ports", given)
       end
-      if flow and keyword == "from" and not tokens[position]:match("^%d+$") then
-        return string.format("the source port '%s' is a list or range",
-          tokens[position])
+      if ports == "port" and not given:match("^%d+$") then
+        return string.format("the %s port '%s' is a list or range", name, given)
+      end
+      if ports == "port-or-range" and given:find(",", 1, true) then
+        return string.format("the %s port '%s' is a list", name, given)
       end
       position = position + 1
     end
@@ -674,7 +692,7 @@ local function ip_filter_problem(text, out_only, flow)
   return nil
 end
 
-local function codec_problem(codec, s)
+local function codec_problem(codec, s, f)
   if codec == "e164-tbcd" then
     if #s < 1 or #s > 8 then
       return string.format("%d octets, a TBCD E.164 number is 1 to 8", #s)
@@ -747,9 +765,8 @@ local function codec_problem(codec, s)
     if problem then
       return "not begun by its sender's: " .. problem
     end
-  elseif codec == "ip-filter" or codec == "ip-filter-out"
-    or codec == "ip-filter-flow" then
-    return ip_filter_problem(s, codec == "ip-filter-out", codec == "ip-filter-flow")
+  elseif codec == "ip-filter" then
+    return ip_filter_problem(s, f)
   end
   return nil
 end
@@ -1222,7 +1239,7 @@ local function check_constraints(ctx, avp, reading, path, scoped)
             end
           end
         elseif rule.k == "encoding" then
-          problem = codec_problem(rule.codec, data)
+          problem = codec_problem(rule.codec, data, rule.f)
         elseif rule.k == "element" then
           element = ctx.rules.elements[rule.e]
           problem = element and element_problem(element, data, reading.type)

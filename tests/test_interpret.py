@@ -4,6 +4,7 @@ against the source document."""
 
 import re
 from pathlib import Path
+from typing import cast
 
 import pytest
 from conftest import _ROOT
@@ -55,6 +56,10 @@ _EVERY_RULE = _dad(
     "    encoding plmn-id",
     '    encoding element TS24.008 10.5.5.32 "Extended DRX parameter"',
     "    encoding element TS29.002",
+    "    encoding ip-filter",
+    "    encoding ip-filter out from any port-or-range to assigned port-or-range",
+    "    encoding ip-filter from any port to any",
+    "    encoding ip-filter in from",
     '    present-if Result-Code = DIAMETER_SUCCESS or Mode = "a b" or Other',
     "    absent-if Mode = 1 and not Other or not Level bit 2 and Kind and Level = 3",
     "    absent-if Emergency-Services bit Emergency-Indication",
@@ -162,7 +167,33 @@ def test_every_rule_reads_and_writes_back():
     assert second.rules[1] == ast.RangeRule(low=-1, high=None)
     assert second.rules[3] == ast.RangeRule(low=7, high=7)
     assert second.rules[5] == ast.LengthRule(unit=ast.LengthUnit.OCTETS, low=3, high=3)
-    compound = second.rules[11]
+    filters = list(second.rules[10:14])
+    assert all(isinstance(rule, ast.EncodingRule) for rule in filters)
+    assert [cast("ast.EncodingRule", rule).filter for rule in filters] == [
+        None,
+        ast.IpFilter(
+            direction=ast.IpFilterDirection.OUT,
+            source=ast.IpFilterEnd(
+                keywords=(ast.IpFilterKeyword.ANY,),
+                ports=ast.IpFilterPorts.PORT_OR_RANGE,
+            ),
+            destination=ast.IpFilterEnd(
+                keywords=(ast.IpFilterKeyword.ASSIGNED,),
+                ports=ast.IpFilterPorts.PORT_OR_RANGE,
+            ),
+        ),
+        ast.IpFilter(
+            source=ast.IpFilterEnd(
+                keywords=(ast.IpFilterKeyword.ANY,), ports=ast.IpFilterPorts.PORT
+            ),
+            destination=ast.IpFilterEnd(keywords=(ast.IpFilterKeyword.ANY,)),
+        ),
+        ast.IpFilter(
+            direction=ast.IpFilterDirection.IN,
+            source=ast.IpFilterEnd(keywords=()),
+        ),
+    ]
+    compound = second.rules[15]
     assert isinstance(compound, ast.PredicateRule)
     assert [
         [(each.avp, each.negated) for each in conjunction]
@@ -293,6 +324,18 @@ def test_a_block_may_hold_in_every_answer():
             11,
             "takes no document",
             id="codec-document",
+        ),
+        pytest.param(
+            _block('"Q."', "    encoding ip-filter from any assigned ports"),
+            11,
+            "restrict something",
+            id="ip-filter-nothing",
+        ),
+        pytest.param(
+            _block('"Q."', "    encoding ip-filter sideways"),
+            11,
+            "restrictions are a direction",
+            id="ip-filter-direction",
         ),
         pytest.param(
             _block('"Q."', "    encoding element"),
@@ -1074,6 +1117,15 @@ _BROKEN = _dad(
     "    encoding e164-tbcd",
     "",
     "",
+    "; Type: Interpreted Constraints",
+    "; AVP: Example-Text",
+    "; Section: 6.3.7",
+    "; Versions: 19.0.0",
+    '"Q."',
+    "    encoding ip-filter in",
+    "    encoding ip-filter out from any to assigned",
+    "",
+    "",
     "; Type: Value Table",
     "; AVP: Example-Flags",
     "; Kind: bits",
@@ -1233,6 +1285,15 @@ def test_the_linter_reports_what_cannot_hold():
         (
             "constraint-contradiction",
             "Example-Number: the lengths in octets leave none",
+        ),
+        (
+            "constraint-contradiction",
+            "Example-Text in Example-Request: ip-filter directions in and out"
+            " cannot both hold",
+        ),
+        (
+            "constraint-contradiction",
+            "Example-Text: ip-filter directions in and out cannot both hold",
         ),
         (
             "constraint-not-member",

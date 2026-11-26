@@ -577,7 +577,8 @@ def _constraint(
 ) -> str | None:
     """A constraint as `{at=n, rules={...}}`, each rule `{k=kind, ...}`:
     `u`, `lo`, `hi` for a length, `lo` and `hi` for a range, `v` for exclude,
-    `codec` for an encoding, `e` for an element's number in the rules'
+    `codec` for an encoding and `f` for an ip-filter's restrictions
+    (`_ip_filter`), `e` for an element's number in the rules'
     `elements`, `r` and `b` for a bits rule's relation and bits,
     `r` and `m` for a members rule's relation and the identities of the
     members it names, `i` for a unique rule's member identity, `c` for a
@@ -616,7 +617,8 @@ def _constraint(
                 assert rule.codec is not None
                 if rule.codec is not ast.Codec.ELEMENT:
                     rules.append(
-                        f"{{k='encoding',codec={lua_string(rule.codec.value)}}}"
+                        f"{{k='encoding',codec={lua_string(rule.codec.value)}"
+                        f"{_ip_filter(rule.filter)}}}"
                     )
                 elif (
                     rule.document is not None
@@ -892,6 +894,25 @@ def _ast_condition(condition: dictionary.Condition) -> ast.Condition:
         ),
         negated=condition.negated,
     )
+
+
+def _ip_filter(restrictions: ast.IpFilter | None) -> str:
+    """An `ip-filter`'s restrictions as the plugin's `f`, after a comma:
+    the direction `d`, the source's keywords `sk`, joined by spaces, and the
+    form of its ports `sp`, the destination's `dk` and `dp`, each left out
+    where it restricts nothing; nothing for none."""
+    if restrictions is None:
+        return ""
+    fields = []
+    if restrictions.direction is not None:
+        fields.append(f"d={lua_string(restrictions.direction.value)}")
+    for prefix, end in (("s", restrictions.source), ("d", restrictions.destination)):
+        if end.keywords != ast.IpFilterEnd().keywords:
+            words = " ".join(keyword.value for keyword in end.keywords)
+            fields.append(f"{prefix}k={lua_string(words)}")
+        if end.ports is not ast.IpFilterPorts.PORTS:
+            fields.append(f"{prefix}p={lua_string(end.ports.value)}")
+    return f",f={{{','.join(fields)}}}"
 
 
 def _bound(field: str, value: int | None) -> str:

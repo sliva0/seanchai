@@ -744,7 +744,7 @@ Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (
 "No \"options\" shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
 "The keyword \"assigned\" shall not be used."
-    encoding ip-filter-flow
+    encoding ip-filter from any port to any
 "For the Rx interface, the Flow description AVP shall be used to describe a single IP flow."
     text-only
 

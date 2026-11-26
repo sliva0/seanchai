@@ -401,13 +401,36 @@ class ConstraintCondition(ConstraintReference):
     negated: bool = False
 
 
+class ConstraintIpFilterEnd(_Model):
+    """What one end of an `ip-filter` may hold: an address always, the
+    `keywords` among `any` and `assigned`, and `ports` of that form
+    (`ports`, a list of ports and ranges; `port-or-range`; `port`)."""
+
+    keywords: tuple[ast.IpFilterKeyword, ...] = (
+        ast.IpFilterKeyword.ANY,
+        ast.IpFilterKeyword.ASSIGNED,
+    )
+    ports: ast.IpFilterPorts = ast.IpFilterPorts.PORTS
+
+
+class ConstraintIpFilter(_Model):
+    """How a clause restricts an `ip-filter`: the one `direction` it takes,
+    omitted for either, and its `source` and `destination` ends."""
+
+    direction: ast.IpFilterDirection | None = None
+    source: ConstraintIpFilterEnd = ConstraintIpFilterEnd()
+    destination: ConstraintIpFilterEnd = ConstraintIpFilterEnd()
+
+
 class ConstraintRule(_Model):
     """A rule of an Interpreted Constraints block at `line`, a rule wrapped
     over several lines at its first, by `kind`, as
     the dictionary's `Rule`: `length` has `unit`, `low` and `high`; `range`
     `low` and `high`; `exclude` `values`; `encoding` `codec`, and an
     `element`'s `document`, `clause` and `element`, with `element_entry`,
-    the element registry's entry for it, omitted where it has none;
+    the element registry's entry for it, omitted where it has none, and an
+    `ip-filter`'s `filter`, its further restrictions, omitted where it has
+    none;
     `present-if`,
     `absent-if`, `requires` and `excludes` their `conditions`, alternatives,
     each conditions joined by `and`;
@@ -443,6 +466,7 @@ class ConstraintRule(_Model):
     clause: str | None = None
     element: str | None = None
     element_entry: ElementEntry | None = None
+    filter: ConstraintIpFilter | None = None
     conditions: tuple[tuple[ConstraintCondition, ...], ...] = ()
     value: int | str | None = None
     relation: ast.BitsRelation | None = None

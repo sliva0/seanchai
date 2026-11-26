@@ -105,7 +105,7 @@ syn match dadConstraintQuote #^"\%([^"\\]\|\\["\\]\)*"\s*\%(;;.*\)\?$# contains=
 syn match dadQuote #^"\%([^"\\]\|\\["\\]\)*"# contained
 " The names in a constraint's rule, of a member, a sibling or a value (see
 " `dadConstraintRule`).
-syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadConstraintNumber,dadQuotedCell,dadComment
+syn match dadConstraintRule "^    \%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>.*$" contains=dadConstraintName,dadConstraintRoot,dadConstraintPath,dadConstraintKw,dadConstraintWord,dadConstraintOp,dadListComma,dadCodec,dadUnit,dadSpecRef,dadSection,dadElementClause,dadIpFilterWord,dadConstraintNumber,dadQuotedCell,dadComment
 syn match dadConstraintKw "^    \zs\%(length\|range\|exclude\|encoding\|present-if\|absent-if\|requires\|excludes\|default\|bits\|members\|unique\|values\|equals\|absent\|text-only\)\>" contained
 " A rule line the formatter wraps goes on in lines indented eight spaces,
 " after a comma of an `in` list: no AVP rule (a bracket), no enum value
@@ -118,9 +118,13 @@ syn match dadConstraintPath "/" contained
 syn match dadConstraintWord "\s\zs\%(or\|and\|not\|if\|bit\|in\|at-most-one\|at-least-one\|set\|clear\|only\)\ze\s" contained
 syn match dadConstraintOp "\.\.\|\%(\s\|\.\.\)\@2<=\*\|\s\@1<==\ze\s" contained
 " A codec after `encoding`, a length's unit after its bounds.
-syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|ip-filter-out\|ip-filter-flow\|session-id\|ip-filter\|ip-address\|time-zone\|mac-address\|element\)\ze\%(\s\|$\)" contained
+syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|session-id\|ip-filter\|ip-address\|time-zone\|mac-address\|element\)\ze\%(\s\|$\)" contained
 syn match dadUnit "\%([0-9*] \)\@2<=\%(octets\|digits\|characters\)\ze\s*\%(;;.*\)\=$" contained
 syn match dadConstraintNumber "\%(\s\|\.\.\)\@2<=-\?\d\+\ze\%(\s\|$\|\.\.\|,\)" contained
+" An IPFilterRule's restrictions after `encoding ip-filter`: a direction,
+" each end's keywords and the form of its ports, defined after the
+" condition words so that `in` is one of them here.
+syn match dadIpFilterWord "\%(^    encoding ip-filter\%( \S\+\)* \)\@<=\%(port-or-range\|ports\|port\|in\|out\|from\|to\|any\|assigned\)\ze\%(\s\|$\)" contained
 " An element's clause, after its document: an annex's letter alone too, and,
 " defined after the number so that it wins, digits alone (TS 23.032's 7).
 syn match dadElementClause "\%(^    encoding element \S\+ \)\@<=\%(\d\+[A-Za-z]*\|[A-Za-z]\+\)\%(\.\d\+[A-Za-z]*\)*\ze\%(\s\|$\)" contained
@@ -237,6 +241,7 @@ hi def link dadQuote          String
 hi def link dadConstraintKw   Statement
 hi def link dadConstraintWord Operator
 hi def link dadCodec          Type
+hi def link dadIpFilterWord   Keyword
 hi def link dadUnit           Constant
 hi def link dadConstraintNumber Number
 hi def link dadConstraintName Identifier

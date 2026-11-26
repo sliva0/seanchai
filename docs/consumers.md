@@ -306,7 +306,12 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   the element registry's entry for it or null where it has none (`title`,
   `check` in words, `depth`, `unchecked`, what it leaves and why, and
   `sources`, each `document`, `edition`, `clause` and `where`;
-  [constraints.md](constraints.md#elements)), a predicate's
+  [constraints.md](constraints.md#elements)), an `ip-filter`'s `filter`,
+  its further restrictions or null where it has none (`direction`, `in`,
+  `out` or null for either, and `source` and `destination`, each the
+  `keywords` its address may be, of `any` and `assigned`, and the form of
+  its `ports`, `ports`, `port-or-range` or `port`;
+  [constraints.md](constraints.md#codecs)), a predicate's
   `conditions`, alternatives each a list of conditions that must all hold,
   a default's `value`, a bits rule's `relation` and `bits`, a
   members rule's `relation` and `members`, a values rule's `values` and
@@ -1173,7 +1178,9 @@ for message in s6a.messages:
   scope, request)` whether a predicate, `values` or `equals` rule holds of
   a run of `constraints.Avp`s; one reading the request with none given is
   not evaluated (`Check.needs_request`). `codec_problem` says why a payload
-  is no such layout ([constraints.md](constraints.md#codecs)), and
+  is no such layout ([constraints.md](constraints.md#codecs)), an
+  `ip-filter` as the rule's `filter` restricts it
+  (`codec_problem(codec, payload, rule.filter)`), and
   `element_problem` why it is not the element an `encoding element` rule
   names, as `seanchai.elements` reads its document
   ([constraints.md](constraints.md#elements)).

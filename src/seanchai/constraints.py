@@ -72,8 +72,6 @@ CODEC_TYPES: dict[ast.Codec, frozenset[ast.DataType]] = {
     ast.Codec.MAC_ADDRESS: _TEXT,
     ast.Codec.SESSION_ID: _TEXT,
     ast.Codec.IP_FILTER: _FILTER,
-    ast.Codec.IP_FILTER_OUT: _FILTER,
-    ast.Codec.IP_FILTER_FLOW: _FILTER,
     ast.Codec.IP_ADDRESS: frozenset({ast.DataType.ADDRESS}),
     ast.Codec.ELEMENT: frozenset(ast.DataType),
 }
@@ -172,14 +170,16 @@ def _identity_problem(text: str) -> str | None:
     return None
 
 
-def _ip_filter_address(token: str, assigned: bool = True) -> str | None:
-    """Why `token` is no IPFilterRule address: `any`, `assigned` (unless not
-    `assigned`), or an IPv4 or IPv6 number with an optional mask width valid
-    for its version."""
-    if token == "any" or (token == "assigned" and assigned):
-        return None
-    if token == "assigned":
-        return "the keyword 'assigned' is used"
+def _ip_filter_address(
+    token: str, keywords: tuple[ast.IpFilterKeyword, ...]
+) -> str | None:
+    """Why `token` is no IPFilterRule address: one of `keywords` (`any`,
+    `assigned`), or an IPv4 or IPv6 number with an optional mask width
+    valid for its version."""
+    if token in ast.IpFilterKeyword:
+        if token in keywords:
+            return None
+        return f"the keyword {token!r} is used"
     number, slash, bits = token.partition("/")
     if "%" in number:
         return f"{token!r} is no address, 'any' or 'assigned'"
@@ -205,51 +205,67 @@ def _ip_filter_ports(token: str) -> bool:
     return True
 
 
-def _ip_filter_problem(text: str, out_only: bool, flow: bool = False) -> str | None:
+_NO_RESTRICTIONS = ast.IpFilter.model_construct()
+
+
+def _ip_filter_problem(text: str, restrictions: ast.IpFilter | None) -> str | None:
     """Why `text` is no IPFilterRule (RFC 6733 clause 4.3.1) as the
-    documents restrict it: `permit`, a direction (`out` where `out_only`),
-    a protocol number or `ip`, `from` a source and `to` a destination, each
-    an address and optional ports, no options and no `!`; for one `flow`,
-    no `assigned` and the source port one port."""
+    documents restrict it: `permit`, a direction, a protocol number or
+    `ip`, `from` a source and `to` a destination, each an address and
+    optional ports, no options and no `!`; and as `restrictions` restrict
+    it further, its direction, each end's keywords and the form of its
+    ports."""
+    if restrictions is None:
+        restrictions = _NO_RESTRICTIONS
     if "!" in text:
         return "the invert modifier '!' is used"
     tokens = text.split()
     if not tokens or tokens[0] != "permit":
         return "the action is not 'permit'"
-    if len(tokens) < 2 or tokens[1] not in (("out",) if out_only else ("in", "out")):
-        return (
-            "the direction is not 'out'" if out_only else "no direction 'in' or 'out'"
-        )
+    direction = restrictions.direction
+    if len(tokens) < 2 or tokens[1] not in ast.IpFilterDirection:
+        return "no direction 'in' or 'out'"
+    if direction is not None and tokens[1] != direction:
+        return f"the direction is not {str(direction)!r}"
     if len(tokens) < 3 or not (
         tokens[2] == "ip" or (tokens[2].isdigit() and int(tokens[2]) <= 255)
     ):
         return "no protocol number or 'ip'"
     position = 3
-    for keyword in ("from", "to"):
+    for keyword, end, name in (
+        ("from", restrictions.source, "source"),
+        ("to", restrictions.destination, "destination"),
+    ):
         if len(tokens) <= position or tokens[position] != keyword:
             return f"no '{keyword}'"
         if len(tokens) <= position + 1:
             return f"no address after '{keyword}'"
-        problem = _ip_filter_address(tokens[position + 1], assigned=not flow)
+        problem = _ip_filter_address(tokens[position + 1], end.keywords)
         if problem is not None:
-            return problem
+            return f"{problem} as the {name}"
         position += 2
         if position < len(tokens) and tokens[position] != "to":
-            if not _ip_filter_ports(tokens[position]):
+            ports = tokens[position]
+            if not _ip_filter_ports(ports):
                 if keyword == "to":
                     return "options are used"
-                return f"{tokens[position]!r} are no ports"
-            if flow and keyword == "from" and not tokens[position].isdigit():
-                return f"the source port {tokens[position]!r} is a list or range"
+                return f"{ports!r} are no ports"
+            if end.ports is ast.IpFilterPorts.PORT and not ports.isdigit():
+                return f"the {name} port {ports!r} is a list or range"
+            if end.ports is ast.IpFilterPorts.PORT_OR_RANGE and "," in ports:
+                return f"the {name} port {ports!r} is a list"
             position += 1
     if position != len(tokens):
         return "options are used"
     return None
 
 
-def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
+def codec_problem(
+    codec: ast.Codec, payload: bytes, restrictions: ast.IpFilter | None = None
+) -> str | None:
     """Why `payload` is not laid out as `codec` says, or None if it is, or
-    if `codec` is an `element`, whose layout `element_problem` checks."""
+    if `codec` is an `element`, whose layout `element_problem` checks; an
+    `ip-filter` as its rule's `restrictions` restrict it further."""
     match codec:
         case ast.Codec.E164_TBCD:
             if not 1 <= len(payload) <= 8:
@@ -309,12 +325,8 @@ def codec_problem(codec: ast.Codec, payload: bytes) -> str | None:
         case ast.Codec.SESSION_ID:
             problem = _identity_problem(text.partition(";")[0])
             return None if problem is None else f"not begun by its sender's: {problem}"
-        case ast.Codec.IP_FILTER | ast.Codec.IP_FILTER_OUT | ast.Codec.IP_FILTER_FLOW:
-            return _ip_filter_problem(
-                text,
-                codec is ast.Codec.IP_FILTER_OUT,
-                flow=codec is ast.Codec.IP_FILTER_FLOW,
-            )
+        case ast.Codec.IP_FILTER:
+            return _ip_filter_problem(text, restrictions)
     raise AssertionError(codec)
 
 
@@ -740,7 +752,7 @@ def check(
                     return Check(None)
                 problem = elements.problem(found, payload, data_type)
                 return Check(problem is None, problem)
-            problem = codec_problem(rule.codec, payload)
+            problem = codec_problem(rule.codec, payload, rule.filter)
             return Check(problem is None, problem)
         case ast.AbsentRule():
             # A payload is an AVP present.

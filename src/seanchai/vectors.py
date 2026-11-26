@@ -191,9 +191,8 @@ _CODEC = {
     ast.Codec.TIME_ZONE: b"+8",
     ast.Codec.MAC_ADDRESS: b"00-10-A4-23-19-C0",
     ast.Codec.SESSION_ID: b"aaa.example.com;1876543210;523",
-    ast.Codec.IP_FILTER: b"permit in 17 from assigned to 192.0.2.10/32 5060",
-    ast.Codec.IP_FILTER_OUT: b"permit out 17 from 192.0.2.10/32 5060 to assigned",
-    ast.Codec.IP_FILTER_FLOW: b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060",
+    # Addresses and one port at each end: what every restriction admits.
+    ast.Codec.IP_FILTER: b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060",
     ast.Codec.IP_ADDRESS: b"\x00\x01\xc0\x00\x02\x01",
 }
 # What breaks a codec's layout without changing its length.
@@ -210,8 +209,6 @@ _BROKEN_CODEC = {
     ast.Codec.MAC_ADDRESS: lambda good: good.lower(),
     ast.Codec.SESSION_ID: lambda good: b"-" + good[1:],
     ast.Codec.IP_FILTER: lambda good: b"deny  " + good[6:],
-    ast.Codec.IP_FILTER_OUT: lambda good: b"deny  " + good[6:],
-    ast.Codec.IP_FILTER_FLOW: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_ADDRESS: lambda good: b"\x00\x03" + good[2:],
 }
 
@@ -246,6 +243,19 @@ def _codec_of(rules: Sequence[dictionary.Rule]) -> ast.Codec | None:
         ),
         None,
     )
+
+
+def _codec_sample(codec: ast.Codec, rules: Sequence[dictionary.Rule]) -> bytes:
+    """A sample of `codec`'s layout the rules hold: an `ip-filter` of the
+    direction one of them restricts it to."""
+    sample = _CODEC[codec]
+    if codec is ast.Codec.IP_FILTER and any(
+        rule.filter is not None and rule.filter.direction is ast.IpFilterDirection.OUT
+        for rule in rules
+        if rule.kind == "encoding"
+    ):
+        return sample.replace(b"permit in ", b"permit out ", 1)
+    return sample
 
 
 def _element_of(rule: dictionary.Rule) -> elements.Element | None:
@@ -293,7 +303,7 @@ def _holds(
     if rule.kind == "encoding" and (entry := _element_of(rule)) is not None:
         return elements.problem(entry, payload, data_type) is None
     if rule.kind == "encoding" and rule.codec is not None:
-        return constraints.codec_problem(rule.codec, payload) is None
+        return constraints.codec_problem(rule.codec, payload, rule.filter) is None
     if rule.kind == "bits" and rule.relation is not None:
         value = constraints.bits_value(data_type, payload)
         if value is None:
@@ -457,7 +467,7 @@ def _payload(
             ]
             candidates = [_digits(codec, n) for n in [*counts, 10, 15, 1]]
         else:
-            candidates = [_CODEC[codec]]
+            candidates = [_codec_sample(codec, rules)]
     elif data_type is ast.DataType.GROUPED:
         # Typed Grouped by a table that prints no rule for it: nothing in it.
         candidates = [b""]

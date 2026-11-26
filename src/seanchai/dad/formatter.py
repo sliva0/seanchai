@@ -560,6 +560,21 @@ def _reservation(reservation: ast.RegistryReservation) -> str:
     return line
 
 
+def _ip_filter(restrictions: ast.IpFilter) -> list[str]:
+    """An `ip-filter`'s restrictions as the file prints them: the direction,
+    then `from` and `to` an end restricting something, its keywords and the
+    form of its ports, `ports` left unsaid."""
+    parts = [] if restrictions.direction is None else [str(restrictions.direction)]
+    for word, end in (("from", restrictions.source), ("to", restrictions.destination)):
+        if end == ast.IpFilterEnd():
+            continue
+        parts.append(word)
+        parts.extend(str(keyword) for keyword in end.keywords)
+        if end.ports is not ast.IpFilterPorts.PORTS:
+            parts.append(str(end.ports))
+    return parts
+
+
 def _quoted(text: str) -> str:
     escaped = text.replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
@@ -730,6 +745,8 @@ def constraint_rule(rule: ast.ConstraintRule, separator: str = ", ") -> str:
             parts.extend(part for part in (rule.document, rule.clause) if part)
             if rule.element is not None:
                 parts.append(_quoted(rule.element))
+            if rule.filter is not None:
+                parts.extend(_ip_filter(rule.filter))
             return " ".join(parts)
         case ast.PredicateRule():
             return f"{rule.kind} {conditions(rule.conditions, separator)}"

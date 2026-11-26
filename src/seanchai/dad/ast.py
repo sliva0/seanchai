@@ -71,6 +71,11 @@ __all__ = [
     "InterpretationBlock",
     "Interpretations",
     "InterpretedConstraints",
+    "IpFilter",
+    "IpFilterDirection",
+    "IpFilterEnd",
+    "IpFilterKeyword",
+    "IpFilterPorts",
     "LengthRule",
     "LengthUnit",
     "MBitOverride",
@@ -1460,12 +1465,11 @@ class Codec(enum.StrEnum):
       protocol number or `ip`, `from` a source and `to` a destination, each
       `any`, `assigned` or an IPv4 or IPv6 number with an optional mask
       width, and optional ports, a list of ports and port ranges; no options
-      and no `!` (TS 29.212 clause 5.3.34).
-    - `ip-filter-out`: an `ip-filter` of the direction `out` (TS 29.212
-      clauses 5.3.13, 5.3.54 and 5.4.2).
-    - `ip-filter-flow`: an `ip-filter` describing one flow as TS 29.214
-      clause 5.3.8 restricts it further: no `assigned`, and the source
-      port, where given, one port, no list or range.
+      and no `!` (TS 29.212 clause 5.3.34). Its `IpFilter` restricts it
+      further, as each document's clause does: one direction, the keywords
+      each end may take, and the ports one port, or one port or range (TS
+      29.212 clauses 5.3.13, 5.3.54 and 5.4.2, TS 29.214 clause 5.3.8, ETSI
+      TS 183 017 clause 7.3.17).
     - `session-id`: a Session-Id's text, the sender's DiameterIdentity
       first, then nothing or a `;` and any text (RFC 6733 clauses 8.8 and
       9.8.5), `aaa.example.com;1876543210;523`.
@@ -1486,8 +1490,6 @@ class Codec(enum.StrEnum):
     TIME_ZONE = "time-zone"
     MAC_ADDRESS = "mac-address"
     IP_FILTER = "ip-filter"
-    IP_FILTER_OUT = "ip-filter-out"
-    IP_FILTER_FLOW = "ip-filter-flow"
     SESSION_ID = "session-id"
     ELEMENT = "element"
 
@@ -1542,17 +1544,85 @@ class ExcludeRule(Node):
         return self
 
 
+class IpFilterDirection(enum.StrEnum):
+    """The one direction an `ip-filter` may take: `in` (uplink) or `out`
+    (downlink)."""
+
+    IN = "in"
+    OUT = "out"
+
+
+class IpFilterKeyword(enum.StrEnum):
+    """A keyword an IPFilterRule's address may be (RFC 6733 clause 4.3.1):
+    `any`, or `assigned`, the UE's address or prefix."""
+
+    ANY = "any"
+    ASSIGNED = "assigned"
+
+
+class IpFilterPorts(enum.StrEnum):
+    """What an `ip-filter` end's ports, where given, may be: `ports`, a list
+    of ports and port ranges (RFC 6733 clause 4.3.1); `port-or-range`, one
+    port or one range (TS 29.212 clause 5.4.2); `port`, one port, no list
+    or range (TS 29.214 clause 5.3.8's source port)."""
+
+    PORTS = "ports"
+    PORT_OR_RANGE = "port-or-range"
+    PORT = "port"
+
+
+_ALL_KEYWORDS = (IpFilterKeyword.ANY, IpFilterKeyword.ASSIGNED)
+
+
+class IpFilterEnd(Node):
+    """What one end of an `ip-filter`, its source (`from`) or destination
+    (`to`), may hold: an address always, the `keywords` among `any` and
+    `assigned`, and `ports` of that form."""
+
+    keywords: tuple[IpFilterKeyword, ...] = _ALL_KEYWORDS
+    ports: IpFilterPorts = IpFilterPorts.PORTS
+
+    @pydantic.model_validator(mode="after")
+    def _ordered(self) -> IpFilterEnd:
+        if self.keywords != tuple(k for k in _ALL_KEYWORDS if k in self.keywords):
+            raise ValueError(
+                "an ip-filter end names each keyword once, any before assigned"
+            )
+        return self
+
+
+class IpFilter(Node):
+    """How a clause restricts an `ip-filter` beyond the codec's own
+    restrictions: the one `direction` it may take, None for either, and its
+    `source` and `destination` ends.
+    `encoding ip-filter out from any port-or-range to assigned
+    port-or-range` is TS 29.212 clause 5.4.2's Flow-Description."""
+
+    direction: IpFilterDirection | None = None
+    source: IpFilterEnd = IpFilterEnd()
+    destination: IpFilterEnd = IpFilterEnd()
+
+    @pydantic.model_validator(mode="after")
+    def _restricts(self) -> IpFilter:
+        if self == IpFilter.model_construct():
+            raise ValueError("an ip-filter's restrictions restrict something")
+        return self
+
+
 class EncodingRule(Node):
     """`encoding plmn-id`, `encoding element TS24.008 10.5.5.32 "Extended DRX
-    parameter"`: the payload's layout, one of `Codec`. Only `element` takes
-    the document defining the element, and its clause and name where the
-    clause states them."""
+    parameter"`, `encoding ip-filter out from any to assigned`: the
+    payload's layout, one of `Codec`. Only `element` takes the document
+    defining the element, and its clause and name where the clause states
+    them; only `ip-filter` takes a `filter`, its further restrictions, None
+    where it has none."""
 
     kind: Literal["encoding"] = "encoding"
     codec: Codec
     document: SpecRef | None = None
     clause: SectionNumber | None = None
     element: Mark | None = None
+    filter: IpFilter | None = None
 
     @pydantic.model_validator(mode="after")
     def _parameters(self) -> EncodingRule:
@@ -1561,6 +1631,8 @@ class EncodingRule(Node):
                 raise ValueError("an element names the document defining it")
         elif (self.document, self.clause, self.element) != (None, None, None):
             raise ValueError(f"{self.codec.value} takes no document or element")
+        if self.filter is not None and self.codec is not Codec.IP_FILTER:
+            raise ValueError(f"{self.codec.value} takes no ip-filter restrictions")
         return self
 
 

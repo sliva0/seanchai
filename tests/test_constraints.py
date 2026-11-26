@@ -131,22 +131,13 @@ VECTORS = [
         Codec.SESSION_ID, b"aaa..example.com;1", False, id="session-empty-label"
     ),
     pytest.param(
-        Codec.IP_FILTER_OUT,
-        b"permit out 17 from 192.0.2.10/32 5060 to assigned",
-        True,
-        id="filter-out",
+        Codec.IP_FILTER, b"permit in ip from any to assigned", True, id="filter-in-ok"
     ),
     pytest.param(
-        Codec.IP_FILTER_OUT,
+        Codec.IP_FILTER,
         b"permit out ip from 2001:db8::/32 to any 1-1023,8080",
         True,
         id="filter-ipv6-ports",
-    ),
-    pytest.param(
-        Codec.IP_FILTER_OUT, b"permit in ip from any to any", False, id="filter-in"
-    ),
-    pytest.param(
-        Codec.IP_FILTER, b"permit in ip from any to assigned", True, id="filter-in-ok"
     ),
     pytest.param(
         Codec.IP_FILTER, b"deny in ip from any to assigned", False, id="filter-deny"
@@ -179,31 +170,7 @@ VECTORS = [
         Codec.IP_FILTER, b"permit out ip from any to any 70000", False, id="filter-port"
     ),
     pytest.param(
-        Codec.IP_FILTER_FLOW,
-        b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 1-1023,8080",
-        True,
-        id="flow",
-    ),
-    pytest.param(
-        Codec.IP_FILTER_FLOW, b"permit out ip from any to any", True, id="flow-any"
-    ),
-    pytest.param(
-        Codec.IP_FILTER_FLOW,
-        b"permit out ip from assigned to any",
-        False,
-        id="flow-assigned",
-    ),
-    pytest.param(
-        Codec.IP_FILTER_FLOW,
-        b"permit in 17 from any 5060,5062 to any",
-        False,
-        id="flow-source-list",
-    ),
-    pytest.param(
-        Codec.IP_FILTER_FLOW,
-        b"permit in 17 from any 5060-5070 to any",
-        False,
-        id="flow-source-range",
+        Codec.IP_FILTER, b"permit up ip from any to any", False, id="filter-direction"
     ),
     pytest.param(Codec.ELEMENT, b"\xff\xff", True, id="element-unchecked"),
 ]
@@ -247,6 +214,128 @@ def test_the_plugin_reads_each_layout_as_python_does(lua, tmp_path):
     )
     arguments = [part for codec, payload, _ in cases for part in (codec, payload.hex())]
     done = _run(lua, tmp_path, script, arguments)
+
+    assert done.stdout.splitlines() == [
+        "ok" if holds else "no" for _, _, holds in cases
+    ]
+
+
+# (an ip-filter's restrictions as a rule spells them, payload, whether it holds)
+FILTER_VECTORS = [
+    pytest.param(
+        "out", b"permit out 17 from 192.0.2.10/32 5060 to assigned", True, id="out"
+    ),
+    pytest.param("out", b"permit in ip from any to any", False, id="out-in"),
+    pytest.param("in", b"permit in ip from any to any", True, id="in"),
+    pytest.param("in", b"permit out ip from any to any", False, id="in-out"),
+    pytest.param(
+        "out from any to assigned",
+        b"permit out ip from any 1-1023,8080 to assigned",
+        True,
+        id="tft",
+    ),
+    pytest.param(
+        "out from any to assigned",
+        b"permit out ip from assigned to assigned",
+        False,
+        id="tft-source-assigned",
+    ),
+    pytest.param(
+        "out from any to assigned",
+        b"permit out ip from any to any",
+        False,
+        id="tft-destination-any",
+    ),
+    pytest.param(
+        "out from any port-or-range to assigned port-or-range",
+        b"permit out 17 from 192.0.2.0/24 1000-2000 to assigned 5060",
+        True,
+        id="flow-description-range",
+    ),
+    pytest.param(
+        "out from any port-or-range to assigned port-or-range",
+        b"permit out 17 from any 1000,2000 to assigned",
+        False,
+        id="flow-description-source-list",
+    ),
+    pytest.param(
+        "out from any port-or-range to assigned port-or-range",
+        b"permit out 17 from any to assigned 5060,5062",
+        False,
+        id="flow-description-destination-list",
+    ),
+    pytest.param(
+        "from any port to any",
+        b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 1-1023,8080",
+        True,
+        id="rx",
+    ),
+    pytest.param(
+        "from any port to any", b"permit out ip from any to any", True, id="rx-any"
+    ),
+    pytest.param(
+        "from any port to any",
+        b"permit out ip from assigned to any",
+        False,
+        id="rx-assigned",
+    ),
+    pytest.param(
+        "from any port to any",
+        b"permit in 17 from any 5060,5062 to any",
+        False,
+        id="rx-source-list",
+    ),
+    pytest.param(
+        "from any port to any",
+        b"permit in 17 from any 5060-5070 to any",
+        False,
+        id="rx-source-range",
+    ),
+    pytest.param(
+        "from to", b"permit in ip from any to 192.0.2.1", False, id="no-keyword"
+    ),
+    pytest.param(
+        "from to", b"permit in ip from 192.0.2.2 to 192.0.2.1", True, id="addresses"
+    ),
+]
+
+
+def _restrictions(text: str) -> ast.IpFilter:
+    rule = _rule(f"encoding ip-filter {text}")
+    assert isinstance(rule, ast.EncodingRule)
+    assert rule.filter is not None
+    return rule.filter
+
+
+@pytest.mark.parametrize(("text", "payload", "holds"), FILTER_VECTORS)
+def test_an_ip_filter_reads_its_restrictions(text, payload, holds):
+    problem = constraints.codec_problem(Codec.IP_FILTER, payload, _restrictions(text))
+    assert (problem is None) is holds
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_plugin_reads_an_ip_filters_restrictions_as_python_does(lua, tmp_path):
+    from seanchai.wireshark import _rules
+
+    cases = [cast("tuple[str, bytes, bool]", each.values) for each in FILTER_VECTORS]
+    tables = ", ".join(
+        _rules._ip_filter(_restrictions(text)).removeprefix(",f=")
+        for text, _, _ in cases
+    )
+    script = (
+        f"local core = dofile({json.dumps(str(CORE))})\n"
+        f"local tables = {{ {tables} }}\n"
+        "local function unhex(text)\n"
+        "  return (text:gsub('..', function(pair)\n"
+        "    return string.char(tonumber(pair, 16)) end))\n"
+        "end\n"
+        "for index = 1, #arg do\n"
+        "  print(core.codec_problem('ip-filter', unhex(arg[index]), tables[index])"
+        " and 'no' or 'ok')\n"
+        "end\n"
+    )
+    done = _run(lua, tmp_path, script, [payload.hex() for _, payload, _ in cases])
 
     assert done.stdout.splitlines() == [
         "ok" if holds else "no" for _, _, holds in cases

@@ -724,11 +724,14 @@ integer       = ["-"] 1*DIGIT
 encoding      = "encoding " codec
               / "encoding element " spec-ref [SP section-number]
                 [SP DQUOTE name-text DQUOTE]
+              / "encoding ip-filter" [SP ("in" / "out")]
+                [" from" filter-end] [" to" filter-end]
 codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
               / "labels" / "apn" / "plmn-domain" / "epc-plmn-domain"
               / "ip-address" / "time-zone" / "mac-address"
-              / "ip-filter" / "ip-filter-out" / "ip-filter-flow"
-              / "session-id"
+              / "ip-filter" / "session-id"
+filter-end    = [" any"] [" assigned"]
+                [SP ("port-or-range" / "ports" / "port")]
 predicate     = predicate-kind SP conditions
 predicate-kind = "present-if" / "absent-if" / "requires" / "excludes"
 conditions    = conjunction *(" or " conjunction)
@@ -826,7 +829,15 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
 - `encoding` names the layout, one of a closed set of codecs
   ([consumers.md](consumers.md#interpreted-constraints) gives each one's
   clause). `element` is another document's information element carried
-  whole, with the clause and name the clause gives.
+  whole, with the clause and name the clause gives. `ip-filter` may name
+  how a clause restricts it further: the one direction, `in` or `out`, and
+  for its source (`from`) and destination (`to`) the keywords the address
+  may be, of `any` and `assigned`, none where only an address is (`from`
+  alone), and the form of the ports, `port` (one), `port-or-range` (one
+  port or one range) or `ports`, a list, as an end left unnamed has:
+  `encoding ip-filter out from any port-or-range to assigned port-or-range`
+  is TS 29.212 clause 5.4.2's Flow-Description. An end naming both
+  keywords and `ports` restricts nothing and is not written.
 - A predicate ties the AVP's presence to conditions on its siblings, `or`
   joining alternatives and `and` the conditions of one, which binds
   tighter, with no parentheses: `present-if Result-Code = DIAMETER_SUCCESS
