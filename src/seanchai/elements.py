@@ -1797,6 +1797,38 @@ REGISTRY: tuple[Element, ...] = (
         example=b"\x00\x40\x20\x01\x0d\xb8\x00\x00\x00\x00",
     ),
     Element(
+        "TS29.212",
+        "5b.4.0",
+        "Framed-IPv6-Prefix",
+        "the UE's full IPv6 address as the TDF's unsolicited Sd CC-Request"
+        " carries it: RFC 3162's Framed-IPv6-Prefix with a prefix length of 128",
+        (
+            Source(
+                "TS29.212",
+                "V19.1.0",
+                "5b.4.0",
+                "table 5b.4.0.1, Framed-Ipv6-Prefix: 'The TDF shall set the"
+                ' "Prefix Length" to 128 and encode the Ipv6 address of the UE'
+                ' within the "Prefix" field\'',
+            ),
+            Source(
+                "RFC3162",
+                "(August 2001)",
+                "2.3",
+                "Reserved 'always set to zero', Prefix-Length, Prefix 'up to 16"
+                " octets in length'",
+            ),
+        ),
+        (
+            Octets(18, 18),
+            Field("Reserved", 1, 8, 1, _SPARE_ZERO),
+            Field("Prefix-Length", 2, 8, 1, ((128, 128),)),
+        ),
+        Depth.FULL,
+        "the address takes any value",
+        example=b"\x00\x80\x20\x01\x0d\xb8" + bytes(11) + b"\x01",
+    ),
+    Element(
         "TS23.003",
         "12.7.1",
         "NID",

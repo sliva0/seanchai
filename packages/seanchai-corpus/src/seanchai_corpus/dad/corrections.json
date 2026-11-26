@@ -3236,6 +3236,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5b.4.0.1: 'Defines the QoS information (bandwidth limitation) for the applications, detected by the TDF and sent from the PCRF to the TDF. Only the Max-Requested-Bandwidth-UL and the Max-Requested-Bandwidth-DL are used.'"
     },
+    "TS29.212.dadx#adc-rule-definition-qos-information-bandwidth": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.1.3: 'The allowed QoS shall be encoded using a QoS-Information AVP within the ADC-Rule-Definition AVP of the ADC rule.'; 'Only the Max-Requested-Bandwidth-UL AVP and the Max-Requested-Bandwidth-DL AVP or the Extended-Max-Requested-BW-UL AVP and the Extended-Max-Requested-BW-DL AVP (see subclause 4b.5.17) shall be used.'"
+    },
     "TS29.212.dadx#adc-rule-definition-sponsor-identity": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.3.3: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
@@ -3247,6 +3251,10 @@
     "TS29.212.dadx#adc-rule-definition-traffic-steering": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.3.3: 'If the traffic steering policies are identical in both downlink and uplink directions, the values of the Traffic-Steering-Policy-Identifier-UL AVP and the Traffic-Steering-Policy-Identifier-DL AVP shall be identical.'"
+    },
+    "TS29.212.dadx#adc-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.6: 'Multiple instances of ADC-Rule-Report AVPs shall be used in the case it is required to report different PCC-Rule-Status or Rule-Failure-Code values for different groups of rules within the same Diameter command.'"
     },
     "TS29.212.dadx#af-charging-identifier-reporting-level": {
      "kind": "interpret",
@@ -3296,9 +3304,37 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.4.1: 'The following exceptions apply to the initial CCR/CCA command pair:'; 'If the CCR command contains the Supported-Features AVP, the PCRF shall include the Supported-Features AVP in the CCA command, with the 'M' bit cleared, indicating only the features that both the PCRF and PCEF support.'; 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-7 Gx functionality, the CCA command shall not include the Supported-Features AVP.'"
     },
+    "TS29.212.dadx#cca-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.3: 'The PCRF may remove all previously provided event triggers by providing the Event-Trigger AVP set to the value NO_EVENT_TRIGGERS. When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
     "TS29.212.dadx#cca-qos-upgrade-bitrates": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.29: 'If the SGSN does not support a QoS upgrade, the PCRF shall not provision an authorized bitrates (e.g. GBR, MBR) which are higher than the requested bitrates for this IP CAN bearer in the response of the IP-CAN session establishment or modification.'"
+    },
+    "TS29.212.dadx#cca-rejection-charging-rule-install": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'The PCRF shall not combine a rejection with provisioning of PCC rule operations in the same CC Answer.'"
+    },
+    "TS29.212.dadx#cca-rejection-charging-rule-remove": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'The PCRF shall not combine a rejection with provisioning of PCC rule operations in the same CC Answer.'"
+    },
+    "TS29.212.dadx#cca-removal-of-access-ip-can-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.3.2: 'In order to do so, PCRF shall include the Removal-Of-Access AVP set to the value REMOVAL_OF_ACCESS (0) and the IP-CAN-Type AVP set to the value of removed access in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#ccr-access-availability-ip-can-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.7: 'When the PCEF receives an indication that an access becomes not available as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to UNAVAILABLITY_OF_ ACCESS to the PCRF. The access type information of the unavailable access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be unavailable shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'; 'When the PCEF receives an indication that an access becomes available again as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to AVAILABLITY_OF_ACCESS to the PCRF. The access type information on available again access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be available again shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'"
+    },
+    "TS29.212.dadx#ccr-access-availability-reason": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.7: 'When the PCEF receives an indication that an access becomes not available as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to UNAVAILABLITY_OF_ ACCESS to the PCRF. The access type information of the unavailable access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be unavailable shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'; 'When the PCEF receives an indication that an access becomes available again as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to AVAILABLITY_OF_ACCESS to the PCRF. The access type information on available again access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be available again shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'"
+    },
+    "TS29.212.dadx#ccr-addition-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'In the case that the UE initiates a resource modification procedure, the PCEF shall include within the CC-Request the Event-Trigger AVP set to RESOURCE_MODIFICATION_REQUEST and shall include the Packet-Filter-Operation AVP set as follows, with the amendments as specified in Annex A and Annex B:'; 'When the UE requests to add filters without any link to existing bearer or existing packet filter, the PCEF shall set the Packet-Filter-Operation AVP to \"ADDITION\", and shall include:'; 'the QoS-Information AVP to indicate the requested QoS for the new packet filters.'; 'When the UE requests to modify existing packet filter the PCEF shall set the Packet-Filter-Operation AVP to \"MODIFICATION\", and shall include:'; 'if the UE request includes modified QoS information the PCEF shall also include the QoS-Information AVP to indicate the updated QoS for the affected PCC rule(s).'"
     },
     "TS29.212.dadx#ccr-an-gw-address-eps": {
      "kind": "interpret",
@@ -3359,6 +3395,14 @@
     "TS29.212.dadx#ccr-henb-local-ip-address-change": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'When used in a CCR command, this value indicates that the PCEF generated the request because the H(e)NB Local IP Address or the UDP source port number or both assigned by the Fixed Broadband Access have changed. The HeNB-Local-IP-Address AVP and/or the UDP-Source-Port AVP shall be provided in the same request.'"
+    },
+    "TS29.212.dadx#ccr-initial-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'The other attributes shall include the type of IP-CAN within the IP-CAN-Type AVP, the type of the radio access technology, if available, within the RAT-Type AVP, the PDN information, if available, within the Called-Station-Id AVP, the PDN connection identifier, if available, within the PDN-Connection-ID AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP'"
+    },
+    "TS29.212.dadx#ccr-initial-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: '1) At IP-CAN session establishment:'; 'Otherwise, the PCEF shall send a CC-Request with CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The PCEF shall supply user identification within the Subscription-Id AVP and other attributes to allow the PCRF to identify the rules to be applied.'; 'For xDSL IP-CAN Type the PCEF may provide the Subscription-Id AVP and shall not provide the RAT Type AVP, The Logical-Access-ID AVP and the Physical-Access-ID AVP shall be provided.'"
     },
     "TS29.212.dadx#ccr-ip-can-change-ip-can-type": {
      "kind": "interpret",
@@ -3424,6 +3468,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'When used in a CCR command, this value indicates that the PCEF generated the request because the time zone the UE is currently located in has changed. The new value of the UE's time zone shall be indicated in the 3GPP-MS-TimeZone AVP.'"
     },
+    "TS29.212.dadx#ccr-usage-monitoring-information-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.17.0: 'To report accumulated usage for a specific monitoring key the PCEF shall send a CC-Request with the Usage-Monitoring-Information AVP including the accumulated usage since the last report. For each of the enabled monitoring keys to be reported, the Usage-Monitoring-Information AVP shall include the monitoring key in the Monitoring-Key AVP and the accumulated volume usage in the Used-Service-Unit AVP.'"
+    },
     "TS29.212.dadx#ccr-usage-report-usage-monitoring-information": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'When used in a CCR command, this value indicates that the PCEF generated the request to report the accumulated usage for one or more monitoring keys. The PCEF shall also provide the accumulated usage volume and/or time using the Usage-Monitoring-Information AVP(s) including the Monitoring-Key AVP and the Used-Service-Unit AVP.'"
@@ -3460,6 +3508,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.4: 'Mute-Notification status shall not be changed during the lifetime of the PCC rules.'"
     },
+    "TS29.212.dadx#charging-rule-definition-qos-information-bearer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.5.0: 'When the authorized QoS applies to a PCC rule, it shall be provisioned within the corresponding PCC rule by including the QoS-Information AVP within the Charging-Rule-Definition AVP. The QoS-Information AVP shall not contain a Bearer-Identifier AVP.'"
+    },
     "TS29.212.dadx#charging-rule-definition-sponsor-identity": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.4: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
@@ -3472,6 +3524,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2: 'For GPRS scenarios where the bearer binding is performed by the PCRF, the Bearer Identifier AVP shall be included as part of Charging-Rule-Install AVP.'"
     },
+    "TS29.212.dadx#charging-rule-report-charging-rule-base-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.18: 'If the Content-Version is included in a Charging-Rule-Report AVP, then only the one corresponding Charging-Rule-Name AVP shall be included.'"
+    },
     "TS29.212.dadx#charging-rule-report-charging-rule-name": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.18: 'If the Content-Version is included in a Charging-Rule-Report AVP, then only the one corresponding Charging-Rule-Name AVP shall be included.'"
@@ -3479,6 +3535,10 @@
     "TS29.212.dadx#charging-rule-report-content-version": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.18: 'If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the Charging-Rule-Definition AVP when the corresponding PCC rule was installed or modified.'"
+    },
+    "TS29.212.dadx#charging-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.18: 'Multiple instances of Charging-Rule-Report AVPs shall be used in the case it is required to report different PCC-Rule-Status or Rule-Failure-Code values for different groups of rules within the same Diameter command.'"
     },
     "TS29.212.dadx#coa-ip-address-family": {
      "kind": "interpret",
@@ -3491,6 +3551,10 @@
     "TS29.212.dadx#conditional-policy-information-bandwidth": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.128: 'When maximum bandwidth values are lower or equal to 2^32-1 bps, one of the APN-Aggregate-Max-Bitrate-UL AVP and APN-Aggregate-Max-Bitrate-DL AVP shall be present.'; 'For maximum bandwidth values higher than 2^32 bps and when the Extended-BW-NR feature is supported, one of the Extended-APN-AMBR-UL AVP and Extended-APN-AMBR-DL AVP shall be present.'"
+    },
+    "TS29.212.dadx#cs-service-resource-report-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.2.2: 'The PCRF shall include the CS-Service-Resource-Report AVP in the RAR command with the CS-Service-Resource-Result-Operation AVP set to the value \"DELETION\", the CS-Service-QoS-Request-Identifier AVP containing the QoS request identifier corresponding to the QoS rule reported by the BPCF and the CS-Service-Resource-Failure-Cause AVP indicating the reason why the resource is released.'"
     },
     "TS29.212.dadx#default-bearer-indication-default": {
      "kind": "interpret",
@@ -3508,6 +3572,14 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'The values 8, 9, 10, 38 and 41 are obsolete and shall not be used.'"
     },
+    "TS29.212.dadx#extended-apn-ambr-dl-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.30: 'When the Extended-BW-NR feature is supported, extended bandwidth AVPs representing bitrates in kbps shall be used to support bandwidth values higher than 2^32-1 bps instead of the bandwidth AVPs representing bitrates in bps.'; 'For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used.'"
+    },
+    "TS29.212.dadx#extended-apn-ambr-ul-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.30: 'When the Extended-BW-NR feature is supported, extended bandwidth AVPs representing bitrates in kbps shall be used to support bandwidth values higher than 2^32-1 bps instead of the bandwidth AVPs representing bitrates in bps.'; 'For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used.'"
+    },
     "TS29.212.dadx#flow-description-layout": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.4.2: 'Action shall be keyword permit\"'; 'Direction shall be keyword \"out\".'; 'No \"options\" shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
@@ -3515,6 +3587,10 @@
     "TS29.212.dadx#flow-direction-unspecified": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.65: 'The PCRF shall not use the value UNSPECIFIED in filters created by the network in NW-initiated procedures. The PCRF shall only include the value UNSPECIFIED in filters in UE-initiated procedures if the same value is received from in the CCR request from the PCEF.'"
+    },
+    "TS29.212.dadx#flow-information-flow-description": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4.2: 'Source IP address (possibly masked) or, to indicate that the value is not used for matching packets, the keyword \"any\".'; 'Source port is optional and, if present, shall be the decimal port number or port range.'; 'Destination IP address (possibly masked) or, to indicate that the value is not used for matching packets, the keyword \"assigned\".'; 'Destination port is optional and, if present, shall be the decimal port number or port range.'"
     },
     "TS29.212.dadx#flow-information-flow-direction": {
      "kind": "interpret",
@@ -3540,9 +3616,41 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.26: 'When the Extended-BW-NR feature is supported and the value to be transmitted exceeds 2^32-1, the Extended-GBR-UL AVP shall be used'"
     },
+    "TS29.212.dadx#gx-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Gx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gx-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Gx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gx-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Gx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gxx-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.6.1: 'The Gxx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
     "TS29.212.dadx#gxx-cca-initial-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.4.1: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-8 Gxx functionality, the PCRF shall not include the Supported-Features AVP in the CCA command.'"
+    },
+    "TS29.212.dadx#gxx-cca-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.8: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#gxx-ccr-addition-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'When the UE requests to allocate new resources the BBERF shall set the Packet-Filter-Operation AVP to \"ADDITION\", and shall include within the CC-Request a Packet-Filter-Information AVP for each packet filter requested by the UE and the QoS-Information AVP to indicate the requested QoS for the affected packet filters.'"
+    },
+    "TS29.212.dadx#gxx-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.6.1: 'The Gxx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gxx-ccr-deletion-packet-filter-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'When the UE requests to delete resources the BBERF shall set the Packet-Filter-Operation AVP to \"DELETION\", and shall include within the CC-Request a Packet-Filter-Information AVP for each packet filter deleted by the UE. Each Packet-Filter-Information AVP shall include a packet filter identifier as provided by the PCRF within the QoS rule within the Packet-Filter-Identifier AVP identifying the previously requested packet filter being deleted.'"
     },
     "TS29.212.dadx#gxx-ccr-initial-an-gw-address": {
      "kind": "interpret",
@@ -3551,6 +3659,14 @@
     "TS29.212.dadx#gxx-ccr-initial-subscription-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 4a.5.1: 'The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP.'"
+    },
+    "TS29.212.dadx#gxx-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.6.1: 'The Gxx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gxx-rar-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.8: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
     },
     "TS29.212.dadx#henb-local-ip-address-family": {
      "kind": "interpret",
@@ -3574,7 +3690,7 @@
     },
     "TS29.212.dadx#packet-filter-content-layout": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.54: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 5.3.54: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'If the Source IP address is not provided by the UE, this field shall be set to \"any\".'; 'If no Destination IP address is provided in the packet filter the Destination shall be set to \"assigned\", which refers to the Ipv4 address and/or Ipv6 prefix of the UE as indicated by the Framed-IP-Address and/or Framed-Ipv6-Prefix AVPs.'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
     },
     "TS29.212.dadx#packet-filter-information-flow-direction": {
      "kind": "interpret",
@@ -3616,6 +3732,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.28: 'This value indicates that a QoS negotiation is allowed for the corresponding PCC rule request. This is the default value applicable if this AVP is not supplied.'"
     },
+    "TS29.212.dadx#qos-rule-definition-qos-information-bearer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.10.4: 'This QoS-Information AVP shall not contain a Bearer-Identifier AVP.'"
+    },
     "TS29.212.dadx#qos-rule-install-charging-identifier": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.1: 'The charging identifier value for a QoS rule shall be the same as that for the corresponding PCC rule.'"
@@ -3624,6 +3744,14 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.5: 'If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the QoS-Rule-Definition AVP when the corresponding QoS rule was installed or modified.'"
     },
+    "TS29.212.dadx#qos-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'Multiple instances of QoS-Rule-Report AVPs shall be used in the case it is required to report different PCC-Rule-Status or Rule-Failure-Code values for different rules within the same Diameter command.'"
+    },
+    "TS29.212.dadx#qos-rule-report-qos-rule-base-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included.'"
+    },
     "TS29.212.dadx#qos-rule-report-qos-rule-name": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.5: 'If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included.'"
@@ -3631,6 +3759,10 @@
     "TS29.212.dadx#qos-upgrade-absence": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.29: 'If no QoS-Upgrade AVP has been supplied for an IP CAN bearer, the default value QoS_UPGRADE_NOT_SUPPORTED is applicable.'"
+    },
+    "TS29.212.dadx#raa-charging-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.12: 'If the installation/activation of one or more PCC rules fails, the PCEF shall include one or more Charging-Rule-Report AVP(s) in either a CCR or an RAA command as described below for the affected PCC rules. Within each Charging-Rule-Report AVP, the PCEF shall identify the failed PCC rule(s) by including the Charging-Rule-Name AVP(s) or Charging-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
     },
     "TS29.212.dadx#raa-event-trigger": {
      "kind": "interpret",
@@ -3643,6 +3775,14 @@
     "TS29.212.dadx#ran-nas-release-cause-layout": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.106: 'The AVP shall be coded as per the RAN/NAS Cause in clause 8.103 of 3GPP TS 29.274 [22], starting with Octet 5.'"
+    },
+    "TS29.212.dadx#rar-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.3: 'The PCRF may remove all previously provided event triggers by providing the Event-Trigger AVP set to the value NO_EVENT_TRIGGERS. When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#rar-removal-of-access-ip-can-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.3.2: 'In order to do so, PCRF shall include the Removal-Of-Access AVP set to the value REMOVAL_OF_ACCESS (0) and the IP-CAN-Type AVP set to the value of removed access in the CCA or RAR command.'"
     },
     "TS29.212.dadx#redirect-information-redirect-address-type": {
      "kind": "interpret",
@@ -3672,21 +3812,97 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.71: 'The Routing-Rule-Identifier AVP content shall be encoded as a UTF8String and begin with the type of node that assigned the NBIFOM routing ruleidentifier, i.e. \"PCEF\" or \"PCRF\", the remainder of the Routing-Rule-Identifier AVP is delimited by a \";\" character and may be any sequence.'"
     },
+    "TS29.212.dadx#routing-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.118: 'Multiple instances of Routing-Rule-Report AVPs shall be used in the case it is required to report different Routing-Rule-Failure-Code values for different groups of rules within the same Diameter command.'"
+    },
     "TS29.212.dadx#rule-failure-code-an-gw-failed": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.38: 'This value shall not be used if the IP-CAN Session Modification procedure is initiated for PCC rule removal only.'"
+    },
+    "TS29.212.dadx#s15-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.6.1: 'The S15 application identifier shall be included in the Auth-Application-Id AVP.'"
     },
     "TS29.212.dadx#s15-cca-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause E.6.4.2: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP.'"
     },
+    "TS29.212.dadx#s15-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.6.1: 'The S15 application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#s15-ccr-initial-henb-local-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.1: 'The HNB GW shall send a CC-Request with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\", The CCR command shall include the HNB Local IP address within the HeNB-Local-IP-Address AVP and the UDP source port number of IPSec tunnel within the UDP-Source-Port AVP if available.'"
+    },
+    "TS29.212.dadx#s15-ccr-modification-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.2.1: 'When the RAB assignment requests to allocate new resources, the HNB GW shall include the requested QoS information which is derived from the RAB message within the QoS-Information AVP, and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'; 'When the RAB assignment requests to modify existing resources, the HNB GW shall set the CS-Service-QoS-Request-Operation AVP to \"MODIFICATION\", the HNB GW shall also include the requested QoS information which is derived from the RAB message within the QoS-Information AVP and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'"
+    },
+    "TS29.212.dadx#s15-ccr-qos-request-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.2.1: 'When the RAB assignment requests to allocate new resources, the HNB GW shall include the requested QoS information which is derived from the RAB message within the QoS-Information AVP, and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'; 'When the RAB assignment requests to modify existing resources, the HNB GW shall set the CS-Service-QoS-Request-Operation AVP to \"MODIFICATION\", the HNB GW shall also include the requested QoS information which is derived from the RAB message within the QoS-Information AVP and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'; 'When the RAB assignment requests to delete resources the HNB GW shall set the CS-Service-QoS-Request-Operation AVP to \"DELETION\", and shall also include the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'"
+    },
+    "TS29.212.dadx#s15-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.6.1: 'The S15 application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#sd-application-detection-information-flow-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'This parameter may be sent from the TDF to the PCRF within Application-Detection-Information AVP and contains the information from a single IP flow packet filter of an application, once detected, if deducible at TDF. In this case, only Flow-Description AVP and Flow-Direction AVPs are used.'"
+    },
+    "TS29.212.dadx#sd-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
     "TS29.212.dadx#sd-cca-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
     },
+    "TS29.212.dadx#sd-cca-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.3: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#sd-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
+    "TS29.212.dadx#sd-ccr-framed-ipv6-prefix-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'For the unsolicited case, the TDF may include the valid full Ipv6 address that is applicable to an IP flow or IP flows. The TDF shall set the \"Prefix Length\" to 128 and encode the Ipv6 address of the UE within the \"Prefix\" field.'"
+    },
+    "TS29.212.dadx#sd-ccr-initial-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5a.2: 'When the TDF detects an application for an Ipv4 address or Ipv6 address for which a TDF session does not exist, the TDF shall send CC-Request with CC-Request-Type set to value \"INITIAL-REQUEST\". The TDF provides the full UE IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP and, if available, the PDN identifier.'"
+    },
+    "TS29.212.dadx#sd-ccr-usage-monitoring-information-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.7.1: 'To report accumulated usage for a specific monitoring key, the TDF shall send a CC-Request with the Usage-Monitoring-Information AVP including the accumulated usage since the last report. The Usage-Monitoring-Information AVP shall include the monitoring key in the Monitoring-Key AVP and the accumulated volume usage in the Used-Service-Unit AVP.'"
+    },
+    "TS29.212.dadx#sd-raa-adc-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.5: 'If the installation/activation of one or more ADC rules fails, the TDF shall include one or more ADC-Rule-Report AVP(s) in either a TSA, a CCR or an RAA command as described below for the affected ADC rules. Within each ADC-Rule-Report AVP, the TDF shall identify the failed ADC rule(s) by including the ADC-Rule-Name AVP(s) or ADC-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
+    },
     "TS29.212.dadx#sd-raa-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
+    "TS29.212.dadx#sd-rar-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.3: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#sd-rar-ue-ip-address-event": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.8: 'When PCRF is notified by PCEF that either an UE_IP_ADDRESS_ALLOCATE or an UE_IP_ADDRESS_RELEASE event of the IP-CAN session occurs in the PCEF, the PCRF shall notify the TDF about the event for the corresponding TDF session. The Framed-IP-Address AVP shall also be provided. This notification shall also be done by using the Event-Report-Indication AVP within a RAR command.'"
+    },
+    "TS29.212.dadx#sd-tsa-adc-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.5: 'If the installation/activation of one or more ADC rules fails, the TDF shall include one or more ADC-Rule-Report AVP(s) in either a TSA, a CCR or an RAA command as described below for the affected ADC rules. Within each ADC-Rule-Report AVP, the TDF shall identify the failed ADC rule(s) by including the ADC-Rule-Name AVP(s) or ADC-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
     },
     "TS29.212.dadx#sd-tsa-experimental-result-vendor": {
      "kind": "interpret",
@@ -3696,17 +3912,73 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5b.4.1: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
     },
+    "TS29.212.dadx#sd-tsa-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
     "TS29.212.dadx#sd-tsr-framed-ip-address": {
      "kind": "interpret",
      "reason": "interpreted from clause 4b.5.1.1: 'When establishing the session with the TDF, the PCRF shall send a TS-Request with the PDN information, if available, within the Called-Station-Id AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP. These parameters shall uniquely identify the session between the PCRF and the TDF.'"
+    },
+    "TS29.212.dadx#sd-tsr-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
+    "TS29.212.dadx#sd-usage-monitoring-level-values": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'Indicates whether the usage monitoring instance applies to the TDF session or to one or more ADC rules. Only SESSION_LEVEL (0) referring to TDF session instead of IP-CAN session and ADC-Rule-Level (2) apply.'"
     },
     "TS29.212.dadx#session-linking-indicator-absence": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.6: 'The absence of this AVP in case 2b as defined in 3GPP TS 29.213 [8] shall indicate the value SESSION_LINKING_IMMEDIATE.'"
     },
+    "TS29.212.dadx#st-str-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.6.1: 'The St application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
+    "TS29.212.dadx#st-tnr-adc-rule-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.3: 'If an ADC rule was successfully installed/activated, but can no longer be enforced by the TSSF, the TSSF shall send the PCRF a new TNR command and include an ADC-Rule-Report AVP. The TSSF shall include the Rule-Failure-Code AVP within the ADC-Rule-Report AVP and shall set the PCC-Rule-Status to INACTIVE.'"
+    },
+    "TS29.212.dadx#st-tsa-adc-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.3: 'If the installation/activation of one or more ADC rules fails, the TSSF shall include one or more ADC-Rule-Report AVP(s) in the corresponding TSA command for the affected ADC rules. Within each ADC-Rule-Report AVP, the TSSF shall identify the failed ADC rule(s) by including the ADC-Rule-Name AVP(s) or ADC-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
+    },
     "TS29.212.dadx#st-tsa-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause 5c.4.2: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
+    },
+    "TS29.212.dadx#st-tsa-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.6.1: 'The St application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
+    "TS29.212.dadx#st-tsr-initial-adc-rule-install": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.1: 'If no active St Diameter session exists for the IP-CAN session, the PCRF shall establish an St Diameter session by sending an TDF-Session-Request (TSR) to the TSSF including the Request-Type AVP set to \"0 (initial request)\". Within the TSR, the PCRF shall provide the UE IPv4 address within the Framed-IP-Address AVP and/or UE IPv6 prefix within the Framed-IPv6-Prefix AVP and ADC-Rule-Install AVP(s) , and if required by the operator policies, the PDN information within the Called-Station-Id AVP.'"
+    },
+    "TS29.212.dadx#st-tsr-initial-called-station-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.1: 'Within the TSR, the PCRF shall provide the UE IPv4 address within the Framed-IP-Address AVP and/or UE IPv6 prefix within the Framed-IPv6-Prefix AVP and ADC-Rule-Install AVP(s) , and if required by the operator policies, the PDN information within the Called-Station-Id AVP.'"
+    },
+    "TS29.212.dadx#st-tsr-initial-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.1: 'If no active St Diameter session exists for the IP-CAN session, the PCRF shall establish an St Diameter session by sending an TDF-Session-Request (TSR) to the TSSF including the Request-Type AVP set to \"0 (initial request)\". Within the TSR, the PCRF shall provide the UE IPv4 address within the Framed-IP-Address AVP and/or UE IPv6 prefix within the Framed-IPv6-Prefix AVP and ADC-Rule-Install AVP(s) , and if required by the operator policies, the PDN information within the Called-Station-Id AVP.'"
+    },
+    "TS29.212.dadx#st-tsr-ue-ip-address-event": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.4: 'The Framed-IP-Address AVP shall also be provided within the Event-Report-Indication AVP when the UE_IP_ADDRESS_ALLOCATE event trigger is included.'"
+    },
+    "TS29.212.dadx#st-tsr-ue-ip-address-event-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.4: 'When PCRF is notified by PCEF that either an UE_IP_ADDRESS_ALLOCATE or an UE_IP_ADDRESS_RELEASE event of the IP-CAN session occurs in the PCEF, the PCRF shall notify the TSSF about the event for the corresponding St session by including the UE_IP_ADDRESS_ALLOCATE or the UE_IP_ADDRESS_RELEASE event trigger within the Event-Reporting-Indication AVP which is included in a TSR command with the Request-Type AVP set to \"1 (update request)\".'"
+    },
+    "TS29.212.dadx#st-tsr-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.6.1: 'The St application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
+    "TS29.212.dadx#tcp-source-port-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.129: 'The TCP-Source-Port AVP (AVP Code 2843) is of type Unsigned32. When Untrusted WLAN over S2b access is supported as defined in Annex D.4, it contains the TCP source port number used for the IKEv2 tunnel in the case that a NAT and firewall are detected'"
     },
     "TS29.212.dadx#tdf-application-instance-identifier-deducible": {
      "kind": "interpret",
@@ -3722,7 +3994,7 @@
     },
     "TS29.212.dadx#tft-filter-layout": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.13: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 5.3.13: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'The source IP address shall be set to \"any\", if no such information is provided in the TFT packet filter.'; 'If no such information is provided in the TFT packet filter, the Destination IP address shall be set to \"assigned\".'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
     },
     "TS29.212.dadx#tft-packet-filter-information-per-filter": {
      "kind": "interpret",
@@ -3738,7 +4010,15 @@
     },
     "TS29.212.dadx#tunnel-header-filter-layout": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.34: 'Action shall be set to \"permit\";'; 'Options shall not be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 5.3.34: 'Action shall be set to \"permit\";'; 'Source port (single value) for UDP tunneling;'; 'Destination port (single value) for UDP tunneling.'; 'Options shall not be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+    },
+    "TS29.212.dadx#tunnel-information-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.36: 'The Tunnel-Information AVP may include only the Tunnel-Header-Length AVP, only the Tunnel-Header-Filter AVP, or both.'"
+    },
+    "TS29.212.dadx#udp-source-port-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.97: 'The UDP-Source-Port AVP (AVP Code 2806) is of type Unsigned32 and contains the UDP source port number in the case that NA(P)T is detected for supporting interworking with fixed broadband access network as defined in Annex E.'"
     },
     "TS29.212.dadx#ue-local-ip-address-family": {
      "kind": "interpret",
@@ -3752,9 +4032,17 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.4.0.1: 'Only the CC-Total-Octets, one of the CC-Input-Octets and CC-Output-Octets or CC-Time AVPs are re-used. Monitoring-Time AVP as defined in 5.3. 99 may be optionally added to the grouped AVP if UMCH feature is supported.'"
     },
+    "TS29.212.dadx#usage-monitoring-information-threshold-key": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.16: 'In order to provide the applicable threshold for usage monitoring control, the PCRF shall include a Usage-Monitoring-Information AVP per monitoring key. The threshold level shall be provided in its Granted-Service-Unit AVP.'; 'The monitoring key shall be provided in the Monitoring-Key AVP.'"
+    },
     "TS29.212.dadx#usage-monitoring-level-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.61: 'If Usage-Monitoring-Level AVP is not provided, its absence shall indicate the value PCC_RULE_LEVEL (1).'"
+    },
+    "TS29.212.dadx#usage-monitoring-support-disabled-only": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.17.3: 'To disable usage monitoring for a monitoring key, the PCRF shall send the Usage-Monitoring-Information AVP including only the applicable monitoring key within the Monitoring-Key AVP and the Usage-Monitoring-Support AVP set to USAGE_MONITORING_DISABLED.'"
     },
     "TS29.212.dadx#usage-monitoring-used-service-unit": {
      "kind": "interpret",
@@ -4152,6 +4440,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5b.4.0.1: 'Defines the QoS information (bandwidth limitation) for the applications, detected by the TDF and sent from the PCRF to the TDF. Only the Max-Requested-Bandwidth-UL and the Max-Requested-Bandwidth-DL are used.'"
     },
+    "TS29.212.dadx#adc-rule-definition-qos-information-bandwidth": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.1.3: 'The allowed QoS shall be encoded using a QoS-Information AVP within the ADC-Rule-Definition AVP of the ADC rule.'; 'Only the Max-Requested-Bandwidth-UL AVP and the Max-Requested-Bandwidth-DL AVP or the Extended-Max-Requested-BW-UL AVP and the Extended-Max-Requested-BW-DL AVP (see subclause 4b.5.17) shall be used.'"
+    },
     "TS29.212.dadx#adc-rule-definition-sponsor-identity": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.3.3: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
@@ -4163,6 +4455,10 @@
     "TS29.212.dadx#adc-rule-definition-traffic-steering": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.3.3: 'If the traffic steering policies are identical in both downlink and uplink directions, the values of the Traffic-Steering-Policy-Identifier-UL AVP and the Traffic-Steering-Policy-Identifier-DL AVP shall be identical.'"
+    },
+    "TS29.212.dadx#adc-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.3.6: 'Multiple instances of ADC-Rule-Report AVPs shall be used in the case it is required to report different PCC-Rule-Status or Rule-Failure-Code values for different groups of rules within the same Diameter command.'"
     },
     "TS29.212.dadx#af-charging-identifier-reporting-level": {
      "kind": "interpret",
@@ -4212,9 +4508,37 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.4.1: 'The following exceptions apply to the initial CCR/CCA command pair:'; 'If the CCR command contains the Supported-Features AVP, the PCRF shall include the Supported-Features AVP in the CCA command, with the 'M' bit cleared, indicating only the features that both the PCRF and PCEF support.'; 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-7 Gx functionality, the CCA command shall not include the Supported-Features AVP.'"
     },
+    "TS29.212.dadx#cca-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.3: 'The PCRF may remove all previously provided event triggers by providing the Event-Trigger AVP set to the value NO_EVENT_TRIGGERS. When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
     "TS29.212.dadx#cca-qos-upgrade-bitrates": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.29: 'If the SGSN does not support a QoS upgrade, the PCRF shall not provision an authorized bitrates (e.g. GBR, MBR) which are higher than the requested bitrates for this IP CAN bearer in the response of the IP-CAN session establishment or modification.'"
+    },
+    "TS29.212.dadx#cca-rejection-charging-rule-install": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'The PCRF shall not combine a rejection with provisioning of PCC rule operations in the same CC Answer.'"
+    },
+    "TS29.212.dadx#cca-rejection-charging-rule-remove": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'The PCRF shall not combine a rejection with provisioning of PCC rule operations in the same CC Answer.'"
+    },
+    "TS29.212.dadx#cca-removal-of-access-ip-can-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.3.2: 'In order to do so, PCRF shall include the Removal-Of-Access AVP set to the value REMOVAL_OF_ACCESS (0) and the IP-CAN-Type AVP set to the value of removed access in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#ccr-access-availability-ip-can-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.7: 'When the PCEF receives an indication that an access becomes not available as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to UNAVAILABLITY_OF_ ACCESS to the PCRF. The access type information of the unavailable access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be unavailable shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'; 'When the PCEF receives an indication that an access becomes available again as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to AVAILABLITY_OF_ACCESS to the PCRF. The access type information on available again access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be available again shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'"
+    },
+    "TS29.212.dadx#ccr-access-availability-reason": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.7: 'When the PCEF receives an indication that an access becomes not available as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to UNAVAILABLITY_OF_ ACCESS to the PCRF. The access type information of the unavailable access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be unavailable shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'; 'When the PCEF receives an indication that an access becomes available again as defined in 3GPP TS 29.274 [22], PCEF shall send a CCR command to the PCRF including the Event-Trigger AVP set to AVAILABLITY_OF_ACCESS to the PCRF. The access type information on available again access shall be provided within the IP-CAN-Type AVP and the reason causing the access to be available again shall be provided within the Access-Availability-Change-Reason AVP in the same CCR command.'"
+    },
+    "TS29.212.dadx#ccr-addition-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'In the case that the UE initiates a resource modification procedure, the PCEF shall include within the CC-Request the Event-Trigger AVP set to RESOURCE_MODIFICATION_REQUEST and shall include the Packet-Filter-Operation AVP set as follows, with the amendments as specified in Annex A and Annex B:'; 'When the UE requests to add filters without any link to existing bearer or existing packet filter, the PCEF shall set the Packet-Filter-Operation AVP to \"ADDITION\", and shall include:'; 'the QoS-Information AVP to indicate the requested QoS for the new packet filters.'; 'When the UE requests to modify existing packet filter the PCEF shall set the Packet-Filter-Operation AVP to \"MODIFICATION\", and shall include:'; 'if the UE request includes modified QoS information the PCEF shall also include the QoS-Information AVP to indicate the updated QoS for the affected PCC rule(s).'"
     },
     "TS29.212.dadx#ccr-an-gw-address-eps": {
      "kind": "interpret",
@@ -4275,6 +4599,14 @@
     "TS29.212.dadx#ccr-henb-local-ip-address-change": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'When used in a CCR command, this value indicates that the PCEF generated the request because the H(e)NB Local IP Address or the UDP source port number or both assigned by the Fixed Broadband Access have changed. The HeNB-Local-IP-Address AVP and/or the UDP-Source-Port AVP shall be provided in the same request.'"
+    },
+    "TS29.212.dadx#ccr-initial-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: 'The other attributes shall include the type of IP-CAN within the IP-CAN-Type AVP, the type of the radio access technology, if available, within the RAT-Type AVP, the PDN information, if available, within the Called-Station-Id AVP, the PDN connection identifier, if available, within the PDN-Connection-ID AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP'"
+    },
+    "TS29.212.dadx#ccr-initial-subscription-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.1: '1) At IP-CAN session establishment:'; 'Otherwise, the PCEF shall send a CC-Request with CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The PCEF shall supply user identification within the Subscription-Id AVP and other attributes to allow the PCRF to identify the rules to be applied.'; 'For xDSL IP-CAN Type the PCEF may provide the Subscription-Id AVP and shall not provide the RAT Type AVP, The Logical-Access-ID AVP and the Physical-Access-ID AVP shall be provided.'"
     },
     "TS29.212.dadx#ccr-ip-can-change-ip-can-type": {
      "kind": "interpret",
@@ -4340,6 +4672,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'When used in a CCR command, this value indicates that the PCEF generated the request because the time zone the UE is currently located in has changed. The new value of the UE's time zone shall be indicated in the 3GPP-MS-TimeZone AVP.'"
     },
+    "TS29.212.dadx#ccr-usage-monitoring-information-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.17.0: 'To report accumulated usage for a specific monitoring key the PCEF shall send a CC-Request with the Usage-Monitoring-Information AVP including the accumulated usage since the last report. For each of the enabled monitoring keys to be reported, the Usage-Monitoring-Information AVP shall include the monitoring key in the Monitoring-Key AVP and the accumulated volume usage in the Used-Service-Unit AVP.'"
+    },
     "TS29.212.dadx#ccr-usage-report-usage-monitoring-information": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'When used in a CCR command, this value indicates that the PCEF generated the request to report the accumulated usage for one or more monitoring keys. The PCEF shall also provide the accumulated usage volume and/or time using the Usage-Monitoring-Information AVP(s) including the Monitoring-Key AVP and the Used-Service-Unit AVP.'"
@@ -4376,6 +4712,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.4: 'Mute-Notification status shall not be changed during the lifetime of the PCC rules.'"
     },
+    "TS29.212.dadx#charging-rule-definition-qos-information-bearer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.5.0: 'When the authorized QoS applies to a PCC rule, it shall be provisioned within the corresponding PCC rule by including the QoS-Information AVP within the Charging-Rule-Definition AVP. The QoS-Information AVP shall not contain a Bearer-Identifier AVP.'"
+    },
     "TS29.212.dadx#charging-rule-definition-sponsor-identity": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.4: 'Sponsor-Identity AVP and Application-Service-Provider-Identity AVP shall be included if the Reporting-Level AVP is set to the value SPONSORED_CONNECTIVITY_LEVEL for the service data flow.'"
@@ -4388,6 +4728,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2: 'For GPRS scenarios where the bearer binding is performed by the PCRF, the Bearer Identifier AVP shall be included as part of Charging-Rule-Install AVP.'"
     },
+    "TS29.212.dadx#charging-rule-report-charging-rule-base-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.18: 'If the Content-Version is included in a Charging-Rule-Report AVP, then only the one corresponding Charging-Rule-Name AVP shall be included.'"
+    },
     "TS29.212.dadx#charging-rule-report-charging-rule-name": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.18: 'If the Content-Version is included in a Charging-Rule-Report AVP, then only the one corresponding Charging-Rule-Name AVP shall be included.'"
@@ -4395,6 +4739,10 @@
     "TS29.212.dadx#charging-rule-report-content-version": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.18: 'If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the Charging-Rule-Definition AVP when the corresponding PCC rule was installed or modified.'"
+    },
+    "TS29.212.dadx#charging-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.18: 'Multiple instances of Charging-Rule-Report AVPs shall be used in the case it is required to report different PCC-Rule-Status or Rule-Failure-Code values for different groups of rules within the same Diameter command.'"
     },
     "TS29.212.dadx#coa-ip-address-family": {
      "kind": "interpret",
@@ -4407,6 +4755,10 @@
     "TS29.212.dadx#conditional-policy-information-bandwidth": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.128: 'When maximum bandwidth values are lower or equal to 2^32-1 bps, one of the APN-Aggregate-Max-Bitrate-UL AVP and APN-Aggregate-Max-Bitrate-DL AVP shall be present.'; 'For maximum bandwidth values higher than 2^32 bps and when the Extended-BW-NR feature is supported, one of the Extended-APN-AMBR-UL AVP and Extended-APN-AMBR-DL AVP shall be present.'"
+    },
+    "TS29.212.dadx#cs-service-resource-report-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.2.2: 'The PCRF shall include the CS-Service-Resource-Report AVP in the RAR command with the CS-Service-Resource-Result-Operation AVP set to the value \"DELETION\", the CS-Service-QoS-Request-Identifier AVP containing the QoS request identifier corresponding to the QoS rule reported by the BPCF and the CS-Service-Resource-Failure-Cause AVP indicating the reason why the resource is released.'"
     },
     "TS29.212.dadx#default-bearer-indication-default": {
      "kind": "interpret",
@@ -4424,6 +4776,14 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.7: 'The values 8, 9, 10, 38 and 41 are obsolete and shall not be used.'"
     },
+    "TS29.212.dadx#extended-apn-ambr-dl-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.30: 'When the Extended-BW-NR feature is supported, extended bandwidth AVPs representing bitrates in kbps shall be used to support bandwidth values higher than 2^32-1 bps instead of the bandwidth AVPs representing bitrates in bps.'; 'For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used.'"
+    },
+    "TS29.212.dadx#extended-apn-ambr-ul-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.30: 'When the Extended-BW-NR feature is supported, extended bandwidth AVPs representing bitrates in kbps shall be used to support bandwidth values higher than 2^32-1 bps instead of the bandwidth AVPs representing bitrates in bps.'; 'For values lower or equal to 2^32-1 bps AVPs representing bitrates in bps shall be used.'"
+    },
     "TS29.212.dadx#flow-description-layout": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.4.2: 'Action shall be keyword permit\"'; 'Direction shall be keyword \"out\".'; 'No \"options\" shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
@@ -4431,6 +4791,10 @@
     "TS29.212.dadx#flow-direction-unspecified": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.65: 'The PCRF shall not use the value UNSPECIFIED in filters created by the network in NW-initiated procedures. The PCRF shall only include the value UNSPECIFIED in filters in UE-initiated procedures if the same value is received from in the CCR request from the PCEF.'"
+    },
+    "TS29.212.dadx#flow-information-flow-description": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.4.2: 'Source IP address (possibly masked) or, to indicate that the value is not used for matching packets, the keyword \"any\".'; 'Source port is optional and, if present, shall be the decimal port number or port range.'; 'Destination IP address (possibly masked) or, to indicate that the value is not used for matching packets, the keyword \"assigned\".'; 'Destination port is optional and, if present, shall be the decimal port number or port range.'"
     },
     "TS29.212.dadx#flow-information-flow-direction": {
      "kind": "interpret",
@@ -4456,9 +4820,41 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.26: 'When the Extended-BW-NR feature is supported and the value to be transmitted exceeds 2^32-1, the Extended-GBR-UL AVP shall be used'"
     },
+    "TS29.212.dadx#gx-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Gx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gx-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Gx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gx-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.6.1: 'The Gx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gxx-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.6.1: 'The Gxx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
     "TS29.212.dadx#gxx-cca-initial-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.4.1: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-8 Gxx functionality, the PCRF shall not include the Supported-Features AVP in the CCA command.'"
+    },
+    "TS29.212.dadx#gxx-cca-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.8: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#gxx-ccr-addition-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'When the UE requests to allocate new resources the BBERF shall set the Packet-Filter-Operation AVP to \"ADDITION\", and shall include within the CC-Request a Packet-Filter-Information AVP for each packet filter requested by the UE and the QoS-Information AVP to indicate the requested QoS for the affected packet filters.'"
+    },
+    "TS29.212.dadx#gxx-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.6.1: 'The Gxx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gxx-ccr-deletion-packet-filter-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.1: 'When the UE requests to delete resources the BBERF shall set the Packet-Filter-Operation AVP to \"DELETION\", and shall include within the CC-Request a Packet-Filter-Information AVP for each packet filter deleted by the UE. Each Packet-Filter-Information AVP shall include a packet filter identifier as provided by the PCRF within the QoS rule within the Packet-Filter-Identifier AVP identifying the previously requested packet filter being deleted.'"
     },
     "TS29.212.dadx#gxx-ccr-initial-an-gw-address": {
      "kind": "interpret",
@@ -4467,6 +4863,14 @@
     "TS29.212.dadx#gxx-ccr-initial-subscription-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 4a.5.1: 'The BBERF shall send a CCR command with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\". The CCR command shall include the IMSI within the Subscription-Id AVP and the access network gateway address within the AN-GW-Address AVP.'"
+    },
+    "TS29.212.dadx#gxx-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.6.1: 'The Gxx application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#gxx-rar-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.8: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
     },
     "TS29.212.dadx#henb-local-ip-address-family": {
      "kind": "interpret",
@@ -4490,7 +4894,7 @@
     },
     "TS29.212.dadx#packet-filter-content-layout": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.54: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 5.3.54: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'If the Source IP address is not provided by the UE, this field shall be set to \"any\".'; 'If no Destination IP address is provided in the packet filter the Destination shall be set to \"assigned\", which refers to the Ipv4 address and/or Ipv6 prefix of the UE as indicated by the Framed-IP-Address and/or Framed-Ipv6-Prefix AVPs.'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
     },
     "TS29.212.dadx#packet-filter-information-flow-direction": {
      "kind": "interpret",
@@ -4532,6 +4936,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.28: 'This value indicates that a QoS negotiation is allowed for the corresponding PCC rule request. This is the default value applicable if this AVP is not supplied.'"
     },
+    "TS29.212.dadx#qos-rule-definition-qos-information-bearer": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4a.5.10.4: 'This QoS-Information AVP shall not contain a Bearer-Identifier AVP.'"
+    },
     "TS29.212.dadx#qos-rule-install-charging-identifier": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.1: 'The charging identifier value for a QoS rule shall be the same as that for the corresponding PCC rule.'"
@@ -4540,6 +4948,14 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.5: 'If the RuleVersioning feature is supported, the Content-Version AVP(s) shall be included if it was included in the QoS-Rule-Definition AVP when the corresponding QoS rule was installed or modified.'"
     },
+    "TS29.212.dadx#qos-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'Multiple instances of QoS-Rule-Report AVPs shall be used in the case it is required to report different PCC-Rule-Status or Rule-Failure-Code values for different rules within the same Diameter command.'"
+    },
+    "TS29.212.dadx#qos-rule-report-qos-rule-base-name": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5a.3.5: 'If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included.'"
+    },
     "TS29.212.dadx#qos-rule-report-qos-rule-name": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.5: 'If the Content-Version AVP is included within a QoS-Rule-Report AVP, then only the one corresponding QoS-Rule-Name AVP shall be included.'"
@@ -4547,6 +4963,10 @@
     "TS29.212.dadx#qos-upgrade-absence": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.29: 'If no QoS-Upgrade AVP has been supplied for an IP CAN bearer, the default value QoS_UPGRADE_NOT_SUPPORTED is applicable.'"
+    },
+    "TS29.212.dadx#raa-charging-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.12: 'If the installation/activation of one or more PCC rules fails, the PCEF shall include one or more Charging-Rule-Report AVP(s) in either a CCR or an RAA command as described below for the affected PCC rules. Within each Charging-Rule-Report AVP, the PCEF shall identify the failed PCC rule(s) by including the Charging-Rule-Name AVP(s) or Charging-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
     },
     "TS29.212.dadx#raa-event-trigger": {
      "kind": "interpret",
@@ -4559,6 +4979,14 @@
     "TS29.212.dadx#ran-nas-release-cause-layout": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.106: 'The AVP shall be coded as per the RAN/NAS Cause in clause 8.103 of 3GPP TS 29.274 [22], starting with Octet 5.'"
+    },
+    "TS29.212.dadx#rar-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.3: 'The PCRF may remove all previously provided event triggers by providing the Event-Trigger AVP set to the value NO_EVENT_TRIGGERS. When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#rar-removal-of-access-ip-can-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.25.2.3.2: 'In order to do so, PCRF shall include the Removal-Of-Access AVP set to the value REMOVAL_OF_ACCESS (0) and the IP-CAN-Type AVP set to the value of removed access in the CCA or RAR command.'"
     },
     "TS29.212.dadx#redirect-information-redirect-address-type": {
      "kind": "interpret",
@@ -4588,21 +5016,97 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.71: 'The Routing-Rule-Identifier AVP content shall be encoded as a UTF8String and begin with the type of node that assigned the NBIFOM routing ruleidentifier, i.e. \"PCEF\" or \"PCRF\", the remainder of the Routing-Rule-Identifier AVP is delimited by a \";\" character and may be any sequence.'"
     },
+    "TS29.212.dadx#routing-rule-report-instances": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.118: 'Multiple instances of Routing-Rule-Report AVPs shall be used in the case it is required to report different Routing-Rule-Failure-Code values for different groups of rules within the same Diameter command.'"
+    },
     "TS29.212.dadx#rule-failure-code-an-gw-failed": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.38: 'This value shall not be used if the IP-CAN Session Modification procedure is initiated for PCC rule removal only.'"
+    },
+    "TS29.212.dadx#s15-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.6.1: 'The S15 application identifier shall be included in the Auth-Application-Id AVP.'"
     },
     "TS29.212.dadx#s15-cca-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause E.6.4.2: 'If the CCR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-11 S15 functionality, the CCA command shall not include the Supported-Features AVP.'"
     },
+    "TS29.212.dadx#s15-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.6.1: 'The S15 application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#s15-ccr-initial-henb-local-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.1: 'The HNB GW shall send a CC-Request with the CC-Request-Type AVP set to the value \"INITIAL_REQUEST\", The CCR command shall include the HNB Local IP address within the HeNB-Local-IP-Address AVP and the UDP source port number of IPSec tunnel within the UDP-Source-Port AVP if available.'"
+    },
+    "TS29.212.dadx#s15-ccr-modification-qos-information": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.2.1: 'When the RAB assignment requests to allocate new resources, the HNB GW shall include the requested QoS information which is derived from the RAB message within the QoS-Information AVP, and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'; 'When the RAB assignment requests to modify existing resources, the HNB GW shall set the CS-Service-QoS-Request-Operation AVP to \"MODIFICATION\", the HNB GW shall also include the requested QoS information which is derived from the RAB message within the QoS-Information AVP and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'"
+    },
+    "TS29.212.dadx#s15-ccr-qos-request-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.5.3.2.1: 'When the RAB assignment requests to allocate new resources, the HNB GW shall include the requested QoS information which is derived from the RAB message within the QoS-Information AVP, and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'; 'When the RAB assignment requests to modify existing resources, the HNB GW shall set the CS-Service-QoS-Request-Operation AVP to \"MODIFICATION\", the HNB GW shall also include the requested QoS information which is derived from the RAB message within the QoS-Information AVP and the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'; 'When the RAB assignment requests to delete resources the HNB GW shall set the CS-Service-QoS-Request-Operation AVP to \"DELETION\", and shall also include the QoS request identifier assigned by the HNB GW within CS-Service-QoS-Request-Identifier AVP in the CCR command.'"
+    },
+    "TS29.212.dadx#s15-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause E.6.6.1: 'The S15 application identifier shall be included in the Auth-Application-Id AVP.'"
+    },
+    "TS29.212.dadx#sd-application-detection-information-flow-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'This parameter may be sent from the TDF to the PCRF within Application-Detection-Information AVP and contains the information from a single IP flow packet filter of an application, once detected, if deducible at TDF. In this case, only Flow-Description AVP and Flow-Direction AVPs are used.'"
+    },
+    "TS29.212.dadx#sd-cca-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
     "TS29.212.dadx#sd-cca-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
     },
+    "TS29.212.dadx#sd-cca-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.3: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#sd-ccr-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
+    "TS29.212.dadx#sd-ccr-framed-ipv6-prefix-address": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'For the unsolicited case, the TDF may include the valid full Ipv6 address that is applicable to an IP flow or IP flows. The TDF shall set the \"Prefix Length\" to 128 and encode the Ipv6 address of the UE within the \"Prefix\" field.'"
+    },
+    "TS29.212.dadx#sd-ccr-initial-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5a.2: 'When the TDF detects an application for an Ipv4 address or Ipv6 address for which a TDF session does not exist, the TDF shall send CC-Request with CC-Request-Type set to value \"INITIAL-REQUEST\". The TDF provides the full UE IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP and, if available, the PDN identifier.'"
+    },
+    "TS29.212.dadx#sd-ccr-usage-monitoring-information-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.7.1: 'To report accumulated usage for a specific monitoring key, the TDF shall send a CC-Request with the Usage-Monitoring-Information AVP including the accumulated usage since the last report. The Usage-Monitoring-Information AVP shall include the monitoring key in the Monitoring-Key AVP and the accumulated volume usage in the Used-Service-Unit AVP.'"
+    },
+    "TS29.212.dadx#sd-raa-adc-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.5: 'If the installation/activation of one or more ADC rules fails, the TDF shall include one or more ADC-Rule-Report AVP(s) in either a TSA, a CCR or an RAA command as described below for the affected ADC rules. Within each ADC-Rule-Report AVP, the TDF shall identify the failed ADC rule(s) by including the ADC-Rule-Name AVP(s) or ADC-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
+    },
     "TS29.212.dadx#sd-raa-experimental-result-vendor": {
      "kind": "interpret",
      "reason": "interpreted from clause 5b.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
+    },
+    "TS29.212.dadx#sd-rar-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
+    "TS29.212.dadx#sd-rar-no-event-triggers-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.3: 'When an Event-Trigger AVP is provided with this value, no other Event-Trigger AVP shall be provided in the CCA or RAR command.'"
+    },
+    "TS29.212.dadx#sd-rar-ue-ip-address-event": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.8: 'When PCRF is notified by PCEF that either an UE_IP_ADDRESS_ALLOCATE or an UE_IP_ADDRESS_RELEASE event of the IP-CAN session occurs in the PCEF, the PCRF shall notify the TDF about the event for the corresponding TDF session. The Framed-IP-Address AVP shall also be provided. This notification shall also be done by using the Event-Report-Indication AVP within a RAR command.'"
+    },
+    "TS29.212.dadx#sd-tsa-adc-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4b.5.5: 'If the installation/activation of one or more ADC rules fails, the TDF shall include one or more ADC-Rule-Report AVP(s) in either a TSA, a CCR or an RAA command as described below for the affected ADC rules. Within each ADC-Rule-Report AVP, the TDF shall identify the failed ADC rule(s) by including the ADC-Rule-Name AVP(s) or ADC-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
     },
     "TS29.212.dadx#sd-tsa-experimental-result-vendor": {
      "kind": "interpret",
@@ -4612,17 +5116,73 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5b.4.1: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
     },
+    "TS29.212.dadx#sd-tsa-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
     "TS29.212.dadx#sd-tsr-framed-ip-address": {
      "kind": "interpret",
      "reason": "interpreted from clause 4b.5.1.1: 'When establishing the session with the TDF, the PCRF shall send a TS-Request with the PDN information, if available, within the Called-Station-Id AVP, the UE Ipv4 address within the Framed-IP-Address and/or the UE Ipv6 prefix within the Framed-Ipv6-Prefix AVP. These parameters shall uniquely identify the session between the PCRF and the TDF.'"
+    },
+    "TS29.212.dadx#sd-tsr-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5b.6.1: 'The Sd application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
+    "TS29.212.dadx#sd-usage-monitoring-level-values": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5b.4.0.1: 'Indicates whether the usage monitoring instance applies to the TDF session or to one or more ADC rules. Only SESSION_LEVEL (0) referring to TDF session instead of IP-CAN session and ADC-Rule-Level (2) apply.'"
     },
     "TS29.212.dadx#session-linking-indicator-absence": {
      "kind": "interpret",
      "reason": "interpreted from clause 5a.3.6: 'The absence of this AVP in case 2b as defined in 3GPP TS 29.213 [8] shall indicate the value SESSION_LINKING_IMMEDIATE.'"
     },
+    "TS29.212.dadx#st-str-auth-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.6.1: 'The St application identifier shall be included in the Auth-Application-Id AVP for the reused commands.'"
+    },
+    "TS29.212.dadx#st-tnr-adc-rule-report": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.3: 'If an ADC rule was successfully installed/activated, but can no longer be enforced by the TSSF, the TSSF shall send the PCRF a new TNR command and include an ADC-Rule-Report AVP. The TSSF shall include the Rule-Failure-Code AVP within the ADC-Rule-Report AVP and shall set the PCC-Rule-Status to INACTIVE.'"
+    },
+    "TS29.212.dadx#st-tsa-adc-rule-report-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.3: 'If the installation/activation of one or more ADC rules fails, the TSSF shall include one or more ADC-Rule-Report AVP(s) in the corresponding TSA command for the affected ADC rules. Within each ADC-Rule-Report AVP, the TSSF shall identify the failed ADC rule(s) by including the ADC-Rule-Name AVP(s) or ADC-Rule-Base-Name AVP(s), shall identify the failed reason code by including a Rule-Failure-Code AVP, and shall include the PCC-Rule-Status AVP as described below:'"
+    },
     "TS29.212.dadx#st-tsa-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause 5c.4.2: 'The following exceptions apply to the initial TSR/TSA command pair:'; 'If the TSR command does not contain any Supported-Features AVP(s), the TSA command shall not include the Supported-Features AVP.'"
+    },
+    "TS29.212.dadx#st-tsa-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.6.1: 'The St application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
+    "TS29.212.dadx#st-tsr-initial-adc-rule-install": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.1: 'If no active St Diameter session exists for the IP-CAN session, the PCRF shall establish an St Diameter session by sending an TDF-Session-Request (TSR) to the TSSF including the Request-Type AVP set to \"0 (initial request)\". Within the TSR, the PCRF shall provide the UE IPv4 address within the Framed-IP-Address AVP and/or UE IPv6 prefix within the Framed-IPv6-Prefix AVP and ADC-Rule-Install AVP(s) , and if required by the operator policies, the PDN information within the Called-Station-Id AVP.'"
+    },
+    "TS29.212.dadx#st-tsr-initial-called-station-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.1: 'Within the TSR, the PCRF shall provide the UE IPv4 address within the Framed-IP-Address AVP and/or UE IPv6 prefix within the Framed-IPv6-Prefix AVP and ADC-Rule-Install AVP(s) , and if required by the operator policies, the PDN information within the Called-Station-Id AVP.'"
+    },
+    "TS29.212.dadx#st-tsr-initial-framed-ip-address": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.1: 'If no active St Diameter session exists for the IP-CAN session, the PCRF shall establish an St Diameter session by sending an TDF-Session-Request (TSR) to the TSSF including the Request-Type AVP set to \"0 (initial request)\". Within the TSR, the PCRF shall provide the UE IPv4 address within the Framed-IP-Address AVP and/or UE IPv6 prefix within the Framed-IPv6-Prefix AVP and ADC-Rule-Install AVP(s) , and if required by the operator policies, the PDN information within the Called-Station-Id AVP.'"
+    },
+    "TS29.212.dadx#st-tsr-ue-ip-address-event": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.4: 'The Framed-IP-Address AVP shall also be provided within the Event-Report-Indication AVP when the UE_IP_ADDRESS_ALLOCATE event trigger is included.'"
+    },
+    "TS29.212.dadx#st-tsr-ue-ip-address-event-request-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4c.4.4: 'When PCRF is notified by PCEF that either an UE_IP_ADDRESS_ALLOCATE or an UE_IP_ADDRESS_RELEASE event of the IP-CAN session occurs in the PCEF, the PCRF shall notify the TSSF about the event for the corresponding St session by including the UE_IP_ADDRESS_ALLOCATE or the UE_IP_ADDRESS_RELEASE event trigger within the Event-Reporting-Indication AVP which is included in a TSR command with the Request-Type AVP set to \"1 (update request)\".'"
+    },
+    "TS29.212.dadx#st-tsr-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5c.6.1: 'The St application identifier shall be included in the Auth-Application-Id AVP within the Vendor-Specific-Application-Id grouped AVP contained in the TDF-Session-Request/Answer commands.'"
+    },
+    "TS29.212.dadx#tcp-source-port-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.129: 'The TCP-Source-Port AVP (AVP Code 2843) is of type Unsigned32. When Untrusted WLAN over S2b access is supported as defined in Annex D.4, it contains the TCP source port number used for the IKEv2 tunnel in the case that a NAT and firewall are detected'"
     },
     "TS29.212.dadx#tdf-application-instance-identifier-deducible": {
      "kind": "interpret",
@@ -4638,7 +5198,7 @@
     },
     "TS29.212.dadx#tft-filter-layout": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.13: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 5.3.13: 'Action shall be set to \"permit\".'; 'Direction shall be set to \"out\".'; 'The source IP address shall be set to \"any\", if no such information is provided in the TFT packet filter.'; 'If no such information is provided in the TFT packet filter, the Destination IP address shall be set to \"assigned\".'; 'No options shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
     },
     "TS29.212.dadx#tft-packet-filter-information-per-filter": {
      "kind": "interpret",
@@ -4654,7 +5214,15 @@
     },
     "TS29.212.dadx#tunnel-header-filter-layout": {
      "kind": "interpret",
-     "reason": "interpreted from clause 5.3.34: 'Action shall be set to \"permit\";'; 'Options shall not be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 5.3.34: 'Action shall be set to \"permit\";'; 'Source port (single value) for UDP tunneling;'; 'Destination port (single value) for UDP tunneling.'; 'Options shall not be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+    },
+    "TS29.212.dadx#tunnel-information-members": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.36: 'The Tunnel-Information AVP may include only the Tunnel-Header-Length AVP, only the Tunnel-Header-Filter AVP, or both.'"
+    },
+    "TS29.212.dadx#udp-source-port-range": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.97: 'The UDP-Source-Port AVP (AVP Code 2806) is of type Unsigned32 and contains the UDP source port number in the case that NA(P)T is detected for supporting interworking with fixed broadband access network as defined in Annex E.'"
     },
     "TS29.212.dadx#ue-local-ip-address-family": {
      "kind": "interpret",
@@ -4668,9 +5236,17 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.4.0.1: 'Only the CC-Total-Octets, one of the CC-Input-Octets and CC-Output-Octets or CC-Time AVPs are re-used. Monitoring-Time AVP as defined in 5.3. 99 may be optionally added to the grouped AVP if UMCH feature is supported.'"
     },
+    "TS29.212.dadx#usage-monitoring-information-threshold-key": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.16: 'In order to provide the applicable threshold for usage monitoring control, the PCRF shall include a Usage-Monitoring-Information AVP per monitoring key. The threshold level shall be provided in its Granted-Service-Unit AVP.'; 'The monitoring key shall be provided in the Monitoring-Key AVP.'"
+    },
     "TS29.212.dadx#usage-monitoring-level-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.61: 'If Usage-Monitoring-Level AVP is not provided, its absence shall indicate the value PCC_RULE_LEVEL (1).'"
+    },
+    "TS29.212.dadx#usage-monitoring-support-disabled-only": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.5.17.3: 'To disable usage monitoring for a monitoring key, the PCRF shall send the Usage-Monitoring-Information AVP including only the applicable monitoring key within the Monitoring-Key AVP and the Usage-Monitoring-Support AVP set to USAGE_MONITORING_DISABLED.'"
     },
     "TS29.212.dadx#usage-monitoring-used-service-unit": {
      "kind": "interpret",
