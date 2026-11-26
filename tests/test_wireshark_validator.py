@@ -1195,3 +1195,48 @@ def test_the_base_protocols_rules_on_every_answer_hold_in_each(
     ]
     assert len(found) == 1 and "missing Failed-AVP" in found[0], found
     assert "[RFC 6733 7.1.5, interpreted]" in found[0]
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_e_bit_is_held_to_the_result_codes_class(lua, s6a_rules, tmp_path):
+    """RFC 6733 sections 7.1.3 to 7.2: a protocol error only with the E bit,
+    a transient failure and a success only without it, and a permanent
+    failure either way, section 7.1.5 letting an <answer-message> carry it
+    with the E bit."""
+
+    def answer(flags: int, code: int) -> bytes:
+        return message(
+            316,
+            flags,
+            S6A,
+            avp(263, b"mme;1;2"),
+            avp(264, b"hss.example.com"),
+            avp(296, b"example.com"),
+            avp(268, u32(code)),
+            avp(279, avp(1, b"001010123456789")),
+        )
+
+    results = _validate(
+        lua,
+        s6a_rules,
+        tmp_path,
+        answer(P | E, 5004),
+        answer(P, 3002),
+        answer(P | E, 3002),
+        answer(P | E, 4001),
+        answer(P | E, 2001),
+    )
+
+    def e_bit(result: dict) -> set[str]:
+        return {rule for _, rule, _ in result["findings"] if rule.startswith("e-bit")}
+
+    assert [e_bit(each) for each in results] == [
+        set(),
+        {"e-bit-missing"},
+        set(),
+        {"e-bit-transient"},
+        {"e-bit-unexpected"},
+    ]
+    (transient,) = _cited(results[3], "e-bit-transient")
+    assert transient["clause"] == "7.1.4"

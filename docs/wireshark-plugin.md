@@ -79,12 +79,14 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   one it reserves or voids, where the corpus holds its values (RFC 5777's
   `Treatment-Action` is typed Enumerated by a table, its values unread); a
   Result-Code some document defines; bits some document names; an Unsigned32
-  value some document's `values` table names, a note, since no clause says
-  its table holds every value (TS 29.272 leaves Group-Service-Id above 1000
-  to the home operator); the E bit set on a protocol error (3xxx) and on no
-  other answer. A code missing from a command's table of result codes
-  (TS 29.228's, 29.273's, 29.328's) is not checked: no table says it lists
-  every code, and none lists the protocol errors an agent returns.
+  value some document's `values` table names, a note, since no clause says its
+  table holds every value (TS 29.272 leaves Group-Service-Id above 1000 to the
+  home operator); the E bit set on a protocol error (3xxx), clear on a transient
+  failure (4xxx), success or informational code, and either way on a permanent
+  failure (5xxx), which section 7.1.5 lets an `<answer-message>` with the E bit
+  carry. A code missing from a command's table of result codes (TS 29.228's,
+  29.273's, 29.328's) is not checked: no table says it lists every code, and
+  none lists the protocol errors an agent returns.
 - Unknown AVPs: an AVP no document defines is a warning with the M bit set,
   since a receiver would answer `DIAMETER_AVP_UNSUPPORTED`, and a note without.
 - Interpreted constraints ([constraints.md](constraints.md)), what a person read
@@ -252,7 +254,7 @@ publisher's link does not depend on it.
 | the header's P bit | the command's ABNF, whose header prints PXY or not |
 | the header, the AVP framing, the P bit of an AVP, an unknown AVP with the M bit | RFC 6733 section 3, or 4.1 |
 | data formats | RFC 6733 section 4.2 (the integer and float types) or 4.3.1 |
-| the E bit | RFC 6733 section 7.1.3 for a protocol error without it, 7.2 for another answer with it |
+| the E bit | RFC 6733 section 7.1.3 for a protocol error without it, 7.1.4 for a transient failure with it, 7.2 for a success or informational answer with it |
 | an interpreted constraint | the clause its quotes were read from, and the table where they are an information element's description |
 
 An unknown command or AVP cites nothing: no document defines it.

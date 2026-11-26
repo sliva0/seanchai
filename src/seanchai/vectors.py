@@ -2036,7 +2036,7 @@ class _Negatives:
             "e-bit-unexpected",
             Breaks(
                 rule="the E bit is set on an answer whose Result-Code is no"
-                " protocol error",
+                " protocol error or permanent failure",
                 reference="RFC6733",
                 version=None,
                 section="7.2",

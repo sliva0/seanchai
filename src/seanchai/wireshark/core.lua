@@ -99,7 +99,8 @@ end
 
 -- What the checks that read RFC 6733 alone cite, by rule: `rules.base`'s
 -- sections 3 (the header), 4.1 (the AVP header), 4.3.1 (the derived data
--- formats), 7.1.3 (protocol errors) and 7.2 (the E bit).
+-- formats), 7.1.3 (protocol errors), 7.1.4 (transient failures) and 7.2 (the
+-- E bit).
 local BASE_RULES = {
   ["header-truncated"] = "header", ["header-version"] = "header",
   ["header-length"] = "header", ["header-reserved-flags"] = "header",
@@ -111,6 +112,7 @@ local BASE_RULES = {
   ["diameter-uri"] = "derived", ["ip-filter-rule"] = "derived",
   address = "derived",
   ["e-bit-missing"] = "protocol_errors", ["e-bit-unexpected"] = "error_bit",
+  ["e-bit-transient"] = "transient_failures",
 }
 
 -- The rules about the message header or its E bit, whose explorer link goes to
@@ -120,6 +122,7 @@ local HEADER_RULES = {
   ["header-length"] = true, ["header-reserved-flags"] = true,
   ["header-e-bit"] = true, ["header-t-bit"] = true,
   ["e-bit-missing"] = true, ["e-bit-unexpected"] = true,
+  ["e-bit-transient"] = true,
 }
 
 -- Where `name` sits inside `path`.
@@ -2145,15 +2148,26 @@ function M.validate(rules, pdu, prefs, asked)
   end
   local result_code = best_ctx.result_code
   if result_code and not request then
+    -- RFC 6733 section 7.1.3: a protocol error (3xxx) only with the E bit;
+    -- 7.1.4: a transient failure (4xxx) only without it; 7.1.5: a permanent
+    -- failure (5xxx) "SHOULD" go without it and "MAY" in an answer-message
+    -- with it; 7.2: the E bit is set for a protocol error, so not for a
+    -- success (2xxx) or an informational code (1xxx).
     local protocol = result_code >= 3000 and result_code < 4000
+    local transient = result_code >= 4000 and result_code < 5000
+    local permanent = result_code >= 5000 and result_code < 6000
     if protocol and not error_bit then
       finding(best_ctx.findings, WARN, "e-bit-missing",
         string.format("E bit clear, Result-Code %d is a protocol error",
           result_code), 4, 1, HEADER)
-    elseif error_bit and not protocol then
-      finding(best_ctx.findings, WARN, "e-bit-unexpected",
-        string.format("E bit set, Result-Code %d is no protocol error (3xxx)",
+    elseif error_bit and transient then
+      finding(best_ctx.findings, WARN, "e-bit-transient",
+        string.format("E bit set, Result-Code %d is a transient failure (4xxx)",
           result_code), 4, 1, HEADER)
+    elseif error_bit and not protocol and not permanent then
+      finding(best_ctx.findings, WARN, "e-bit-unexpected",
+        string.format("E bit set, Result-Code %d is no protocol error (3xxx)"
+          .. " or permanent failure (5xxx)", result_code), 4, 1, HEADER)
     end
   end
   if best.candidate then

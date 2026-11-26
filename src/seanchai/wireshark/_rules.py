@@ -28,13 +28,15 @@ from ..dad import ast, formatter
 # The RFC 6733 sections the checks of the header, the AVP framing and the
 # data formats cite, with their pages as RFC 6733's table of contents prints
 # them: 3 Diameter Header, 4.1 AVP Header, 4.2 Basic AVP Data Formats, 4.3.1
-# Common Derived AVP Data Formats, 7.1.3 Protocol Errors, 7.2 Error Bit.
+# Common Derived AVP Data Formats, 7.1.3 Protocol Errors, 7.1.4 Transient
+# Failures, 7.2 Error Bit.
 BASE_SECTIONS = {
     "header": ("3", 34),
     "avp": ("4.1", 41),
     "basic": ("4.2", 43),
     "derived": ("4.3.1", 44),
     "protocol_errors": ("7.1.3", 90),
+    "transient_failures": ("7.1.4", 92),
     "error_bit": ("7.2", 95),
 }
 
