@@ -2176,7 +2176,7 @@ class _Negatives:
         # breaks alone: listed in `skipped` once every holder is tried.
         missed: dict[tuple[str, str, str], str] = {}
         message = self.full()
-        for node, scope in list(self.each_node(message)):
+        for index, (node, scope) in enumerate(list(self.each_node(message))):
             name = node.member.name if node.member else node.avp.name
             held = [
                 *self.builder.own.get(node.avp.id, ()),
@@ -2195,7 +2195,11 @@ class _Negatives:
                             continue
                         done.add(key)
                         trial = message.copy()
-                        target = self.find(trial, node)
+                        # The copy at the node's own place: another of its
+                        # reading and value may sit in another grouped AVP
+                        # (TS 29.273's PDN-Type in TWAN-Connectivity-Parameters
+                        # and in APN-Configuration).
+                        target, _ = list(self.each_node(trial))[index]
                         target.payload = payload
                         if self.builder.broken(self.scope, trial.nodes, trial.asked):
                             # Every value breaking it breaks a predicate on a
@@ -2444,16 +2448,6 @@ class _Negatives:
                 self.inner_holds(_Scope(inner.members, {}, inner.name), children)
             )
         return False
-
-    def find(self, message: _Message, node: _Avp) -> _Avp:
-        """`node`'s copy in `message`, by its place."""
-        original = self.full()
-        for (mine, _), (theirs, _) in zip(
-            self.each_node(original), self.each_node(message), strict=True
-        ):
-            if mine.avp.id == node.avp.id and mine.payload == node.payload:
-                return theirs
-        raise LookupError(node.avp.name)
 
     def breaking(
         self, node: _Avp, scope: _Scope, rule: dictionary.Rule
@@ -2747,6 +2741,11 @@ class _Negatives:
         alone = [n for n in nodes if n.avp.name != name] + [good]
         if self.builder.breaks(alone, name, rule, request, True):
             return
+        if good.avp.kind == "grouped" and self.collides(good, nodes):
+            # A copy would hold a member a `unique` rule keeps apart from the
+            # instance it copies: TS 29.272's Context-Identifier in each
+            # APN-Configuration of TS 29.273's Non-3GPP-User-Data.
+            return
         index = next(i for i, n in enumerate(nodes) if n.avp.name == name)
         nodes.insert(index, good)
         broken = self.builder.broken(scope, nodes, request)
@@ -2759,6 +2758,38 @@ class _Negatives:
             ) and self.counts_hold(message.nodes)
         if not kept:
             nodes.remove(good)
+
+    def collides(self, good: _Avp, run: Sequence[_Avp]) -> bool:
+        """Whether grouped `good` holds a member a `unique` rule on its
+        reading keeps apart, with the value another of its reading in `run`
+        holds."""
+        inner = self.builder.scope_of(good.avp)
+        unique = {
+            member
+            for member, rules in inner.rules.items()
+            if any(
+                rule.kind == "unique"
+                for each in rules
+                for reading in each.readings
+                for rule in reading.rules
+            )
+        }
+        for member in unique:
+            mine = {
+                c.payload
+                for c in good.children
+                if c.member and c.member.name == member and c.payload is not None
+            }
+            for other in run:
+                if other is good or other.avp.id != good.avp.id:
+                    continue
+                if mine & {
+                    c.payload
+                    for c in other.children
+                    if c.member and c.member.name == member
+                }:
+                    return True
+        return False
 
     def add_absent(
         self, message: _Message, name: str, each: dictionary.Constraint

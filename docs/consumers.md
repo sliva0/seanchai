@@ -441,7 +441,13 @@ its `* [ AVP ]` where the rule is the AVP's wherever read (SWa's
 Diameter-EAP-Request, which prints no Visited-Network-Identifier), is listed
 in `skipped`: a checker may hold the message to the other print, which it
 breaks nothing of; so is one whose breaking value breaks a predicate on a
-path to it too. A grouped AVP's `members` rule is broken only where emptying
+path to it too. A value rule of a member is broken at that member's own
+place, another AVP of its reading and value elsewhere left as it is (TS
+29.273's PDN-Type in TWAN-Connectivity-Parameters beside APN-Configuration's).
+A rule on each instance of a repeated grouped AVP is broken beside a valid
+copy of the instance, unless the copy would hold a member a `unique` rule
+keeps apart from it (TS 29.272's Context-Identifier in each APN-Configuration).
+A grouped AVP's `members` rule is broken only where emptying
 it keeps its command's predicates on paths into it, which TS 29.336's SIR,
 CIR, CIA, RIR and NIR do not. Nothing inside a `Failed-AVP` is broken, since
 RFC 6733 section 7.5 lets it hold the failed AVP as received and a checker

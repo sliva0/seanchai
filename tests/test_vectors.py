@@ -1068,3 +1068,47 @@ def test_a_feature_named_in_a_condition_is_its_lists_bit(built):
         and fields["Feature-List-ID"] == f"{1:08x}"
     ]
     assert len(broken) == 1
+
+
+def test_a_members_value_rule_is_broken_at_its_own_place(built):
+    """TS 29.273 clause 5.2.3.26 holds PDN-Type in TWAN-Connectivity-Parameters
+    to IPv4, IPv6 or IPv4v6: STa's answer breaks that PDN-Type, not the
+    APN-Configuration's of the same reading and value before it."""
+    (vector,) = [
+        vector
+        for vector in _vectors(built, 16777250).vectors
+        if vector.id == "16777250/DEA/negative/constraint-range/PDN-Type/5.2.3.26"
+        and vector.section == "5.2.2.1.2"
+    ]
+    held = {
+        node.name: {child.name: child.data for child in node.children}
+        for node in vector.tree
+        if node.name in ("TWAN-Connectivity-Parameters", "APN-Configuration")
+    }
+    assert held["TWAN-Connectivity-Parameters"]["PDN-Type"] == f"{3:08x}"
+    assert held["APN-Configuration"]["PDN-Type"] != f"{3:08x}"
+
+
+def test_a_copy_beside_a_broken_instance_keeps_a_unique_member_apart(built):
+    """TS 29.273 clause 8.2.3.1 keeps a non-IP APN-Configuration out of
+    Non-3GPP-User-Data, a rule on each instance; a valid copy beside the
+    broken one would repeat its Context-Identifier, which TS 29.272 keeps
+    apart in APN-Configurations beside each other, so none is added."""
+    broken = [
+        vector
+        for vector in _vectors(built, 16777265).vectors
+        if "/constraint-excludes/APN-Configuration/8.2.3.1" in vector.id
+    ]
+    assert broken
+    for vector in broken:
+        for node in vector.tree:
+            if node.name != "Non-3GPP-User-Data":
+                continue
+            contexts = [
+                grand.data
+                for child in node.children
+                if child.name == "APN-Configuration"
+                for grand in child.children
+                if grand.name == "Context-Identifier"
+            ]
+            assert len(contexts) == len(set(contexts))

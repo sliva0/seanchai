@@ -802,49 +802,81 @@ understanding an AVP with the M bit, which is the base protocol's.
 ## TS 29.273
 
 TS 29.273 V19.2.0 is read completely: every AVP clause of clauses 5.2.3,
-7.2.3, 8.2.3 and 9.2.3, and every C row of the information-element tables
-of clauses 4.1.2, 5.1.2, 6.1.2, 7.1.2, 8.1.2, 9.1.2 and 11.1.2, and the
-procedure and session-handling clauses for what they state of one message.
-Release 18's copy, V18.6.0, prints every sentence read and holds all 258
-blocks: it prints a reference to another 3GPP document as "3GPP TS" where
-Release 19 prints "TS", so a quote ends before such a reference.
+7.2.3, 8.2.3 and 9.2.3, every row of the information-element tables of
+clauses 4.1.2, 5.1.2, 6.1.2, 7.1.2, 8.1.2, 9.1.2 and 11.1.2 stating a
+condition or a value, C, O or M, the procedure clauses for what they state
+of one message, the session-handling clauses, clause 10's result codes,
+the features tables and Annex D.2's DRMP. Release 18's copy, V18.6.0,
+prints every sentence read and holds all 363 blocks: it prints a reference
+to another 3GPP document as "3GPP TS" where Release 19 prints "TS", so a
+quote ends before such a reference.
 
 The document prints Diameter-EAP-Request and -Answer for SWa with no
-application and for STa and SWd under 16777250, and S6b's AA-Request and
--Answer twice under 16777272, each print with a body of its own; a block
-names the print its table describes with `; Command-Section:`, as the
-corrections attaching the tables do. A re-authentication's answer is the
-first exchange's print: a row there allowing DIAMETER_SUCCESS alone, where
-the first exchange's allows DIAMETER_MULTI_ROUND_AUTH too, is text-only,
-since reading it would refuse the first exchange's answer.
+application and for STa and SWd under 16777250, the Re-Auth-Request and
+-Answer of SWa and STa under 16777250, and S6b's AA-Request and -Answer
+twice under 16777272, each print with a body of its own; a block names the
+print its table describes with `; Command-Section:`, as the corrections
+attaching the tables do. The plugin holds a message to the print it breaks
+least
+([wireshark-plugin.md](wireshark-plugin.md#which-definition-a-message-is-held-to)),
+so a rule of one print where another print of the procedure reads none
+breaks nothing: SWd, which carries STa's first exchange through the 3GPP
+AAA Proxy (clause 6.1.2.1.1), takes table 5.1.2.1/2's and 5.1.2.1/1's
+rules on its own prints, and its session handling STa's. SWa's prints name
+no application, so traffic under 16777250 is held to STa's and SWd's: a
+rule on them holds of the print as read.
+
+Where procedures share a print and a row holds of one, the message tells
+them apart where it can. An ERP re-authentication's request sets DER-Flags'
+ERP-Re-Authentication (clause 5.2.3.20) and its success carries the rMSK in
+Key, with no EAP-Master-Session-Key or ERP-Realm (table 5.1.2.5.1/2): the
+first exchange's EAP-Master-Session-Key is read where the request sets no
+such bit, its ERP-Realm beside a Key with an EAP-Master-Session-Key. A
+first exchange's DIAMETER_MULTI_ROUND_AUTH authorizing the SCM sets
+DEA-Flags' TWAN-S2a-Connectivity-Indicator, an EAP round's none, so a row
+allowed with "DIAMETER_SUCCESS or DIAMETER_MULTI_ROUND_AUTH, and
+TWAN-S2a-Connectivity-Indicator is set" reads both. S6b's PMIPv6 and GTPv2
+request carries MIP6-Feature-Vector (table 9.1.2.2.1/1), DSMIPv6's,
+sharing the print, none (table 9.1.2.5.1/3): QoS-Resources after a
+QoS-Capability, and MIP6-Feature-Vector after a success, are read where
+the request holds one. A re-authentication's answer is the first
+exchange's print: a row there allowing DIAMETER_SUCCESS alone, where the
+first exchange's allows the SCM's DIAMETER_MULTI_ROUND_AUTH too, is
+text-only, since reading it would refuse the first exchange's answer. The
+first exchange is SWa's and STa's (clause 4.2.1) and carries the AAA
+server's trust decision under 16777250: AN-Trusted's "For the STa case,
+the value TRUSTED" is text-only, no message showing the STa case apart
+from the value.
 
 | | |
 |---|---|
 | AVP clauses (clauses 5.2.3, 7.2.3, 8.2.3 and 9.2.3, not their General, Void and grouping clauses) | 81 |
-| with something to declare | 36, in 51 blocks |
-| with nothing to declare | 45 |
-| information-element C rows | 157, of which 147 state a condition, a block each |
-| procedure clauses | 9.1.2.1.3's relocated PDN GW and 8.2.4's Auth-Session-State, in 9 blocks |
-| session-handling clauses | 5.2.4's, 7.2.4's and 9.2.4's Auth-Session-State and 8.2.4's Authorization-Lifetime and Session-Timeout, never sent, in 51 blocks |
-| blocks | 258: 37 on an AVP wherever read, 21 within a grouped AVP, 200 within a command |
-| readings | 284 |
+| with something to declare | 37, in 59 blocks (8.2.3.16's features table among them, the SAA's DCN-related data) |
+| with nothing to declare | 44 |
+| information-element rows | 208 blocks: the C rows, of which 147 state a condition, and the M and O rows stating one: Auth-Request-Type's and Re-Auth-Request-Type's value in 21 commands, the IMSI's digits in 5, SWa's AN-Trusted, Server-Assignment-Type's values, the SCM's requested and granted connectivity parameters, SWm's Terminal-Information, SIP-Authenticate's length; SWd's copies of STa's rows among them |
+| procedure clauses | 9.1.2.1.3's relocated PDN GW, 9.1.2.5.1's P-CSCF restoration RAR, 9.1.2.5.2's RAA, 8.1.2.3.2's P-CSCF restoration PPR, in 4 blocks |
+| session-handling clauses | 4.2.4's, 5.2.4's, 7.2.4's and 9.2.4's Auth-Session-State, never sent (41 blocks, SWa's 4 and SWd's 2 among them), and 8.2.4's Auth-Session-State NO_STATE_MAINTAINED and Authorization-Lifetime and Session-Timeout never sent (24) |
+| result codes (10.3.1) | 26 blocks, one per answer |
+| Annex D.2 | 1 block, DRMP |
+| blocks | 363: 35 on an AVP wherever read, 35 within a grouped AVP, 293 within a command |
+| readings | 399 |
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 5: `mac-address` 2 (HESSID, TWAG-UP-Address), `labels`, `ip-address`, `plmn-domain` |
+| `encoding`, a codec | 13: `digits` 5 (the IMSI in MAR, MAA, SAR, SAA and RTR), `plmn-domain` 3 (S6b's requests), `mac-address` 2 (HESSID, TWAG-UP-Address), `ip-address` 2 (TWAG-CP-Address, Served-Party-IP-Address), `labels` |
 | `encoding element` | 6, naming 6 entries of the registry; 4 rules checked, 2 not ([above](#elements)) |
-| `length` | 3, in octets |
-| `range` | 9: Auth-Session-State NO_STATE_MAINTAINED in SWx's 8 commands, AN-Trusted TRUSTED in STa's answer |
-| `exclude` | 1: Subscription-Id-Type, MSISDN and External Identifier only |
-| `requires`, `present-if`, `absent-if` | 35, 30, 7 |
+| `length` | 12: 7 in octets (SSID, HESSID, TWAG-UP-Address, SIP-Authenticate, S6b's Visited-Network-Identifier thrice), 5 in digits |
+| `range` | 32: Auth-Request-Type in 18 commands, Re-Auth-Request-Type in 3 RARs, Auth-Session-State NO_STATE_MAINTAINED in SWx's 8, SWa's AN-Trusted UNTRUSTED, PDN-Type in TWAN-Connectivity-Parameters, Server-Assignment-Type |
+| `exclude` | 28: Result-Code in each of 26 answers, none of clause 10.3's codes IETF RFC 6733 does not number too, Subscription-Id-Type, Server-Assignment-Type's codes no row names |
+| `requires`, `present-if`, `absent-if`, `excludes` | 46, 48, 20, 4 |
 | `values` | 4: Feature-List-ID 1 within a 3GPP Supported-Features, in each of the 4 applications' messages |
-| `absent` | 51: Auth-Session-State in every STa, SWm and S6b command but the ASR, whose Auth-Session-State a 3GPP AAA Proxy may set (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), Authorization-Lifetime and Session-Timeout in SWx's 8 commands |
-| reading the request | 7: SAA's Non-3GPP-User-Data as the SAR's Server-Assignment-Type asks, S6b answers' QoS-Resources only after a QoS-Capability, MIP-Session-Key after an MIP-MN-HA-SPI and no APN-Configuration for an emergency, STa's AA-Answer's MIP6-Feature-Vector only after the request's |
+| `absent` | 58: Auth-Session-State in every SWa, STa, SWd, SWm and S6b command but the ASR, whose Auth-Session-State a 3GPP AAA Proxy may set (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), Authorization-Lifetime and Session-Timeout in SWx's 8 commands, MIP6-Home-Link-Prefix in S6b's MIP6-Agent-Info |
+| reading the request | 17: SAA's Non-3GPP-User-Data as the SAR's Server-Assignment-Type asks, and its UE-Usage-Type as its Supported-Features do, S6b answers' QoS-Resources only after a QoS-Capability, MIP-Session-Key after an MIP-MN-HA-SPI, MIP6-Feature-Vector after a PMIPv6 or GTPv2 request's, no APN-Configuration for an emergency, no success for an RAR asking AUTHORIZE_AUTHENTICATE, STa's AA-Answer's MIP6-Feature-Vector only after the request's, the ERP answer's Key and the first exchange's EAP-Master-Session-Key by the request's DER-Flags (in STa's and SWd's prints), SWa's Mobile-Node-Identifier after a BBF Transport-Access-Type, SWm's subscription data not after an emergency request |
 | `default` | 1: Access-Authorization-Flags in TWAN-Access-Info |
-| `bits` | 12, each `only`: a flags AVP's NOTE that undefined bits are cleared |
-| `members` | 9: `only` 6 (Trace-Info in an answer), `at-least-one` 3 (Trace-Info, Access-Network-Info's SSID, IMEI in STa's Terminal-Information, a member of TS 29.272's AVP) |
-| `unique` | 1: WLAN-Identifier in TWAN-Access-Info |
-| `text-only` | 116 |
+| `bits` | 20: `only` 14 (a flags AVP's NOTE that undefined bits are cleared, and the selected TWAN-Connection-Mode SCM or MCM in STa's and SWd's answer), `at-most-one` 3 and `at-least-one` 2 (the selected mode one of the two, RAR-Flags' P-CSCF restoration alone), `set` (SWx SAR's Emergency-Indication) |
+| `members` | 18: `only` 7 (Trace-Info in an answer), `at-least-one` 11 (Trace-Info, Access-Network-Info's SSID, IMEI in STa's and SWd's Terminal-Information, the requested connectivity's Connectivity-Flags and PDN-Type, a PGW identity's address or host name) |
+| `unique` | 1: WLAN-Identifier in TWAN-Access-Info, octet for octet |
+| `text-only` | 124 |
 
 Most text-only rules are conditions on the node, the subscription, the
 operator's policy, the procedure or an earlier message ("shall be sent to
@@ -856,31 +888,64 @@ every message the row allows: "shall contain the MSISDN of the UE and shall
 be sent if it is available" is read as the Subscription-Id's type, and
 "shall be included only if the QoS-Capability AVP was received in the
 authorization request and the authorization succeeded" as the request's
-QoS-Capability. The rest a single message could show but the format cannot
-say: a text value (the authentication scheme in SIP-Auth-Data-Item,
-EAP-AKA', ANID's "HRPD"), a byte of a variable-length payload
-(Location-Information's Code, Operator-Name's Namespace ID), a flag of
-MIP6-Feature-Vector, whose flags clause 5.2.3.3 lists in prose and RFC
-5447's bit table names two of, and five rows whose AVP the command's ABNF
-leaves to its `* [ AVP ]` and whose condition is the node's
-(Transport-Access-Type in STa's and SWd's request,
+QoS-Capability. A "should" a clause qualifies with "if available"
+(User-Location-Info-Time beside the WLAN Location Information, clauses
+7.1.2.1.2 and 7.1.2.2.2) is text-only. Non-3GPP-User-Data "not empty" is
+read as a member the body prints present, neither Trace-Info nor
+Emergency-Info beside it, which may be what it downloads; that the P-CSCF
+restoration's PPR holds an empty one no kind says. SWd's Full- and
+Short-Network-Name "shall be set" beside a Visited-Network-Identifier
+are text-only, the 3GPP AAA Proxy inserting the identifier into every
+request it forwards (clause 6.1.2.1.1); STa's are read. The rest a single
+message could show but the format cannot say: a text value (the
+authentication scheme in SIP-Auth-Data-Item, EAP-AKA', ANID's "HRPD", the
+reset PPR's "*" or IMSI prefix), a byte of a variable-length payload
+(Location-Information's Code, Operator-Name's Namespace ID), a count
+(SIP-Number-Auth-Items against the SIP-Auth-Data-Items, at most one
+TWAN-Access-Info without a WLAN-Identifier), a length a scope cannot tell
+apart (SIP-Authorization's XRES in the answer and RAND and AUTS in the
+synchronization failure's request), an address family's bits (an IPv6
+interface identifier's upper 64 bits zero), the QoS-Profile-Id deep in
+QoS-Resources, and the flags of MIP6-Feature-Vector, whose clause 5.2.3.3
+gives their masks in prose (PMIP6_SUPPORTED bit 40, ASSIGN_LOCAL_IP 43,
+MIP4_SUPPORTED 44, OPTIMIZED_IDLE_MODE_MOBILITY 45, GTPv2_SUPPORTED 46)
+where the corpus holds a bit table of RFC 5447's two and RFC 5779's three
+only: a `bits` rule naming 43 to 46 names a bit no table holds. Five rows'
+AVP the command's ABNF leaves to its `* [ AVP ]` and whose condition is the
+node's (Transport-Access-Type in STa's and SWd's request,
 IMEI-Check-In-VPLMN-Result, AMBR in STa's AA-Answer, AN-Trusted in S6b's
-Diameter-EAP-Answer), read where the document reads the AVP.
-ME-Identity-Check-Answer's Equipment-Status row is TS 29.272's command,
-which this file does not print, and TS 29.272's file reads it.
+Diameter-EAP-Answer) are read where the document reads the AVP.
+ME-Identity-Check-Request's and -Answer's rows (clause 11) are TS 29.272's
+commands, which this file does not print, and TS 29.272's file reads them.
+
+Clause 10.3.1's "the Result-Code AVP shall be absent" beside one of its
+codes in Experimental-Result is read in SWx's four answers, whose bodies
+leave Result-Code optional; the other answers print `{ Result-Code }`,
+which the sentence contradicts, and read only the exclusion of clause
+10.3's codes RFC 6733 does not number too (5450 to 5456, 5554). Two other
+sentences disagree with what the corpus prints: STa's trace rows list
+"Trace-Depth-List", and leave Trace-NE-Type-List out where TS 29.272's
+Trace-Data, which they re-use, requires it, so no reading of Trace-Data's
+members is added to TS 29.272's; and SWm's table 7.2.3.1/1 types
+Mobile-Node-Identifier OctetString against clause 5.2.3.2's UTF8String, a
+pinned `table-row-mismatch`. TS 29.272's readings within Active-APN hold
+where this document re-uses it ([Precedence](#precedence)), so the HSS
+restoration request's Active-APN rows are read there.
 
 The session-handling clauses' "shall not include the Auth-Session-State
-AVP" (clauses 5.2.4, 7.2.4, 9.2.4) and "Neither the Authorization-Lifetime
-AVP nor the Session-Timeout AVP shall be present" (clause 8.2.4) are read as
-`absent` in each command of the interface, a body admitting the AVP through
-its `* [ AVP ]`; Non-3GPP-User-Data's Session-Timeout is that grouped AVP's
-member, not the command's. Left unread: DER-Flags' and
-DEA-Flags' "This bit is only applicable to the TWAN authentication and
-authorization procedure", which says what a bit means, not when it is set;
-the detailed-behaviour clauses' result codes, which are what a node answers
-with, not a condition on an AVP; and the C rows saying only what an AVP
-holds when present ("If present, this IE shall contain the untrusted
-non-3GPP access network technology type").
+AVP" (clauses 5.2.4, 7.2.4, 9.2.4, and 4.2.4's SWa, the same as STa's) and
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall
+be present" (clause 8.2.4) are read as `absent` in each command of the
+interface, a body admitting the AVP through its `* [ AVP ]`;
+Non-3GPP-User-Data's Session-Timeout is that grouped AVP's member, not the
+command's. Left unread: DER-Flags' and DEA-Flags' "This bit is only
+applicable to the TWAN authentication and authorization procedure", which
+says what a bit means, not when it is set; the detailed-behaviour clauses'
+result codes, which are what a node answers with, not a condition on an
+AVP; the C rows saying only what an AVP holds when present ("If present,
+this IE shall contain the untrusted non-3GPP access network technology
+type"); and SWx's NOTE on Vendor-Specific-Application-Id, which says why
+the commands print it and forbids nothing.
 
 ## TS 29.212
 
