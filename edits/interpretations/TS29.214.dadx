@@ -85,6 +85,40 @@
     text-only
 
 
+;; The AA-Request's own, the session's; a Media-Component-Description's,
+;; an IP flow's, is clause 5.3.16's (below).
+; Type: Interpreted Constraints
+; Id: aar-reservation-priority-default
+; AVP: Reservation-Priority
+; Command: AA-Request
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0)."
+    default DEFAULT
+
+
+;; A later request, its time and its service information: no single
+;; exchange shows them. Clause 4.4.2 says the same of a modification.
+; Type: Interpreted Constraints
+; Id: aaa-retry-interval
+; AVP: Retry-Interval
+; Command: AA-Answer
+; Section: 4.4.1
+; Versions: 18.4.0..19.3.0
+"When the AF receives the re-try interval within the Retry-Interval AVP, the AF shall not send the same service information to the PCRF again (for the same IP-CAN session) until the re-try interval has elapsed."
+    text-only
+
+
+; Type: Interpreted Constraints
+; Id: aar-after-acknowledgement
+; AVP: Session-Id
+; Command: AA-Request
+; Section: 4.4.2
+; Versions: 18.4.0..19.3.0
+"The AF shall send an AA-Request command to the PCRF, only after the previous AA-Request has been acknowledged."
+    text-only
+
+
 ;; Only where the AF provided a usage threshold at the session's provisioning
 ;; or modification, an earlier message.
 ; Type: Interpreted Constraints
@@ -148,6 +182,16 @@
     text-only
 
 
+; Type: Interpreted Constraints
+; Id: aar-access-network-info-required-access-info
+; AVP: Required-Access-Info
+; Command: AA-Request
+; Section: 4.4.6.7
+; Versions: 18.4.0..19.3.0
+"If the AF requests the PCRF to report the access network information (i.e. user location and/or user timezone information), the AF shall subscribe to the \"ACCESS_NETWORK_INFO_REPORT\" within the Specific-Action AVP and shall include the required access network information within the Required-Access-Info AVP."
+    present-if Specific-Action = ACCESS_NETWORK_INFO_REPORT
+
+
 ;; Clause 4.4.6.10, the EPC health monitoring report; the RAR reporting a
 ;; session not found carries both too. The document prints the clause's
 ;; heading as a paragraph of clause 4.4.6.9, whose text it then is.
@@ -209,6 +253,32 @@
 "The PCRF shall acknowledge the AAR command by sending an AAA command to the P-CSCF acting as AF and shall include the Auth-Session-State AVP set to NO_STATE_MAINTAINED (1)."
     present-if request/Rx-Request-Type = PCSCF_RESTORATION and Result-Code = DIAMETER_SUCCESS
     values 1 if request/Rx-Request-Type = PCSCF_RESTORATION and Result-Code = DIAMETER_SUCCESS
+
+
+;; Read from the address's side: a restoration AAR holding no
+;; Subscription-Id of the IMSI's type holds an address, either. A rule
+;; on Subscription-Id would read each of its instances, the MSISDN's
+;; beside the IMSI's among them.
+; Type: Interpreted Constraints
+; Id: aar-restoration-imsi
+; AVP: Framed-IP-Address
+; Command: AA-Request
+; Section: 4.4.7
+; Versions: 18.4.0..19.3.0
+"The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed."
+"If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP."
+    present-if Rx-Request-Type = PCSCF_RESTORATION and not Framed-IPv6-Prefix and not Subscription-Id/Subscription-Id-Type = END_USER_IMSI
+
+
+;; What the PCRF received over Gx or Gxx no Rx message shows.
+; Type: Interpreted Constraints
+; Id: rar-flows-content-versions
+; AVP: Content-Version
+; Within: Flows
+; Section: 4.4.9
+; Versions: 18.4.0..19.3.0
+"The PCRF shall include more than one Content-Version AVPs for the same media component within the Flows AVP in a RAR command if it has received multiple content versions as described in clause 4.5.28 or clause 4a.5.18 in 3GPP TS 29.212 [8]."
+    text-only
 
 
 ;; Clause 4.4.10: an extended AVP, in kbit/s, carries only what exceeds
@@ -336,6 +406,20 @@
     present-if MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING and not Framed-IPv6-Prefix
 
 
+;; Read on MPS-Action, so that the paths read any of the AAR's
+;; Media-Component-Descriptions; that the one numbered 0 is the one
+;; holding the filter, and the filter the signalling flow's, no path
+;; binds.
+; Type: Interpreted Constraints
+; Id: aar-mps-signalling-flow
+; AVP: MPS-Action
+; Command: AA-Request
+; Section: 4.4.12
+; Versions: 18.4.0..19.3.0
+"The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow."
+    requires not MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING or Media-Component-Description/Media-Component-Number = 0 and Media-Component-Description/Media-Sub-Component/Flow-Description
+
+
 ;; Clause 5.1, every Rx command's Auth-Application-Id; the capabilities
 ;; exchange of clause 5.2 reads RFC 6733's.
 ; Type: Interpreted Constraints
@@ -388,6 +472,18 @@
     text-only
 
 
+;; Whether a request's Flow-Description breaks the codec no condition
+;; tests: the codec's rule checks the AF's filter itself.
+; Type: Interpreted Constraints
+; Id: aaa-filter-restrictions
+; AVP: Experimental-Result
+; Command: AA-Answer
+; Section: 5.3.8
+; Versions: 18.4.0..19.3.0
+"If any of these restrictions is not observed by the AF, the server shall send an error response to the AF containing the Experimental-Result-Code AVP with value FILTER_RESTRICTIONS."
+    text-only
+
+
 ; Type: Interpreted Constraints
 ; Id: flows-content-version
 ; AVP: Content-Version
@@ -407,6 +503,11 @@
     default NO_INFORMATION
 
 
+;; An update marked UPDATE_REQUEST carries the one-time values alone:
+;; ACCESS_NETWORK_INFO_REPORT (12), and CN_HEALTH_MONITOR (21), which
+;; Release 19 adds and marks one-time; an update without Rx-Request-Type
+;; is not told from the initial request, and the values' lifetime is the
+;; session's.
 ; Type: Interpreted Constraints
 ; Id: aar-specific-action-initial
 ; AVP: Specific-Action
@@ -414,7 +515,7 @@
 ; Section: 5.3.13
 ; Versions: 18.4.0..19.3.0
 "Non-one-time-specific-action value(s) may only be provided in the initial AA-Request and shall then be applicable for the entire lifetime of the Rx session."
-    text-only
+    values 12, 21 if Rx-Request-Type = UPDATE_REQUEST
 
 
 ;; Clause 5.3.13's values a RAR reports, of any of its Specific-Action AVPs,
@@ -461,6 +562,9 @@
     text-only
 
 
+;; An MA PDU session's later report carries the access added or released
+;; in MA-Information's IP-CAN-Type alone (Annex E.4); which report is the
+;; first, which carries the command's, the RAR does not say.
 ; Type: Interpreted Constraints
 ; Id: rar-ip-can-change-ip-can-type
 ; AVP: IP-CAN-Type
@@ -468,7 +572,7 @@
 ; Section: 5.3.13
 ; Versions: 18.4.0..19.3.0
 "When used in RAR it indicates that the PCRF generated the request because of an IP-CAN or RAT change. IP-CAN-Type AVP, RAT-Type AVP (if applicable) ,AN-Trusted AVP (if applicable) and AN-GW-Address AVP (if applicable) shall be provided in the same request with the new/valid value(s)."
-    present-if Specific-Action = IP-CAN_CHANGE
+    present-if Specific-Action = IP-CAN_CHANGE and not MA-Information/IP-CAN-Type
 
 
 ;; Whether it applies is the IP-CAN type's, which the clause does not
@@ -796,6 +900,26 @@
     members at-least-one HFC-Node-Identifier GLI-Identifier
 
 
+; Type: Interpreted Constraints
+; Id: wireline-user-location-info-hfc
+; AVP: HFC-Node-Identifier
+; Within: Wireline-User-Location-Info
+; Section: 5.3.75
+; Versions: 18.4.0..19.3.0
+"The Wireline-User-Location-Info AVP (AVP code 578) is of type Grouped and contains either wireline Cable or wireline BBF user location information."
+    excludes GLI-Identifier
+
+
+; Type: Interpreted Constraints
+; Id: wireline-user-location-info-line-type
+; AVP: Line-Type
+; Within: Wireline-User-Location-Info
+; Section: 5.3.75
+; Versions: 18.4.0..19.3.0
+"The GLI-Identifier AVP indicates wireline BBF location and contains a Global Line Identifier. The Line-Type AVP indicates the type of line included in the GLI-Identifier AVP."
+    requires GLI-Identifier
+
+
 ;; CableLabs' document, which no reference of the corpus can name.
 ; Type: Interpreted Constraints
 ; Id: hfc-node-identifier-cablelabs
@@ -806,14 +930,15 @@
     text-only
 
 
-;; Base64 writes 150 octets as 200 characters; no codec reads base64, and BBF
-;; WT-470, which no reference of the corpus can name, gives the value.
+;; Base64 writes 150 octets as 200 characters; BBF WT-470, which no
+;; reference of the corpus can name, gives the value it encodes.
 ; Type: Interpreted Constraints
 ; Id: gli-identifier-base64
 ; AVP: GLI-Identifier
 ; Section: 5.3.77
 ; Versions: 18.4.0..19.3.0
 "The GLI-Identifier AVP (AVP code 580) is of type OctetString and contains a Global Line Identifier (see clause 28.16.3 of 3GPP TS 23.003 [38]) encoded as base64-encoded characters, representing the GLI value (up to 150 bytes) as specified in BBF WT-470 [74]."
+    encoding base64
     length *..200 octets
 
 
@@ -831,8 +956,8 @@
 
 
 ;; Rx carries the AVP only in the AF's AA-Request. A whole address takes the
-;; 16 octets of the Prefix field; that the Prefix-Length octet holds 128 no
-;; rule says, since a bits rule reaches bit 63 at most.
+;; 16 octets of the Prefix field, its Prefix-Length 128: the registry's
+;; entry for RFC 3162's attribute as this clause restricts it.
 ; Type: Interpreted Constraints
 ; Id: framed-ipv6-prefix-ue-address
 ; AVP: Framed-IPv6-Prefix
@@ -842,7 +967,7 @@
 "The encoding of the value within this Octet String type AVP shall be as defined in RFC 3162 [20], clause 2.3. The \"Reserved\", \"Prefix-Length\" and \"Prefix\" fields shall be included in this order."
     encoding element RFC3162 2.3 "Framed-IPv6-Prefix"
 "The AF shall set the \"Prefix Length\" to 128 and encode the Ipv6 address of the UE within the \"Prefix\" field."
-    length 18 octets
+    encoding element TS29.214 5.4.0 "Framed-IPv6-Prefix"
 
 
 ;; Within Sponsored-Connectivity-Data, where Rx reads it; that one of
@@ -921,7 +1046,8 @@
 ;; The initial AAR is the one whose Rx-Request-Type says INITIAL_REQUEST, the
 ;; stateless one PCSCF_RESTORATION (clause 4.4.7); an AAR without the AVP is
 ;; not told apart. Held to a success's answer. Whether the PCRF supports
-;; Rel-7 the answer does not say.
+;; Rel-7 the answer does not say, nor the M bit no kind reads, nor which
+;; features the PCRF supports beside the AF's.
 ; Type: Interpreted Constraints
 ; Id: aaa-initial-supported-features
 ; AVP: Supported-Features
@@ -957,3 +1083,13 @@
 ; Versions: 18.4.0..19.3.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+;; The same component across two SDP offers no message shows.
+; Type: Interpreted Constraints
+; Id: media-component-number-kept
+; AVP: Media-Component-Number
+; Section: B.1.1
+; Versions: 18.4.0..19.3.0
+"The ordinal number of a media component shall not be changed when the session description information is modified."
+    text-only

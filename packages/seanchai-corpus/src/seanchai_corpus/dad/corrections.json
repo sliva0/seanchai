@@ -5748,6 +5748,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
     },
+    "TS29.214.dadx#aaa-filter-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.8: 'If any of these restrictions is not observed by the AF, the server shall send an error response to the AF containing the Experimental-Result-Code AVP with value FILTER_RESTRICTIONS.'"
+    },
     "TS29.214.dadx#aaa-initial-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.4.1: 'On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The following exceptions apply to the initial and stateless AAR/AAA command pair:'; 'If the AAR command contains the Supported-Features AVP(s), the PCRF shall include the Supported-Features AVP(s) in the AAA command, with the ‘M’ bit cleared, indicating only the features that both the PCRF and AF support.'; 'The following exceptions apply to the initial and stateless AAR/AAA command pair:'; 'If the AAR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-7 Rx functionality, the AAA command shall not include the Supported-Features AVP.'"
@@ -5764,9 +5768,25 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.7: 'The PCRF shall acknowledge the AAR command by sending an AAA command to the P-CSCF acting as AF and shall include the Auth-Session-State AVP set to NO_STATE_MAINTAINED (1).'"
     },
+    "TS29.214.dadx#aaa-retry-interval": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'When the AF receives the re-try interval within the Retry-Interval AVP, the AF shall not send the same service information to the PCRF again (for the same IP-CAN session) until the re-try interval has elapsed.'"
+    },
     "TS29.214.dadx#aaa-sgsn-mcc-mnc": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.1: 'The AA-Answer message shall also include the PLMN identifier within the 3GPP-SGSN-MCC-MNC AVP if the PCRF has previously requested to be updated with this information in the PCEF/BBERF.'"
+    },
+    "TS29.214.dadx#aar-access-network-info-required-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.6.7: 'If the AF requests the PCRF to report the access network information (i.e. user location and/or user timezone information), the AF shall subscribe to the \"ACCESS_NETWORK_INFO_REPORT\" within the Specific-Action AVP and shall include the required access network information within the Required-Access-Info AVP.'"
+    },
+    "TS29.214.dadx#aar-after-acknowledgement": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.2: 'The AF shall send an AA-Request command to the PCRF, only after the previous AA-Request has been acknowledged.'"
+    },
+    "TS29.214.dadx#aar-mps-signalling-flow": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.12: 'The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow.'"
     },
     "TS29.214.dadx#aar-mps-signalling-framed-ip-address": {
      "kind": "interpret",
@@ -5780,11 +5800,19 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.12: 'To provision the AF signalling flow information, the AF shall provide the UE’s IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP. The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow. If the AuthorizationForMpsSignalling feature is supported, the AF shall provide the MPS-Action AVP set to value AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING (3).'"
     },
+    "TS29.214.dadx#aar-reservation-priority-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0).'"
+    },
     "TS29.214.dadx#aar-restoration-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.7: 'The AF shall also include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1) in the AAR command, as described in IETF RFC 6733 [52].'"
     },
     "TS29.214.dadx#aar-restoration-called-station-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.7: 'The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed.'; 'If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP.'"
+    },
+    "TS29.214.dadx#aar-restoration-imsi": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.7: 'The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed.'; 'If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP.'"
     },
@@ -5920,6 +5948,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.17: 'When this AVP refers to AF signalling, this is indicated by using the value 0 according to the rules in Annex B.'"
     },
+    "TS29.214.dadx#media-component-number-kept": {
+     "kind": "interpret",
+     "reason": "interpreted from clause B.1.1: 'The ordinal number of a media component shall not be changed when the session description information is modified.'"
+    },
     "TS29.214.dadx#media-component-reservation-priority-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.16: 'If the Reservation-Priority AVP is not specified the IP flow priority is DEFAULT (0).'"
@@ -5963,6 +5995,10 @@
     "TS29.214.dadx#rar-flows": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.13: 'Within a RAR, this value shall be used when the server reports a loss of a bearer (in the case of GPRS PDP context bandwidth modification to 0 kbit for GBR bearers) to the AF.'; 'The SDFs that are deactivated as a consequence of this loss of bearer shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used when the server reports a recovery of a bearer (in the case of 3GPP-GPRS or 3GPP-EPS when PGW interoperates with a Gn/Gp SGSN, PDP context bandwidth modification from 0 kbit to another value for GBR bearers) to the AF.'; 'The SDFs that are re-activated as a consequence of the recovery of bearer shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used when the server reports the release of a bearer (e.g. PDP context removal for 3GPP-GPRS or bearer/PDP context removal for 3GPP-EPS) to the AF.'; 'The SDFs that are deactivated as a consequence of this release of bearer shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used when the PCRF reports to the AF that SDFs have run out of credit, and that the termination action indicated by the corresponding Final-Unit-Action AVP applies (3GPP TS 32.240 [23] and 3GPP TS 32.299 [24].'; 'The SDFs that are impacted as a consequence of the out of credit condition shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used by the PCRF to indicate that the resources requested for particular service information have been successfully allocated.'; 'The SDFs corresponding to the resources successfully allocated shall be provided within the Flows AVP and the content version within the Content-Version AVP as included when the corresponding media component was provisioned.'; 'Within a RAR, this value shall be used by the PCRF to indicate that the resources requested for a particular service information cannot be successfully allocated.'; 'The SDFs corresponding to the resources that could not be allocated shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used to report to the AF the SDFs for which credit has been reallocated after the former out of credit indication (3GPP TS 32.240 [23] and 3GPP TS 32.299 [24]).'; 'The SDFs that are impacted as a consequence of the reallocation of credit condition shall be provided within the Flows AVP.'; 'If an IP-CAN type or RAT type change is due to IP flow mobility and a subset of the flows within the AF session is affected, the affected service data flows shall be provided in the same request.'"
+    },
+    "TS29.214.dadx#rar-flows-content-versions": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.9: 'The PCRF shall include more than one Content-Version AVPs for the same media component within the Flows AVP in a RAR command if it has received multiple content versions as described in clause 4.5.28 or clause 4a.5.18 in 3GPP TS 29.212 [8].'"
     },
     "TS29.214.dadx#rar-ip-can-change-an-gw-address": {
      "kind": "interpret",
@@ -6047,6 +6083,14 @@
     "TS29.214.dadx#user-location-info-coding": {
      "kind": "interpret",
      "reason": "interpreted from table 5.4.0.1: 'Coding for type values between 0 and 134 shall be done as defined in 3GPP TS 29.274 [33].'; 'Coding for these type values shall be done as defined in 3GPP TS 29.061 [34]'"
+    },
+    "TS29.214.dadx#wireline-user-location-info-hfc": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.75: 'The Wireline-User-Location-Info AVP (AVP code 578) is of type Grouped and contains either wireline Cable or wireline BBF user location information.'"
+    },
+    "TS29.214.dadx#wireline-user-location-info-line-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.75: 'The GLI-Identifier AVP indicates wireline BBF location and contains a Global Line Identifier. The Line-Type AVP indicates the type of line included in the GLI-Identifier AVP.'"
     },
     "TS29.214.dadx#wireline-user-location-info-members": {
      "kind": "interpret",
@@ -6148,6 +6192,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.5.1: 'The Vendor-ID AVP shall be set to 3GPP (10415).'"
     },
+    "TS29.214.dadx#aaa-filter-restrictions": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.8: 'If any of these restrictions is not observed by the AF, the server shall send an error response to the AF containing the Experimental-Result-Code AVP with value FILTER_RESTRICTIONS.'"
+    },
     "TS29.214.dadx#aaa-initial-supported-features": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.4.1: 'On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'; 'The following exceptions apply to the initial and stateless AAR/AAA command pair:'; 'If the AAR command contains the Supported-Features AVP(s), the PCRF shall include the Supported-Features AVP(s) in the AAA command, with the ‘M’ bit cleared, indicating only the features that both the PCRF and AF support.'; 'The following exceptions apply to the initial and stateless AAR/AAA command pair:'; 'If the AAR command does not contain any Supported-Features AVP(s) and the PCRF supports Rel-7 Rx functionality, the AAA command shall not include the Supported-Features AVP.'"
@@ -6164,9 +6212,25 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.7: 'The PCRF shall acknowledge the AAR command by sending an AAA command to the P-CSCF acting as AF and shall include the Auth-Session-State AVP set to NO_STATE_MAINTAINED (1).'"
     },
+    "TS29.214.dadx#aaa-retry-interval": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'When the AF receives the re-try interval within the Retry-Interval AVP, the AF shall not send the same service information to the PCRF again (for the same IP-CAN session) until the re-try interval has elapsed.'"
+    },
     "TS29.214.dadx#aaa-sgsn-mcc-mnc": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.1: 'The AA-Answer message shall also include the PLMN identifier within the 3GPP-SGSN-MCC-MNC AVP if the PCRF has previously requested to be updated with this information in the PCEF/BBERF.'"
+    },
+    "TS29.214.dadx#aar-access-network-info-required-access-info": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.6.7: 'If the AF requests the PCRF to report the access network information (i.e. user location and/or user timezone information), the AF shall subscribe to the \"ACCESS_NETWORK_INFO_REPORT\" within the Specific-Action AVP and shall include the required access network information within the Required-Access-Info AVP.'"
+    },
+    "TS29.214.dadx#aar-after-acknowledgement": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.2: 'The AF shall send an AA-Request command to the PCRF, only after the previous AA-Request has been acknowledged.'"
+    },
+    "TS29.214.dadx#aar-mps-signalling-flow": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.12: 'The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow.'"
     },
     "TS29.214.dadx#aar-mps-signalling-framed-ip-address": {
      "kind": "interpret",
@@ -6180,11 +6244,19 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.12: 'To provision the AF signalling flow information, the AF shall provide the UE’s IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP. The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow. If the AuthorizationForMpsSignalling feature is supported, the AF shall provide the MPS-Action AVP set to value AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING (3).'"
     },
+    "TS29.214.dadx#aar-reservation-priority-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.1: 'If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0).'"
+    },
     "TS29.214.dadx#aar-restoration-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.7: 'The AF shall also include the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1) in the AAR command, as described in IETF RFC 6733 [52].'"
     },
     "TS29.214.dadx#aar-restoration-called-station-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.7: 'The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed.'; 'If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP.'"
+    },
+    "TS29.214.dadx#aar-restoration-imsi": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.4.7: 'The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed.'; 'If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP.'"
     },
@@ -6320,6 +6392,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.17: 'When this AVP refers to AF signalling, this is indicated by using the value 0 according to the rules in Annex B.'"
     },
+    "TS29.214.dadx#media-component-number-kept": {
+     "kind": "interpret",
+     "reason": "interpreted from clause B.1.1: 'The ordinal number of a media component shall not be changed when the session description information is modified.'"
+    },
     "TS29.214.dadx#media-component-reservation-priority-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.16: 'If the Reservation-Priority AVP is not specified the IP flow priority is DEFAULT (0).'"
@@ -6363,6 +6439,10 @@
     "TS29.214.dadx#rar-flows": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.13: 'Within a RAR, this value shall be used when the server reports a loss of a bearer (in the case of GPRS PDP context bandwidth modification to 0 kbit for GBR bearers) to the AF.'; 'The SDFs that are deactivated as a consequence of this loss of bearer shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used when the server reports a recovery of a bearer (in the case of 3GPP-GPRS or 3GPP-EPS when PGW interoperates with a Gn/Gp SGSN, PDP context bandwidth modification from 0 kbit to another value for GBR bearers) to the AF.'; 'The SDFs that are re-activated as a consequence of the recovery of bearer shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used when the server reports the release of a bearer (e.g. PDP context removal for 3GPP-GPRS or bearer/PDP context removal for 3GPP-EPS) to the AF.'; 'The SDFs that are deactivated as a consequence of this release of bearer shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used when the PCRF reports to the AF that SDFs have run out of credit, and that the termination action indicated by the corresponding Final-Unit-Action AVP applies (3GPP TS 32.240 [23] and 3GPP TS 32.299 [24].'; 'The SDFs that are impacted as a consequence of the out of credit condition shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used by the PCRF to indicate that the resources requested for particular service information have been successfully allocated.'; 'The SDFs corresponding to the resources successfully allocated shall be provided within the Flows AVP and the content version within the Content-Version AVP as included when the corresponding media component was provisioned.'; 'Within a RAR, this value shall be used by the PCRF to indicate that the resources requested for a particular service information cannot be successfully allocated.'; 'The SDFs corresponding to the resources that could not be allocated shall be provided within the Flows AVP.'; 'Within a RAR, this value shall be used to report to the AF the SDFs for which credit has been reallocated after the former out of credit indication (3GPP TS 32.240 [23] and 3GPP TS 32.299 [24]).'; 'The SDFs that are impacted as a consequence of the reallocation of credit condition shall be provided within the Flows AVP.'; 'If an IP-CAN type or RAT type change is due to IP flow mobility and a subset of the flows within the AF session is affected, the affected service data flows shall be provided in the same request.'"
+    },
+    "TS29.214.dadx#rar-flows-content-versions": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 4.4.9: 'The PCRF shall include more than one Content-Version AVPs for the same media component within the Flows AVP in a RAR command if it has received multiple content versions as described in clause 4.5.28 or clause 4a.5.18 in 3GPP TS 29.212 [8].'"
     },
     "TS29.214.dadx#rar-ip-can-change-an-gw-address": {
      "kind": "interpret",
@@ -6452,6 +6532,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.4.0.1: 'Coding for type values between 0 and 134 shall be done as defined in 3GPP TS 29.274 [33].'; 'Coding for these type values shall be done as defined in 3GPP TS 29.061 [34]'"
     },
+    "TS29.214.dadx#wireline-user-location-info-hfc": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.75: 'The Wireline-User-Location-Info AVP (AVP code 578) is of type Grouped and contains either wireline Cable or wireline BBF user location information.'"
+    },
+    "TS29.214.dadx#wireline-user-location-info-line-type": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.75: 'The GLI-Identifier AVP indicates wireline BBF location and contains a Global Line Identifier. The Line-Type AVP indicates the type of line included in the GLI-Identifier AVP.'"
+    },
     "TS29.214.dadx#wireline-user-location-info-members": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.75: 'The Wireline-User-Location-Info AVP (AVP code 578) is of type Grouped and contains either wireline Cable or wireline BBF user location information.'"
@@ -6472,7 +6560,7 @@
      "targets": [
       [
        "sections",
-       38,
+       45,
        "rows",
        61
       ]
@@ -28472,7 +28560,7 @@
     },
     "ETSI-TS183.017.dadx#flow-description-restrictions": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.17: 'Only the Action \"permit\" shall be used.'; 'No \"options\" shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'"
+     "reason": "interpreted from clause 7.3.17: 'Only the Action \"permit\" shall be used.'; 'No \"options\" shall be used.'; 'The invert modifier \"!\" for addresses shall not be used.'; 'The keyword \"assigned\" shall not be used.'"
     },
     "ETSI-TS183.017.dadx#flow-grouping-empty-alone": {
      "kind": "interpret",

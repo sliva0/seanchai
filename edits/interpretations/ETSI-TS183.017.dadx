@@ -110,8 +110,7 @@
     default DEFAULT
 
 
-;; `ip-filter`, which also admits the keyword "assigned" the clause
-;; forbids: no codec forbids it and admits a port list.
+;; No "assigned" at either end; the ports, "list or ranges", any.
 ; Type: Interpreted Constraints
 ; Id: flow-description-restrictions
 ; AVP: Flow-Description
@@ -120,7 +119,8 @@
 "Only the Action \"permit\" shall be used."
 "No \"options\" shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter
+"The keyword \"assigned\" shall not be used."
+    encoding ip-filter from any to any
 
 
 ;; Which Flow-Grouping AVPs a message holds no kind counts.

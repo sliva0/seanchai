@@ -729,7 +729,7 @@ encoding      = "encoding " codec
 codec         = "e164-tbcd" / "plmn-id" / "plmn-id-prefix" / "digits"
               / "labels" / "apn" / "plmn-domain" / "epc-plmn-domain"
               / "ip-address" / "time-zone" / "mac-address"
-              / "ip-filter" / "session-id"
+              / "ip-filter" / "session-id" / "base64"
 filter-end    = [" any"] [" assigned"]
                 [SP ("port-or-range" / "ports" / "port")]
 predicate     = predicate-kind SP conditions

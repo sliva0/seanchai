@@ -190,6 +190,7 @@ _CODEC = {
     ast.Codec.EPC_PLMN_DOMAIN: b"epc.mnc045.mcc123.3gppnetwork.org",
     ast.Codec.TIME_ZONE: b"+8",
     ast.Codec.MAC_ADDRESS: b"00-10-A4-23-19-C0",
+    ast.Codec.BASE64: b"c2VhbmNoYWk=",
     ast.Codec.SESSION_ID: b"aaa.example.com;1876543210;523",
     # Addresses and one port at each end: what every restriction admits.
     ast.Codec.IP_FILTER: b"permit in 17 from 192.0.2.10 5060 to 198.51.100.7 5060",
@@ -207,6 +208,7 @@ _BROKEN_CODEC = {
     ast.Codec.EPC_PLMN_DOMAIN: lambda good: b"x" * len(good),
     ast.Codec.TIME_ZONE: lambda good: b"x" * len(good),
     ast.Codec.MAC_ADDRESS: lambda good: good.lower(),
+    ast.Codec.BASE64: lambda good: b"!" + good[1:],
     ast.Codec.SESSION_ID: lambda good: b"-" + good[1:],
     ast.Codec.IP_FILTER: lambda good: b"deny  " + good[6:],
     ast.Codec.IP_ADDRESS: lambda good: b"\x00\x03" + good[2:],

@@ -196,6 +196,7 @@ name. A layout no clause states is not here.
 | `mac-address` | a 6-octet MAC address as text, each octet two upper-case hexadecimal digits, joined by dashes: `00-10-A4-23-19-C0` | TS 29.273 clauses 5.2.3.23 and 5.2.3.30 |
 | `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports, a list of ports and port ranges; no options, no `!`. A clause restricting it further says so after the codec: the direction (`out`), and for the source (`from`) and the destination (`to`) the keywords the address may be, `any`, `assigned`, both or neither, and the ports `port` (one) or `port-or-range` (one port or one range), so that `encoding ip-filter out from any to assigned` admits `permit out 17 from 192.0.2.10/32 5060 to assigned` and refuses `permit out ip from any to any` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it; further, TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2, TS 29.214 clause 5.3.8, ETSI TS 183 017 clause 7.3.17 |
 | `session-id` | a Session-Id's text: the sender's DiameterIdentity (a host name in ASCII, its labels of letters, digits and inner hyphens, at most 63 octets each and 255 in all), then nothing or a `;` and any text: `aaa.example.com;1876543210;523` | RFC 6733 clauses 8.8 and 9.8.5 |
+| `base64` | text in base64: characters of its alphabet, four to a group, the last group padded with `=`: `c2VhbmNoYWk=` | RFC 4648 clause 4, as TS 29.214 clause 5.3.77 names it |
 | `element` | another document's information element, carried whole: its document, and the clause and name of the element | the cited document, as the element registry reads it ([below](#elements)) |
 
 A clause pointing at another document without stating a layout ("Octets are
@@ -364,7 +365,7 @@ TS 29.212's 5 name 5 entries, all of which check something:
 | Framed-IPv6-Prefix (an Sd CCR's) | TS 29.212 5b.4.0 Framed-IPv6-Prefix | TS 29.212 V19.1.0 5b.4.0; RFC 3162 (August 2001) 2.3 | 18 octets; octet 1 (Reserved) 00000000; octet 2 (Prefix-Length) 10000000 | full | the address takes any value |
 
 
-TS 29.214's 5 name 5 entries, of which 4 check something:
+TS 29.214's 6 name 6 entries, of which 5 check something:
 
 | AVP | Element | Read | Checked | Depth | Not checked |
 |---|---|---|---|---|---|
@@ -373,6 +374,7 @@ TS 29.214's 5 name 5 entries, of which 4 check something:
 | 5GSM-Cause | TS 24.501 9.11.4.2 5GSM cause | TS 24.501 V19.8.0 9.11.4.2 | an integer 0 to 65535 | partial | as 5GMM-Cause's; a value table 9.11.4.2.1 does not name is read as 'Request rejected, unspecified' |
 | NGAP-Group | TS 38.413 9.4.5 Cause | TS 38.413 V19.4.0 9.4.5 | an integer 0 to 4 | full | the CHOICE's choice-Extensions holds no IE in this edition, so the five groups 0 to 4 are all |
 | Framed-IPv6-Prefix | RFC 3162 2.3 Framed-IPv6-Prefix | RFC 3162 (August 2001) 2.3 | as TS 29.212's | partial | as TS 29.212's |
+| Framed-IPv6-Prefix (the AF's) | TS 29.214 5.4.0 Framed-IPv6-Prefix | TS 29.214 V19.3.0 5.4.0; RFC 3162 (August 2001) 2.3 | 18 octets; octet 1 (Reserved) 00000000; octet 2 (Prefix-Length) 10000000 | full | the address takes any value |
 
 TS 32.299's 6 name 6 entries, of which 3 check something:
 
@@ -1113,7 +1115,7 @@ TS 29.214 V19.3.0 is read for Rx: every AVP clause of clause 5.3, the
 re-used AVPs' descriptions of table 5.4.0.1, clause 5.1's application id,
 5.4.1's supported features and 5.5.1's result codes, and the procedure
 clauses of clause 4.4 for what they state of one message. Release 18's
-copy, V18.4.0, holds 81 of the 82 blocks: it prints no clause 4.4.6.10,
+copy, V18.4.0, holds 92 of the 93 blocks: it prints no clause 4.4.6.10,
 whose PC-Session-Recovery-Status Release 19 added. Release 19 prints that
 clause's heading as a paragraph of clause 4.4.6.9, whose text it is read
 as.
@@ -1126,27 +1128,28 @@ or a modifying request must carry is `text-only`.
 | | |
 |---|---|
 | AVP clauses (clause 5.3, not its General clause) | 82 |
-| with something to declare | 31, in 42 blocks |
+| with something to declare | 31, in 45 blocks |
 | with nothing to declare | 51 |
 | re-used AVPs' descriptions (table 5.4.0.1) | 7 blocks |
 | protocol, supported features, result codes (5.1, 5.4.1, 5.5.1) | 5 blocks |
-| procedure clauses (4.4.1, 4.4.4, 4.4.6.6, 4.4.6.7, 4.4.6.9, 4.4.7, 4.4.10, 4.4.12) | 28 blocks |
-| blocks | 82: 41 on an AVP wherever read, 9 within a grouped AVP, 32 within a command |
-| readings | 97 |
+| procedure clauses (4.4.1, 4.4.2, 4.4.4, 4.4.6.6, 4.4.6.7, 4.4.6.9, 4.4.7, 4.4.9, 4.4.10, 4.4.12) | 35 blocks |
+| Annex B.1.1's media component numbers | 1 block |
+| blocks | 93: 42 on an AVP wherever read, 12 within a grouped AVP, 39 within a command |
+| readings | 108 |
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 1: `ip-filter from any port to any` (Flow-Description) |
-| `encoding element` | 5, naming 5 entries of the registry, 4 checked ([above](#elements)) |
-| `length` | 3, in octets: Framed-IPv6-Prefix 18, ToS-Traffic-Class 2, GLI-Identifier at most 200 |
+| `encoding`, a codec | 2: `ip-filter from any port to any` (Flow-Description), `base64` (GLI-Identifier) |
+| `encoding element` | 6, naming 6 entries of the registry, 5 checked ([above](#elements)) |
+| `length` | 2, in octets: ToS-Traffic-Class 2, GLI-Identifier at most 200 |
 | `range` | 9: Auth-Application-Id 16777236, the 8 extended bandwidth AVPs at least 4294968 |
-| `requires`, `present-if`, `absent-if` | 4, 20, 3 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 6, 22, 3, 1 |
 | reading the request | 2: the restoration AAA's Auth-Session-State, the initial AAA's Supported-Features beside the AAR's |
-| `default` | 8 |
-| `values` | 3: Auth-Session-State NO_STATE_MAINTAINED in the restoration AAR and AAA, Media-Component-Number 0 for AF signalling |
+| `default` | 9 |
+| `values` | 4: Auth-Session-State NO_STATE_MAINTAINED in the restoration AAR and AAA, Media-Component-Number 0 for AF signalling, an update AAR's Specific-Action one-time |
 | `bits` | 3: `at-most-one` (Pre-emption-Control-Info), `set` and `clear`, ToS-Traffic-Class's mask 11111100 |
 | `members` | 4: `only` 3 (Acceptable-Service-Info's Media-Component-Description, Sponsored-Connectivity-Data's Granted- and Used-Service-Unit), `at-least-one` (Wireline-User-Location-Info) |
-| `text-only` | 40, 2 of them the Supported-Features Vendor-Id |
+| `text-only` | 44, 2 of them the Supported-Features Vendor-Id |
 
 Most checked rules are clause 5.3.13's: a value a RAR reports, of any of its
 Specific-Action AVPs, with the AVP its description says it carries (the
@@ -1159,12 +1162,29 @@ its Rx-Request-Type PCSCF_RESTORATION tells apart, carries Auth-Session-State
 NO_STATE_MAINTAINED, and the IMSI and APN where it holds no address, and its
 AAA the same Auth-Session-State; clause 4.4.12's AAR, which its MPS-Action
 AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING tells apart, an MPS-Identifier, a
-Media-Component-Description and the UE's address. Clause 4.4.10 holds every
-extended bandwidth AVP to more than 2^32-1 bit/s, at least 4294968 kbit/s.
-Flow-Description is clause 5.3.8's `ip-filter from any port to any`, the
-restrictions of TS 29.212's `ip-filter` with no `assigned` and the source
-port one port:
-"Lists or ranges shall not be used" stands in the source port's item.
+Media-Component-Description and the UE's address, and among its
+Media-Component-Descriptions one numbered 0 and a Flow-Description, read on
+MPS-Action so that the paths read any of them (which one holds the filter no
+path binds); a restoration AAR holding no IMSI holds an address, read on
+Framed-IP-Address, since a rule on Subscription-Id reads each instance, an
+MSISDN's too. An AAR subscribing to ACCESS_NETWORK_INFO_REPORT carries
+Required-Access-Info (4.4.6.7), an AAR's Reservation-Priority is DEFAULT
+where absent (4.4.1), an update's Specific-Action only a one-time value,
+ACCESS_NETWORK_INFO_REPORT (12) or Release 19's CN_HEALTH_MONITOR (21)
+(5.3.13), and a RAR's IP-CAN_CHANGE its IP-CAN-Type, or an MA PDU session's
+in MA-Information, which a later ATSSS report carries alone (Annex E.4).
+Clause 4.4.10 holds every extended bandwidth AVP to more than 2^32-1 bit/s,
+at least 4294968 kbit/s. Wireline-User-Location-Info holds the Cable or the
+BBF location, an HFC-Node-Identifier never beside a GLI-Identifier and a
+Line-Type only beside one (5.3.75); GLI-Identifier is `base64`; the AF's
+Framed-IPv6-Prefix is the registry's TS 29.214 entry, the UE's full address
+with a prefix length of 128 (table 5.4.0.1). Flow-Description is clause
+5.3.8's `ip-filter from any port to any`, the restrictions of TS 29.212's
+`ip-filter` with no `assigned` and the source port one port: "Lists or
+ranges shall not be used" stands in the source port's item, and "a single
+IP flow" is no count of the destination's ports, ETSI TS 183 017 clause
+7.3.17 printing it beside "Source and destination port (list or ranges)"
+as this clause's address masks and omitted ports stand beside it.
 
 The text-only rules are mostly conditions on an earlier message, the
 session or a feature ("if the PCRF has previously requested to be updated
@@ -1174,9 +1194,19 @@ the initial AA-Request"), what the PCRF has available, and texts no kind
 reads: Codec-Data's lines, Service-URN's and FLUS-Identifier's starts,
 3GPP-User-Location-Info's layout chosen by its type, User-Equipment-Info's
 digits, and HFC-Node-Identifier's CableLabs layout, which no reference of
-the corpus names. A RAR's location report carries ACCESS_NETWORK_INFO_REPORT
-(clause 4.4.6.7), but a RAR reporting a bearer's release carries the
-location too, under its own Specific-Action, so that is `text-only`.
+the corpus names, a later AAR, the time it waits and its service
+information (Retry-Interval, 4.4.1; an AAR only after the previous one's
+answer, 4.4.2), what the PCRF received over Gx (4.4.9's several
+Content-Versions), a component's number kept across two SDP offers (Annex
+B.1.1), the server's FILTER_RESTRICTIONS for a filter no condition tests,
+and the AAA's Supported-Features M bit and common features (5.4.1). A
+Sponsored-Connectivity-Data's Granted-Service-Unit and Used-Service-Unit are
+not held to one of CC-Input-Octets and CC-Output-Octets: the units are TS
+29.212's usage monitoring's, whose clause 4.5.16 sets "the uplink and
+downlink volume" as a threshold. A RAR's location report carries
+ACCESS_NETWORK_INFO_REPORT (clause 4.4.6.7), but a RAR reporting a bearer's
+release carries the location too, under its own Specific-Action, so that is
+`text-only`.
 
 The document names its extended bandwidth AVPs otherwise than it defines
 them: clauses 5.3.14, 5.3.15, 5.3.32, 5.3.33 and 5.3.41 to 5.3.44 print
@@ -2349,7 +2379,7 @@ one reads it, TS 183 020, built on it, among them.
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 1: `ip-filter` (Flow-Description) |
+| `encoding`, a codec | 1: `ip-filter from any to any` (Flow-Description) |
 | `present-if` | 2: the AF's AAR and STR's Destination-Host beside the Destination-Realm both require |
 | `default` | 4: Reservation-Priority DEFAULT in the AAR and in a Media-Component-Description, Flow-Usage NO_INFORMATION, SIP-Forking-Indication SINGLE_DIALOGUE |
 | `text-only` | 7 |
@@ -2358,9 +2388,8 @@ Clause 6.5's "Both the Destination-Realm and Destination-Host AVPs shall be
 present in the request" is read on the AF's requests, the AAR and STR, as
 the Destination-Host present beside the Destination-Realm their bodies
 require; the SPDF's RAR and ASR require both already. Flow-Description is
-`ip-filter`: "permit", no options and no "!", the keyword "assigned" the
-clause forbids too being one the codec admits, since TS 29.214's reading,
-which forbids it, also refuses a source port list, which clause 7.3.17's
+`ip-filter from any to any`: "permit", no options, no "!" and no
+"assigned" at either end, the ports any list or range, as clause 7.3.17's
 "Source and destination port (list or ranges)" allows.
 
 The text-only rules are conditions on the procedure or an earlier message

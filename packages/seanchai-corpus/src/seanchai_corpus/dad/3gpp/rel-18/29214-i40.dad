@@ -65,6 +65,36 @@
     text-only
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aar-reservation-priority-default)
+; AVP: Reservation-Priority
+; Command: AA-Request
+; Section: 4.4.1
+; Page: 15
+; Versions: 18.4.0..19.3.0
+"If the Reservation-Priority AVP is not specified the requested priority is DEFAULT (0)."
+    default DEFAULT
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aaa-retry-interval)
+; AVP: Retry-Interval
+; Command: AA-Answer
+; Section: 4.4.1
+; Page: 15
+; Versions: 18.4.0..19.3.0
+"When the AF receives the re-try interval within the Retry-Interval AVP, the AF shall not send the same service information to the PCRF again (for the same IP-CAN session) until the re-try interval has elapsed."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aar-after-acknowledgement)
+; AVP: Session-Id
+; Command: AA-Request
+; Section: 4.4.2
+; Page: 20
+; Versions: 18.4.0..19.3.0
+"The AF shall send an AA-Request command to the PCRF, only after the previous AA-Request has been acknowledged."
+    text-only
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#sta-used-service-unit)
 ; AVP: Sponsored-Connectivity-Data
 ; Command: ST-Answer
@@ -117,6 +147,16 @@
     text-only
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aar-access-network-info-required-access-info)
+; AVP: Required-Access-Info
+; Command: AA-Request
+; Section: 4.4.6.7
+; Page: 28
+; Versions: 18.4.0..19.3.0
+"If the AF requests the PCRF to report the access network information (i.e. user location and/or user timezone information), the AF shall subscribe to the \"ACCESS_NETWORK_INFO_REPORT\" within the Specific-Action AVP and shall include the required access network information within the Required-Access-Info AVP."
+    present-if Specific-Action = ACCESS_NETWORK_INFO_REPORT
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aar-restoration-auth-session-state)
 ; AVP: Auth-Session-State
 ; Command: AA-Request
@@ -159,6 +199,27 @@
 "The PCRF shall acknowledge the AAR command by sending an AAA command to the P-CSCF acting as AF and shall include the Auth-Session-State AVP set to NO_STATE_MAINTAINED (1)."
     present-if request/Rx-Request-Type = PCSCF_RESTORATION and Result-Code = DIAMETER_SUCCESS
     values 1 if request/Rx-Request-Type = PCSCF_RESTORATION and Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aar-restoration-imsi)
+; AVP: Framed-IP-Address
+; Command: AA-Request
+; Section: 4.4.7
+; Page: 29
+; Versions: 18.4.0..19.3.0
+"The P-CSCF acting as AF shall send an AAR command including the Rx-Request-Type AVP set to the value PCSCF_RESTORATION (2) to the PCRF in the case P-CSCF Restoration needs to be performed."
+"If the IP address is not available or if the IP address is not unique and the IP-Domain-ID is not available, the P-CSCF shall include the IMSI in the Subscription-Id AVP and the APN in the Called-Station-Id AVP."
+    present-if Rx-Request-Type = PCSCF_RESTORATION and not Framed-IPv6-Prefix and not Subscription-Id/Subscription-Id-Type = END_USER_IMSI
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#rar-flows-content-versions)
+; AVP: Content-Version
+; Within: Flows
+; Section: 4.4.9
+; Page: 30
+; Versions: 18.4.0..19.3.0
+"The PCRF shall include more than one Content-Version AVPs for the same media component within the Flows AVP in a RAR command if it has received multiple content versions as described in clause 4.5.28 or clause 4a.5.18 in 3GPP TS 29.212 [8]."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#extended-max-requested-bw-dl-range)
@@ -270,6 +331,16 @@
 ; Versions: 18.4.0..19.3.0
 "To provision the AF signalling flow information, the AF shall provide the UE’s IP address using either Framed-IP-Address AVP or Framed-Ipv6-Prefix AVP. The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow. If the AuthorizationForMpsSignalling feature is supported, the AF shall provide the MPS-Action AVP set to value AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING (3)."
     present-if MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING and not Framed-IPv6-Prefix
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aar-mps-signalling-flow)
+; AVP: MPS-Action
+; Command: AA-Request
+; Section: 4.4.12
+; Page: 32
+; Versions: 18.4.0..19.3.0
+"The AF shall additionally provide the MPS-Identifier AVP and a Media-Component-Description AVP containing a Media-Component-Number AVP set to \"0\", and including a Media-Sub-Component AVP that contains the Flow-Description AVP set to the AF signalling IP flow."
+    requires not MPS-Action = AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING or Media-Component-Description/Media-Component-Number = 0 and Media-Component-Description/Media-Sub-Component/Flow-Description
 
 
 ; Type: Application Scope
@@ -749,6 +820,16 @@ Access-Network-Charging-Identifier ::= < AVP header: 502 10415 > ;; corrected: (
     text-only
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aaa-filter-restrictions)
+; AVP: Experimental-Result
+; Command: AA-Answer
+; Section: 5.3.8
+; Page: 38
+; Versions: 18.4.0..19.3.0
+"If any of these restrictions is not observed by the AF, the server shall send an error response to the AF containing the Experimental-Result-Code AVP with value FILTER_RESTRICTIONS."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Flows
 ; Section: 5.3.10
@@ -838,7 +919,7 @@ Specific-Action ::= < Enumerated AVP header: 513 10415 >
 ; Page: 40
 ; Versions: 18.4.0..19.3.0
 "Non-one-time-specific-action value(s) may only be provided in the initial AA-Request and shall then be applicable for the entire lifetime of the Rx session."
-    text-only
+    values 12, 21 if Rx-Request-Type = UPDATE_REQUEST
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#rar-charging-correlation)
@@ -890,7 +971,7 @@ Specific-Action ::= < Enumerated AVP header: 513 10415 >
 ; Page: 40
 ; Versions: 18.4.0..19.3.0
 "When used in RAR it indicates that the PCRF generated the request because of an IP-CAN or RAT change. IP-CAN-Type AVP, RAT-Type AVP (if applicable) ,AN-Trusted AVP (if applicable) and AN-GW-Address AVP (if applicable) shall be provided in the same request with the new/valid value(s)."
-    present-if Specific-Action = IP-CAN_CHANGE
+    present-if Specific-Action = IP-CAN_CHANGE and not MA-Information/IP-CAN-Type
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#rar-ip-can-change-rat-type)
@@ -1454,6 +1535,26 @@ Wireline-User-Location-Info ::= < AVP header: 578 10415 > ;; corrected: (TS29.21
     members at-least-one HFC-Node-Identifier GLI-Identifier
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#wireline-user-location-info-hfc)
+; AVP: HFC-Node-Identifier
+; Within: Wireline-User-Location-Info
+; Section: 5.3.75
+; Page: 57
+; Versions: 18.4.0..19.3.0
+"The Wireline-User-Location-Info AVP (AVP code 578) is of type Grouped and contains either wireline Cable or wireline BBF user location information."
+    excludes GLI-Identifier
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#wireline-user-location-info-line-type)
+; AVP: Line-Type
+; Within: Wireline-User-Location-Info
+; Section: 5.3.75
+; Page: 57
+; Versions: 18.4.0..19.3.0
+"The GLI-Identifier AVP indicates wireline BBF location and contains a Global Line Identifier. The Line-Type AVP indicates the type of line included in the GLI-Identifier AVP."
+    requires GLI-Identifier
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#hfc-node-identifier-cablelabs)
 ; AVP: HFC-Node-Identifier
 ; Section: 5.3.76
@@ -1469,6 +1570,7 @@ Wireline-User-Location-Info ::= < AVP header: 578 10415 > ;; corrected: (TS29.21
 ; Page: 58
 ; Versions: 18.4.0..19.3.0
 "The GLI-Identifier AVP (AVP code 580) is of type OctetString and contains a Global Line Identifier (see clause 28.16.3 of 3GPP TS 23.003 [38]) encoded as base64-encoded characters, representing the GLI value (up to 150 bytes) as specified in BBF WT-470 [74]."
+    encoding base64
     length *..200 octets
 
 
@@ -1503,7 +1605,7 @@ MPS-Action ::= < Enumerated AVP header: 582 10415 >
 "The encoding of the value within this Octet String type AVP shall be as defined in RFC 3162 [20], clause 2.3. The \"Reserved\", \"Prefix-Length\" and \"Prefix\" fields shall be included in this order."
     encoding element RFC3162 2.3 "Framed-IPv6-Prefix"
 "The AF shall set the \"Prefix Length\" to 128 and encode the Ipv6 address of the UE within the \"Prefix\" field."
-    length 18 octets
+    encoding element TS29.214 5.4.0 "Framed-IPv6-Prefix"
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#sponsored-connectivity-granted-service-unit-members)
@@ -1681,3 +1783,11 @@ REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED = 4261 ; 5.5.2
 ; Versions: 18.4.0..19.3.0
 "The Vendor-ID AVP shall be set to 3GPP (10415)."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#media-component-number-kept)
+; AVP: Media-Component-Number
+; Section: B.1.1
+; Versions: 18.4.0..19.3.0
+"The ordinal number of a media component shall not be changed when the session description information is modified."
+    text-only

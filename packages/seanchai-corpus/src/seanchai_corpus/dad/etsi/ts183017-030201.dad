@@ -467,7 +467,8 @@ Abort-Cause ::= < Enumerated AVP header: 500 10415 > ;; corrected: (ETSI-TS183.0
 "Only the Action \"permit\" shall be used."
 "No \"options\" shall be used."
 "The invert modifier \"!\" for addresses shall not be used."
-    encoding ip-filter
+"The keyword \"assigned\" shall not be used."
+    encoding ip-filter from any to any
 
 
 ; Type: Grouped AVP

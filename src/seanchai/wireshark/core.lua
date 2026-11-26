@@ -753,6 +753,12 @@ local function codec_problem(codec, s, f)
     if s:match("^%-0+$") then
       return "a zero offset signed -, which UTC itself takes as +"
     end
+  elseif codec == "base64" then
+    -- RFC 4648 clause 4: groups of four, the last padded with "=".
+    local body, pad = s:match("^([A-Za-z0-9+/]*)(=*)$")
+    if not body or #s % 4 ~= 0 or #pad > 2 then
+      return "not base64: groups of four, the last padded with '='"
+    end
   elseif codec == "mac-address" then
     local octet = "[0-9A-F][0-9A-F]"
     if not s:match("^" .. octet .. ("%-" .. octet):rep(5) .. "$") then

@@ -1470,6 +1470,9 @@ class Codec(enum.StrEnum):
       each end may take, and the ports one port, or one port or range (TS
       29.212 clauses 5.3.13, 5.3.54 and 5.4.2, TS 29.214 clause 5.3.8, ETSI
       TS 183 017 clause 7.3.17).
+    - `base64`: text in base64 (RFC 4648 clause 4): characters of its
+      alphabet, four to a group, the last group padded with `=` (TS 29.214
+      clause 5.3.77).
     - `session-id`: a Session-Id's text, the sender's DiameterIdentity
       first, then nothing or a `;` and any text (RFC 6733 clauses 8.8 and
       9.8.5), `aaa.example.com;1876543210;523`.
@@ -1491,6 +1494,7 @@ class Codec(enum.StrEnum):
     MAC_ADDRESS = "mac-address"
     IP_FILTER = "ip-filter"
     SESSION_ID = "session-id"
+    BASE64 = "base64"
     ELEMENT = "element"
 
 

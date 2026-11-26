@@ -118,7 +118,7 @@ syn match dadConstraintPath "/" contained
 syn match dadConstraintWord "\s\zs\%(or\|and\|not\|if\|bit\|in\|at-most-one\|at-least-one\|set\|clear\|only\)\ze\s" contained
 syn match dadConstraintOp "\.\.\|\%(\s\|\.\.\)\@2<=\*\|\s\@1<==\ze\s" contained
 " A codec after `encoding`, a length's unit after its bounds.
-syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|session-id\|ip-filter\|ip-address\|time-zone\|mac-address\|element\)\ze\%(\s\|$\)" contained
+syn match dadCodec "\%(encoding \)\@9<=\%(e164-tbcd\|plmn-id-prefix\|plmn-id\|digits\|labels\|apn\|epc-plmn-domain\|plmn-domain\|session-id\|ip-filter\|ip-address\|time-zone\|mac-address\|base64\|element\)\ze\%(\s\|$\)" contained
 syn match dadUnit "\%([0-9*] \)\@2<=\%(octets\|digits\|characters\)\ze\s*\%(;;.*\)\=$" contained
 syn match dadConstraintNumber "\%(\s\|\.\.\)\@2<=-\?\d\+\ze\%(\s\|$\|\.\.\|,\)" contained
 " An IPFilterRule's restrictions after `encoding ip-filter`: a direction,
