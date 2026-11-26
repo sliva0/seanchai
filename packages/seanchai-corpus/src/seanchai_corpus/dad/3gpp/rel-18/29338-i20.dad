@@ -832,6 +832,9 @@ LMSI                                        LMSI                                
 ; Versions: 18.2.0..19.3.0
 "This information element shall be present when the MSISDN does not exist"
     present-if not MSISDN
+"shall contain - the IMSI of the user in the context of T4 device triggering (see 3GPP TS 23.682 [18]; - or the HSS ID value in the context of MSISDN-less SMS delivery in IMS (see 3GPP TS 23.204 [17])"
+    encoding digits
+    length 6..15 digits
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#srr-smsmi-correlation-id)
@@ -866,6 +869,17 @@ LMSI                                        LMSI                                
 ; Versions: 18.2.0..19.3.0
 "Experimental-Result AVP shall be used for S6c errors. This is a grouped AVP which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#sra-result)
+; AVP: Result-Code
+; Command: Send-Routing-info-for-SM-Answer
+; Section: 5.2.1.1
+; Table: 5.2.1.1-2
+; Page: 12
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the result of the operation with an indication of the success / errors."
+    present-if not Experimental-Result
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#sra-user-name)
@@ -1017,7 +1031,7 @@ LMSI                                        LMSI                                
 ; Page: 17
 ; Versions: 18.2.0..19.3.0
 "In the context of MSISDN-less SMS delivery in IMS (see 3GPP TS 23.204 [17]), if the HSS receives an SMSMI correlation ID, the HSS shall return the IP-SM-GW number and shall not forward the request to an IP-SM-GW."
-    excludes request/SMSMI-Correlation-ID and not Serving-Node/IP-SM-GW-Number
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#sra-only-one-serving-node)
@@ -1087,6 +1101,17 @@ Result                 Result-Code/Experimental-Result   M
     requires Experimental-Result/Vendor-Id = 10415
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#ala-result)
+; AVP: Result-Code
+; Command: Alert-Service-Centre-Answer
+; Section: 5.2.2.1
+; Table: 5.2.2.1-2
+; Page: 18
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the result of the operation with an indication of the success / errors."
+    present-if not Experimental-Result
+
+
 ; Type: Information Elements
 ; Command: Report-SM-Delivery-Status-Request
 ; Section: 5.2.3.1
@@ -1133,10 +1158,19 @@ Result                 Result-Code/Experimental-Result   M
 ; Versions: 18.2.0..19.3.0
 "At least one cause shall be present."
     requires SM-Delivery-Outcome/MSC-SM-Delivery-Outcome or SM-Delivery-Outcome/MME-SM-Delivery-Outcome or SM-Delivery-Outcome/SGSN-SM-Delivery-Outcome or SM-Delivery-Outcome/IP-SM-GW-SM-Delivery-Outcome or SM-Delivery-Outcome/SMSF-3GPP-SM-Delivery-Outcome or SM-Delivery-Outcome/SMSF-Non-3GPP-SM-Delivery-Outcome
-"A cause originated from a MSC and a cause originated from a MME shall not be both present."
-    excludes SM-Delivery-Outcome/MSC-SM-Delivery-Outcome and SM-Delivery-Outcome/MME-SM-Delivery-Outcome
 "When the cause is Absent User, the Absent User Diagnostic, if available, shall be associated to the cause."
     text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#sm-delivery-outcome-msc-mme-causes)
+; AVP: MSC-SM-Delivery-Outcome
+; Within: SM-Delivery-Outcome
+; Section: 5.2.3.1
+; Table: 5.2.3.1-1
+; Page: 20
+; Versions: 18.2.0..19.3.0
+"A cause originated from a MSC and a cause originated from a MME shall not be both present."
+    excludes MSC-SM-Delivery-Outcome/SM-Delivery-Cause and MME-SM-Delivery-Outcome/SM-Delivery-Cause
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#rda-experimental-result-vendor)
@@ -1150,6 +1184,17 @@ Result                 Result-Code/Experimental-Result   M
     requires Experimental-Result/Vendor-Id = 10415
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#rda-result)
+; AVP: Result-Code
+; Command: Report-SM-Delivery-Status-Answer
+; Section: 5.2.3.1
+; Table: 5.2.3.1-2
+; Page: 20
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the result of the operation with an indication of the success / errors."
+    present-if not Experimental-Result
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#rda-user-identifier)
 ; AVP: User-Identifier
 ; Command: Report-SM-Delivery-Status-Answer
@@ -1158,6 +1203,28 @@ Result                 Result-Code/Experimental-Result   M
 ; Page: 20
 ; Versions: 18.2.0..19.3.0
 "This information element shall contain the Alert MSISDN of the user if it is different from the MSISDN received in the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#srr-destination-host)
+; AVP: Destination-Host
+; Command: Send-Routing-Info-for-SM-Request
+; Section: 5.3.1.1.2
+; Page: 23
+; Versions: 18.2.0..19.3.0
+"If the SMS-GMSC or the SMS router has stored or can obtain the address/name and the home network domain name of the HSS identified by the MSISDN or the IMSI, both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+"If the SMS-SC or the SMS-GMSC, in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), has stored or can obtain the address/name and the home network domain name of the HSS identified by the HSS ID, both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#rdr-destination-host)
+; AVP: Destination-Host
+; Command: Report-SM-Delivery-Status-Request
+; Section: 5.3.1.1.2
+; Page: 23
+; Versions: 18.2.0..19.3.0
+"If the SMS-GMSC or the SMS router has stored or can obtain the address/name and the home network domain name of the HSS identified by the MSISDN or the IMSI, both the Destination-Realm and Destination-Host AVPs shall be present in the request."
+"If the SMS-SC or the SMS-GMSC, in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), has stored or can obtain the address/name and the home network domain name of the HSS identified by the HSS ID, both the Destination-Realm and Destination-Host AVPs shall be present in the request."
     text-only
 
 
@@ -1861,7 +1928,7 @@ External-Identifier           External-Identifier               C
 ; Versions: 18.2.0..19.3.0
 "This information element shall be present if the SMSMI Correlation ID is present and shall contain the IP-SM-GW SM Delivery Outcome with the causes for setting the message waiting data in the HSS."
     present-if SMSMI-Correlation-ID
-    requires SM-Delivery-Outcome/IP-SM-GW-SM-Delivery-Outcome
+    requires SM-Delivery-Outcome/IP-SM-GW-SM-Delivery-Outcome/SM-Delivery-Cause
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#ofa-experimental-result-vendor)
@@ -1873,6 +1940,17 @@ External-Identifier           External-Identifier               C
 ; Versions: 18.2.0..19.3.0
 "This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#ofa-result)
+; AVP: Result-Code
+; Command: MO-Forward-Short-Message-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Page: 38
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the result of the operation."
+    present-if not Experimental-Result
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#ofa-sm-delivery-failure-cause)
@@ -1888,7 +1966,7 @@ External-Identifier           External-Identifier               C
 "invalid Short Message Entity address"
 "user not Service Centre/SCS-AS user"
     present-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE
-    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause in UNKNOWN_SERVICE_CENTRE,
+    excludes Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE and not SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause in UNKNOWN_SERVICE_CENTRE,
         SC-CONGESTION, INVALID_SME-ADDRESS, USER_NOT_SC-USER
 
 
@@ -1949,6 +2027,18 @@ EPS-Location-Information          EPS-Location-Information          O
 "When present, this information element shall contain the Destination SIP-URI identifying the (MSISDN-less) destination user and the Originating SIP-URI identifying the (MSISDN-less) originating user. The HSS-ID shall be absent from this information element."
     requires SMSMI-Correlation-ID/Destination-SIP-URI and SMSMI-Correlation-ID/Originating-SIP-URI
     absent-if SMSMI-Correlation-ID/HSS-ID
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#tfr-user-name)
+; AVP: User-Name
+; Command: MT-Forward-Short-Message-Request
+; Section: 6.2.2.1
+; Table: 6.2.2.1/1
+; Page: 41
+; Versions: 18.2.0..19.3.0
+"This information element shall contain - either an IMSI - or a HSS ID value if an SMSMI-Correlation ID is present, the destination user being identified by the Destination SIP-URI within the SMSMI Correlation ID."
+    encoding digits
+    length 6..15 digits
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#tfr-mme-number-for-mt-sms)
@@ -2017,6 +2107,17 @@ EPS-Location-Information          EPS-Location-Information          O
     requires Experimental-Result/Vendor-Id = 10415
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#tfa-result)
+; AVP: Result-Code
+; Command: MT-Forward-Short-Message-Answer
+; Section: 6.2.2.1
+; Table: 6.2.2.1/2
+; Page: 41
+; Versions: 18.2.0..19.3.0
+"This information element shall contain the result of the operation."
+    present-if not Experimental-Result
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#tfa-sm-delivery-failure-cause)
 ; AVP: SM-Delivery-Failure-Cause
 ; Command: MT-Forward-Short-Message-Answer
@@ -2029,7 +2130,7 @@ EPS-Location-Information          EPS-Location-Information          O
 "UE error"
 "mobile equipment not equipped to support the mobile terminated short message service"
     present-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE
-    requires SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause in MEMORY_CAPACITY_EXCEEDED,
+    excludes Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_SM_DELIVERY_FAILURE and not SM-Delivery-Failure-Cause/SM-Enumerated-Delivery-Failure-Cause in MEMORY_CAPACITY_EXCEEDED,
         EQUIPMENT_PROTOCOL_ERROR, EQUIPMENT_NOT_SM-EQUIPPED
 
 
@@ -2091,6 +2192,23 @@ Result                 Result-Code/Experimental-Result   M
 ; Versions: 18.2.0..19.3.0
 "This IE shall be present if available and if the SMS-GMSC Alert Event indicates that the UE has moved under the coverage of another MME or SGSN."
     text-only
+"It shall be encoded as:"
+"an MME-Name, MME Realm and MME-Number-for-MT-SMS, if the new serving node is an MME;"
+"an SGSN-Number and, an SGSN-Name and SGSN Realm if available, if the new serving node is an SGSN."
+    excludes SMS-GMSC-Alert-Event and not Serving-Node/MME-Number-for-MT-SMS and not Serving-Node/SGSN-Number
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#alr-sms-gmsc-alert-event)
+; AVP: SMS-GMSC-Alert-Event
+; Command: Alert-Service-Centre-Request
+; Section: 6.2.3.1
+; Table: 6.2.3.1-1
+; Page: 44
+; Versions: 18.2.0..19.3.0
+"This IE shall contain the type of event that caused the Alert Service Centre Request to the SMS-GMSC:"
+"UE is available for MT SMS;"
+"UE has moved under the coverage of another MME or SGSN."
+    bits at-least-one 0 1
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#ofr-no-vendor-specific-application-id)
@@ -2239,6 +2357,8 @@ SMSMI-Correlation-ID ::= < AVP header: 3324 10415 > ;; corrected: (TS29.338.py#s
 ; Versions: 18.2.0..19.3.0
 "The definition and the composition of the HSS-ID are specified in 3GPP TS 23.003 [16]."
     encoding element TS23.003 5.3 "HSS-ID"
+    encoding digits
+    length 6..15 digits
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.338.dadx#sms-gmsc-address-tbcd)

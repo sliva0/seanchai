@@ -18224,6 +18224,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
+    "TS29.338.dadx#ala-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1-2: 'This information element shall contain the result of the operation with an indication of the success / errors.'"
+    },
     "TS29.338.dadx#ala-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -18242,7 +18246,7 @@
     },
     "TS29.338.dadx#alr-new-serving-node": {
      "kind": "interpret",
-     "reason": "interpreted from table 6.2.3.1-1: 'This IE shall be present if available and if the SMS-GMSC Alert Event indicates that the UE has moved under the coverage of another MME or SGSN.'"
+     "reason": "interpreted from table 6.2.3.1-1: 'This IE shall be present if available and if the SMS-GMSC Alert Event indicates that the UE has moved under the coverage of another MME or SGSN.'; 'It shall be encoded as:'; 'an MME-Name, MME Realm and MME-Number-for-MT-SMS, if the new serving node is an MME;'; 'an SGSN-Number and, an SGSN-Name and SGSN Realm if available, if the new serving node is an SGSN.'"
     },
     "TS29.338.dadx#alr-no-authorization-lifetime": {
      "kind": "interpret",
@@ -18255,6 +18259,10 @@
     "TS29.338.dadx#alr-no-vendor-specific-application-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.338.dadx#alr-sms-gmsc-alert-event": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.3.1-1: 'This IE shall contain the type of event that caused the Alert Service Centre Request to the SMS-GMSC:'; 'UE is available for MT SMS;'; 'UE has moved under the coverage of another MME or SGSN.'"
     },
     "TS29.338.dadx#alr-smsmi-correlation-id": {
      "kind": "interpret",
@@ -18303,6 +18311,10 @@
     "TS29.338.dadx#ofa-no-vendor-specific-application-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.338.dadx#ofa-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/2: 'This information element shall contain the result of the operation.'"
     },
     "TS29.338.dadx#ofa-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -18364,6 +18376,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
+    "TS29.338.dadx#rda-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-2: 'This information element shall contain the result of the operation with an indication of the success / errors.'"
+    },
     "TS29.338.dadx#rda-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -18379,6 +18395,10 @@
     "TS29.338.dadx#rdr-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.5: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20].'"
+    },
+    "TS29.338.dadx#rdr-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.1.1.2: 'If the SMS-GMSC or the SMS router has stored or can obtain the address/name and the home network domain name of the HSS identified by the MSISDN or the IMSI, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'; 'If the SMS-SC or the SMS-GMSC, in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), has stored or can obtain the address/name and the home network domain name of the HSS identified by the HSS ID, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'"
     },
     "TS29.338.dadx#rdr-flags-undefined-bits": {
      "kind": "interpret",
@@ -18398,7 +18418,7 @@
     },
     "TS29.338.dadx#rdr-sm-delivery-outcome": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.3.1-1: 'At least one cause shall be present.'; 'A cause originated from a MSC and a cause originated from a MME shall not be both present.'; 'When the cause is Absent User, the Absent User Diagnostic, if available, shall be associated to the cause.'"
+     "reason": "interpreted from table 5.2.3.1-1: 'At least one cause shall be present.'; 'When the cause is Absent User, the Absent User Diagnostic, if available, shall be associated to the cause.'"
     },
     "TS29.338.dadx#rdr-smsmi-correlation-id": {
      "kind": "interpret",
@@ -18467,6 +18487,10 @@
     "TS29.338.dadx#sgsn-absent-user-diagnostic-sm-values": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.3.11: 'The values are defined in 3GPP TS 23.040 [3] clause 3.3.2.'"
+    },
+    "TS29.338.dadx#sm-delivery-outcome-msc-mme-causes": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-1: 'A cause originated from a MSC and a cause originated from a MME shall not be both present.'"
     },
     "TS29.338.dadx#sm-rp-smea-address": {
      "kind": "interpret",
@@ -18540,6 +18564,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.1.3: 'if the GPRS indicator is not set, only one serving node address shall be returned according to the SM transfer option where MME is considered as a MSC.'"
     },
+    "TS29.338.dadx#sra-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1-2: 'This information element shall contain the result of the operation with an indication of the success / errors.'"
+    },
     "TS29.338.dadx#sra-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -18588,6 +18616,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.5: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20].'"
     },
+    "TS29.338.dadx#srr-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.1.1.2: 'If the SMS-GMSC or the SMS router has stored or can obtain the address/name and the home network domain name of the HSS identified by the MSISDN or the IMSI, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'; 'If the SMS-SC or the SMS-GMSC, in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), has stored or can obtain the address/name and the home network domain name of the HSS identified by the HSS ID, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'"
+    },
     "TS29.338.dadx#srr-flags-undefined-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 5.3.3.4/1: 'NOTE 1: Bits not defined in this table shall be cleared by the sending entity and discarded by the receiving entity.'"
@@ -18622,7 +18654,7 @@
     },
     "TS29.338.dadx#srr-user-name": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1-1: 'This information element shall be present when the MSISDN does not exist'"
+     "reason": "interpreted from table 5.2.1.1-1: 'This information element shall be present when the MSISDN does not exist'; 'shall contain - the IMSI of the user in the context of T4 device triggering (see 3GPP TS 23.682 [18]; - or the HSS ID value in the context of MSISDN-less SMS delivery in IMS (see 3GPP TS 23.204 [17])'"
     },
     "TS29.338.dadx#tfa-auth-session-state": {
      "kind": "interpret",
@@ -18647,6 +18679,10 @@
     "TS29.338.dadx#tfa-requested-retransmission-time": {
      "kind": "interpret",
      "reason": "interpreted from table 6.2.2.1/2: 'This information element may only be present if the Experimental-Result-Code is set to DIAMETER_ERROR_ABSENT_USER and if the Maximum Retransmission Time information element is present in the MT Forward Short Message Request.'; 'The Requested Retransmission Time shall not exceed the Maximum Retransmission Time received from the SMS-GMSC.'"
+    },
+    "TS29.338.dadx#tfa-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.2.1/2: 'This information element shall contain the result of the operation.'"
     },
     "TS29.338.dadx#tfa-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -18712,6 +18748,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
     },
+    "TS29.338.dadx#tfr-user-name": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.2.1/1: 'This information element shall contain - either an IMSI - or a HSS ID value if an SMSMI-Correlation ID is present, the destination user being identified by the Destination SIP-URI within the SMSMI Correlation ID.'"
+    },
     "TS29.338.py#additional-serving-node-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
      "kind": "accept",
@@ -18720,7 +18760,7 @@
      "targets": [
       [
        "sections",
-       109
+       115
       ]
      ]
     },
@@ -18804,6 +18844,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
+    "TS29.338.dadx#ala-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1-2: 'This information element shall contain the result of the operation with an indication of the success / errors.'"
+    },
     "TS29.338.dadx#ala-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -18822,7 +18866,7 @@
     },
     "TS29.338.dadx#alr-new-serving-node": {
      "kind": "interpret",
-     "reason": "interpreted from table 6.2.3.1-1: 'This IE shall be present if available and if the SMS-GMSC Alert Event indicates that the UE has moved under the coverage of another MME or SGSN.'"
+     "reason": "interpreted from table 6.2.3.1-1: 'This IE shall be present if available and if the SMS-GMSC Alert Event indicates that the UE has moved under the coverage of another MME or SGSN.'; 'It shall be encoded as:'; 'an MME-Name, MME Realm and MME-Number-for-MT-SMS, if the new serving node is an MME;'; 'an SGSN-Number and, an SGSN-Name and SGSN Realm if available, if the new serving node is an SGSN.'"
     },
     "TS29.338.dadx#alr-no-authorization-lifetime": {
      "kind": "interpret",
@@ -18835,6 +18879,10 @@
     "TS29.338.dadx#alr-no-vendor-specific-application-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.338.dadx#alr-sms-gmsc-alert-event": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.3.1-1: 'This IE shall contain the type of event that caused the Alert Service Centre Request to the SMS-GMSC:'; 'UE is available for MT SMS;'; 'UE has moved under the coverage of another MME or SGSN.'"
     },
     "TS29.338.dadx#alr-smsmi-correlation-id": {
      "kind": "interpret",
@@ -18884,6 +18932,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 6.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
+    "TS29.338.dadx#ofa-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/2: 'This information element shall contain the result of the operation.'"
+    },
     "TS29.338.dadx#ofa-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -18899,6 +18951,10 @@
     "TS29.338.dadx#ofr-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.5: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20].'"
+    },
+    "TS29.338.dadx#ofr-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.1.2: 'The MME shall include the MPS-Priority AVP, shall include a DSCP with a value appropriate for MPS and shall include the DRMP AVP indicating MPS priority level, according to local policy, in requests toward the SMS-IWMSC if the MPS-for-Messaging bit in the MPS-Priority AVP in the most recently received IDR or ULA (as defined in 3GPP TS 29.272 [4]) is set.'"
     },
     "TS29.338.dadx#ofr-no-authorization-lifetime": {
      "kind": "interpret",
@@ -18948,6 +19004,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
+    "TS29.338.dadx#rda-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-2: 'This information element shall contain the result of the operation with an indication of the success / errors.'"
+    },
     "TS29.338.dadx#rda-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -18968,9 +19028,17 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.3.1-2: 'This information element shall contain the Alert MSISDN of the user if it is different from the MSISDN received in the request.'"
     },
+    "TS29.338.dadx#rdr-additional-serving-node-sra": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-1: 'This identity shall be as previously provided within either the \"Additional Serving-Node\" information element of the SRA message.'"
+    },
     "TS29.338.dadx#rdr-auth-session-state": {
      "kind": "interpret",
      "reason": "interpreted from clause 4.5: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20].'"
+    },
+    "TS29.338.dadx#rdr-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.1.1.2: 'If the SMS-GMSC or the SMS router has stored or can obtain the address/name and the home network domain name of the HSS identified by the MSISDN or the IMSI, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'; 'If the SMS-SC or the SMS-GMSC, in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), has stored or can obtain the address/name and the home network domain name of the HSS identified by the HSS ID, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'"
     },
     "TS29.338.dadx#rdr-flags-undefined-bits": {
      "kind": "interpret",
@@ -18988,9 +19056,21 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
+    "TS29.338.dadx#rdr-serving-node-sra": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-1: 'This identity shall be as previously provided within the \"Serving-Node\" information element of the SRA message.'"
+    },
     "TS29.338.dadx#rdr-sm-delivery-outcome": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.3.1-1: 'At least one cause shall be present.'; 'A cause originated from a MSC and a cause originated from a MME shall not be both present.'; 'When the cause is Absent User, the Absent User Diagnostic, if available, shall be associated to the cause.'"
+     "reason": "interpreted from table 5.2.3.1-1: 'At least one cause shall be present.'; 'When the cause is Absent User, the Absent User Diagnostic, if available, shall be associated to the cause.'"
+    },
+    "TS29.338.dadx#rdr-smsf-3gpp-address-sra": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-1: 'If present, this information element shall contain the identity previously provided within the \"SMSF 3GPP Address\" information element of the SRA message.'"
+    },
+    "TS29.338.dadx#rdr-smsf-non-3gpp-address-sra": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-1: 'If present, this information element shall contain the identity previously provided within the \"SMSF Non 3GPP Address\" information element of the SRA message.'"
     },
     "TS29.338.dadx#rdr-smsmi-correlation-id": {
      "kind": "interpret",
@@ -19059,6 +19139,10 @@
     "TS29.338.dadx#sgsn-absent-user-diagnostic-sm-values": {
      "kind": "interpret",
      "reason": "interpreted from clause 5.3.3.11: 'The values are defined in 3GPP TS 23.040 [3] clause 3.3.2.'"
+    },
+    "TS29.338.dadx#sm-delivery-outcome-msc-mme-causes": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1-1: 'A cause originated from a MSC and a cause originated from a MME shall not be both present.'"
     },
     "TS29.338.dadx#sm-rp-smea-address": {
      "kind": "interpret",
@@ -19136,6 +19220,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 5.2.1.3: 'if the GPRS indicator is not set, only one serving node address shall be returned according to the SM transfer option where MME is considered as a MSC.'"
     },
+    "TS29.338.dadx#sra-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1-2: 'This information element shall contain the result of the operation with an indication of the success / errors.'"
+    },
     "TS29.338.dadx#sra-result-code-absent-with-experimental-result": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.1: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
@@ -19184,6 +19272,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.5: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [20].'"
     },
+    "TS29.338.dadx#srr-destination-host": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.3.1.1.2: 'If the SMS-GMSC or the SMS router has stored or can obtain the address/name and the home network domain name of the HSS identified by the MSISDN or the IMSI, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'; 'If the SMS-SC or the SMS-GMSC, in a retry context of SMS for IMS UE to IMS UE without MSISDN (see 3GPP TS 23.204 [17]), has stored or can obtain the address/name and the home network domain name of the HSS identified by the HSS ID, both the Destination-Realm and Destination-Host AVPs shall be present in the request.'"
+    },
     "TS29.338.dadx#srr-flags-undefined-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 5.3.3.4/1: 'NOTE 1: Bits not defined in this table shall be cleared by the sending entity and discarded by the receiving entity.'"
@@ -19218,7 +19310,7 @@
     },
     "TS29.338.dadx#srr-user-name": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.1.1-1: 'This information element shall be present when the MSISDN does not exist'"
+     "reason": "interpreted from table 5.2.1.1-1: 'This information element shall be present when the MSISDN does not exist'; 'shall contain - the IMSI of the user in the context of T4 device triggering (see 3GPP TS 23.682 [18]; - or the HSS ID value in the context of MSISDN-less SMS delivery in IMS (see 3GPP TS 23.204 [17])'"
     },
     "TS29.338.dadx#tfa-auth-session-state": {
      "kind": "interpret",
@@ -19243,6 +19335,10 @@
     "TS29.338.dadx#tfa-requested-retransmission-time": {
      "kind": "interpret",
      "reason": "interpreted from table 6.2.2.1/2: 'This information element may only be present if the Experimental-Result-Code is set to DIAMETER_ERROR_ABSENT_USER and if the Maximum Retransmission Time information element is present in the MT Forward Short Message Request.'; 'The Requested Retransmission Time shall not exceed the Maximum Retransmission Time received from the SMS-GMSC.'"
+    },
+    "TS29.338.dadx#tfa-result": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.2.1/2: 'This information element shall contain the result of the operation.'"
     },
     "TS29.338.dadx#tfa-result-code-absent-with-experimental-result": {
      "kind": "interpret",
@@ -19271,6 +19367,10 @@
     "TS29.338.dadx#tfr-mme-number-for-mt-sms": {
      "kind": "interpret",
      "reason": "interpreted from table 6.2.2.1/1: 'This Information Element contains the ISDN number of the MME (see 3GPP TS 23.003 [3]) and shall be present when the request is sent to a MME.'"
+    },
+    "TS29.338.dadx#tfr-mps-priority": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.2.3: 'The SMS-GMSC shall handle the request with priority, shall include the MPS-for-Messaging bit in the MPS-Priority AVP in the MT Forward Short Message Request, shall include a DSCP with a value appropriate for MPS and shall include the DRMP AVP indicating MPS priority level, according to local policy, in requests toward the MME, toward the IP-SM-GW or toward the SMSF if the MPS-for-Messaging bit in the MPS-Priority AVP in the most recently received Send Routing Info for SM answer (e.g., as received from the HSS in clause 5.2.1.3) is set or if the SMS-GMSC receives an indication of MPS priority from the SMS-SC as specified in 3GPP TS 23.272 [2], Annex C.'"
     },
     "TS29.338.dadx#tfr-no-authorization-lifetime": {
      "kind": "interpret",
@@ -19308,6 +19408,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 4.9: 'On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415).'"
     },
+    "TS29.338.dadx#tfr-user-name": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.2.1/1: 'This information element shall contain - either an IMSI - or a HSS ID value if an SMSMI-Correlation ID is present, the destination user being identified by the Destination SIP-URI within the SMSMI Correlation ID.'"
+    },
     "TS29.338.py#additional-serving-node-body": {
      "expect": "Additional-Serving-Node's body, against TS29.173's definition: adds MME-Number-for-MT-SMS, missing 3GPP-AAA-Server-Name, GMLC-Address, LCS-Capabilities-Sets",
      "kind": "accept",
@@ -19316,7 +19420,7 @@
      "targets": [
       [
        "sections",
-       113
+       123
       ]
      ]
     },

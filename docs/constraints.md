@@ -1380,12 +1380,14 @@ TS 29.338 V19.3.0 is read completely for S6c and SGd/Gdd: clause 4's common
 aspects, every AVP clause of clauses 5.3.3 and 6.3.3, every C row of the
 information-element tables of clauses 5.2.1.1, 5.2.2.1, 5.2.3.1, 6.2.1.1,
 6.2.2.1 and 6.2.3.1 and the M and O rows stating a condition, the commands'
-clauses 5.3.2.2 and 6.3.2.2, clause 7's result codes, and the procedure
-clauses for what they state of one message. Release 18's copy, V18.2.0,
-holds 134 of the 139 blocks V19.3.0 holds and one of its own: it prints no
-MPS-Priority sentence in clause 5.2.1.3 and no Serving-Node Alert rows or
-their NOTE in table 5.2.3.1-2, and its MWD-Status table ends at bit 4, read
-in a block whose quote only it prints. S6c's commands print once under
+clauses 5.3.2.2 and 6.3.2.2, the routing clause 5.3.1.1.2, clause 7's
+result codes, and the procedure clauses for what they state of one
+message. Release 18's copy, V18.2.0, holds 144 of the 155 blocks V19.3.0
+holds and one of its own: it prints no MPS-Priority sentences in clauses
+5.2.1.3, 6.2.1.2 and 6.2.2.3, no Serving-Node Alert rows or their NOTE in
+table 5.2.3.1-2 and no failed-delivery rows in table 5.2.3.1-1, and its
+MWD-Status table ends at bit 4, read in a block whose quote only it
+prints. S6c's commands print once under
 16777312 and SGd's under 16777313; ALR and ALA serve SGd and Gdd too under
 S6c's application (clause 6.3.2.2), so the tables of clauses 5.2.2.1 and
 6.2.3.1 both describe the one print.
@@ -1396,25 +1398,25 @@ S6c's application (clause 6.3.2.2), so the tables of clauses 5.2.2.1 and
 | with something to declare | 22, in 39 blocks |
 | with nothing to declare | 35 |
 | information-element C rows | 40, of which 35 state a condition |
-| the tables' blocks (clauses 5.2.1.1 to 6.2.3.1), M and O rows and each answer's Result among them | 43 |
-| clause 4's common aspects (4.5, 4.9), 5.2.1.3's HSS, 5.3.2.2's and 6.3.2.2's commands, 7.3.1's result codes | 30, 10, 3, 10, 5 blocks |
-| blocks | 140 in the file, V19.3.0 holding 139 and V18.2.0 135: 101 within a command, 16 within a grouped AVP, 23 on an AVP wherever read |
-| readings | 150 |
+| the tables' blocks (clauses 5.2.1.1 to 6.2.3.1), M and O rows and each answer's Result among them | 55 |
+| clause 4's common aspects (4.5, 4.9), 5.2.1.3's HSS, 5.3.1.1.2's routing, 5.3.2.2's and 6.3.2.2's commands, 6.2.1.2's and 6.2.2.3's MPS, 7.3.1's result codes | 30, 10, 3, 2, 10, 2, 5 blocks |
+| blocks | 156 in the file, V19.3.0 holding 155 and V18.2.0 145: 116 within a command, 19 within a grouped AVP, 21 on an AVP wherever read |
+| readings | 167 |
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 4: `e164-tbcd` (SC-Address, SMS-GMSC-Address, SMSF-3GPP-Number, SMSF-Non-3GPP-Number) |
+| `encoding`, a codec | 7: `e164-tbcd` 4 (SC-Address, SMS-GMSC-Address, SMSF-3GPP-Number, SMSF-Non-3GPP-Number), `digits` 3 (HSS-ID, the SRR's and TFR's User-Name) |
 | `encoding element` | 9, naming 4 entries of the registry; 8 rules checked, 1 not ([above](#elements)) |
-| `length` | 1: SM-RP-UI, at most 200 octets |
+| `length` | 4: SM-RP-UI, at most 200 octets, and HSS-ID and the SRR's and TFR's User-Name, 6 to 15 digits |
 | `range` | 10: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands |
 | `exclude` | 5: Result-Code in each answer, none of 5550 to 5558 |
-| `requires`, `present-if`, `absent-if`, `excludes` | 28, 7, 9, 7 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 26, 12, 9, 9 |
 | `values` | 2: Feature-List-ID 1 within a 3GPP Supported-Features, in S6c's messages and in SGd's |
 | `absent` | 20: Authorization-Lifetime and Session-Timeout in each of the 10 commands |
-| reading the request | 3: the SRA's Serving-Node in a success's answer to a request without SM-Delivery-Not-Intended and holding the IP-SM-GW number for one with an SMSMI-Correlation-ID, the TFA's Requested-Retransmission-Time only after a Maximum-Retransmission-Time |
-| `bits` | 6, each `only`: a flags AVP's NOTE that undefined bits are cleared, MWD-Status's once per release |
+| reading the request | 2: the SRA's Serving-Node in a success's answer to a request without SM-Delivery-Not-Intended, the TFA's Requested-Retransmission-Time only after a Maximum-Retransmission-Time |
+| `bits` | 7: `only` 6 (a flags AVP's NOTE that undefined bits are cleared, MWD-Status's once per release), `at-least-one` (the SGd ALR's SMS-GMSC-Alert-Event) |
 | `members` | 2: `at-least-one`, Serving-Node's and Additional-Serving-Node's numbers |
-| `text-only` | 54, 10 of them Vendor-Specific-Application-Id's in each command and 10 the Supported-Features Vendor-Id |
+| `text-only` | 63, 10 of them Vendor-Specific-Application-Id's in each command and 10 the Supported-Features Vendor-Id |
 
 Clause 4.5's "shall include ... the Auth-Session-State AVP set to the value
 NO_STATE_MAINTAINED (1)" and "Neither the Authorization-Lifetime AVP nor the
@@ -1443,7 +1445,9 @@ Result-Code AVP shall be absent" beside one of its ten codes is read in each
 answer as TS 29.329's clause 6.2 is: an Experimental-Result under the 3GPP
 Vendor-Id, and no Result-Code holding one of the codes, 5550 to 5558, but
 DIAMETER_ERROR_USER_UNKNOWN, whose 5001 is RFC 6733's DIAMETER_AVP_UNSUPPORTED
-too. An SRR's or ALR's or RDR's SMSMI-Correlation-ID holds the destination's
+too; the row's mandatory result is a Result-Code where the answer holds no
+Experimental-Result, the body printing both optional. An SRR's or ALR's or
+RDR's SMSMI-Correlation-ID holds the destination's
 SIP-URI and neither the originating one nor the HSS-ID, an OFR's all three and a
 TFR's the two SIP-URIs, read through paths from the command, whose
 SMSMI-Correlation-ID other commands fill otherwise; a TFA's
@@ -1451,8 +1455,18 @@ Requested-Retransmission-Time "may only be present if" the answer reports
 DIAMETER_ERROR_ABSENT_USER and the request held a Maximum-Retransmission-Time.
 The SM-Delivery-Failure-Cause an OFA or TFA carries with
 DIAMETER_ERROR_SM_DELIVERY_FAILURE holds one of the causes its table names,
-clause 6.3.3.6's values; the TFA's "UE error" is EQUIPMENT_PROTOCOL_ERROR, MAP's
+clause 6.3.3.6's values, read under that code alone, which the row's list
+is conditioned on; the TFA's "UE error" is EQUIPMENT_PROTOCOL_ERROR, MAP's
 equipmentProtocolError, which clause 6.3.3.6's NOTE says the values follow.
+An RDR holds at least one node's SM-Delivery-Outcome and no MSC's cause
+beside an MME's, read on the causes within SM-Delivery-Outcome; that the
+outcome present holds its cause, not a diagnostic alone, no rule says, a
+path three AVPs deep from the command leaving the test messages no valid
+RDR. An OFR's outcome is the IP-SM-GW's with its cause. HSS-ID and the
+SRR's and TFR's User-Name, an IMSI or an HSS-ID, are digits, 6 to 15 (TS
+23.003 clauses 2.2 and 5.3). An SGd ALR, which its SMS-GMSC-Alert-Event
+tells from S6c's, names one of the two events, and its new serving node
+holds the MME's number for MT SMS or the SGSN's number (table 6.2.3.1-1).
 
 The text-only rules are mostly conditions on the node, a feature, the
 subscription, what the HSS stores or an earlier message ("shall be present
@@ -1464,6 +1478,14 @@ condition is partly the node's keeps the part a message shows where that
 part alone holds of every message the row allows: an SRR without an MSISDN
 carries a User-Name, and an SRA's Serving-Node is held to a success's answer
 to a request without SM-Delivery-Not-Intended, whose answer "may" lack it.
+Clause 5.2.1.3's IP-SM-GW number for an SMSMI-Correlation-ID is text-only:
+it binds an HSS answering a request it does not forward, and the HSS
+forwards requests to an SMS Router as a proxy (clause 5.3.1.1.2), which
+answer the SRA does not tell apart. The routing clause's Destination-Host
+"if the SMS-GMSC or the SMS router has stored or can obtain the
+address/name" of the HSS, the MPS-Priority of an OFR or TFR after an earlier
+IDR, ULA or SRA, and the RDR's failed nodes "as previously provided" in an
+earlier SRA are text-only.
 The rest a single message could show but no kind says: two AVPs' contents
 differing (an Additional-Serving-Node not repeating the Serving-Node, the
 RDA's Alert MSISDN differing from the request's), two times compared (the
@@ -1480,16 +1502,23 @@ DIAMETER_ SERVICE _ERROR_BARRED, in sentences no block reads; clause
 6.3.3.10 types SM-Delivery-Timer Integer where table 6.3.3.1/1 types it
 Unsigned32, which the corpus keeps, no rule reading its value; clause
 5.3.3.6's body prints an IP-SM-GW-Realm no allowed combination names,
-read `text-only`; and clause 5.3.3.11's heading names
+read `text-only`; clause 6.2.2.2 answers a facility not supported with
+DIAMETER_ERROR_FACILITY_NOT_SUPPORTED, and clause 7.3.10 allows the MME
+DIAMETER_ERROR_SERVICE_BARRED, where the TFA's Result row lists neither,
+so no rule holds the TFA to the row's list; clause 6.3.3.12's OFR-Flags
+bit names UTRAN under both the set bit's Gdd and the cleared bit's SGd, and
+no rule reads the bit; and clause 5.3.3.11's heading names
 SGSN-Absent-User-Diagnostic-SM SGSN-Absent-Subscriber-Diagnostic-SM. Left
 unread: the C rows saying only what an AVP holds when present ("This
 information element shall contain the RP-Message Type Indicator") and the
 "may" rows (Absent-User-Diagnostic-SM "may be present when
 Experimental-Result-Code is set to DIAMETER_ERROR_ABSENT_USER"); clause
 4.7's Capabilities-Exchange AVPs, which are RFC 6733's commands' and this
-file does not print; the routing clauses 5.3.1 and 6.3.1, which say what a
-node that can obtain an address puts in Destination-Host; the procedures'
-result codes, which are what a node answers with; the sentences repeating
+file does not print; the routing clause 6.3.1, which says what a node that
+can obtain an address puts in Destination-Host; the SM-RP-SMEA's
+Type-of-Address bits, which TS 23.040 clause 9.1.2.5 draws in a figure the
+element's entry does not read; the procedures' result codes, which are
+what a node answers with; the sentences repeating
 a table row (clause 6.2.2.3's SMS-GMSC address beside a
 Maximum-Retransmission-Time), read at the row; Feature-List's SMSF-Support
 description, which the SRA's NOTE rows read; and Annex A's DRMP, an
