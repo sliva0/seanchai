@@ -1670,7 +1670,7 @@ AVP                       OC
 ; Page: 91
 ; Versions: 18.0.0..19.0.0
 "The value 10415 (3GPP) is used as Vendor-Id, and the Feature-List-ID and Feature-List are defined per middle tier TS."
-    requires Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#aca-supported-features)
@@ -1686,7 +1686,7 @@ AVP                       OC
     text-only
 "Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
 "If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server."
-    present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED and request/Accounting-Record-Type = START_RECORD
+    present-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED and request/Accounting-Record-Type = START_RECORD
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#aca-supported-features-failed-avp)
@@ -1713,7 +1713,7 @@ AVP                       OC
     text-only
 "Upon receiving any initial Ro or Rf request for a specific domain / subsystem / service, which includes the Supported-Features AVP, the server shall behave as follows:"
 "If not all the features indicated in the Supported-Features AVP are supported, the answer is returned with Experimental-Result-Code AVP set to DIAMETER_ERROR_FEATURE_UNSUPPORTED and includes the Supported-Features AVPs containing lists of all features supported by the server."
-    present-if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED and request/CC-Request-Type = INITIAL_REQUEST
+    present-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_FEATURE_UNSUPPORTED and request/CC-Request-Type = INITIAL_REQUEST
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-supported-features-failed-avp)

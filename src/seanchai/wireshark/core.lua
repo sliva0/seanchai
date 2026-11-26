@@ -428,6 +428,30 @@ local function data_text(pdu, avp)
   return pdu:sub(avp.data + 1, avp.data + avp.size)
 end
 
+-- The constraints a grouped reading holds for its members in a message of
+-- application `application`: those read for another application's messages
+-- (`app`, TS 29.273's Feature-List-ID within Supported-Features for each of
+-- its applications) left out.
+local function member_cons(reading, application)
+  local all = reading.member_cons
+  if not all then
+    return nil
+  end
+  local scoped, found = {}, false
+  for name, list in pairs(all) do
+    local kept = {}
+    for _, cons in ipairs(list) do
+      if cons.app == nil or cons.app == application then
+        kept[#kept + 1] = cons
+      end
+    end
+    if #kept > 0 then
+      scoped[name], found = kept, true
+    end
+  end
+  return found and scoped or nil
+end
+
 -- Interpreted constraints (docs/consumers.md#interpreted-constraints): what a
 -- person read in a clause's prose of an AVP's value or presence. A reading
 -- carries `cons`, its own; a grouped reading `member_cons[name]`, its
@@ -443,7 +467,8 @@ end
 -- `q=true` where it names an AVP of the request the answer answers, and so
 -- does a rule reading one. An absent rule's AVP is never present; a scoped
 -- constraint's `s` is its AVP's identity where the body admits it only
--- through `* [ AVP ]`. Every finding is a note marked `interpreted`,
+-- through `* [ AVP ]`, and a grouped reading's `app` the application whose
+-- messages it holds in, where it holds in one only. Every finding is a note marked `interpreted`,
 -- citing its clause.
 
 -- A TBCD-string's decimal digits (TS 29.002 clause 17.7.8: the first digit in
@@ -1303,7 +1328,7 @@ local function check_unique(ctx, grouped)
   local seen = {}
   for _, entry in ipairs(grouped) do
     local reading = entry.reading
-    for name, list in pairs(reading.member_cons or {}) do
+    for name, list in pairs(member_cons(reading, ctx.application) or {}) do
       for _, cons in ipairs(list) do
         for _, rule in ipairs(cons.rules) do
           if rule.k == "unique" then
@@ -1587,7 +1612,7 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
   -- its members.
   local scoped
   if owner then
-    scoped = owner.member_cons
+    scoped = member_cons(owner, ctx.application)
   elseif depth == 0 then
     scoped = ctx.cons
   end
@@ -1780,6 +1805,7 @@ local function run(rules, prefs, pdu, avps, header_findings, form, anchor, reque
     experimental_codes = {},
     listed = 0,
     cons = form.cons,
+    application = form.application,
   }
   for _, each in ipairs(header_findings) do
     ctx.findings[#ctx.findings + 1] = each
@@ -1993,6 +2019,7 @@ function M.validate(rules, pdu, prefs, asked)
         local answer = rules.answers[candidate.answer or ""] or rules.answers[rules.base_answer]
         if answer then
           forms[#forms + 1] = {
+            application = looked_up,
             candidate = candidate,
             body = answer.members,
             form = "answer-message",
@@ -2004,6 +2031,7 @@ function M.validate(rules, pdu, prefs, asked)
         end
       else
         forms[#forms + 1] = {
+          application = looked_up,
           candidate = candidate,
           body = candidate.members,
           form = "command",
@@ -2018,6 +2046,7 @@ function M.validate(rules, pdu, prefs, asked)
   elseif error_bit and not request and rules.answers[rules.base_answer] then
     local answer = rules.answers[rules.base_answer]
     forms[1] = {
+      application = looked_up,
       body = answer.members,
       form = "answer-message",
       where = "the answer-message of " .. answer.defined_in .. " section "

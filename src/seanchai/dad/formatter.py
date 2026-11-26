@@ -178,13 +178,15 @@ def _directives(
             if value is not None:
                 lines.extend(notes.line(f"; {key}: {value}", (*path, field)))
     if isinstance(section, ast.InterpretedConstraints):
+        # Application-ID follows the scope it narrows: a command's, or a
+        # grouped AVP's.
         for key, field, value in (
             ("AVP", "avp", section.avp),
             ("Command", "command", section.command),
+            ("Within", "within", section.within),
             ("Application-ID", "application_id", section.application_id),
             ("Command-Section", "command_section", section.command_section),
             ("Request-Section", "request_section", section.request_section),
-            ("Within", "within", section.within),
         ):
             if value is not None:
                 lines.extend(notes.line(f"; {key}: {value}", (*path, field)))

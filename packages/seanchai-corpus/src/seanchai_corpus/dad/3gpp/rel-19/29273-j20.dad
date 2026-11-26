@@ -2786,11 +2786,13 @@ AN-Trusted ::= < Enumerated AVP header: 1503 10415 >
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#sta-feature-list-id)
 ; AVP: Feature-List-ID
+; Within: Supported-Features
+; Application-ID: 16777250
 ; Section: 5.2.3.10
 ; Page: 75
 ; Versions: 18.6.0..19.2.0
 "For this release, the Feature-List-ID AVP value shall be set to 1 for the STa/SWa application."
-    range 1
+    values 1 if Vendor-Id = 10415
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#mip-fa-rk-element)
@@ -3881,11 +3883,13 @@ DIAMETER_UNABLE_TO_COMPLY
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swm-feature-list-id)
 ; AVP: Feature-List-ID
+; Within: Supported-Features
+; Application-ID: 16777264
 ; Section: 7.2.3.2
 ; Page: 124
 ; Versions: 18.6.0..19.2.0
 "For this release, the Feature-List-ID AVP value shall be set to 1 for the SWm application."
-    range 1
+    values 1 if Vendor-Id = 10415
 
 
 ; Type: Value Table
@@ -4639,11 +4643,13 @@ Trace-Info ::= < AVP header: 1505 10415 >
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#swx-feature-list-id)
 ; AVP: Feature-List-ID
+; Within: Supported-Features
+; Application-ID: 16777265
 ; Section: 8.2.3.15
 ; Page: 150
 ; Versions: 18.6.0..19.2.0
 "For this release, the Feature-List-ID AVP value shall be set to 1 for the SWx application."
-    range 1
+    values 1 if Vendor-Id = 10415
 
 
 ; Type: Value Table
@@ -5805,11 +5811,13 @@ QoS-Resources     RFC5777
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.273.dadx#s6b-feature-list-id)
 ; AVP: Feature-List-ID
+; Within: Supported-Features
+; Application-ID: 16777272
 ; Section: 9.2.3.4
 ; Page: 191
 ; Versions: 18.6.0..19.2.0
 "For this release, the Feature-List-ID AVP value shall be set to 1 for the S6b application."
-    range 1
+    values 1 if Vendor-Id = 10415
 
 
 ; Type: Value Table

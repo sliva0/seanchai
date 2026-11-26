@@ -1885,7 +1885,7 @@ UPFAIL = 0
 ; Page: 178
 ; Versions: 18.1.0..19.1.0
 "On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.061.dadx#sgmb-raa-supported-features-vendor)
@@ -1896,6 +1896,6 @@ UPFAIL = 0
 ; Page: 178
 ; Versions: 18.1.0..19.1.0
 "On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "If the RAR command contains the Supported-Features AVP, the MBMS GW shall include the Supported-Features AVP in the RAA command, with the ‘M’ bit cleared, indicating only the features that both the BM-SC and MBMS GW support."
     text-only

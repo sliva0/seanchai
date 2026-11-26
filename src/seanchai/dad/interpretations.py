@@ -126,6 +126,8 @@ class Interpretation:
             return f"{block.avp} in {block.command} ({block.command_section})"
         if block.command is not None:
             return f"{block.avp} in {block.command}"
+        if block.within is not None and block.application_id is not None:
+            return f"{block.avp} in {block.within} (application {block.application_id})"
         if block.within is not None:
             return f"{block.avp} in {block.within}"
         return block.avp

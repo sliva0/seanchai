@@ -1193,7 +1193,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#ria-supported-features-vendor)
@@ -1203,7 +1203,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cir-supported-features-vendor)
@@ -1213,7 +1213,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cia-supported-features-vendor)
@@ -1223,7 +1223,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-supported-features-vendor)
@@ -1233,7 +1233,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-supported-features-vendor)
@@ -1243,7 +1243,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#odr-supported-features-vendor)
@@ -1253,7 +1253,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#oda-supported-features-vendor)
@@ -1263,7 +1263,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tdr-supported-features-vendor)
@@ -1273,7 +1273,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-supported-features-vendor)
@@ -1283,7 +1283,7 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Page: 31
 ; Versions: 18.0.0..19.2.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#rir-no-vendor-specific-application-id)
@@ -1422,7 +1422,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
@@ -1433,6 +1433,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
         DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
         DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
         DIAMETER_ERROR_UNREACHABLE_USER
+    exclude 4221, 5101, 5510, 5511, 5513, 5514, 5515, 5650, 5651, 5652, 5653
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cia-result-code-absent-with-experimental-result)
@@ -1442,7 +1443,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
@@ -1453,6 +1454,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
         DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
         DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
         DIAMETER_ERROR_UNREACHABLE_USER
+    exclude 4221, 5101, 5510, 5511, 5513, 5514, 5515, 5650, 5651, 5652, 5653
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-result-code-absent-with-experimental-result)
@@ -1462,7 +1464,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
@@ -1473,6 +1475,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
         DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
         DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
         DIAMETER_ERROR_UNREACHABLE_USER
+    exclude 4221, 5101, 5510, 5511, 5513, 5514, 5515, 5650, 5651, 5652, 5653
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#oda-result-code-absent-with-experimental-result)
@@ -1482,7 +1485,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
@@ -1493,6 +1496,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
         DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
         DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
         DIAMETER_ERROR_UNREACHABLE_USER
+    exclude 4221, 5101, 5510, 5511, 5513, 5514, 5515, 5650, 5651, 5652, 5653
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-result-code-absent-with-experimental-result)
@@ -1502,7 +1506,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
 ; Page: 38
 ; Versions: 18.0.0..19.2.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         DIAMETER_ERROR_CONFIGURATION_EVENT_STORAGE_NOT_SUCCESSFUL,
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
@@ -1513,6 +1517,7 @@ DIAMETER_ERROR_UNREACHABLE_USER                           = 4221 ; 6.3.3.12 from
         DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN,
         DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE,
         DIAMETER_ERROR_UNREACHABLE_USER
+    exclude 4221, 5101, 5510, 5511, 5513, 5514, 5515, 5650, 5651, 5652, 5653
 
 
 ; Type: Grouped AVP

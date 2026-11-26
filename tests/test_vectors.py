@@ -976,3 +976,23 @@ def test_a_required_grouped_avp_is_given_the_number_its_commands_rule_wants(
     assert set(built) == {"minimal", "maximal"}
     assert held(built["minimal"]) == {"Nu-Auth": "0100030d"}
     assert held(built["maximal"]) == {"Nu-Auth": "0100030d"}
+
+
+def test_a_grouped_avps_rule_for_one_application_is_broken_there_alone(built):
+    """TS 29.273 sets Feature-List-ID to 1 for each of its applications in a
+    clause of its own, the 3GPP list's: SWm's vectors break clause
+    7.2.3.2's rule, with the 3GPP Vendor-Id, and no other application's."""
+    swm = _vectors(built, 16777264)
+    broken = {
+        v.id.rsplit("/", 1)[1]
+        for v in swm.vectors
+        if "/constraint-values/Feature-List-ID/" in v.id
+    }
+    assert broken == {"7.2.3.2"}
+    for vector in swm.vectors:
+        if vector.kind != "negative":
+            for node in vector.tree:
+                if node.name == "Supported-Features":
+                    fields = {child.name: child.data for child in node.children}
+                    assert fields["Vendor-Id"] == f"{10415:08x}"
+                    assert fields["Feature-List-ID"] == f"{1:08x}"

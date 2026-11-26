@@ -257,8 +257,11 @@ class Constraint(_Model):
     `command_section`, the clause of the command's block where the document
     prints it more than once) or `within` names where the AVP is
     constrained as a member; with neither, wherever the document reads it.
-    `request_section` is the clause of the request a rule of an answer's
-    constraint reads, where one does (`Reference.root`).
+    With `within`, `application_id` names the application whose messages
+    carry the grouped AVP the rules hold in, and a dictionary of other
+    applications leaves the constraint out. `request_section` is the clause
+    of the request a rule of an answer's constraint reads, where one does
+    (`Reference.root`).
     `avp_ids` are the readings carrying it: the AVP's own, the grouped AVP's
     for `within`, and the command's members of that name for `command`.
     `versions` is the range of the document's
@@ -1421,6 +1424,18 @@ def build(
         resolved.hole(hole)
     for table in tables.met:
         resolved.copy(table.reference, table.version)
+    if application_ids:
+        # A grouped AVP's rules read for another application's messages
+        # (TS 29.273's Feature-List-ID, 1 for each of its applications in a
+        # clause of its own) hold in none of the selection's.
+        for each in [
+            each
+            for each in constraints.met
+            if each.within is not None
+            and each.application_id is not None
+            and each.application_id not in application_ids
+        ]:
+            del constraints.met[each]
     for each in constraints.met:
         resolved.copy(each.reference, each.version)
     avps = tuple(builder.avp(avp) for avp in _in_order(builder))

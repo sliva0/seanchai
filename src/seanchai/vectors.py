@@ -412,6 +412,10 @@ def _payload(
                 if vendor
                 for code in codes
             ][:1]
+        elif avp.name == "Vendor-Id":
+            # The vendor of that first code, so that an Experimental-Result
+            # holds a code of its Vendor-Id, as a rule on the code names it.
+            numbers += [vendor for vendor in sorted(values.vendor_codes) if vendor][:1]
         if data_type is ast.DataType.ENUMERATED:
             numbers += [
                 v.value for v in avp.values if v.kind == "value" and v.value is not None
@@ -630,6 +634,9 @@ class _Builder:
         # A reading's own constraints, and a grouped reading's for its members.
         self.own: dict[str, list[dictionary.Constraint]] = {}
         self.within: dict[str, dict[str, list[dictionary.Constraint]]] = {}
+        # The application of the command being built, whose messages a
+        # grouped AVP's rules read for one application hold in.
+        self.application: int | None = None
         for each in built.constraints:
             for identifier in each.avp_ids:
                 if each.within is None:
@@ -639,10 +646,26 @@ class _Builder:
                         each.avp, []
                     ).append(each)
 
+    def held_within(self, avp_id: str) -> dict[str, list[dictionary.Constraint]]:
+        """The constraints a grouped reading holds for its members, by name, in
+        the messages of `application`: those read for another application's
+        left out (TS 29.273's Feature-List-ID within Supported-Features)."""
+        return {
+            name: kept
+            for name, held in self.within.get(avp_id, {}).items()
+            if (
+                kept := [
+                    each
+                    for each in held
+                    if each.application_id in (None, self.application)
+                ]
+            )
+        }
+
     def scope_of(self, avp: dictionary.Avp) -> _Scope:
         return _Scope(
             avp.members,
-            {k: tuple(v) for k, v in self.within.get(avp.id, {}).items()},
+            {k: tuple(v) for k, v in self.held_within(avp.id).items()},
             avp.name,
         )
 
@@ -752,7 +775,7 @@ class _Builder:
         a `unique` rule names."""
         seen: dict[tuple[str, str], set[bytes]] = {}
         for node in list(nodes):
-            for name, held in self.within.get(node.avp.id, {}).items():
+            for name, held in self.held_within(node.avp.id).items():
                 if not any(
                     rule.kind == "unique"
                     for each in held
@@ -1441,6 +1464,7 @@ class _Generator:
         self, application: dictionary.Application, command: dictionary.Command
     ) -> None:
         label = self.label(application, command)
+        self.builder.application = command.application_id
         asked = self.request_of(application, command)
         scope = self.scope(command, asked)
         # The request an answer's rules read: the fullest one buildable, so
@@ -1524,6 +1548,7 @@ class _Negatives:
         breaks: Breaks,
         rule: str,
         severity: Severity,
+        also: Iterable[Expected] = (),
     ) -> None:
         if (other := self.accepted_elsewhere(what, rule)) is not None:
             self.skip(
@@ -1533,7 +1558,11 @@ class _Negatives:
             )
             return
         self.generator.emit(
-            message, "negative", what, breaks, [Expected(rule=rule, severity=severity)]
+            message,
+            "negative",
+            what,
+            breaks,
+            [Expected(rule=rule, severity=severity), *also],
         )
 
     def accepted_elsewhere(self, what: str, rule: str) -> str | None:
@@ -2015,6 +2044,7 @@ class _Negatives:
                             self.at_constraint(each, f"{name}: {_rule_text(rule)}"),
                             f"constraint-{kind}",
                             "note",
+                            self.unnamed_code(target),
                         )
         for key, what in missed.items():
             if key not in done:
@@ -2024,6 +2054,17 @@ class _Negatives:
         self.predicate_vectors()
         self.request_vectors()
         self.grouped_vectors()
+
+    def unnamed_code(self, node: _Avp) -> list[Expected]:
+        """The warning a Result-Code no document numbers draws beside the
+        rule its value breaks: TS 29.338's codes, which clause 7.3.1 keeps
+        out of Result-Code, are none of the base protocol's."""
+        if node.avp.name != "Result-Code" or node.payload is None:
+            return []
+        value = int.from_bytes(node.payload, "big")
+        if value in self.builder.values.vendor_codes.get(0, ()):
+            return []
+        return [Expected(rule="result-code", severity="warn")]
 
     def each_grouped(
         self, message: _Message
@@ -2458,7 +2499,9 @@ class _Negatives:
                     for conjunction in rule.conditions
                 ):
                     return "its conditions cannot be made to fail"
-            broken = self.builder.broken(scope, nodes)
+            # The rules reading the request too, which the plugin holds the
+            # answer to where the capture has it.
+            broken = self.builder.broken(scope, nodes, message.asked if top else None)
             if [(n, k) for n, k, _ in broken] != [(name, rule.kind)]:
                 return "breaking it breaks another predicate too"
             if not self.counts_hold(nodes, scope):

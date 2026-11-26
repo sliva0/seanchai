@@ -1082,3 +1082,69 @@ def test_a_finding_line_names_its_place_shortened_and_its_source(lua, s6a_rules)
         "G: short [interpreted]",
         "G: whole [interpreted]",
     ]
+
+
+# TS 29.273's applications, each setting Feature-List-ID to 1 in a clause of
+# its own (5.2.3.10 for STa, 7.2.3.2 for SWm).
+SWM = 16777264
+
+
+@pytest.fixture(scope="module")
+def sta_swm_rules(tmp_path_factory) -> Path:
+    out = tmp_path_factory.mktemp("rules") / "rules.lua"
+    return _rules(
+        out, "--application", str(STA), "--application", str(SWM), "--rules-only"
+    )
+
+
+def _aar(application: int, vendor: int, list_id: int) -> bytes:
+    features = (
+        avp(266, u32(vendor))
+        + avp(629, u32(list_id), vendor=TGPP)
+        + avp(630, u32(1), vendor=TGPP)
+    )
+    return message(
+        265,
+        R | P,
+        application,
+        avp(263, b"aaa.example.com;1;2"),
+        avp(258, u32(application)),
+        avp(264, b"gw.example.com"),
+        avp(296, b"example.com"),
+        avp(283, b"example.com"),
+        avp(1, b"001010123456789@example.com"),
+        avp(628, features, vendor=TGPP),
+    )
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_a_grouped_avps_rule_read_for_one_application_holds_there(
+    lua, sta_swm_rules, tmp_path
+):
+    """TS 29.273's Feature-List-ID 1, of the 3GPP list alone, is checked
+    within Supported-Features in the messages of the application whose clause
+    sets it, so an STa and an SWm AAR each break it once, citing their own
+    clause, and another vendor's list numbered 2 breaks nothing."""
+    sta, swm, vendor = _validate(
+        lua,
+        sta_swm_rules,
+        tmp_path,
+        _aar(STA, TGPP, 2),
+        _aar(SWM, TGPP, 2),
+        _aar(SWM, 9, 2),
+    )
+    for result, clause in ((sta, "5.2.3.10"), (swm, "7.2.3.2")):
+        found = [
+            text
+            for rule, text in _constraint_findings(result)
+            if "Feature-List" in text
+        ]
+        assert len(found) == 1, found
+        assert found[0].startswith(
+            "Supported-Features > Feature-List-ID: 2, but only 1"
+        )
+        assert [each["clause"] for each in _cited(result, "constraint-values")] == [
+            clause
+        ]
+    assert not [text for _, text in _constraint_findings(vendor) if "Feature" in text]

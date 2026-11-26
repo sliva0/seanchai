@@ -325,7 +325,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
 ; Page: 15
 ; Versions: 18.0.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
         DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED,
@@ -336,6 +336,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
         DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA,
         DIAMETER_ERROR_DSAI_NOT_AVAILABLE, DIAMETER_ERROR_IDENTITIES_DONT_MATCH,
         DIAMETER_USER_DATA_NOT_AVAILABLE, DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+    exclude 4100, 4101, 5100, 5101, 5102, 5103, 5104, 5105, 5106, 5107, 5108
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pua-result-code-absent-with-experimental-result)
@@ -345,7 +346,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
 ; Page: 15
 ; Versions: 18.0.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
         DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED,
@@ -356,6 +357,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
         DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA,
         DIAMETER_ERROR_DSAI_NOT_AVAILABLE, DIAMETER_ERROR_IDENTITIES_DONT_MATCH,
         DIAMETER_USER_DATA_NOT_AVAILABLE, DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+    exclude 4100, 4101, 5100, 5101, 5102, 5103, 5104, 5105, 5106, 5107, 5108
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#sna-result-code-absent-with-experimental-result)
@@ -365,7 +367,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
 ; Page: 15
 ; Versions: 18.0.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
         DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED,
@@ -376,6 +378,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
         DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA,
         DIAMETER_ERROR_DSAI_NOT_AVAILABLE, DIAMETER_ERROR_IDENTITIES_DONT_MATCH,
         DIAMETER_USER_DATA_NOT_AVAILABLE, DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+    exclude 4100, 4101, 5100, 5101, 5102, 5103, 5104, 5105, 5106, 5107, 5108
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#pna-result-code-absent-with-experimental-result)
@@ -385,7 +388,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
 ; Page: 15
 ; Versions: 18.0.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_DATA_NOT_RECOGNIZED,
         DIAMETER_ERROR_OPERATION_NOT_ALLOWED,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_READ,
         DIAMETER_ERROR_USER_DATA_CANNOT_BE_MODIFIED,
@@ -396,6 +399,7 @@ DIAMETER_PRIOR_UPDATE_IN_PROGRESS             = 4101 ; 6.2.3.2
         DIAMETER_ERROR_NO_SUBSCRIPTION_TO_DATA,
         DIAMETER_ERROR_DSAI_NOT_AVAILABLE, DIAMETER_ERROR_IDENTITIES_DONT_MATCH,
         DIAMETER_USER_DATA_NOT_AVAILABLE, DIAMETER_PRIOR_UPDATE_IN_PROGRESS
+    exclude 4100, 4101, 5100, 5101, 5102, 5103, 5104, 5105, 5106, 5107, 5108
 
 
 ; Type: Reused AVPs

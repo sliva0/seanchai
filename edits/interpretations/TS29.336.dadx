@@ -217,9 +217,10 @@
     absent
 
 
-;; Every feature of the application is 3GPP's, in each command carrying the
-;; AVP; RFC 6733's Vendor-Id, which this file does not hold, read through a
-;; path into it.
+;; Clause 6.1.9, in each command carrying the AVP. TS 29.229 clause 6.3.29 has a
+;; vendor's own features carry its own Vendor-Id, and which list a
+;; Supported-Features carries only its Vendor-Id and Feature-List-ID tell, so
+;; whether one is the document's own the message does not say.
 ; Type: Interpreted Constraints
 ; Id: sir-supported-features-vendor
 ; AVP: Supported-Features
@@ -227,7 +228,7 @@
 ; Section: 6.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -237,7 +238,7 @@
 ; Section: 6.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ;; Clause 6.2.2, in each command, as TS 29.338's clause 5.3.2.2: a rule on
@@ -275,9 +276,10 @@
 ; Section: 6.3.3
 ; Versions: 18.2.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
         DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE
+    exclude 5510, 5511
 
 
 ;; Clause 6.4.2's AVPs. The identifiers are the four members its body
@@ -1172,7 +1174,7 @@
 ; Section: 8.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1182,7 +1184,7 @@
 ; Section: 8.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1192,7 +1194,7 @@
 ; Section: 8.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1202,7 +1204,7 @@
 ; Section: 8.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1212,7 +1214,7 @@
 ; Section: 8.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -1222,7 +1224,7 @@
 ; Section: 8.1.9
 ; Versions: 18.2.0..19.1.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ;; Clause 8.2.2, as clause 6.2.2.
@@ -1302,7 +1304,7 @@
 ; Section: 8.3.3
 ; Versions: 18.2.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
         DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         "DIAMETER_ERROR_REQUESTED_RANGE_IS_NOT ALLOWED",
@@ -1310,6 +1312,7 @@
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
         DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION,
         DIAMETER_ERROR_UNAUTHORIZED_MTC_PROVIDER
+    exclude 5451, 5510, 5511, 5512, 5513, 5514, 5516
 
 
 ; Type: Interpreted Constraints
@@ -1319,7 +1322,7 @@
 ; Section: 8.3.3
 ; Versions: 18.2.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
         DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         "DIAMETER_ERROR_REQUESTED_RANGE_IS_NOT ALLOWED",
@@ -1327,6 +1330,7 @@
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
         DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION,
         DIAMETER_ERROR_UNAUTHORIZED_MTC_PROVIDER
+    exclude 5451, 5510, 5511, 5512, 5513, 5514, 5516
 
 
 ; Type: Interpreted Constraints
@@ -1336,7 +1340,7 @@
 ; Section: 8.3.3
 ; Versions: 18.2.0..19.1.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
         DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_ENTITY,
         DIAMETER_ERROR_UNAUTHORIZED_SERVICE,
         "DIAMETER_ERROR_REQUESTED_RANGE_IS_NOT ALLOWED",
@@ -1344,6 +1348,7 @@
         DIAMETER_ERROR_CONFIGURATION_EVENT_NON_EXISTANT,
         DIAMETER_ERROR_USER_NO_APN_SUBSCRIPTION,
         DIAMETER_ERROR_UNAUTHORIZED_MTC_PROVIDER
+    exclude 5451, 5510, 5511, 5512, 5513, 5514, 5516
 
 
 ;; Clause 8.4.2's AVPs. Where the "Extended Reference IDs" feature is

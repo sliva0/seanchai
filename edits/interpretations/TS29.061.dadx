@@ -928,8 +928,10 @@
     length 9..28674 octets
 
 
-;; Clause 20.7: SGmb's features are 3GPP's, in the RAR and RAA, the
-;; commands printing Supported-Features; the initial RAR and RAA the
+;; Clause 20.7, in the RAR and RAA, the commands printing
+;; Supported-Features: the Vendor-Id text-only, as TS 29.338's clause 4.9
+;; is, TS 29.229 clause 6.3.29 having a vendor's own features carry its own
+;; Vendor-Id; the initial RAR and RAA the
 ;; session's first exchange, which a session start's or heartbeat's RAR need
 ;; not be.
 ; Type: Interpreted Constraints
@@ -940,7 +942,7 @@
 ; Section: 20.7
 ; Versions: 18.1.0..19.1.0
 "On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints
@@ -951,6 +953,6 @@
 ; Section: 20.7
 ; Versions: 18.1.0..19.1.0
 "On the SGmb reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "If the RAR command contains the Supported-Features AVP, the MBMS GW shall include the Supported-Features AVP in the RAA command, with the ‘M’ bit cleared, indicating only the features that both the BM-SC and MBMS GW support."
     text-only

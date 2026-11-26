@@ -1398,6 +1398,15 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
             )
         body = messages[0].avps
     elif node.within is not None:
+        if node.application_id is not None and not any(
+            isinstance(section, ast.Message)
+            and ast.application_id_of(spec.sections, section) == node.application_id
+            for section in spec.sections
+        ):
+            raise CorrectionError(
+                f"{described}: the file prints no command under application"
+                f" {node.application_id}"
+            )
         body = next(
             (
                 section.avps
@@ -1413,8 +1422,17 @@ def _check_interpreted(spec: ast.Specification, interpret: Interpretation) -> No
     # may be one only the file's bases define (RFC 6733's
     # Authorization-Lifetime, clause 8.2.4), which the linter reads them for.
     admitted = body is not None and any(rule.name == "AVP" for rule in body)
+    # A sibling within a grouped AVP the file re-uses is one of the body its
+    # defining document prints (RFC 6733's Vendor-Id within TS 29.229's
+    # Supported-Features, in TS 29.273), which the linter reads with the
+    # corpus.
+    reused = node.within is not None and body is None
     for name in names:
-        if name not in held and not (admitted and name == node.avp):
+        if (
+            name not in held
+            and not (admitted and name == node.avp)
+            and not (reused and name not in (node.avp, node.within))
+        ):
             raise CorrectionError(f"{described}: the file holds no AVP {name!r}")
     if body is not None and not any(rule.name in (node.avp, "AVP") for rule in body):
         raise CorrectionError(

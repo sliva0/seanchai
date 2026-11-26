@@ -231,6 +231,22 @@ def test_a_condition_names_every_value_a_table_holds():
     assert formatter.format_spec(spec, comments) == text
 
 
+def test_a_grouped_avps_block_may_name_the_application_it_holds_in():
+    # TS 29.273's Feature-List-ID within Supported-Features, set to 1 "for
+    # the SWm application" in a clause of its own: Application-ID follows
+    # the Within it narrows.
+    text = _block(
+        '"Q."',
+        "    values 1 if Vendor-Id = 10415",
+        scope=("; Within: Supported-Features", "; Application-ID: 16777264"),
+    )
+    spec, comments = parser.parse_with_comments(text)
+    (block,) = spec.sections
+    assert isinstance(block, ast.InterpretedConstraints)
+    assert (block.within, block.application_id) == ("Supported-Features", 16777264)
+    assert formatter.format_spec(spec, comments) == text
+
+
 @pytest.mark.parametrize(
     ("text", "lineno", "fact"),
     [

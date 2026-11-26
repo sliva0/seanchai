@@ -712,12 +712,20 @@ def _constraint(
         and constraint.avp_ids
         else []
     )
+    # A grouped AVP's rules read for one application's messages: the core
+    # holds them where the message's application is that one.
+    application = (
+        [f"app={constraint.application_id}"]
+        if constraint.within is not None and constraint.application_id is not None
+        else []
+    )
     return (
         "{"
         + ",".join(
             [
                 *_cited("at", places.constraint(constraint)),
                 *admitted,
+                *application,
                 f"rules={{{','.join(rules)}}}",
             ]
         )

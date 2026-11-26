@@ -134,7 +134,9 @@ class Constraint(_Plain):
     the command's block where the document prints it more than once) or
     `within` names where the AVP is constrained as a member, and where a
     predicate's conditions are its siblings; with neither, wherever the
-    document reads it. `request_section` is the clause of the request a
+    document reads it. With `within`, `application_id` names the application
+    whose messages carry the grouped AVP the rules hold in.
+    `request_section` is the clause of the request a
     rule of a block scoped to an answer reads (`ast.Root.REQUEST`): the one
     the block names, else the one print of the request under the answer's
     application, None where the block reads no request or the document

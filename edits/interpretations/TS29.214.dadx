@@ -903,9 +903,10 @@
     text-only
 
 
-;; Every Rx feature is 3GPP's, in the two commands carrying the AVP;
-;; RFC 6733's Vendor-Id, which this file does not hold, read through a path
-;; into it.
+;; Clause 5.4.1, in the two commands carrying the AVP. TS 29.229 clause 6.3.29
+;; has a vendor's own features carry its own Vendor-Id, and which list a
+;; Supported-Features carries only its Vendor-Id and Feature-List-ID tell, so
+;; whether one is the document's own the message does not say.
 ; Type: Interpreted Constraints
 ; Id: aar-supported-features-vendor
 ; AVP: Supported-Features
@@ -913,7 +914,7 @@
 ; Section: 5.4.1
 ; Versions: 18.4.0..19.3.0
 "On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ;; The initial AAR is the one whose Rx-Request-Type says INITIAL_REQUEST, the
@@ -927,7 +928,7 @@
 ; Section: 5.4.1
 ; Versions: 18.4.0..19.3.0
 "On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "The following exceptions apply to the initial and stateless AAR/AAA command pair:"
 "If the AAR command contains the Supported-Features AVP(s), the PCRF shall include the Supported-Features AVP(s) in the AAA command, with the ‘M’ bit cleared, indicating only the features that both the PCRF and AF support."
     present-if request/Rx-Request-Type = INITIAL_REQUEST and request/Supported-Features and Result-Code = DIAMETER_SUCCESS or request/Rx-Request-Type = PCSCF_RESTORATION and request/Supported-Features and Result-Code = DIAMETER_SUCCESS

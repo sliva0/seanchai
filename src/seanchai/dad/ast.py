@@ -1915,17 +1915,19 @@ class InterpretedConstraints(Node):
     `avp` is the AVP the rules constrain. `command` (with `application_id`
     where the document prints the command for several applications, and
     `command_section`, the clause of its block, where it prints the command
-    more than once for one application or for none) or `within`, a grouped
-    AVP, scopes them to where the AVP appears there, and is where a
-    predicate's conditions are looked up; with neither, the rules hold
-    wherever the document reads the AVP. In a block scoped to an answer, a
+    more than once for one application or for none) or `within`, a grouped AVP,
+    scopes them to where the AVP appears there, and is where a predicate's
+    conditions are looked up; with neither, the rules hold wherever the
+    document reads the AVP. With `within`, `application_id` holds them where a
+    message of that application carries the grouped AVP ("set to 1 for the SWm
+    application", TS 29.273 clause 7.2.3.2). In a block scoped to an answer, a
     path rooted at `request` reads the request the answer answers: the same
     command code with the R bit, under the same application, printed at
     `request_section` where the document prints it more than once there.
     `table` names the table printing the quote, an information element's
-    description. `versions` is the range of document versions the quotes
-    were checked against, None for a document that has one edition and no
-    version, an RFC, whose `.dad` prints no `; Version:`.
+    description. `versions` is the range of document versions the quotes were
+    checked against, None for a document that has one edition and no version,
+    an RFC, whose `.dad` prints no `; Version:`.
 
     Only the document's interpretations file writes the block
     (`InterpretationBlock`, merged in as the corrections are applied), so
@@ -1951,8 +1953,11 @@ class InterpretedConstraints(Node):
     def _shape(self) -> InterpretedConstraints:
         if self.command is not None and self.within is not None:
             raise ValueError("a block is scoped to a command or a grouped AVP")
-        if self.application_id is not None and self.command is None:
-            raise ValueError("Application-ID chooses among a command's applications")
+        if self.application_id is not None and self.command is self.within is None:
+            raise ValueError(
+                "Application-ID chooses among a command's applications, or the"
+                " application a grouped AVP is read in"
+            )
         if self.command_section is not None and self.command is None:
             raise ValueError("Command-Section chooses among a command's prints")
         reading = any(

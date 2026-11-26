@@ -697,8 +697,9 @@ interpreted-constraints = "; Type: Interpreted Constraints" NL
                           ["; Command: " avp-name NL
                            ["; Application-ID: " application-id NL]
                            ["; Command-Section: " section-number NL]
-                           ["; Request-Section: " section-number NL]]
-                          ["; Within: " avp-name NL]
+                           ["; Request-Section: " section-number NL]
+                          / "; Within: " avp-name NL
+                           ["; Application-ID: " application-id NL]]
                           "; Section: " section-number NL
                           ["; Table: " inline-text NL]
                           ["; Page: " 1*DIGIT NL]
@@ -787,7 +788,11 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   29.273's Diameter-EAP-Request for STa and SWd, as an Information
   Elements block chooses), or `; Within:`, a grouped AVP, scopes them to the
   AVP as a member there; a predicate's conditions are its siblings. With
-  neither, the rules hold wherever the document reads the AVP.
+  neither, the rules hold wherever the document reads the AVP. After
+  `; Within:`, `; Application-ID:` holds the rules where a message of that
+  application, its header's id, carries the grouped AVP: TS 29.273's
+  Feature-List-ID within Supported-Features, set to 1 "for the SWm
+  application" in a clause of its own (7.2.3.2).
 - A path names an AVP from the scope through the grouped AVPs before it,
   one name a level: `MIP6-Agent-Info/MIP-Home-Agent-Host` is the
   MIP-Home-Agent-Host of the block's command's MIP6-Agent-Info, as the
@@ -930,15 +935,16 @@ Checked by the AST after parsing:
 - A Value Table has at least one row. A clause or origin in a row requires
   `result-codes`; a mark, `; Application:` and `; Feature-List-ID:` require
   `features`.
-- An Interpreted Constraints block's bounds are ordered and an `exclude`
-  names a value once; `; Application-ID:` needs `; Command:`, which excludes
-  `; Within:`; a condition tests a value or a bit, not both; only `element`
-  takes a document, and it needs one; a `bits` rule names a bit once, and
-  two or more for `at-most-one` and `at-least-one`; a `members` rule names a
-  member once, a `values` rule a value once; `unique` needs `; Within:`; a
-  rule reading the request needs `; Command:`, and `; Request-Section:` a
-  rule reading the request; a value read from another AVP starts at a root;
-  `not` is said once of a condition.
+- An Interpreted Constraints block's bounds are ordered and an `exclude` names a
+  value once; `; Command:` excludes `; Within:`; a condition tests a value or a
+  bit, not both; only `element` takes a document, and it needs one;
+  `; Application-ID:` follows `; Command:` or `; Within:`, and with `; Within:`
+  names an application the file prints a command under; a `bits` rule names a
+  bit once, and two or more for `at-most-one` and `at-least-one`; a `members`
+  rule names a member once, a `values` rule a value once; `unique` needs
+  `; Within:`; a rule reading the request needs `; Command:`, and
+  `; Request-Section:` a rule reading the request; a value read from another AVP
+  starts at a root; `not` is said once of a condition.
 - Command codes are 24-bit. Codes, vendor ids, application ids, enum values,
   value-table numbers and Feature-List-IDs are 32-bit. Page numbers are 32-bit
   and at least 1.

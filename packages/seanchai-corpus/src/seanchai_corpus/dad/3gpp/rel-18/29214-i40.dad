@@ -1627,7 +1627,7 @@ AuthorizationForMpsSignalling = 16 ; O
 ; Page: 63
 ; Versions: 18.4.0..19.3.0
 "On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.214.dadx#aaa-initial-supported-features)
@@ -1637,7 +1637,7 @@ AuthorizationForMpsSignalling = 16 ; O
 ; Page: 63
 ; Versions: 18.4.0..19.3.0
 "On the Rx reference point, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "The following exceptions apply to the initial and stateless AAR/AAA command pair:"
 "If the AAR command contains the Supported-Features AVP(s), the PCRF shall include the Supported-Features AVP(s) in the AAA command, with the ‘M’ bit cleared, indicating only the features that both the PCRF and AF support."
     present-if request/Rx-Request-Type = INITIAL_REQUEST and request/Supported-Features and Result-Code = DIAMETER_SUCCESS or request/Rx-Request-Type = PCSCF_RESTORATION and request/Supported-Features and Result-Code = DIAMETER_SUCCESS

@@ -171,7 +171,10 @@
     unique
 
 
-;; Clause 5.4.2: Nt's features are 3GPP's, in the BTR and BTA.
+;; Clause 5.4.2, in the BTR and BTA. TS 29.229 clause 6.3.29 has a vendor's own
+;; features carry its own Vendor-Id, and which list a Supported-Features carries
+;; only its Vendor-Id and Feature-List-ID tell, so whether one is the document's
+;; own the message does not say.
 ; Type: Interpreted Constraints
 ; Id: btr-supported-features-vendor
 ; AVP: Supported-Features
@@ -179,7 +182,7 @@
 ; Section: 5.4.2
 ; Versions: 18.0.0..19.0.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively."
     text-only
 
@@ -191,7 +194,7 @@
 ; Section: 5.4.2
 ; Versions: 18.0.0..19.0.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "The Supported-Features AVP shall be included in every BTR and BTA commands if supported by the SCEF and PCRF respectively."
     text-only
 
@@ -348,8 +351,11 @@
     range 1
 
 
-;; Clause A.6.4.2: Nta's features are 3GPP's, in the ECR and ECA, the
-;; commands printing Supported-Features.
+;; Clause A.6.4.2, in the ECR and ECA, the commands printing Supported-Features.
+;; TS 29.229 clause 6.3.29 has a vendor's own features carry its own Vendor-Id,
+;; and which list a Supported-Features carries only its Vendor-Id and
+;; Feature-List-ID tell, so whether one is the document's own the message does
+;; not say.
 ; Type: Interpreted Constraints
 ; Id: ecr-supported-features-vendor
 ; AVP: Supported-Features
@@ -357,7 +363,7 @@
 ; Section: A.6.4.2
 ; Versions: 18.0.0..19.0.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively."
     text-only
 
@@ -369,7 +375,7 @@
 ; Section: A.6.4.2
 ; Versions: 18.0.0..19.0.0
 "On the all reference points as specified in this specification, the Supported-Features AVP is used to identify features that have been defined by 3GPP and hence, for features defined in this document, the Vendor-Id AVP shall contain the vendor ID of 3GPP (10415)."
-    requires Supported-Features/Vendor-Id = 10415
+    text-only
 "The Supported-Features AVP shall be included in every ECR and ECA commands if supported by the SCEF and PCRF respectively."
     text-only
 

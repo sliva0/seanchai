@@ -112,7 +112,9 @@ what it decides: `not` of an unknown is unknown, an `and` of a false one is
 false. Several predicates in one
 block must all hold. `absent-if` and `excludes` say the same of a presence
 condition, read from the other side; the kinds follow the clause's wording.
-Without a scope the rules hold wherever the document reads the AVP, and a
+`; Application-ID:` after `; Within:` holds them only where a message of
+that application, by its header's id, carries the grouped AVP. Without a
+scope the rules hold wherever the document reads the AVP, and a
 predicate there has no siblings to test, only the AVP's own members through
 a path. A scope's AVP is a member its body prints or one its `* [ AVP ]`
 admits, so a block may hold a command to a
@@ -452,7 +454,10 @@ member within the grouped AVP the origin's on that member. So RFC 6733's
 reading of Vendor-Specific-Application-Id's Auth-Application-Id holds in
 TS 32.299, which reads only its Vendor-Id there, and a document that says
 otherwise of an AVP than its origin does writes its own reading of it,
-which is the one checked where it reads the AVP. A block on a command never
+which is the one checked where it reads the AVP. A block within a grouped
+AVP for one application (`; Application-ID:`) holds in that application's
+messages alone, and sets the origin's rules on the member aside as one for
+every application does. A block on a command never
 reaches another document's print of it: RFC 6733's rules on its STR bind
 no application's own Session-Termination-Request.
 
@@ -482,16 +487,20 @@ specification:
     requires Non-IP-PDN-Type-Indicator = TRUE
 ```
 
-- A person writes the scope (`; AVP:`, `; Within:` or `; Command:` with
-  `; Application-ID:`, `; Command-Section:` and `; Request-Section:`,
-  `; Section:`, `; Table:`),
+- A person writes the scope (`; AVP:`, `; Within:` with
+  `; Application-ID:`, or `; Command:` with `; Application-ID:`,
+  `; Command-Section:` and `; Request-Section:`, `; Section:`, `; Table:`),
   the quotes and the rules, and `; Versions:`, the range the quotes were
   checked against, which an RFC's file, with no version to name, leaves out
   (a block naming one, or a 3GPP block naming none, is refused).
   `; Application-ID:` names the application of the
   command's print: its header's id, or where the header names none, the
   one the application scope covering its clause gives it, as TS 29.212's
-  Gx and Gxx prints of CC-Request take theirs. `; Command-Section:` names
+  Gx and Gxx prints of CC-Request take theirs. After `; Within:` it names
+  the application whose messages, by their header's id, carry the grouped
+  AVP the rules hold in: where a document sets a member's value "for the
+  SWm application" in a clause of each application, as TS 29.273 sets
+  Feature-List-ID. `; Command-Section:` names
   the clause of the command's block where the document prints the command
   more than once for one application: TS 29.273 prints Diameter-EAP-Answer
   for STa and SWd under STa's application.
@@ -679,7 +688,8 @@ V18.0.0, prints every sentence read and holds all 15 blocks.
 | `encoding`, a codec | 1: `e164-tbcd` (MSISDN) |
 | `encoding element` | 3, naming 3 entries of the registry; 2 rules checked, 1 not ([above](#elements)) |
 | `requires` | 1: One-Time-Notification in SNR, on Data-Reference |
-| `absent-if` | 4: Result-Code in UDA, PUA, SNA and PNA, beside one of clause 6.2's codes in Experimental-Result's Experimental-Result-Code |
+| `absent-if` | 4: Result-Code in UDA, PUA, SNA and PNA, beside one of clause 6.2's codes in Experimental-Result's Experimental-Result-Code under the 3GPP Vendor-Id |
+| `exclude` | 4: Result-Code in UDA, PUA, SNA and PNA, none of clause 6.2's codes RFC 6733 and the other IETF documents the corpus holds do not number too (4100, 4101, 5100 to 5108) |
 | `default` | 1: Pre-paging-Supported |
 | `bits` | 1: `only` (UDR-Flags) |
 | `members` | 1: `at-least-one` (User-Identity) |
@@ -691,8 +701,11 @@ Wildcarded-Public-Identity's "only contains a Wildcarded PSI", which a
 Wildcarded IMPU's text does not differ from. User-Identity's "either ... or"
 is read as at least one of its three members: that no two are present has no
 `members` form. Clause 6.2's "Result-Code AVP shall be absent" is read of
-each answer as a path into its Experimental-Result, the codes the clause
-lists, those it takes from TS 29.229 among them. Left unread:
+each answer as a path into its Experimental-Result, under the 3GPP
+Vendor-Id, the codes the clause lists, those it takes from TS 29.229 among
+them; and as no Result-Code holding one of them, but 5002, 5008 and 5011,
+numbers RFC 6733 gives codes of its own (DIAMETER_UNKNOWN_SESSION_ID,
+DIAMETER_AVP_NOT_ALLOWED, DIAMETER_UNSUPPORTED_VERSION). Left unread:
 Data-Reference's value 20, which the clause marks reserved without saying it
 is not sent; and Server-Name's "SIP-URL", for which no codec exists.
 
@@ -731,9 +744,10 @@ since reading it would refuse the first exchange's answer.
 | `encoding`, a codec | 5: `mac-address` 2 (HESSID, TWAG-UP-Address), `labels`, `ip-address`, `plmn-domain` |
 | `encoding element` | 6, naming 6 entries of the registry; 4 rules checked, 2 not ([above](#elements)) |
 | `length` | 3, in octets |
-| `range` | 13: Auth-Session-State NO_STATE_MAINTAINED in SWx's 8 commands, Feature-List-ID 1 in each of the 4 applications, AN-Trusted TRUSTED in STa's answer |
+| `range` | 9: Auth-Session-State NO_STATE_MAINTAINED in SWx's 8 commands, AN-Trusted TRUSTED in STa's answer |
 | `exclude` | 1: Subscription-Id-Type, MSISDN and External Identifier only |
 | `requires`, `present-if`, `absent-if` | 35, 30, 7 |
+| `values` | 4: Feature-List-ID 1 within a 3GPP Supported-Features, in each of the 4 applications' messages |
 | `absent` | 51: Auth-Session-State in every STa, SWm and S6b command but the ASR, whose Auth-Session-State a 3GPP AAA Proxy may set (clauses 5.1.2.2.3, 7.1.2.4.3, 9.1.2.4.4), Authorization-Lifetime and Session-Timeout in SWx's 8 commands |
 | reading the request | 7: SAA's Non-3GPP-User-Data as the SAR's Server-Assignment-Type asks, S6b answers' QoS-Resources only after a QoS-Capability, MIP-Session-Key after an MIP-MN-HA-SPI and no APN-Configuration for an emergency, STa's AA-Answer's MIP6-Feature-Vector only after the request's |
 | `default` | 1: Access-Authorization-Flags in TWAN-Access-Info |
@@ -920,13 +934,13 @@ or a modifying request must carry is `text-only`.
 | `encoding element` | 5, naming 5 entries of the registry, 4 checked ([above](#elements)) |
 | `length` | 3, in octets: Framed-IPv6-Prefix 18, ToS-Traffic-Class 2, GLI-Identifier at most 200 |
 | `range` | 9: Auth-Application-Id 16777236, the 8 extended bandwidth AVPs at least 4294968 |
-| `requires`, `present-if`, `absent-if` | 6, 20, 3 |
+| `requires`, `present-if`, `absent-if` | 4, 20, 3 |
 | reading the request | 2: the restoration AAA's Auth-Session-State, the initial AAA's Supported-Features beside the AAR's |
 | `default` | 8 |
 | `values` | 3: Auth-Session-State NO_STATE_MAINTAINED in the restoration AAR and AAA, Media-Component-Number 0 for AF signalling |
 | `bits` | 3: `at-most-one` (Pre-emption-Control-Info), `set` and `clear`, ToS-Traffic-Class's mask 11111100 |
 | `members` | 4: `only` 3 (Acceptable-Service-Info's Media-Component-Description, Sponsored-Connectivity-Data's Granted- and Used-Service-Unit), `at-least-one` (Wireline-User-Location-Info) |
-| `text-only` | 38 |
+| `text-only` | 40, 2 of them the Supported-Features Vendor-Id |
 
 Most checked rules are clause 5.3.13's: a value a RAR reports, of any of its
 Specific-Action AVPs, with the AVP its description says it carries (the
@@ -1003,13 +1017,13 @@ shows. Rf's commands print once under 3 and Ro's once under 4.
 | `length` | 1: SM-Status, 1 octet |
 | `range` | 3: Acct-Application-Id 3, Auth-Application-Id 4, Vendor-Specific-Application-Id's Vendor-Id 10415 |
 | `exclude` | 1: a Multiple-Services-Credit-Control's Reporting-Reason, none of the values one quota type's Used-Service-Unit carries |
-| `requires`, `present-if`, `absent-if`, `excludes` | 5, 5, 2, 3 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 4, 5, 2, 3 |
 | `absent` | 6: Reporting-Reason at the level of each command |
 | `values` | 11: an ACA's Accounting-Record-Type and a CCA's CC-Request-Type the request's, in clauses 6.1.1, 6.1.2 and 6.3.3 to 6.3.5's flows |
 | reading the request | 13: the 11 `values` rules, and the initial ACA's and CCA's Supported-Features with DIAMETER_ERROR_FEATURE_UNSUPPORTED |
 | `default` | 14 |
 | `members` | 4: `at-least-one` 3 (Address-Domain, Basic-Service-Code, Offline-Charging's Multiple-Services-Credit-Control's Rating-Group), `only` (that Multiple-Services-Credit-Control's members) |
-| `text-only` | 38 |
+| `text-only` | 39, one of them the Supported-Features Vendor-Id |
 
 Most checked rules are defaults ("If this AVP is not present, this means
 ...") and clause 7.2.175's Reporting-Reason: never at command level, sent
@@ -1111,43 +1125,53 @@ S6c's application (clause 6.3.2.2), so the tables of clauses 5.2.2.1 and
 | `encoding`, a codec | 4: `e164-tbcd` (SC-Address, SMS-GMSC-Address, SMSF-3GPP-Number, SMSF-Non-3GPP-Number) |
 | `encoding element` | 9, naming 4 entries of the registry; 8 rules checked, 1 not ([above](#elements)) |
 | `length` | 1: SM-RP-UI, at most 200 octets |
-| `range` | 12: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands, Feature-List-ID 1 for S6c and SGd |
-| `requires`, `present-if`, `absent-if`, `excludes` | 38, 7, 9, 7 |
+| `range` | 10: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands |
+| `exclude` | 5: Result-Code in each answer, none of 5550 to 5558 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 28, 7, 9, 7 |
+| `values` | 2: Feature-List-ID 1 within a 3GPP Supported-Features, in S6c's messages and in SGd's |
 | `absent` | 20: Authorization-Lifetime and Session-Timeout in each of the 10 commands |
 | reading the request | 3: the SRA's Serving-Node in a success's answer to a request without SM-Delivery-Not-Intended and holding the IP-SM-GW number for one with an SMSMI-Correlation-ID, the TFA's Requested-Retransmission-Time only after a Maximum-Retransmission-Time |
 | `bits` | 6, each `only`: a flags AVP's NOTE that undefined bits are cleared, MWD-Status's once per release |
 | `members` | 2: `at-least-one`, Serving-Node's and Additional-Serving-Node's numbers |
-| `text-only` | 44, 10 of them Vendor-Specific-Application-Id's in each command |
+| `text-only` | 54, 10 of them Vendor-Specific-Application-Id's in each command and 10 the Supported-Features Vendor-Id |
 
 Clause 4.5's "shall include ... the Auth-Session-State AVP set to the value
 NO_STATE_MAINTAINED (1)" and "Neither the Authorization-Lifetime AVP nor the
-Session-Timeout AVP shall be present" are read in each of the ten commands,
-the two AVPs RFC 6733 defines admitted through each body's `* [ AVP ]`.
-Clauses 5.3.2.2's and 6.3.2.2's "The Vendor-Specific-Application-Id AVP shall
-not be included in any command sent by Diameter nodes supporting
-applications defined in this specification" is `text-only` in each: it
-binds the sending node, the next sentence has the receiver ignore the AVP,
-and the NOTE has every command format print it for intermediate agents not
-complying with RFC 6733, so a message captured past such an agent may hold
-it rightly.
-Serving-Node's and Additional-Serving-Node's "The following combinations are
-allowed" (clauses 5.3.3.6 and 5.3.3.7) are read member by member: one of the
-numbers present, and each member only beside the others of its
-combination; combination b's condition is the HSS's, so its members are
-allowed whatever it. Each answer's Result row holds the Experimental-Result
-to the 3GPP vendor, and clause 7.3.1's "the Result-Code AVP shall be absent"
-beside one of its ten codes is read in each answer as TS 29.329's clause 6.2
-is. An SRR's or ALR's or RDR's SMSMI-Correlation-ID holds the destination's
-SIP-URI and neither the originating one nor the HSS-ID, an OFR's all three
-and a TFR's the two SIP-URIs, read through paths from the command, whose
+Session-Timeout AVP shall be present" are read in each of the ten commands, the
+two AVPs RFC 6733 defines admitted through each body's `* [ AVP ]`. Clauses
+5.3.2.2's and 6.3.2.2's "The Vendor-Specific-Application-Id AVP shall not be
+included in any command sent by Diameter nodes supporting applications defined
+in this specification" is `text-only` in each: it binds the sending node, the
+next sentence has the receiver ignore the AVP, and the NOTE has every command
+format print it for intermediate agents not complying with RFC 6733, so a
+message captured past such an agent may hold it rightly. Clause 4.9's "for
+features defined in this document, the Vendor-Id AVP shall contain the vendor ID
+of 3GPP (10415)" is `text-only` in each command carrying Supported-Features: TS
+29.229 clause 6.3.29 has a vendor's own features carry its own Vendor-Id, and
+only the Vendor-Id and Feature-List-ID tell which list an AVP carries, so
+whether it is the document's the message does not say. Clauses 5.3.3.12's and
+6.3.3.8's Feature-List-ID 1 is the 3GPP list's, the one whose Vendor-Id is
+10415, read within Supported-Features in S6c's messages and in SGd's
+(`; Application-ID:`), as TS 29.273's four applications' are. Serving-Node's and
+Additional-Serving-Node's "The following combinations are allowed" (clauses
+5.3.3.6 and 5.3.3.7) are read member by member: one of the numbers present, and
+each member only beside the others of its combination; combination b's condition
+is the HSS's, so its members are allowed whatever it. Each answer's Result row
+holds the Experimental-Result to the 3GPP vendor, and clause 7.3.1's "the
+Result-Code AVP shall be absent" beside one of its ten codes is read in each
+answer as TS 29.329's clause 6.2 is: an Experimental-Result under the 3GPP
+Vendor-Id, and no Result-Code holding one of the codes, 5550 to 5558, but
+DIAMETER_ERROR_USER_UNKNOWN, whose 5001 is RFC 6733's DIAMETER_AVP_UNSUPPORTED
+too. An SRR's or ALR's or RDR's SMSMI-Correlation-ID holds the destination's
+SIP-URI and neither the originating one nor the HSS-ID, an OFR's all three and a
+TFR's the two SIP-URIs, read through paths from the command, whose
 SMSMI-Correlation-ID other commands fill otherwise; a TFA's
 Requested-Retransmission-Time "may only be present if" the answer reports
 DIAMETER_ERROR_ABSENT_USER and the request held a Maximum-Retransmission-Time.
 The SM-Delivery-Failure-Cause an OFA or TFA carries with
 DIAMETER_ERROR_SM_DELIVERY_FAILURE holds one of the causes its table names,
-clause 6.3.3.6's values; the TFA's "UE error" is EQUIPMENT_PROTOCOL_ERROR,
-MAP's equipmentProtocolError, which clause 6.3.3.6's NOTE says the values
-follow.
+clause 6.3.3.6's values; the TFA's "UE error" is EQUIPMENT_PROTOCOL_ERROR, MAP's
+equipmentProtocolError, which clause 6.3.3.6's NOTE says the values follow.
 
 The text-only rules are mostly conditions on the node, a feature, the
 subscription, what the HSS stores or an earlier message ("shall be present
@@ -1221,13 +1245,13 @@ holds of both, as an establishment's AVPs, which the SCEF never requests.
 | `encoding`, a codec | 1: `labels` (Service-Selection) |
 | `encoding element` | 10, naming 10 entries of the registry; 5 rules checked, 5 not ([above](#elements)) |
 | `range` | 10: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands |
-| `exclude` | 2: Uplink-Rate-Limit and Downlink-Rate-Limit 1 to 9 |
-| `requires`, `present-if`, `absent-if` | 22, 8, 5 |
+| `exclude` | 7: Uplink-Rate-Limit and Downlink-Rate-Limit 1 to 9, each answer's Result-Code none of the codes clause 6.3.3 lists but 5001 |
+| `requires`, `present-if`, `absent-if` | 12, 8, 5 |
 | `absent` | 20: Authorization-Lifetime and Session-Timeout in each of the 10 commands |
 | reading the request | 1: the CMA's PDN-Connection-Charging-ID answering an establishment with DIAMETER_SUCCESS |
 | `values` | 1: a reachability report's Reachability-Information REACHABLE_FOR_DATA |
 | `bits` | 2, each `only`: CMR-Flags, TDA-Flags |
-| `text-only` | 25, 10 of them Vendor-Specific-Application-Id's in each command |
+| `text-only` | 35, 10 of them Vendor-Specific-Application-Id's in each command and 10 the Supported-Features Vendor-Id |
 
 Clause 6.1.4's session handling and clause 6.2.2's Vendor-Specific-
 Application-Id are read in each of the ten commands as TS 29.338's clauses
@@ -1314,8 +1338,8 @@ UE's identity.
 |---|---|
 | `encoding`, a codec | 4: `e164-tbcd` 2 (the SIR's SCS-Identity, IP-SM-GW-Number), `labels` (Service-Selection), `ip-address` (PDN-Connectivity-Status-Report's Served-Party-IP-Address) |
 | `range` | 9: Auth-Session-State NO_STATE_MAINTAINED in each of the 8 commands, PDN-Connectivity-Status-Report's Non-IP-PDN-Type-Indicator TRUE |
-| `exclude` | 1: PDN-Connectivity-Status-Report's PDN-Type IPv4_OR_IPv6 |
-| `requires`, `present-if`, `absent-if`, `excludes` | 41, 12, 13, 13 |
+| `exclude` | 5: PDN-Connectivity-Status-Report's PDN-Type IPv4_OR_IPv6, each answer's Result-Code none of the codes clauses 6.3.3 and 8.3.3 list but 5001 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 33, 12, 13, 13 |
 | `absent` | 16: Authorization-Lifetime and Session-Timeout in each of the 8 commands |
 | `equals` | 1: the CIR's Origin-Host, the SCEF-ID of its Monitoring-Event-Configuration |
 | reading the request | 10: the SIA's Service-Data after the SIR's Service-ID and its User-Identifier answering S6n, the CIA's User-Identifier, Number-Of-UEs and IMSI-Group-Id as the CIR's group or flags ask, its Monitoring-Event-Config-Status after a Monitoring-Event-Configuration and its Enhanced-Coverage-Restriction-Data after the query, the NIA's NIDD-Authorization-Response answering the HSS's update and holding the IMSI for an MSISDN, its Group-User-Identifier for a group |
@@ -1323,7 +1347,7 @@ UE's identity.
 | `values` | 1: Maximum-Number-of-Reports at most one for an SMS reachability or a last known location (clause 8.4.8) |
 | `bits` | 16: `only` 12, a flags AVP's NOTE that undefined bits are cleared, Supported-Monitoring-Events' in Release 19 alone; `at-most-one` 4 (Reachability-Type, IMEI-Change, Battery-Indicator's bit 0 against bits 1 and 2) |
 | `members` | 12, each `at-least-one`: User-Identifier not empty, Serving-Node's and Additional-Serving-Node's numbers, the reference IDs of Monitoring-Event-Configuration, AESE-Communication-Pattern and Updated-Network-Configuration, the SCEF's NIDD-Authorization-Request's APN, each Group-User-Identifier's IMSI and MSISDN or External-Identifier, AdditionalIdentifiers, Exclude-Identifiers, Include-Identifiers |
-| `text-only` | 41, 8 of them Vendor-Specific-Application-Id's in each command |
+| `text-only` | 49, 8 of them Vendor-Specific-Application-Id's in each command and 8 the Supported-Features Vendor-Id |
 
 Clauses 6.1.4 and 8.1.4's session handling and clauses 6.2.2 and 8.2.2's
 Vendor-Specific-Application-Id are read in each of the eight commands as TS
@@ -1439,12 +1463,12 @@ print's application.
 | `encoding element` | 6, naming 6 entries of the registry; 3 rules checked, 3 not ([above](#elements)) |
 | `length` | 35: 6 in digits, the six codecs' (IMSI at most 15, MCC and MNC 5 or 6, IMEI(SV) 14 to 16), 29 in octets, 16 of the sub-attributes' values (an address 4 or 16, 3GPP-Charging-Id 4, 3GPP-MS-TimeZone 2) and 13 of Gmb's and SGmb's AVPs (MBMS-Session-Duration 3, RAI 11 or 12, MBMS-Service-Area 3 to 513, MBMS-Cell-List 9 to 28674) |
 | `range` | 8: Auth-Application-Id 16777223 in Gmb's 5 commands printing it and 16777292 in SGmb's 3 (clauses 17, 20.1) |
-| `requires`, `present-if`, `absent-if`, `excludes` | 3, 13, 3, 1 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 1, 13, 3, 1 |
 | reading the request | 6: the AAA's Gmb specific AVPs after the AAR's Additional-MBMS-Trace-Info, but its 3GPP-IMSI, SGmb's heartbeat RAA's MBMS-StartStop-Indication and Restart-Counter |
 | `default` | 1: MBMS-User-Data-Mode-Indication Unicast |
 | `values` | 1: the heartbeat RAA's MBMS-StartStop-Indication HEARTBEAT |
 | `bits` | 2, each `only`: MBMS-Flags, Diagnostic-Info |
-| `text-only` | 17 |
+| `text-only` | 19, 2 of them SGmb's Supported-Features Vendor-Id |
 
 The sub-attributes' blocks have no scope, and hold wherever a document
 reads the AVP, TS 29.212's, 29.214's and 32.299's among them, but where a
@@ -1547,11 +1571,11 @@ Unsigned32 clause 5.3.4 names the values of, says, 0 or 1.
 |---|---|
 | `encoding element` | 1: Network-Area-Info-List, TS 29.274's Presence Reporting Area Action from octet 9, as TS 29.212's Presence-Reporting-Area-Elements-List ([above](#elements)) |
 | `range` | 7: Auth-Session-State NO_STATE_MAINTAINED in each of the 6 commands, Event-Configuration's Monitoring-Type LOCATION_REPORTING |
-| `requires`, `present-if` | 6, 10 |
+| `requires`, `present-if` | 2, 10 |
 | reading the request | 2: the BTA's Transfer-Policy and Reference-Id answering a transfer policy request |
 | `members` | 4, each `at-least-one`: a Transfer-Policy's Time-Window and Rating-Group, Event-Configuration's Location-Information-Configuration and its MONTE-Location-Type |
 | `unique` | 1: Transfer-Policy-Id within Transfer-Policy |
-| `text-only` | 15, 4 of them Vendor-Specific-Application-Id's in each of Nta's commands |
+| `text-only` | 19, 4 of them Vendor-Specific-Application-Id's in each of Nta's commands and 4 the Supported-Features Vendor-Id |
 
 A transfer policy request's BTR carries the ASP's identity, a volume, the
 number of UEs and the time window, the volume the downlink's, the uplink's
@@ -1619,7 +1643,9 @@ no print but this one's holds an LCS-Capabilities-Sets.
 |---|---|
 | `encoding`, a codec | 3: `e164-tbcd` (MSC-Number), `ip-address` 2 (GMLC-Address, PPR-Address) |
 | `encoding element` | 1: LMSI, TS 23.003's ([above](#elements)) |
-| `range` | 3: Auth-Session-State NO_STATE_MAINTAINED in both commands, Feature-List-ID 1 |
+| `range` | 2: Auth-Session-State NO_STATE_MAINTAINED in both commands |
+| `exclude` | 1: the RIA's Result-Code, not 5490 |
+| `values` | 1: Feature-List-ID 1 within a 3GPP Supported-Features |
 | `requires`, `present-if`, `absent-if` | 1, 5, 7 |
 | `absent` | 4: Authorization-Lifetime and Session-Timeout in both commands |
 | `bits` | 1, `only`: RIA-Flags |

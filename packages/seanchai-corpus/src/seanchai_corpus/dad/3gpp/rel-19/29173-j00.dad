@@ -377,8 +377,9 @@ DIAMETER_ERROR_ABSENT_USER                     = 4201 ; 6.3.4.1
 ; Page: 16
 ; Versions: 18.0.0..19.0.0
 "When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
-    absent-if Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
         DIAMETER_ERROR_UNAUTHORIZED_REQUESTING_NETWORK
+    exclude 5490
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#lmsi-element)
@@ -453,11 +454,12 @@ Additional-Serving-Node ::= < AVP header: 2406 10415 >
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.173.dadx#feature-list-id)
 ; AVP: Feature-List-ID
+; Within: Supported-Features
 ; Section: 6.4.10
 ; Page: 19
 ; Versions: 18.0.0..19.0.0
 "For this release, the Feature-List-ID AVP value shall be set to 1."
-    range 1
+    values 1 if Vendor-Id = 10415
 
 
 ; Type: Value Table

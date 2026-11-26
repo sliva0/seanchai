@@ -159,7 +159,17 @@ def _body(
         )
     if block.within is not None:
         grouped = _grouped(_documents(spec, block.within, cited), block.within)
-        return (None if grouped is None else grouped.avps), None
+        body = None if grouped is None else grouped.avps
+        if block.application_id is not None and not any(
+            isinstance(section, ast.Message)
+            and _application_id(spec, section) == block.application_id
+            for section in spec.sections
+        ):
+            return body, (
+                f"names application {block.application_id}, under which the file"
+                " prints no command"
+            )
+        return body, None
     return None, None
 
 
@@ -509,7 +519,19 @@ def _constraints(
                 and any(rule.name == "AVP" for rule in body)
                 and (cited is None or _based(spec, name, cited))
             )
-            if name not in held and not admitted:
+            # A sibling within a grouped AVP is a member of its body, as the
+            # document defining it prints it: RFC 6733's Vendor-Id within TS
+            # 29.229's Supported-Features, which TS 29.273 re-uses.
+            member = (
+                block.within is not None
+                and name != block.avp
+                and (
+                    any(rule.name == name for rule in body)
+                    if body is not None
+                    else cited is None and block.within in _reused(spec)
+                )
+            )
+            if name not in held and not admitted and not member:
                 found("constraint-avp-unknown", block, f"the file holds no AVP {name}")
         if unknown is not None:
             found("constraint-command-unknown", block, unknown)
@@ -729,7 +751,7 @@ def _constraints(
             ),
             [],
         ).append(block)
-    for (avp, command, _, _, within), here in places.items():
+    for (avp, command, application, _, within), here in places.items():
         rules = [
             rule
             for block in here
@@ -740,6 +762,14 @@ def _constraints(
             rules += [
                 rule
                 for block in places.get((avp, None, None, None, None), ())
+                for rule in block.body
+                if not isinstance(rule, ast.Quote)
+            ]
+        if within is not None and application is not None:
+            # Those holding in every application's commands hold in this one's.
+            rules += [
+                rule
+                for block in places.get((avp, None, None, None, within), ())
                 for rule in block.body
                 if not isinstance(rule, ast.Quote)
             ]

@@ -290,7 +290,9 @@ conflicts[]        vendor_id, code, defining, fields, obsolete,
   reading; a backend following the current documents skips them.
 - `constraints[]` holds the interpreted constraints on the AVPs the output
   reaches, wherever the reading document reads them (`within` null) or as
-  members of a grouped AVP (`within` its name), each naming the readings
+  members of a grouped AVP (`within` its name, and `application_id` the
+  application whose messages it holds in, where it holds in one only, which
+  a dictionary of other applications leaves out), each naming the readings
   carrying it in `avp_ids`: the AVP's own, or the grouped AVP's. A command's
   `constraints` are its members', `avp_ids` the members of that name.
   `interpreted` is always true: a person read them in the clause's prose
@@ -1130,7 +1132,8 @@ for message in s6a.messages:
   members, each member it reads as it says and the others as the origin
   does, `Message.constraints` of the command's.
 - A `model.Constraint` has the `avp`, its scope (`command`,
-  `application_id` and `command_section`, or `within`), `request_section`,
+  `application_id` and `command_section`, or `within` and the
+  `application_id` whose messages it holds in), `request_section`,
   the clause of the request an answer's rules read, `reference`, `version`,
   `section`, `table` and `page`, `versions`, the range of versions the
   quotes were checked against (None for an RFC, which has one edition and

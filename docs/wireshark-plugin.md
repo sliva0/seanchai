@@ -96,7 +96,10 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   bits, the members a grouped AVP holds (`constraint-length`, `-range`,
   `-exclude`, `-encoding`, `-element`, `-bits`, `-members`), for the AVP
   wherever its reading's document reads it and as
-  a member of the command or grouped AVP holding it; the predicates tying a
+  a member of the command or grouped AVP holding it, a grouped AVP's rules
+  read for one application (`; Application-ID:`) only in a message whose
+  header, or a relayed message's application-id AVPs, name that
+  application; the predicates tying a
   member's presence to its siblings, or with no scope an AVP's to its own
   members (`constraint-present-if`, `-absent-if`, `-requires`, `-excludes`),
   a value a sibling's condition restricts
