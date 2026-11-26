@@ -21,8 +21,8 @@ from __future__ import annotations
 import dataclasses
 import ipaddress
 import re
-from collections.abc import Mapping, Sequence
-from typing import NamedTuple
+from collections.abc import Iterable, Mapping, Sequence
+from typing import NamedTuple, Protocol
 
 from . import elements
 from .dad import ast, formatter
@@ -40,6 +40,8 @@ __all__ = [
     "digit_count",
     "element_of",
     "element_problem",
+    "feature_bits",
+    "feature_list_id",
     "holds",
     "integer_bounds",
     "integer_value",
@@ -446,6 +448,65 @@ def _reached(
             found = [member for avp in found for member in avp.members]
         found = [avp for avp in found if avp.name == name]
     return found
+
+
+class _Tested(Protocol):
+    """A condition as the AST or the dictionary writes it."""
+
+    @property
+    def root(self) -> object: ...
+    @property
+    def path(self) -> tuple[str, ...]: ...
+    @property
+    def value(self) -> object: ...
+    @property
+    def negated(self) -> bool: ...
+
+
+_FEATURE_LIST_ID = "Feature-List-ID"
+
+
+def feature_list_id(conjunction: Iterable[_Tested], condition: _Tested) -> int | None:
+    """The Feature-List-ID `conjunction` holds `condition`'s AVP beside: a
+    condition of it, not negated, testing the Feature-List-ID of the same
+    grouped AVP for a number (`Feature-List-ID = 1 and Feature-List bit
+    "Update-Eff"`), which names the feature list a feature bit's name is
+    read in; None where none does."""
+    sibling = (*condition.path[:-1], _FEATURE_LIST_ID)
+    for each in conjunction:
+        if (
+            each.root == condition.root
+            and each.path == sibling
+            and not each.negated
+            and isinstance(each.value, int)
+        ):
+            return each.value
+    return None
+
+
+def feature_bits(
+    name: str,
+    lists: Iterable[tuple[int | None, Mapping[str, int]]],
+    feature_list_id: int | None = None,
+) -> tuple[int, ...]:
+    """The bits `name` stands for among feature lists, each its
+    Feature-List-ID and its features' names and bits (TS 29.229 clause
+    6.3.29: a list is its application's, Vendor-Id's and Feature-List-ID's),
+    in order: one where the name is the bit's of one feature list, or of
+    several that agree, none where no list names it, and more where the
+    lists disagree, a name no condition can read without saying which list
+    it means. `feature_list_id`, where given, keeps the lists of that id,
+    as `feature_list_id` reads it from the condition's conjunction."""
+    return tuple(
+        sorted(
+            {
+                features[name]
+                for identifier, features in lists
+                if name in features
+                and (feature_list_id is None or identifier in (None, feature_list_id))
+            }
+        )
+    )
 
 
 def _number(value: int | str, names: Mapping[str, int]) -> int | None:

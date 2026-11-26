@@ -1152,6 +1152,16 @@ for message in s6a.messages:
   `BitsRule`, `MembersRule`, `UniqueRule`, `ValuesRule`, `EqualsRule`,
   `AbsentRule`, `TextOnly`). A condition is an `ast.Condition`, an
   `ast.Reference` (`root`, `path`) with a test. `interpreted` is always True.
+  A condition's bit named as a feature (`Feature-List bit Update-Eff`) is the
+  bit the reading document's features tables give it, of the feature lists
+  of the constraint's application and of the Feature-List-ID its `and`
+  holds beside it (`constraints.feature_list_id`):
+  `constraints.feature_bits(name, lists, feature_list_id)` gives the bits a
+  name stands for among lists, one where it is read, and
+  `dictionary.feature_bit(dictionary, constraint, conjunction, condition)`
+  the one bit a dictionary's condition stands for, None where it stands
+  for none or several. A caller of `holds` gives a Feature-List's
+  `constraints.Avp` its list's features as `bits`.
 - `seanchai.constraints.check(rule, payload, data_type, codec, request)`
   tells whether a value rule holds of a payload, and `holds(rule, avp,
   scope, request)` whether a predicate, `values` or `equals` rule holds of

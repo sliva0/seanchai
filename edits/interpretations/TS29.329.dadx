@@ -229,8 +229,8 @@
 
 
 ;; Clause 7.1's features of feature list 1, in Sh's messages: a list
-;; naming Update-Eff-Enhance (bit 2) names Update-Eff (bit 1) too: the
-;; table numbers the bits, which a condition names by number.
+;; naming Update-Eff-Enhance names Update-Eff too, each by its name in
+;; table 7.1.1, Sh's feature list 1.
 ; Type: Interpreted Constraints
 ; Id: update-eff-enhance-requires-update-eff
 ; AVP: Feature-List
@@ -240,4 +240,4 @@
 ; Table: 7.1.1
 ; Versions: 18.0.0..19.1.0
 "This feature is an enhancement of the Update-Eff feature and requires Update-Eff is supported."
-    excludes Vendor-Id = 10415 and Feature-List-ID = 1 and Feature-List bit 2 and not Feature-List bit 1
+    excludes Vendor-Id = 10415 and Feature-List-ID = 1 and Feature-List bit Update-Eff-Enhance and not Feature-List bit Update-Eff

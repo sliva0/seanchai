@@ -1044,3 +1044,27 @@ def test_the_base_protocols_rules_on_every_answer_hold_in_each(built):
     assert any(
         v.id.endswith("/constraint-absent/Destination-Host/6.5") for v in base.vectors
     )
+
+
+def test_a_feature_named_in_a_condition_is_its_lists_bit(built):
+    """TS 29.329 clause 7.1: a Sh feature list 1 naming Update-Eff-Enhance
+    names Update-Eff, each by its name in table 7.1.1. The negative sets
+    bit 2 and leaves bit 1 clear, the two conditions on one Feature-List
+    each kept."""
+    (vector,) = [
+        vector
+        for vector in _vectors(built, 16777217).vectors
+        if vector.id == "16777217/UDR/negative/constraint-excludes/Feature-List/7.1"
+    ]
+    lists = [
+        {child.name: child.data or "" for child in node.children}
+        for node in vector.tree
+        if node.name == "Supported-Features"
+    ]
+    broken = [
+        fields
+        for fields in lists
+        if int(fields["Feature-List"], 16) & 0b110 == 0b100
+        and fields["Feature-List-ID"] == f"{1:08x}"
+    ]
+    assert len(broken) == 1

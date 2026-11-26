@@ -840,7 +840,10 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   values, numbers, names or ranges of numbers (`Result-Code in
   DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS, 5000..5999`), which holds as
   the `=` of each joined by `or` would, a range's each number among them,
-  or a bit, by number or by its bit table's name. The list runs to the
+  or a bit, by number or by its bit table's name, a Feature-List's by
+  its features table's name (`Feature-List-ID = 1 and Feature-List bit
+  Update-Eff`), read in the feature lists of the block's application and
+  of the Feature-List-ID beside it. The list runs to the
   next ` and `, ` or ` or the line's end, a value listed once and none
   inside a listed range; `not` before such a condition says it holds of
   none. A rule the formatter finds past 80 columns is wrapped after a comma

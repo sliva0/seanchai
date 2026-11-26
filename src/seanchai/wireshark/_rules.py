@@ -477,6 +477,7 @@ class _Names:
     give a name or a reading."""
 
     def __init__(self, built: dictionary.Dictionary) -> None:
+        self.built = built
         self.avps = {avp.id: avp for avp in built.avps}
         # The element registry's entries the rules name, numbered as met.
         self.elements: dict[elements.Element, int] = {}
@@ -677,7 +678,16 @@ def _constraint(
                 conditions = []
                 for conjunction in rule.conditions:
                     terms = [
-                        _condition(each, siblings, request, needed, names)
+                        _condition(
+                            each,
+                            siblings,
+                            request,
+                            needed,
+                            names,
+                            dictionary.feature_bit(
+                                names.built, constraint, conjunction, each
+                            ),
+                        )
                         for each in conjunction
                     ]
                     if None in terms:
@@ -802,12 +812,15 @@ def _condition(
     request: dict[str, str] | None,
     needed: set[str] | None,
     names: _Names,
+    feature: int | None = None,
 ) -> str | None:
     """A condition as `{avp=, t=, v=}` (a value), `{avp=, t=, vs={...}}` and
     `rs={{low,high},...}` (one of several values), `{avp=, t=, b=}` (a bit),
     `{avp=, t=, r={...}}` (the value of another AVP) or `{avp=, t=}`
     (present), with `q=true` for the request's and `n=true` for one negated;
-    None where its names or its value do not resolve."""
+    None where its names or its value do not resolve. `feature` is the bit
+    a feature's name stands for in the constraint's feature list
+    (`dictionary.feature_bit`), where the bit is one."""
     term = _term(condition, siblings, request, needed, names)
     if term is None:
         return None
@@ -840,6 +853,8 @@ def _condition(
         test = None if number is None else f"v={number}"
     elif condition.bit is not None:
         number = names.bit(reading, condition.bit)
+        if number is None:
+            number = feature
         test = None if number is None else f"b={number}"
     else:
         test = ""

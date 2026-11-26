@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal, cast
 import pydantic
 from pydantic.json_schema import models_json_schema
 
-from . import __version__, _json, model
+from . import __version__, _json, constraints, model
 from ._json import CrossRelease, FlagRules, UndefinedBlock
 from .dad import ast
 
@@ -67,6 +67,7 @@ __all__ = [
     "avp_id",
     "build",
     "dumps",
+    "feature_bit",
     "json_schema",
     "listing",
     "lookup",
@@ -1577,6 +1578,43 @@ def listing(
             for application in applications
         ),
     )
+
+
+def feature_bit(
+    built: Dictionary,
+    constraint: Constraint,
+    conjunction: Sequence[Condition],
+    condition: Condition,
+) -> int | None:
+    """The bit `condition`'s bit name stands for where it is a feature's
+    (`Feature-List bit "Update-Eff"`): the bit the features tables of the
+    constraint's document name it, of the feature lists of the constraint's
+    application where it has one (`application_id`), and of the
+    Feature-List-ID `conjunction` holds beside it
+    (`constraints.feature_list_id`); None where the name is a number, or
+    no such table names it, or the tables name it for more than one bit, a
+    name the linter refuses (`constraint-value-unknown`)."""
+    if not isinstance(condition.bit, str):
+        return None
+    owners = {each.id: each.application_id for each in built.applications}
+    lists = [
+        (table.feature_list_id, {row.name: row.value for row in table.rows})
+        for table in built.value_tables
+        if table.kind is ast.ValueKind.FEATURES
+        and table.avp == condition.avp
+        and table.reference == constraint.reference
+        and table.version == constraint.version
+        and (
+            constraint.application_id is None
+            or not table.applications
+            or constraint.application_id
+            in {owners.get(each) for each in table.applications}
+        )
+    ]
+    numbers = constraints.feature_bits(
+        condition.bit, lists, constraints.feature_list_id(conjunction, condition)
+    )
+    return numbers[0] if len(numbers) == 1 else None
 
 
 def dumps(dictionary: Dictionary | Lookup | Listing) -> str:

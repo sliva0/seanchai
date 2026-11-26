@@ -2991,7 +2991,15 @@ class _Negatives:
             number = self.builder.values.number(node.avp, condition.value)
         else:
             bit = self.builder.values.bit(node.avp, condition.bit)
-            number = None if bit is None else 1 << bit
+            # The bit set beside those another condition of the conjunction
+            # set or cleared (TS 29.329's Update-Eff-Enhance without
+            # Update-Eff, bit 2 set and bit 1 clear).
+            held = (
+                constraints.integer_value(node.avp.data_type, node.payload or b"")
+                if node.avp.data_type in _FIXED
+                else None
+            )
+            number = None if bit is None else (held or 0) | 1 << bit
         if number is None or node.avp.data_type not in _FIXED:
             return False
         if (
@@ -3072,7 +3080,13 @@ class _Negatives:
                 return False
             node.payload = _integer(node.avp.data_type, others[0])
             return True
-        node.payload = _integer(node.avp.data_type, 0)
+        bit = self.builder.values.bit(node.avp, condition.bit)
+        held = constraints.integer_value(node.avp.data_type, node.payload or b"")
+        # The bit cleared, those another condition set kept.
+        node.payload = _integer(
+            node.avp.data_type,
+            0 if bit is None or held is None else held & ~(1 << bit),
+        )
         return True
 
 
@@ -3184,7 +3198,66 @@ def build(
 ) -> Vectors:
     """The vectors of every command `built` holds. `pages` gives each clause's
     page, by document, version and clause (`pages_of`), for `Breaks.page`."""
-    return _Generator(built, pages or {}).run()
+    return _Generator(_feature_bits(built), pages or {}).run()
+
+
+def _feature_bits(built: dictionary.Dictionary) -> dictionary.Dictionary:
+    """`built` with each condition's feature name (`Feature-List bit
+    "Update-Eff"`) the bit it stands for in its constraint's feature list
+    (`dictionary.feature_bit`), so that a condition reads it as a bit
+    table's; a name standing for no one bit stays, and does not resolve."""
+
+    def constraint(each: dictionary.Constraint) -> dictionary.Constraint:
+        readings = []
+        for reading in each.readings:
+            rules = []
+            for rule in reading.rules:
+                conditions = tuple(
+                    tuple(
+                        c
+                        if (bit := dictionary.feature_bit(built, each, conjunction, c))
+                        is None
+                        else c.model_copy(update={"bit": bit})
+                        for c in conjunction
+                    )
+                    for conjunction in rule.conditions
+                )
+                rules.append(
+                    rule
+                    if conditions == rule.conditions
+                    else rule.model_copy(update={"conditions": conditions})
+                )
+            readings.append(reading.model_copy(update={"rules": tuple(rules)}))
+        return each.model_copy(update={"readings": tuple(readings)})
+
+    return built.model_copy(
+        update={
+            "constraints": tuple(map(constraint, built.constraints)),
+            "applications": tuple(
+                application.model_copy(
+                    update={
+                        "commands": tuple(
+                            command.model_copy(
+                                update={
+                                    "constraints": tuple(
+                                        map(constraint, command.constraints)
+                                    )
+                                }
+                            )
+                            for command in application.commands
+                        )
+                    }
+                )
+                for application in built.applications
+            ),
+            "answer_messages": tuple(
+                answer.model_copy(
+                    update={"constraints": tuple(map(constraint, answer.constraints))}
+                )
+                for answer in built.answer_messages
+            ),
+        }
+    )
 
 
 def pages_of(books: Any) -> dict[tuple[str, str | None, str], int]:

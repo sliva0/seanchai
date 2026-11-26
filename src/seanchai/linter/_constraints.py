@@ -124,6 +124,49 @@ def _facts(spec: ast.Specification, name: str, cited: _Cited | None) -> _Facts:
     return facts
 
 
+def _feature_lists(
+    spec: ast.Specification, block: ast.InterpretedConstraints, name: str
+) -> list[tuple[int | None, dict[str, int]]]:
+    """The feature lists `spec` numbers `name`'s bits in, each its
+    Feature-List-ID and its features, of the block's application where it
+    has one: a table in the interface clause of a command of that
+    application, failing which every table, as the model reads a table
+    whose caption names no application it knows."""
+    tables = [
+        section
+        for section in spec.sections
+        if isinstance(section, ast.ValueTable)
+        and section.kind is ast.ValueKind.FEATURES
+        and section.avp == name
+    ]
+    application = block.application_id
+    if application is None and block.command is not None:
+        application = next(
+            (
+                ast.application_id_of(spec.sections, section)
+                for section in spec.sections
+                if isinstance(section, ast.Message) and section.name == block.command
+            ),
+            None,
+        )
+    if application is not None:
+        clauses = {
+            ast.interface_clause(section.source.section)
+            for section in spec.sections
+            if isinstance(section, ast.Message)
+            and ast.application_id_of(spec.sections, section) == application
+        }
+        tables = [
+            table
+            for table in tables
+            if ast.interface_clause(table.source.section) in clauses
+        ] or tables
+    return [
+        (table.feature_list_id, {row.name: row.value for row in table.rows})
+        for table in tables
+    ]
+
+
 def _body(
     spec: ast.Specification, block: ast.InterpretedConstraints, cited: _Cited | None
 ) -> tuple[tuple[ast.AvpRule, ...] | None, str | None]:
@@ -698,12 +741,58 @@ def _constraints(
                             block,
                             f"{condition.avp} has no bit {condition.bit}",
                         )
-                elif known.bits is not None and condition.bit not in known.bits:
+                elif (
+                    known.bits is not None
+                    and condition.bit not in known.bits
+                    and not _feature_lists(spec, block, condition.avp)
+                ):
                     found(
                         "constraint-value-unknown",
                         block,
                         f"{condition.avp} names no bit {condition.bit!r}",
                     )
+        # A feature's name, read in the feature lists of the block's
+        # application and the Feature-List-ID beside it.
+        for rule in rules:
+            if not isinstance(rule, ast.PredicateRule | ast.ValuesRule):
+                continue
+            for conjunction in rule.conditions:
+                for condition in conjunction:
+                    if not isinstance(condition.bit, str) or condition.avp not in held:
+                        continue
+                    known = fact(condition.avp)
+                    if known.bits is not None and condition.bit in known.bits:
+                        continue
+                    lists = _feature_lists(spec, block, condition.avp)
+                    if not lists:
+                        continue
+                    where = (
+                        "the feature lists of the block's application"
+                        if block.application_id is not None or block.command
+                        else "the document's feature lists"
+                    )
+                    numbers = checks.feature_bits(
+                        condition.bit,
+                        lists,
+                        checks.feature_list_id(conjunction, condition),
+                    )
+                    if not numbers:
+                        found(
+                            "constraint-value-unknown",
+                            block,
+                            f"{condition.avp} names no feature {condition.bit!r}"
+                            f" in {where}",
+                        )
+                    elif len(numbers) > 1:
+                        found(
+                            "constraint-value-unknown",
+                            block,
+                            f"{condition.avp}'s feature {condition.bit!r} is bit"
+                            f" {' or '.join(map(str, numbers))} in {where}:"
+                            " say which list"
+                            " with `; Application-ID:` or a Feature-List-ID"
+                            " condition beside it, or name the bit by number",
+                        )
         if body is not None and any(isinstance(rule, ast.AbsentRule) for rule in rules):
             required = [
                 rule

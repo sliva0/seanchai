@@ -104,7 +104,10 @@ grouped AVP: present, holding a value (a number, or a name its values or result
 codes give it), holding one of several
 (`Result-Code in DIAMETER_SUCCESS, DIAMETER_MULTI_ROUND_AUTH`, names, numbers
 and ranges such as `5000..5999`, which holds as the `or` of each value's `=`
-would), or with a bit set (a number, or its bit table's name), or with `not`
+would), or with a bit set (a number, or its bit table's name: a
+Feature-List's, a feature's name in its features table, of the feature lists
+of the block's application and of the Feature-List-ID the same `and` holds
+beside it, a name standing for two bits there refused), or with `not`
 none of these
 (`present-if MIP6-Agent-Info and not MIP6-Agent-Info/MIP-Home-Agent-Host`,
 `absent-if not Result-Code in DIAMETER_SUCCESS, DIAMETER_LIMITED_SUCCESS`). A
@@ -781,8 +784,9 @@ Wildcarded IMPU's text does not differ from. User-Identity's "either ... or"
 is read as one of its three members: at least one, and no Public-Identity or
 MSISDN beside another. Update-Eff-Enhance "requires Update-Eff is
 supported" is read within Supported-Features in Sh's messages (`;
-Application-ID: 16777217`), its Vendor-Id 10415 and Feature-List-ID 1, by
-bit number: a list naming bit 2 names bit 1. Clause 6.2's "Result-Code AVP
+Application-ID: 16777217`), its Vendor-Id 10415 and Feature-List-ID 1, each
+feature by its name in table 7.1.1: a list naming Update-Eff-Enhance names
+Update-Eff. Clause 6.2's "Result-Code AVP
 shall be absent" is read of each answer as a path into its
 Experimental-Result, under the 3GPP
 Vendor-Id, the codes the clause lists, those it takes from TS 29.229 among

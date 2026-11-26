@@ -489,3 +489,40 @@ def test_wireshark_names_come_with_a_wireshark_dictionary(tmp_path):
     by_id = {avp["id"]: avp["wireshark_name"] for avp in named["avps"]}
     assert by_id["10415:606"] == "Cx-User-Data"
     assert not {avp["wireshark_name"] for avp in plain["avps"]} - {None}
+
+
+def test_a_features_name_stands_for_its_bit_in_the_constraints_application(built):
+    """TS 29.273 names "P-CSCF Restoration for WLAN" bit 3 of SWx's feature
+    list 1 and bit 0 of S6b's: a condition naming it reads the list of its
+    constraint's application, and with none it stands for no one bit."""
+    whole = build(built, documents=("TS29.273",))
+    (template,) = [
+        each
+        for each in whole.constraints
+        if each.reference == "TS29.273" and each.avp == "Feature-List-ID"
+    ][:1]
+    name = "P-CSCF Restoration for WLAN"
+    condition = dictionary.Condition(
+        root=None,
+        path=("Feature-List",),
+        value=None,
+        bit=name,
+        values=(),
+        negated=False,
+    )
+    listed = dictionary.Condition(
+        root=None,
+        path=("Feature-List-ID",),
+        value=1,
+        bit=None,
+        values=(),
+        negated=False,
+    )
+
+    def bit(application_id: int | None) -> int | None:
+        constraint = template.model_copy(
+            update={"application_id": application_id, "avp": "Feature-List"}
+        )
+        return dictionary.feature_bit(whole, constraint, (listed, condition), condition)
+
+    assert (bit(16777265), bit(16777272), bit(None)) == (3, 0, None)

@@ -1805,3 +1805,125 @@ def test_the_linter_follows_a_path_through_the_grouped_avps_it_names():
         "Example-Group: a rule reads Example-Number/Example-Flags: with no"
         " scope, a path starts at Example-Group"
     ]
+
+
+def _features(*blocks: str) -> str:
+    """Two applications, each a feature list 1 naming "Shared" a bit of its
+    own, the second's clause also numbering a list 2."""
+    return _dad(
+        "; Type: Message",
+        "; Name: Alpha-Request, AAR",
+        "; Section: 6.1.1",
+        "<Alpha-Request> ::= < Diameter Header: 9, REQ, 98 >",
+        "        < Session-Id >",
+        "        [ Supported-Features ]",
+        "",
+        "",
+        "; Type: Message",
+        "; Name: Beta-Request, BBR",
+        "; Section: 7.1.1",
+        "<Beta-Request> ::= < Diameter Header: 9, REQ, 99 >",
+        "        < Session-Id >",
+        "        [ Supported-Features ]",
+        "",
+        "",
+        "; Type: AVP Table",
+        "; Section: 6.3.1",
+        "; Columns: Name Code Section Type Must",
+        "Supported-Features 628 6.3.2 Grouped V",
+        "Feature-List-ID 629 6.3.3 Unsigned32 V",
+        "Feature-List 630 6.3.4 Unsigned32 V",
+        "",
+        "",
+        "; Type: Grouped AVP",
+        "; Name: Supported-Features",
+        "; Section: 6.3.2",
+        "Supported-Features ::= < AVP header: 628 10415 >",
+        "        { Vendor-Id }",
+        "        { Feature-List-ID }",
+        "        { Feature-List }",
+        "",
+        "",
+        "; Type: Value Table",
+        "; AVP: Feature-List",
+        "; Kind: features",
+        "; Feature-List-ID: 1",
+        "; Application: Alpha",
+        "; Section: 6.4",
+        "Shared = 0 ; O",
+        "",
+        "",
+        "; Type: Value Table",
+        "; AVP: Feature-List",
+        "; Kind: features",
+        "; Feature-List-ID: 1",
+        "; Application: Beta",
+        "; Section: 7.4",
+        "Shared = 3 ; O",
+        "",
+        "",
+        "; Type: Value Table",
+        "; AVP: Feature-List",
+        "; Kind: features",
+        "; Feature-List-ID: 2",
+        "; Application: Beta",
+        "; Section: 7.4",
+        "Shared = 5 ; O",
+        *blocks,
+    )
+
+
+def _feature_block(*lines: str) -> tuple[str, ...]:
+    return (
+        "",
+        "",
+        "; Type: Interpreted Constraints",
+        "; AVP: Feature-List",
+        "; Within: Supported-Features",
+        *lines[:-1],
+        "; Section: 7.4",
+        "; Versions: 19.0.0",
+        '"Q."',
+        f"    {lines[-1]}",
+    )
+
+
+def test_a_features_name_is_read_in_the_feature_list_of_its_application():
+    """A feature's name stands for its bit in the feature lists of the
+    block's application, and of the Feature-List-ID beside it; one the lists
+    name for several bits, or none, is refused (TS 29.273 names "P-CSCF
+    Restoration for WLAN" bit 3 for SWx and bit 0 for S6b)."""
+    from seanchai import linter
+
+    spec = parser.parse(
+        _features(
+            *_feature_block("; Application-ID: 98", "excludes Feature-List bit Shared"),
+            *_feature_block(
+                "; Application-ID: 99",
+                "excludes Feature-List-ID = 1 and Feature-List bit Shared",
+            ),
+            *_feature_block("; Application-ID: 99", "excludes Feature-List bit Shared"),
+            *_feature_block("excludes Feature-List-ID = 2 and Feature-List bit Shared"),
+            *_feature_block("excludes Feature-List bit Shared"),
+            *_feature_block("; Application-ID: 98", "excludes Feature-List bit Other"),
+        )
+    )
+
+    found = [
+        finding.message
+        for finding in linter.lint(spec)
+        if finding.rule == "constraint-value-unknown"
+    ]
+
+    assert found == [
+        "Feature-List in Supported-Features: Feature-List's feature 'Shared' is"
+        " bit 3 or 5 in the feature lists of the block's application: say which"
+        " list with `; Application-ID:` or a Feature-List-ID condition beside"
+        " it, or name the bit by number",
+        "Feature-List in Supported-Features: Feature-List's feature 'Shared' is"
+        " bit 0 or 3 or 5 in the document's feature lists: say which list with"
+        " `; Application-ID:` or a Feature-List-ID condition beside it, or name"
+        " the bit by number",
+        "Feature-List in Supported-Features: Feature-List names no feature"
+        " 'Other' in the feature lists of the block's application",
+    ]
