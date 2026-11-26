@@ -433,6 +433,26 @@ User-Identity ::= < AVP header: 700 10415 >
     members at-least-one Public-Identity MSISDN External-Identifier
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#user-identity-public-identity-alone)
+; AVP: Public-Identity
+; Within: User-Identity
+; Section: 6.3.1
+; Page: 18
+; Versions: 18.0.0..19.1.0
+"This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
+    excludes MSISDN or External-Identifier
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#user-identity-msisdn-alone)
+; AVP: MSISDN
+; Within: User-Identity
+; Section: 6.3.1
+; Page: 18
+; Versions: 18.0.0..19.1.0
+"This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
+    excludes External-Identifier
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#msisdn-e164)
 ; AVP: MSISDN
 ; Section: 6.3.2
@@ -739,3 +759,15 @@ Notif-Eff          = 0 ; M
 Update-Eff         = 1 ; O
 Update-Eff-Enhance = 2 ; O
 Additional-MSISDN  = 3 ; O
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.329.dadx#update-eff-enhance-requires-update-eff)
+; AVP: Feature-List
+; Within: Supported-Features
+; Application-ID: 16777217
+; Section: 7.1
+; Table: 7.1.1
+; Page: 25
+; Versions: 18.0.0..19.1.0
+"This feature is an enhancement of the Update-Eff feature and requires Update-Eff is supported."
+    excludes Vendor-Id = 10415 and Feature-List-ID = 1 and Feature-List bit 2 and not Feature-List bit 1

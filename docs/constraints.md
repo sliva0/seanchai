@@ -738,26 +738,35 @@ bandwidths alone.
 ## TS 29.329
 
 TS 29.329 V19.1.0 is read completely: every AVP clause of clause 6.3, the
-notes under the commands of clause 6.1 and clause 6.2's sentence on its
-result codes. Its commands' information-element tables and its procedures
-are TS 29.328's, whose clauses are not read here. Release 18's copy,
-V18.0.0, prints every sentence read and holds all 15 blocks.
+notes under the commands of clause 6.1, clause 6.2's sentence on its
+result codes and clause 7.1's features. Its commands' information-element
+tables and its procedures are TS 29.328's, whose clauses are not read here.
+Clause 8, the Sh-ee application Release 19 adds, is left out of the
+extraction as unfinished (`edits/sources/TS29.329.toml`: its application id
+"xx1" under an Editor's Note, command codes TS 29.230 table 5.1/1 gives
+other commands, 5004 listed as its own experimental code), so neither its
+commands nor its AVPs are in the corpus, and no reading of its clauses
+(Report-Period "shall be present if reportMode is \"PERIODIC\"", clause
+8.3.9) can be held to a message. Release 18's copy, V18.0.0, prints every
+sentence read and holds all 18 blocks.
 
 | | |
 |---|---|
 | AVP clauses (clause 6.3, not its overview) | 36 |
-| with something to declare | 9, in 9 blocks |
+| with something to declare | 9, in 11 blocks |
 | with nothing to declare | 27 |
 | notes under the commands | 2, both on a feature |
 | the result codes' clause, 6.2 | 1 sentence, a block per answer |
-| blocks | 15: 8 on an AVP wherever read, 7 within a command |
-| readings | 15 |
+| the features' clause, 7.1 | 1 sentence, Update-Eff-Enhance's |
+| blocks | 18: 8 on an AVP wherever read, 3 within a grouped AVP, 7 within a command |
+| readings | 18 |
 
 | Rules | |
 |---|---|
 | `encoding`, a codec | 1: `e164-tbcd` (MSISDN) |
 | `encoding element` | 3, naming 3 entries of the registry; 2 rules checked, 1 not ([above](#elements)) |
 | `requires` | 1: One-Time-Notification in SNR, on Data-Reference |
+| `excludes` | 3: User-Identity's Public-Identity and MSISDN beside another identity, Feature-List's Update-Eff-Enhance without Update-Eff in Sh's feature list 1 |
 | `absent-if` | 4: Result-Code in UDA, PUA, SNA and PNA, beside one of clause 6.2's codes in Experimental-Result's Experimental-Result-Code under the 3GPP Vendor-Id |
 | `exclude` | 4: Result-Code in UDA, PUA, SNA and PNA, none of clause 6.2's codes RFC 6733 and the other IETF documents the corpus holds do not number too (4100, 4101, 5100 to 5108) |
 | `default` | 1: Pre-paging-Supported |
@@ -769,15 +778,22 @@ The text-only rules are the two notes making a second Data-Reference in PUR,
 and any in PUA, depend on both nodes supporting Update-Eff-Enhance, and
 Wildcarded-Public-Identity's "only contains a Wildcarded PSI", which a
 Wildcarded IMPU's text does not differ from. User-Identity's "either ... or"
-is read as at least one of its three members: that no two are present has no
-`members` form. Clause 6.2's "Result-Code AVP shall be absent" is read of
-each answer as a path into its Experimental-Result, under the 3GPP
+is read as one of its three members: at least one, and no Public-Identity or
+MSISDN beside another. Update-Eff-Enhance "requires Update-Eff is
+supported" is read within Supported-Features in Sh's messages (`;
+Application-ID: 16777217`), its Vendor-Id 10415 and Feature-List-ID 1, by
+bit number: a list naming bit 2 names bit 1. Clause 6.2's "Result-Code AVP
+shall be absent" is read of each answer as a path into its
+Experimental-Result, under the 3GPP
 Vendor-Id, the codes the clause lists, those it takes from TS 29.229 among
 them; and as no Result-Code holding one of them, but 5002, 5008 and 5011,
 numbers RFC 6733 gives codes of its own (DIAMETER_UNKNOWN_SESSION_ID,
 DIAMETER_AVP_NOT_ALLOWED, DIAMETER_UNSUPPORTED_VERSION). Left unread:
 Data-Reference's value 20, which the clause marks reserved without saying it
-is not sent; and Server-Name's "SIP-URL", for which no codec exists.
+is not sent; Server-Name's "SIP-URL", for which no codec exists; User-Data's
+Sh-Data XML, which the element registry names and checks nothing of, no
+shape reading an XML schema; and table 6.3/2's note on a receiver not
+understanding an AVP with the M bit, which is the base protocol's.
 
 ## TS 29.273
 

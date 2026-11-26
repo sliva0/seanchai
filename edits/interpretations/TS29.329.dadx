@@ -1,9 +1,11 @@
 ; Interprets: 3GPP TS 29.329
 ;; What TS 29.329's clauses state in prose about an AVP's value or presence,
 ;; read by hand and pinned to the sentences read (docs/constraints.md), in
-;; clause order: the notes under the commands of clause 6.1, then the AVP
-;; clauses of 6.3. The information-element tables of the commands, and the
-;; procedures, are TS 29.328's. A clause pointing at another document for a
+;; clause order: the notes under the commands of clause 6.1, the AVP
+;; clauses of 6.3, then clause 7.1's features. The information-element
+;; tables of the commands, and the procedures, are TS 29.328's. Clause 8,
+;; Sh-ee, is excluded from the extraction (edits/sources/TS29.329.toml) and
+;; read here not at all. A clause pointing at another document for a
 ;; layout is an `element`; a rule depending on a feature is `text-only`.
 
 
@@ -117,8 +119,7 @@
 
 
 ;; The AVP clauses of 6.3.
-;; "Either ... or" is one of the three: that no two are present has no
-;; members form.
+;; "Either ... or" is one of the three: at least one, and below, no two.
 ; Type: Interpreted Constraints
 ; Id: user-identity-one-identity
 ; AVP: User-Identity
@@ -126,6 +127,26 @@
 ; Versions: 18.0.0..19.1.0
 "This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
     members at-least-one Public-Identity MSISDN External-Identifier
+
+
+; Type: Interpreted Constraints
+; Id: user-identity-public-identity-alone
+; AVP: Public-Identity
+; Within: User-Identity
+; Section: 6.3.1
+; Versions: 18.0.0..19.1.0
+"This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
+    excludes MSISDN or External-Identifier
+
+
+; Type: Interpreted Constraints
+; Id: user-identity-msisdn-alone
+; AVP: MSISDN
+; Within: User-Identity
+; Section: 6.3.1
+; Versions: 18.0.0..19.1.0
+"This AVP contains either a Public- Identity AVP or an MSISDN AVP or an External-Identifier AVP."
+    excludes External-Identifier
 
 
 ; Type: Interpreted Constraints
@@ -205,3 +226,18 @@
 ; Versions: 18.0.0..19.1.0
 "The exact content and format of this AVP corresponds to the gmsc-address parameter described in 3GPP TS 29.002 [11]."
     encoding element TS29.002 17.7.8 "ISDN-AddressString"
+
+
+;; Clause 7.1's features of feature list 1, in Sh's messages: a list
+;; naming Update-Eff-Enhance (bit 2) names Update-Eff (bit 1) too: the
+;; table numbers the bits, which a condition names by number.
+; Type: Interpreted Constraints
+; Id: update-eff-enhance-requires-update-eff
+; AVP: Feature-List
+; Within: Supported-Features
+; Application-ID: 16777217
+; Section: 7.1
+; Table: 7.1.1
+; Versions: 18.0.0..19.1.0
+"This feature is an enhancement of the Update-Eff feature and requires Update-Eff is supported."
+    excludes Vendor-Id = 10415 and Feature-List-ID = 1 and Feature-List bit 2 and not Feature-List bit 1
