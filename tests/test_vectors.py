@@ -996,3 +996,22 @@ def test_a_grouped_avps_rule_for_one_application_is_broken_there_alone(built):
                     fields = {child.name: child.data for child in node.children}
                     assert fields["Vendor-Id"] == f"{10415:08x}"
                     assert fields["Feature-List-ID"] == f"{1:08x}"
+
+
+def test_a_rule_on_each_instance_is_broken_beside_one_keeping_it(built):
+    """TS 29.128 clause 5.2.2.0: every Monitoring-Event-Report of an RIR holds
+    its SCEF-ID and Monitoring-Type, the rule's paths from the AVP reading
+    the one checked. Its negative holds one that does beside one that does
+    not, which a checker reading any one would pass."""
+    (vector,) = [
+        vector
+        for vector in _vectors(built, 16777346).vectors
+        if vector.id
+        == "16777346/RIR/negative/constraint-requires/Monitoring-Event-Report/5.2.2.0"
+    ]
+    held = [
+        {child.name for child in node.children}
+        for node in vector.tree
+        if node.name == "Monitoring-Event-Report"
+    ]
+    assert sorted("SCEF-ID" in each for each in held) == [False, True]

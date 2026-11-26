@@ -1366,9 +1366,8 @@
 
 
 ;; Read on the CIR's Origin-Host, which the SCEF-ID within the
-;; Monitoring-Event-Configuration cannot see from its own scope: of several
-;; Monitoring-Event-Configurations, any one holding the Origin-Host's value
-;; meets it.
+;; Monitoring-Event-Configuration cannot see from its own scope: equals holds
+;; it to every Monitoring-Event-Configuration's SCEF-ID.
 ; Type: Interpreted Constraints
 ; Id: cir-origin-host-scef-id
 ; AVP: Origin-Host
@@ -1746,9 +1745,9 @@
 
 ;; Clause 8.4.77 holds the RIR's reports, not the CIA's immediate ones,
 ;; whose absent PDN-Connectivity-Status-Report says no APN is active: read on
-;; the RIR through paths into its Monitoring-Event-Reports, any one of which
-;; meeting a condition does, so a report of the event without the AVP beside
-;; another holding one is not seen.
+;; the RIR on each Monitoring-Event-Report, its paths reading that report,
+;; so a report of the event without the AVP beside another holding one
+;; breaks it.
 ; Type: Interpreted Constraints
 ; Id: rir-pdn-connectivity-status-report
 ; AVP: Monitoring-Event-Report

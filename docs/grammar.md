@@ -798,7 +798,11 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   MIP-Home-Agent-Host of the block's command's MIP6-Agent-Info, as the
   document reading the grouped AVP prints its body. With no scope a path
   starts at the block's own AVP. Of the AVPs a path names, any one meeting
-  a condition does.
+  a condition does; a rule is checked on each instance of its AVP, and a
+  path starting at the block's own AVP reads that instance alone
+  (`absent-if CC-Request-Type = INITIAL_REQUEST and not
+  Multiple-Services-Credit-Control/Requested-Service-Unit` on each
+  Multiple-Services-Credit-Control).
 - In a block scoped to an answer, a name after `request/` is a member of
   the request the answer answers: the same command code with the R bit,
   under the same application, printed at `; Request-Section:` where the
@@ -852,7 +856,7 @@ them (TS 29.272 clauses 7.3.35 and 5.2.2.2.1):
   hold the AVP with the same value; it needs `; Within:`.
 - `values` restricts the AVP's integer value to those listed when one of
   the conditions holds, conditions as a predicate's.
-- `equals` says the AVP holds the value, octet for octet, of the one the
+- `equals` says the AVP holds the value, octet for octet, of each one the
   path names wherever both are present: `equals request/User-Name`, an
   answer echoing the request's.
 - `absent` says the AVP is never present in the scope: a member of the

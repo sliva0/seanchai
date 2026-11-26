@@ -34,9 +34,10 @@
     requires Experimental-Result/Vendor-Id = 10415
 
 
-;; Clause 5.2.2, the report's contents, read on the RIR through paths into
-;; its Monitoring-Event-Reports (the configuration answer's immediate report
-;; is clause 5.3.1's); the body requires SCEF-Reference-ID itself.
+;; Clause 5.2.2, the report's contents, read on the RIR on each
+;; Monitoring-Event-Report, its paths reading that report (the configuration
+;; answer's immediate report is clause 5.3.1's); the body requires
+;; SCEF-Reference-ID itself.
 ; Type: Interpreted Constraints
 ; Id: rir-monitoring-event-report-identities
 ; AVP: Monitoring-Event-Report

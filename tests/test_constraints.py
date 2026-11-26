@@ -646,6 +646,44 @@ def test_a_path_reads_the_members_of_the_grouped_avps_it_names():
     assert constraints.holds(rule, "Example", [empty, group], []).holds is False
 
 
+def test_a_rule_holds_of_each_instance_a_path_from_its_avp_reads():
+    """A rule is checked on each AVP of its name, a path starting at the name
+    reading that one: two Multiple-Services-Credit-Control of an initial
+    request, one without its Requested-Service-Unit, break RFC 4006 section
+    5.2's rule, which any one holding it would have met."""
+    rule = _answer_rule("absent-if Kind = 1 and not Example/User-Name")
+    kind = constraints.Avp("Kind", DataType.UNSIGNED32, struct.pack("!I", 1))
+    full = constraints.Avp("Example", DataType.GROUPED, members=(_NAME,))
+    empty = constraints.Avp("Example", DataType.GROUPED)
+    assert constraints.holds(rule, "Example", [kind, full, full]).holds is True
+    broken = constraints.holds(rule, "Example", [kind, full, empty])
+    assert broken.holds is False
+    assert constraints.holds(rule, "Example", [kind]).holds is True
+    # A path from a sibling still reads any one of its name.
+    sibling = _answer_rule("requires Other/User-Name")
+    other_full = constraints.Avp("Other", DataType.GROUPED, members=(_NAME,))
+    other_empty = constraints.Avp("Other", DataType.GROUPED)
+    example = constraints.Avp("Example", DataType.UNSIGNED32, struct.pack("!I", 1))
+    assert constraints.holds(
+        sibling, "Example", [example, other_empty, other_full]
+    ).holds
+
+
+def test_equals_holds_the_avp_to_every_one_its_path_names():
+    """TS 29.336 clause 8.4.5: each Monitoring-Event-Configuration's SCEF-ID
+    is the CIR's Origin-Host."""
+    rule = _answer_rule("equals Group/User-Name")
+    mine = constraints.Avp("Example", DataType.UTF8_STRING, b"alice")
+    same = constraints.Avp("Group", DataType.GROUPED, members=(_NAME,))
+    other = constraints.Avp(
+        "Group",
+        DataType.GROUPED,
+        members=(constraints.Avp("User-Name", DataType.UTF8_STRING, b"bob"),),
+    )
+    assert constraints.holds(rule, "Example", [mine, same, same]).holds is True
+    assert constraints.holds(rule, "Example", [mine, same, other]).holds is False
+
+
 def test_check_reads_a_rule_on_the_request_alone_against_the_request():
     assert constraints.check(_answer_rule("absent"), b"x", DataType.OCTET_STRING) == (
         constraints.Check(False, "not allowed")

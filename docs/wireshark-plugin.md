@@ -100,7 +100,8 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   read for one application (`; Application-ID:`) only in a message whose
   header, or a relayed message's application-id AVPs, name that
   application; the predicates tying a
-  member's presence to its siblings, or with no scope an AVP's to its own
+  member's presence to its siblings, on each instance of it, a path from it
+  reading that one, or with no scope an AVP's to its own
   members (`constraint-present-if`, `-absent-if`, `-requires`, `-excludes`),
   a value a sibling's condition restricts
   (`constraint-values`), an answer's AVP echoing the request's

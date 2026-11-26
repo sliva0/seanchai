@@ -1125,14 +1125,15 @@ end
 -- the run whose AVPs by identity are `held`: the problem's words, or nil.
 local function predicate_problem(ctx, rule, held, subject, name, identity)
   if rule.k == "equals" then
+    -- Every AVP the path names: each Monitoring-Event-Configuration's
+    -- SCEF-ID is the CIR's Origin-Host (TS 29.336 clause 8.4.5).
     local others = term_data(ctx, held, rule.r)
-    if subject and #others > 0 then
-      local mine, same = data_text(ctx.pdu, subject), false
+    if subject then
+      local mine = data_text(ctx.pdu, subject)
       for _, other in ipairs(others) do
-        same = same or other == mine
-      end
-      if not same then
-        return "not the value of " .. rule.t
+        if other ~= mine then
+          return "not the value of " .. rule.t
+        end
       end
     end
     return nil
@@ -1278,6 +1279,19 @@ end
 -- run of AVPs: `identities` gives each name's identity in the body. `path`
 -- names what holds the run, nil for the message, `here` names it either way,
 -- and `anchor` is its octets, for a member missing from it.
+-- Whether a rule's condition reads a member of the AVP of `identity` it is
+-- on, a path from it (`term.p`), and so reads the instance checked.
+local function binds(rule, identity)
+  for _, conjunction in ipairs(rule.c or {}) do
+    for _, term in ipairs(conjunction) do
+      if not term.q and term.avp == identity and term.p and #term.p > 0 then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 local function check_predicates(ctx, scoped, identities, avps, path, here, anchor)
   if not scoped then
     return
@@ -1292,29 +1306,52 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
     for _, cons in ipairs(list) do
       -- A member the body names, or one only its `* [ AVP ]` admits.
       local identity = identities[name] or cons.s
-      local subject = identity and held[identity] and held[identity][1]
+      local instances = identity and held[identity] or {}
       for _, rule in ipairs(cons.rules) do
-        local problem
         if rule.k == "absent" then
-          problem = subject and "not allowed"
+          if instances[1] then
+            interpreted(ctx, cons, rule.k, "not allowed", instances[1].offset,
+              instances[1].length, join(path, name), name)
+          end
         elseif rule.q and not ctx.request then
           -- Reads the request, which is not at hand: unchecked, said once
           -- for the answer (`result.request_unchecked`).
           ctx.request_unchecked = ctx.request_unchecked + 1
         else
-          problem = predicate_problem(ctx, rule, held, subject, name, identity)
-        end
-        local found
-        if problem and subject then
-          found = interpreted(ctx, cons, rule.k, problem, subject.offset,
-            subject.length, join(path, name), name)
-        elseif problem then
-          found = interpreted(ctx, cons, rule.k, problem, anchor[1], anchor[2], here,
-            name)
-        end
-        if found and rule.q then
-          -- Read against the request: the plugin links it.
-          found.request = true
+          -- Each instance in turn, a path starting at the AVP's name reading
+          -- that one alone (every Multiple-Services-Credit-Control of an
+          -- initial request holds a Requested-Service-Unit), or none. A
+          -- predicate no path of which starts there reads every instance
+          -- alike: the first stands for them, reported once.
+          local each = #instances > 0 and instances or { false }
+          if #each > 1 and rule.k ~= "values" and rule.k ~= "equals"
+            and not binds(rule, identity) then
+            each = { each[1] }
+          end
+          for _, subject in ipairs(each) do
+            local bound = held
+            if subject then
+              bound = {}
+              for key, avps_of in pairs(held) do
+                bound[key] = avps_of
+              end
+              bound[identity] = { subject }
+            end
+            local problem = predicate_problem(ctx, rule, bound, subject or nil,
+              name, identity)
+            local found
+            if problem and subject then
+              found = interpreted(ctx, cons, rule.k, problem, subject.offset,
+                subject.length, join(path, name), name)
+            elseif problem then
+              found = interpreted(ctx, cons, rule.k, problem, anchor[1], anchor[2],
+                here, name)
+            end
+            if found and rule.q then
+              -- Read against the request: the plugin links it.
+              found.request = true
+            end
+          end
         end
       end
     end

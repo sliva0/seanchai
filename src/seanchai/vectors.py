@@ -1034,31 +1034,51 @@ class _Builder:
         for name, each, rule in self.predicates(scope):
             if _reads_request(rule) and request is None:
                 continue
-            subject = any(n.avp.name == name for n in nodes)
+            instances = [n for n in nodes if n.avp.name == name]
             if rule.kind == "absent":
-                if subject:
+                if instances:
                     found.append((name, rule.kind, each))
                 continue
-            if rule.kind == "equals":
-                assert rule.reference is not None
-                if subject and not self.equal(nodes, name, rule.reference, request):
-                    found.append((name, rule.kind, each))
-                continue
-            holds = self.alternatives(nodes, rule.conditions, request)
-            if (
-                (rule.kind == "present-if" and holds and not subject)
-                or (rule.kind == "absent-if" and holds and subject)
-                or (rule.kind == "requires" and subject and not holds)
-                or (rule.kind == "excludes" and subject and holds)
-                or (
-                    rule.kind == "values"
-                    and subject
-                    and holds
-                    and not self.allowed(nodes, name, rule)
+            # Each instance in turn, a path starting at the AVP's name
+            # reading that one alone, as the plugin reads it.
+            if any(
+                self.breaks(
+                    [n for n in nodes if n.avp.name != name or n is instance],
+                    name,
+                    rule,
+                    request,
+                    instance is not None,
                 )
+                for instance in (instances or [None])
             ):
                 found.append((name, rule.kind, each))
         return found
+
+    def breaks(
+        self,
+        nodes: Sequence[_Avp],
+        name: str,
+        rule: dictionary.Rule,
+        request: Sequence[_Avp] | None,
+        subject: bool,
+    ) -> bool:
+        """Whether `nodes`, holding at most one AVP `name`, break `rule`."""
+        if rule.kind == "equals":
+            assert rule.reference is not None
+            return subject and not self.equal(nodes, name, rule.reference, request)
+        holds = self.alternatives(nodes, rule.conditions, request)
+        return (
+            (rule.kind == "present-if" and holds and not subject)
+            or (rule.kind == "absent-if" and holds and subject)
+            or (rule.kind == "requires" and subject and not holds)
+            or (rule.kind == "excludes" and subject and holds)
+            or (
+                rule.kind == "values"
+                and subject
+                and holds
+                and not self.allowed(nodes, name, rule)
+            )
+        )
 
     def equal(
         self,
@@ -1067,11 +1087,11 @@ class _Builder:
         reference: dictionary.Reference,
         request: Sequence[_Avp] | None,
     ) -> bool:
-        """Whether the AVP `name` of `nodes` holds the value of one the
+        """Whether the AVP `name` of `nodes` holds the value of every one the
         reference names, or none is there to compare."""
         held = next(n for n in nodes if n.avp.name == name)
         others = self.reached(nodes, reference, request)
-        return not others or any(n.payload == held.payload for n in others)
+        return all(n.payload == held.payload for n in others)
 
     def allowed(self, nodes: Sequence[_Avp], name: str, rule: dictionary.Rule) -> bool:
         """Whether the AVP `name` of `nodes` holds one of a values rule's
@@ -1107,16 +1127,20 @@ class _Builder:
                 )
                 if kind == "equals":
                     assert rule.reference is not None
-                    held = next(n for n in nodes if n.avp.name == name)
                     other = self.reached(nodes, rule.reference, request)
-                    if held.payload is None or other[0].payload is None:
-                        raise _Unbuildable(f"{name} cannot take the value it echoes")
-                    held.payload = other[0].payload
+                    if len({n.payload for n in other}) > 1:
+                        raise _Unbuildable(f"{name} cannot take every value it echoes")
+                    for held in [n for n in nodes if n.avp.name == name]:
+                        if held.payload is None or other[0].payload is None:
+                            raise _Unbuildable(
+                                f"{name} cannot take the value it echoes"
+                            )
+                        held.payload = other[0].payload
                 elif kind == "values":
-                    held = next(n for n in nodes if n.avp.name == name)
-                    if held.avp.data_type not in _FIXED:
-                        raise _Unbuildable(f"{name} holds no integer to set")
-                    held.payload = _integer(held.avp.data_type, rule.values[0])
+                    for held in [n for n in nodes if n.avp.name == name]:
+                        if held.avp.data_type not in _FIXED:
+                            raise _Unbuildable(f"{name} holds no integer to set")
+                        held.payload = _integer(held.avp.data_type, rule.values[0])
                 elif kind == "present-if":
                     if any(n.avp.name == name for n in nodes):
                         # Added for another block on it in this pass.
@@ -1174,8 +1198,26 @@ class _Builder:
         alternative of an `excludes` or `absent-if` hold (TS 29.336's SIR,
         its User-Identifier holding exactly one identifier). Whether it
         changed anything."""
-        held = next((n for n in nodes if n.avp.name == name), None)
-        if held is None or held.avp.kind != "grouped":
+        changed = False
+        for held in [n for n in nodes if n.avp.name == name]:
+            # Each instance as the rule reads it, a path from the AVP's name
+            # reading that one alone.
+            bound = [n for n in nodes if n.avp.name != name or n is held]
+            changed = self.mend_one(bound, held, name, kind, rule, request) or changed
+        return changed
+
+    def mend_one(
+        self,
+        nodes: list[_Avp],
+        held: _Avp,
+        name: str,
+        kind: str,
+        rule: dictionary.Rule,
+        request: Sequence[_Avp] | None,
+    ) -> bool:
+        """`mend_inside` of one instance, `held`, the only AVP `name` of
+        `nodes`."""
+        if held.avp.kind != "grouped":
             return False
         inner = self.scope_of(held.avp)
 
@@ -2467,6 +2509,13 @@ class _Negatives:
             if member is None:
                 return "the body admits the AVP only through * [ AVP ]"
             subject = [n for n in nodes if n.avp.name == name]
+            if len(subject) > 1 and member.min_occurs <= 1:
+                # One instance to break, so that the checker reports one.
+                nodes[:] = [n for n in nodes if n.avp.name != name or n is subject[0]]
+                subject = subject[:1]
+            # An instance of the valid message, to keep the rule beside the
+            # one made to break it.
+            good = subject[0].copy() if subject else None
             if rule.kind in ("absent-if", "excludes", "present-if"):
                 if not all(self.make_hold(nodes, c, scope) for c in rule.conditions[0]):
                     return "its conditions cannot be made to hold"
@@ -2517,6 +2566,13 @@ class _Negatives:
                 if node.children is not nodes
             ):
                 return "making its conditions hold breaks a grouped AVP's own rule"
+            if (
+                good is not None
+                and rule.kind != "present-if"
+                and _binds(rule, name)
+                and (member.max_occurs is None or member.max_occurs > 1)
+            ):
+                self.beside(message, nodes, scope, name, rule, good, top)
         if not self.all_members_hold(message):
             # Adding the subject broke a `members` rule on the grouped AVP
             # holding it: TS 32.299's Multiple-Services-Credit-Control within
@@ -2530,6 +2586,38 @@ class _Negatives:
             "note",
         )
         return None
+
+    def beside(
+        self,
+        message: _Message,
+        nodes: list[_Avp],
+        scope: _Scope,
+        name: str,
+        rule: dictionary.Rule,
+        good: _Avp,
+        top: bool,
+    ) -> None:
+        """Put `good`, an instance of the AVP `name` keeping `rule`, before
+        the one breaking it, where that breaks nothing else: a checker
+        reading any instance for a path from the AVP would miss the break
+        (RFC 4006 section 5.2, two Multiple-Services-Credit-Control of an
+        initial request, one without its Requested-Service-Unit)."""
+        request = message.asked if top else None
+        alone = [n for n in nodes if n.avp.name != name] + [good]
+        if self.builder.breaks(alone, name, rule, request, True):
+            return
+        index = next(i for i, n in enumerate(nodes) if n.avp.name == name)
+        nodes.insert(index, good)
+        broken = self.builder.broken(scope, nodes, request)
+        kept = [(n, k) for n, k, _ in broken] == [(name, rule.kind)] and (
+            self.counts_hold(nodes, scope)
+        )
+        if kept and not top:
+            kept = not self.builder.broken(
+                self.scope, message.nodes, message.asked
+            ) and self.counts_hold(message.nodes)
+        if not kept:
+            nodes.remove(good)
 
     def add_absent(
         self, message: _Message, name: str, each: dictionary.Constraint
@@ -2867,6 +2955,20 @@ def _address(payload: bytes) -> bool:
         return False
     family = int.from_bytes(payload[:2], "big")
     return {1: 4, 2: 16}.get(family, len(payload) - 2) == len(payload) - 2
+
+
+def _binds(rule: dictionary.Rule, name: str) -> bool:
+    """Whether a path of `rule` starts at the AVP `name` it is on, and so
+    reads the instance checked."""
+    references: list[dictionary.Reference] = [
+        c for conjunction in rule.conditions for c in conjunction
+    ]
+    if rule.reference is not None:
+        references.append(rule.reference)
+    return any(
+        each.root is None and len(each.path) > 1 and each.path[0] == name
+        for each in references
+    )
 
 
 def _rule_text(rule: dictionary.Rule) -> str:

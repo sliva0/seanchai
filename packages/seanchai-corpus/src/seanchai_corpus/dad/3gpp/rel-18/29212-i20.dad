@@ -1997,6 +1997,7 @@ Event-Trigger ::= < Enumerated AVP header: 1006 10415 >
 ; Versions: 18.2.0..19.1.0
 "When used in a CCR command, this value indicates whether the UE is within or outside the requested presence reporting area. Presence-Reporting-Area-Identifier AVP and Presence-Reporting-Area-Status AVP shall be provided in the same request included in Presence-Reporting-Area-Information AVP."
     present-if Event-Trigger = CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA_REPORT
+    requires Presence-Reporting-Area-Information/Presence-Reporting-Area-Identifier and Presence-Reporting-Area-Information/Presence-Reporting-Area-Status
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.212.dadx#ccr-ps-data-off-status)

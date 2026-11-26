@@ -93,7 +93,7 @@ TS 29.272's file prints it:
 | `members` | `members at-least-one SCEF-Reference-ID SCEF-Reference-ID-Ext`, `members only IMEI Software-Version` | of the grouped AVP's members, at least one of these is present (one name: it is), or none but these |
 | `unique` | `unique` | no two of the `; Within:` grouped AVPs beside each other hold the AVP with the same value |
 | `values` | `values 1 if Monitoring-Type = 1` | the integer value is one of these when a condition holds |
-| `equals` | `equals request/User-Name` | the AVP holds, octet for octet, the value of the one named, where both are present |
+| `equals` | `equals request/User-Name` | the AVP holds, octet for octet, the value of each one named, where both are present |
 | `absent` | `absent` | the AVP is not present in the block's scope |
 | `text-only` | `text-only` | (a reader decides) |
 
@@ -129,7 +129,17 @@ condition cannot, and reaches a member of a grouped AVP the document re-uses
 from another, as the defining document prints its body. With no scope a
 path starts at the block's AVP itself, present wherever the rule is checked,
 so the predicate is a grouped AVP's on its own members. Of the AVPs a path
-names, any one meeting the condition does. A `members` rule may name a
+names, any one meeting the condition does, but where the path starts at the
+block's own AVP: a rule is checked on each instance of its AVP, and such a
+path reads that instance alone. So `absent-if CC-Request-Type =
+INITIAL_REQUEST and not Multiple-Services-Credit-Control/Requested-Service-Unit`
+on Multiple-Services-Credit-Control holds every one of an initial request to
+carry a Requested-Service-Unit (RFC 4006 section 5.2), where a path from the
+command through another AVP of the name, or from a sibling, reads any one:
+a rule on each instance of a repeated grouped AVP is written on that AVP,
+or as a block within it. An `equals` rule holds its AVP to every AVP its
+path names: each Monitoring-Event-Configuration's SCEF-ID is the CIR's
+Origin-Host (TS 29.336 clause 8.4.5). A `members` rule may name a
 member of a grouped
 AVP another document defines (IMEI in TS 29.272's Terminal-Information, as
 TS 29.273 re-uses it).
@@ -199,7 +209,8 @@ a `values`, `members` or `unique` rule, an element the registry does not
 have or checks nothing of, a `default`, `text-only`). `holds(rule, avp,
 scope, request)` tells whether a predicate, a `values` or an `equals` rule
 holds of the AVP named `avp` in `scope`, its run of AVPs (`Avp`: a name, a
-type, a payload or members, and the numbers its names stand for). A rule
+type, a payload or members, and the numbers its names stand for), of each
+AVP of that name in turn, a path from the name reading that one. A rule
 reading the request with no request given is not evaluated: its `Check` is
 None with `needs_request`, neither a pass nor a breach. A `bits` rule holds
 of an unsigned integer's payload or an OctetString's (`bits_value`,
@@ -835,7 +846,7 @@ it omits (clause 5.3.4), and an ADC rule's ADC-Rule-Definition likewise
 | `length` | 1: ToS-Traffic-Class, 2 octets |
 | `range` | 2: Priority-Level 1 to 15, Routing-Filter's Flow-Direction BIDIRECTIONAL |
 | `exclude` | 1: Event-Trigger's obsolete values 8, 9, 10, 38 and 41 |
-| `requires`, `present-if`, `absent-if` | 6, 42, 4 |
+| `requires`, `present-if`, `absent-if` | 7, 42, 4 |
 | reading the request | 3: the initial CCA's Supported-Features beside the CCR's, Sd's and St's TSA's none without the TSR's |
 | `default` | 4: QoS-Negotiation, Pre-emption-Capability, Pre-emption-Vulnerability, Usage-Monitoring-Level |
 | `bits` | 2: `set` and `clear`, an ADC rule's ToS-Traffic-Class mask 11111100 |
@@ -1363,8 +1374,8 @@ Additional-Serving-Node's "The following combinations are allowed" (clauses
 naming the IP-SM-GW-Realm TS 29.338's leaves out. A CIR deleting all
 monitoring events carries no new one, a Monitoring-Event-Configuration with
 a reference ID (clause 7.2.1.2); an RIR's report of PDN_CONNECTIVITY_STATUS
-its PDN-Connectivity-Status-Report (clause 8.4.77), read through paths into
-the Monitoring-Event-Reports, any one meeting a condition; and the HSS's NIR
+its PDN-Connectivity-Status-Report (clause 8.4.77), read on each
+Monitoring-Event-Report, its paths reading that report; and the HSS's NIR
 its Destination-Host (clause 8.1.6). Maximum-Number-of-Reports' conditions
 hold of an absent Reachability-Type or MONTE-Location-Type too, whose
 defaults are the values the clause names (clauses 8.4.12, 8.4.16). The

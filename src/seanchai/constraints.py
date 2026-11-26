@@ -531,18 +531,46 @@ def holds(
     `avp` holds of `scope`, the run of AVPs holding it (its command's, or its
     grouped AVP's members) and, for a rule reading the request, of
     `request`, the request's AVPs. With no request, such a rule is not
-    evaluated (`needs_request`). Another kind is None: `check` reads it."""
+    evaluated (`needs_request`). Another kind is None: `check` reads it.
+    The rule holds of each AVP of the name, a path starting at the name
+    reading that one alone, and an `equals` rule holds it to every AVP its
+    path names."""
     if ast.reads_request(rule) and request is None:
         return _NEEDS_REQUEST
-    subject = next((each for each in scope if each.name == avp), None)
+    instances = [each for each in scope if each.name == avp]
+    if isinstance(rule, ast.AbsentRule):
+        return Check(True) if not instances else Check(False, "not allowed")
+    if not instances:
+        return _holds_of(rule, avp, scope, request, None)
+    # Each instance in turn, a path starting at the AVP's name reading that
+    # one alone: every Multiple-Services-Credit-Control of an initial
+    # request holds a Requested-Service-Unit (RFC 4006 section 5.2).
+    unknown = None
+    for instance in instances:
+        bound = [each for each in scope if each.name != avp or each is instance]
+        found = _holds_of(rule, avp, bound, request, instance)
+        if found.holds is False:
+            return found
+        if found.holds is None:
+            unknown = found
+    return unknown or Check(True)
+
+
+def _holds_of(
+    rule: ast.ConstraintRule,
+    avp: str,
+    scope: Sequence[Avp],
+    request: Sequence[Avp] | None,
+    subject: Avp | None,
+) -> Check:
+    """`holds` of one instance of the AVP, `subject`, the only one of its
+    name `scope` holds, or of none."""
     match rule:
-        case ast.AbsentRule():
-            return Check(True) if subject is None else Check(False, "not allowed")
         case ast.EqualsRule():
             others = _reached(rule.reference, scope, request)
             if subject is None or not others:
                 return Check(True)
-            if any(other.payload == subject.payload for other in others):
+            if all(other.payload == subject.payload for other in others):
                 return Check(True)
             text = formatter.reference(rule.reference)
             return Check(False, f"not the value of {text}")

@@ -92,8 +92,9 @@
 ;; The first interrogation is the CCR whose CC-Request-Type is
 ;; INITIAL_REQUEST; the Multiple-Services-Credit-Control's own scope does not
 ;; see it, so the rule is read on the CCR through a path into it, as section
-;; 8.16 reads it too. Of several Multiple-Services-Credit-Control AVPs, one
-;; holding a Requested-Service-Unit meets the path.
+;; 8.16 reads it too. The rule is checked on each
+;; Multiple-Services-Credit-Control, the path from it reading that one, so
+;; every one holds a Requested-Service-Unit.
 ; Type: Interpreted Constraints
 ; Id: ccr-initial-multiple-services-credit-control-requested-units
 ; AVP: Multiple-Services-Credit-Control
