@@ -14,6 +14,7 @@ import shutil
 import struct
 import subprocess
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 from click.testing import CliRunner
@@ -92,7 +93,8 @@ def good_uar() -> bytes:
 def bad_uar() -> bytes:
     # Session-Id second, no Public-Identity, Visited-Network-Identifier without
     # the M bit TS 29.229 table 6.3.0.1 puts in Must, a host name with a space,
-    # Auth-Session-State 7, which RFC 6733 section 8.11 does not define.
+    # a warning, Auth-Session-State 7, which RFC 6733 section 8.11 does not
+    # define.
     session, application, _, _, realm = _base()
     return message(
         300,
@@ -282,13 +284,8 @@ def test_the_core_judges_each_message_by_its_command_and_form(lua, rules, tmp_pa
     # With the E bit, the answer-message, not UAA's body.
     assert answer["form"] == "answer-message"
     assert _rules_of(answer, "warn") == _rules_of(held, "warn") == set()
-    assert _rules_of(bad) >= {
-        "avp-missing",
-        "avp-position",
-        "flag-must",
-        "diameter-identity",
-    }
-    assert "enum-value" in _rules_of(bad, "warn")
+    assert _rules_of(bad) >= {"avp-missing", "avp-position", "flag-must"}
+    assert {"enum-value", "diameter-identity"} <= _rules_of(bad, "warn")
     missing = [text for _, rule, text in bad["findings"] if rule == "avp-missing"]
     assert any("Public-Identity" in text for text in missing)
     # Malformed octets are reported, not raised.
@@ -374,7 +371,7 @@ def test_tshark_reports_through_the_plugin(plugin, capture):
     frames = _tshark(plugin, capture)
 
     assert frames[1]["seanchai.errors"] == ["0"]
-    assert int(frames[2]["seanchai.errors"][0]) >= 4
+    assert int(frames[2]["seanchai.errors"][0]) >= 3
     assert "avp-missing" in frames[2]["seanchai.rule"]
     assert frames[3]["seanchai.errors"] == ["0"]
     assert frames[4]["seanchai.document"] == ["RFC6733"]
@@ -1087,6 +1084,260 @@ def test_a_finding_line_names_its_place_shortened_and_its_source(lua, s6a_rules)
     ]
 
 
+_PLACES = """
+local core = dofile(arg[1])
+local rules = dofile(arg[2])
+local function unhex(text)
+  return (text:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end))
+end
+for index = 3, #arg do
+  local result = core.validate(rules, unhex(arg[index]), {})
+  for _, each in ipairs(result.findings) do
+    print(table.concat({ each.severity, each.rule, each.offset, each.length,
+      each.path, each.line }, "\\t"))
+  end
+end
+"""
+
+
+def _places(lua: str, rules: Path, tmp_path: Path, pdu: bytes) -> list[tuple]:
+    """Each finding of `pdu` as (severity, rule, offset, length, path, line)."""
+    runner = tmp_path / "places.lua"
+    runner.write_text(_PLACES, "utf-8")
+    done = subprocess.run(
+        [lua, str(runner), str(CORE), str(rules), pdu.hex()],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return [
+        (severity, rule, int(offset), int(length), path, line)
+        for severity, rule, offset, length, path, line in (
+            each.split("\t") for each in done.stdout.splitlines()
+        )
+    ]
+
+
+def _spans(pdu: bytes, first: int = 20, last: int | None = None) -> list[tuple]:
+    """The AVPs of a run of `pdu`, each (code, offset, span), its span the
+    AVP with its padding, as Wireshark's Diameter tree spans it."""
+    last = len(pdu) if last is None else last
+    found = []
+    while first < last:
+        code = int.from_bytes(pdu[first : first + 4])
+        length = int.from_bytes(pdu[first + 5 : first + 8])
+        span = min(length + -length % 4, last - first)
+        found.append((code, first, span))
+        first += span
+    return found
+
+
+def _inside(pdu: bytes, span: tuple) -> list[tuple]:
+    """The members of the vendor-specific grouped AVP at `span`."""
+    _, offset, octets = span
+    return _spans(pdu, offset + 12, offset + octets)
+
+
+def _features(*, vendor_flags: int = M, listed: bool = True, flags: int = 0) -> bytes:
+    inner = avp(266, u32(TGPP), flags=vendor_flags) + avp(629, u32(1), vendor=TGPP)
+    if listed:
+        inner += avp(630, u32(1), vendor=TGPP)
+    return avp(628, inner, vendor=TGPP, flags=flags)
+
+
+def several_uar(origin: bytes = b"icscf.example.com") -> bytes:
+    """A UAR with three Supported-Features, the first with a reserved flag,
+    the second without its Feature-List, the third's Vendor-Id without the M
+    bit; two Public-Identity, one allowed; no User-Name; and the one
+    Visited-Network-Identifier without the M bit."""
+    session, application, auth, _, realm = _base()
+    return message(
+        300,
+        R | P,
+        CX,
+        session,
+        application,
+        auth,
+        avp(264, origin),
+        realm,
+        avp(283, b"example.com"),
+        _features(flags=0x01),
+        _features(listed=False),
+        _features(vendor_flags=0),
+        avp(601, b"sip:user@example.com", vendor=TGPP),
+        avp(601, b"sip:other@example.com", vendor=TGPP),
+        avp(600, b"example.com", vendor=TGPP, flags=0),
+    )
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_a_finding_names_its_instance_and_sits_on_its_octets(lua, rules, tmp_path):
+    """Among several AVPs of one identity a path numbers each, from 1, the
+    finding's own AVP as its parents; a sole one is named alone. A finding is
+    on the octets of the AVP instance it is about, padding and all; one about
+    what a grouped AVP lacks on that AVP's, and about what the message lacks
+    on the message's."""
+    pdu = several_uar()
+    found = {
+        (rule, path): (offset, length)
+        for _, rule, offset, length, path, _ in _places(lua, rules, tmp_path, pdu)
+    }
+    top = _spans(pdu)
+    features = [each for each in top if each[0] == 628]
+    identities = [each for each in top if each[0] == 601]
+    (visited,) = [each for each in top if each[0] == 600]
+    vendor_id = _inside(pdu, features[2])[0]
+
+    def at(span: tuple) -> tuple[int, int]:
+        return span[1], span[2]
+
+    assert found[("avp-reserved-flags", "Supported-Features[1]")] == at(features[0])
+    assert found[("avp-missing", "Supported-Features[2]")] == at(features[1])
+    assert found[("flag-must", "Supported-Features[3] > Vendor-Id")] == at(vendor_id)
+    assert found[("avp-occurrences", "Public-Identity[2]")] == at(identities[1])
+    assert found[("flag-must", "Visited-Network-Identifier")] == at(visited)
+    assert found[("avp-missing", "UAR")] == (0, len(pdu))
+    # Every finding's octets are those of an AVP instance of the message, or
+    # the message's.
+    instances = {at(each) for each in top}
+    for each in features:
+        instances |= {at(member) for member in _inside(pdu, each)}
+    assert set(found.values()) <= instances | {(0, len(pdu))}
+
+
+@pytest.mark.skipif(shutil.which("tshark") is None, reason="no tshark on PATH")
+def test_tshark_puts_each_finding_on_its_avps_octets(plugin, tmp_path):
+    """Each finding, and its expert info, spans the octets of the AVP
+    Wireshark's own Diameter tree draws for the instance, so selecting it marks
+    that AVP; one about what the message lacks spans the message."""
+    capture = tmp_path / "several.pcap"
+    capture.write_bytes(_pcap([several_uar()]))
+    done = subprocess.run(
+        [
+            "tshark",
+            "-n",
+            "-r",
+            str(capture),
+            "-X",
+            f"lua_script:{plugin}",
+            "-T",
+            "pdml",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    fields = list(ElementTree.fromstring(done.stdout).iter("field"))
+
+    def span(field: ElementTree.Element) -> tuple[int, int]:
+        return int(field.get("pos", "0")), int(field.get("size", "0"))
+
+    avps = {span(each) for each in fields if each.get("name") == "diameter.avp"}
+    (pdu,) = [
+        (int(each.get("pos", "0")), int(each.get("size", "0")))
+        for each in ElementTree.fromstring(done.stdout).iter("proto")
+        if each.get("name") == "diameter"
+    ]
+    findings = [each for each in fields if each.get("name") == "seanchai.finding"]
+    # "Error: place: problem [source]", the place holding no ": ".
+    places = {each.get("show", "").split(": ")[1]: span(each) for each in findings}
+    assert len(findings) >= 6
+    for each in findings:
+        assert span(each) in avps | {pdu}, each.get("show")
+        (expert,) = [f for f in each if f.get("name") == "_ws.expert"]
+        assert expert.get("pos") == each.get("pos")
+    assert places["Supported-Features[3] > Vendor-Id"] in avps
+    assert places["Supported-Features[2]"] in avps
+    assert places["Public-Identity[2]"] in avps
+    assert places["UAR"] == pdu
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_a_framing_finding_numbers_its_avp_among_the_run(lua, rules, tmp_path):
+    """A finding parse_avps makes, before the body is read, numbers its AVP
+    as the run's other findings do."""
+    padded = bytearray(avp(264, b"peer.example.co"))
+    padded[-1] = 1
+    pdu = message(
+        280,
+        R,
+        0,
+        avp(264, b"peer.example.com"),
+        bytes(padded),
+        avp(296, b"example.com"),
+    )
+    found = [
+        (rule, path, offset)
+        for _, rule, offset, _, path, _ in _places(lua, rules, tmp_path, pdu)
+    ]
+    second = _spans(pdu)[1]
+
+    assert ("avp-padding", "Origin-Host[2]", second[1]) in found
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_a_host_names_character_alone_is_a_warning(lua, rules, tmp_path):
+    """RFC 6733 section 4.3.1 says "FQDN" and never lists its characters, and
+    test tools name peers cx_emulator: such a character alone is a warning,
+    while an empty label, beside it or not, is still an error, in a
+    DiameterIdentity and a DiameterURI's host alike."""
+    script = (
+        f"local core = dofile({json.dumps(str(CORE))})\n"
+        "for _, text in ipairs({'cx_emulator', 'cx_emulator..example.com',\n"
+        "  'example..com'}) do\n"
+        "  local problem, weak = core.identity_problem(text)\n"
+        "  print(problem, tostring(weak))\n"
+        "end\n"
+        "for _, uri in ipairs({'aaa://cx_emulator.example.com;transport=tcp',\n"
+        "  'aaa://cx_emulator.example.com:99999', 'aaa://a..b'}) do\n"
+        "  local problem, weak = core.uri_problem(uri)\n"
+        "  print(problem, tostring(weak))\n"
+        "end\n"
+    )
+    done = subprocess.run(
+        [lua, "-e", script], check=True, capture_output=True, text=True
+    )
+    shown = _places(lua, rules, tmp_path, good_uar_from(b"cx_emulator"))
+
+    assert done.stdout.splitlines() == [
+        "a character no host name holds\ttrue",
+        "an empty label\tnil",
+        "an empty label\tnil",
+        "host: a character no host name holds\ttrue",
+        "port above 65535\tnil",
+        "host: an empty label\tnil",
+    ]
+    assert [(severity, rule, line) for severity, rule, _, _, _, line in shown] == [
+        (
+            "warn",
+            "diameter-identity",
+            "Origin-Host: a character no host name holds [RFC 6733 4.3.1]",
+        )
+    ]
+
+
+def good_uar_from(origin: bytes) -> bytes:
+    """`good_uar` sent by `origin`."""
+    session, application, auth, _, realm = _base()
+    return message(
+        300,
+        R | P,
+        CX,
+        session,
+        application,
+        auth,
+        avp(264, origin),
+        realm,
+        avp(283, b"example.com"),
+        avp(1, b"user@example.com"),
+        avp(601, b"sip:user@example.com", vendor=TGPP),
+        avp(600, b"example.com", vendor=TGPP),
+    )
+
+
 # TS 29.273's applications, each setting Feature-List-ID to 1 in a clause of
 # its own (5.2.3.10 for STa, 7.2.3.2 for SWm).
 SWM = 16777264
@@ -1183,11 +1434,30 @@ def test_the_base_protocols_rules_on_every_answer_hold_in_each(
         avp(296, b"example.com"),
         avp(268, u32(5004)),
     )
-    ula, answer = _validate(lua, s6a_rules, tmp_path, destination, error)
-    assert (
-        "constraint-absent",
-        "Destination-Host: not allowed [RFC 6733 6.5, interpreted]",
-    ) in _constraint_findings(ula)
+    # Two of them: broken by each alike, said once, without a number.
+    twice = message(
+        316,
+        P,
+        S6A,
+        avp(263, b"mme;1;2"),
+        avp(260, avp(266, u32(TGPP)) + avp(258, u32(S6A))),
+        avp(268, u32(2001)),
+        avp(277, u32(1)),
+        avp(264, b"hss.example.com"),
+        avp(296, b"example.com"),
+        avp(293, b"mme.example.com"),
+        avp(293, b"mme2.example.com"),
+        avp(1406, u32(0), vendor=TGPP),
+    )
+    ula, answer, both = _validate(lua, s6a_rules, tmp_path, destination, error, twice)
+    for each in (ula, both):
+        absent = [f for f in _constraint_findings(each) if f[0] == "constraint-absent"]
+        assert absent == [
+            (
+                "constraint-absent",
+                "Destination-Host: not allowed [RFC 6733 6.5, interpreted]",
+            )
+        ]
     found = [
         text
         for rule, text in _constraint_findings(answer)

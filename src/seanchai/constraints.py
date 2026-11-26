@@ -156,13 +156,13 @@ _HOST_CHARACTERS = re.compile(r"[A-Za-z0-9.-]+")
 
 def _identity_problem(text: str) -> str | None:
     """Why `text` is no DiameterIdentity (RFC 6733 clause 4.3.1), as the
-    Wireshark plugin's `identity_problem` says; None if it is one."""
+    Wireshark plugin's `identity_problem` says, in its order: the character
+    set last, the weakest, since the clause says "FQDN" without spelling out
+    its characters; None if it is one."""
     if not text:
         return "an empty DiameterIdentity"
     if len(text) > 255:
         return "a DiameterIdentity over 255 octets"
-    if not _HOST_CHARACTERS.fullmatch(text):
-        return "a character no host name holds"
     for label in text.removesuffix(".").split("."):
         if not label:
             return "an empty label"
@@ -170,6 +170,8 @@ def _identity_problem(text: str) -> str | None:
             return "a label over 63 octets"
         if label.startswith("-") or label.endswith("-"):
             return "a label starting or ending in a hyphen"
+    if not _HOST_CHARACTERS.fullmatch(text):
+        return "a character no host name holds"
     return None
 
 

@@ -197,6 +197,38 @@ def test_each_codec_reads_its_layout(codec, payload, holds):
     assert (constraints.codec_problem(codec, payload) is None) is holds
 
 
+# A Session-Id's sender: the character set is checked last, as the weakest
+# of a DiameterIdentity's problems (RFC 6733 clause 4.3.1 says "FQDN"
+# without spelling out its characters), so a label's problem is said first.
+_SENDERS = [
+    (b"cx_emulator;1", "not begun by its sender's: a character no host name holds"),
+    (b"cx_emulator..example.com;1", "not begun by its sender's: an empty label"),
+    (
+        b"-cx_emulator.example.com;1",
+        "not begun by its sender's: a label starting or ending in a hyphen",
+    ),
+]
+
+
+@pytest.mark.parametrize(("payload", "problem"), _SENDERS)
+def test_a_senders_label_is_faulted_before_its_characters(payload, problem):
+    assert constraints.codec_problem(Codec.SESSION_ID, payload) == problem
+
+
+@pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
+@pytest.mark.parametrize("lua", LUAS)
+def test_the_plugin_faults_a_senders_label_first_as_python_does(lua, tmp_path):
+    script = (
+        f"local core = dofile({json.dumps(str(CORE))})\n"
+        "for index = 1, #arg do\n"
+        "  print(core.codec_problem('session-id', arg[index]))\n"
+        "end\n"
+    )
+    done = _run(lua, tmp_path, script, [each.decode() for each, _ in _SENDERS])
+
+    assert done.stdout.splitlines() == [problem for _, problem in _SENDERS]
+
+
 @pytest.mark.skipif(not LUAS, reason="no Lua interpreter on PATH")
 @pytest.mark.parametrize("lua", LUAS)
 def test_the_plugin_reads_each_layout_as_python_does(lua, tmp_path):

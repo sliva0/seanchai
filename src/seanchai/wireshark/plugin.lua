@@ -18,9 +18,11 @@
 --                                against
 --
 -- A post-dissector cannot add to the items Wireshark's Diameter dissector
--- drew, so the findings are listed in the subtree, each on its AVP's octets
--- and named by the AVP's place shortened ("… > Parent > AVP"); the whole
--- path is beneath it.
+-- drew, so the findings are listed in the subtree, each, with its expert
+-- info, on the octets of the AVP instance it is about (the grouped AVP's or
+-- the message's for what they lack) and named by the AVP's place shortened
+-- ("… > Parent[2] > AVP", a name numbered among several of its kind); the
+-- whole path is beneath it.
 --
 -- Each finding, and the command it was held to, has the place its rule is
 -- written beneath it: a reference ("TS 29.061 clause 16a.5, table 9a, page

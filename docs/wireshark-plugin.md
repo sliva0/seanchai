@@ -74,7 +74,12 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
 - Data formats: octet counts of the integer, float and Time types; an
   Address's family and length for IPv4 and IPv6; UTF8String as valid UTF-8;
   DiameterIdentity as an ASCII host name; DiameterURI and IPFilterRule by
-  section 4.3.1's syntax.
+  section 4.3.1's syntax. A DiameterIdentity, or a DiameterURI's host, whose
+  only fault is a character no host name holds (`cx_emulator`) is a warning,
+  not an error: the section says "FQDN" and never spells out its characters,
+  DNS takes any octet in a label (RFC 2181 section 11), and test tools name
+  peers so. Empty, over 255 octets, an empty label, a label over 63 octets or
+  starting or ending in a hyphen stays an error, and is said first.
 - Values: an Enumerated value the reading defines or leaves to vendors, and not
   one it reserves or voids, where the corpus holds its values (RFC 5777's
   `Treatment-Action` is typed Enumerated by a table, its values unread); a
@@ -151,7 +156,7 @@ a path through grouped AVPs as its identities joined by `/`.
 ## Findings
 
 Each finding is one line in the `seanchai` subtree, on the octets it is
-about, so selecting it marks the AVP in Wireshark's own Diameter tree and in
+about, so selecting it, or its entry in Expert Information, marks the AVP in
 the bytes. A Lua post-dissector cannot add to the items another dissector
 drew, so the line cannot sit under the AVP's own item; it names the AVP
 instead:
@@ -168,9 +173,17 @@ A line is `Severity: place: problem [source]`:
   of the message itself is named alone. A finding about what a body lacks
   (a required AVP, a predicate's member, unlisted AVPs `* [ AVP ]` needs)
   names the body: the grouped AVP, or the command's abbreviation, or
-  `answer-message`, on that AVP's octets or the command code's. A finding of
-  the message header names `Header`. `seanchai.path`, beneath, is the whole
-  path.
+  `answer-message`. A finding of the message header names `Header`.
+  `seanchai.path`, beneath, is the whole path.
+- A name in the path is numbered, from 1, where what holds it, a grouped AVP
+  or the message, holds more than one AVP of its kind, so that of eleven
+  APN-Configurations the line says which:
+  `APN-Configuration-Profile > APN-Configuration[3] > Context-Identifier`, and
+  of three Supported-Features at the top `Supported-Features[3]`. The only one
+  is named alone. A rule broken by every instance alike, an AVP never sent in
+  its scope or a predicate whose condition reads no member of the AVP it is
+  on, is reported once, on the first, named without a number, being of them
+  all.
 - The problem says what is wrong once, as `missing Session-Id`, `M bit clear,
   must be set`, `occurs 2 times, at most 1`, `16 digits, not 14 to 15`.
 - The source is the document and clause, `[TS 29.272 7.3.43]`, a flag rule's
@@ -190,10 +203,22 @@ Note: … > Trace-Data > Trace-NE-Type-List: 4 octets, not 3 [TS 29.272 7.3.68, 
     [Element: TS 32.422 5.4 List of NE Types (TS 32.422 V19.7.0): 3 octets; octet 3 bits 8-7 (spare) 00]
 ```
 
+The octets a finding is on, which its expert info and every field beneath it
+share:
+
+| Finding about | Octets |
+|---|---|
+| an AVP: its flags, framing, data format, value or an interpreted rule on it | the AVP's, header to padding, as Wireshark's own Diameter tree spans it, its padding cut where what holds it ends |
+| an AVP too many, out of place or not allowed | that instance's |
+| what a grouped AVP lacks, or a predicate's member absent from it | the grouped AVP's |
+| what the message lacks | the message's |
+| the header | the header's field: the version, length, flags or command code |
+| octets too few for an AVP | those octets |
+
 | Severity | Expert info, to filter on | Group | For |
 |---|---|---|---|
 | Error | `seanchai.violation` | Malformed | a rule a document states (the ABNF, a Must or Must not flag rule, a data format, framing, a reserved or void value) broken |
-| Warning | `seanchai.warning` | Protocol | a bit set under Should not, reserved flags or nonzero padding, a value or Result-Code no document defines, an unknown AVP with the M bit, the E bit against the Result-Code |
+| Warning | `seanchai.warning` | Protocol | a bit set under Should not, reserved flags or nonzero padding, a value or Result-Code no document defines, an unknown AVP with the M bit, the E bit against the Result-Code, a DiameterIdentity's or DiameterURI host's character no host name holds |
 | Note | `seanchai.note` | Protocol | an unknown command or AVP without the M bit, a bit, an Unsigned32 value of a `values` table or an Experimental-Result-Code no document names, a member the corpus cannot complete, an AVP only `* [ AVP ]` admits |
 | Note | `seanchai.interpreted` | Protocol | an interpreted constraint broken |
 
@@ -346,7 +371,9 @@ The findings are expert info too ([Findings](#findings)).
 `tests/test_wireshark_validator.py` runs `core.lua` under each of `lua5.1` to
 `lua5.4` found on PATH, over messages it encodes, and the generated plugin
 under `tshark` over a capture of them, with the preference set and the marked
-line rewritten. `tests/test_vectors.py` runs it over the
+line rewritten, holding each finding's numbered path to its instance and its
+octets, and its expert info's, to the AVP Wireshark's own Diameter tree
+draws. `tests/test_vectors.py` runs it over the
 [test messages](consumers.md#test-messages) of every application, each
 built as `seanchai vectors --application` builds it: every valid one draws
 no error, warning or note of an interpreted rule and every negative one

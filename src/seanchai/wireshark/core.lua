@@ -133,6 +133,28 @@ local function join(path, name)
   return name
 end
 
+-- `name` as a path names the `index`th of `total` instances its parent, or
+-- the message, holds: "APN-Configuration[3]" among several, the name alone
+-- for the only one.
+local function instance(name, index, total)
+  if total and total > 1 then
+    return string.format("%s[%d]", name, index)
+  end
+  return name
+end
+
+-- How many AVPs of each identity the run `avps` holds, and each AVP's
+-- 1-based place among those of its identity, by the AVP.
+local function instances(avps)
+  local totals, indexes = {}, {}
+  for _, avp in ipairs(avps) do
+    local identity = avp.vendor .. ":" .. avp.code
+    totals[identity] = (totals[identity] or 0) + 1
+    indexes[avp] = totals[identity]
+  end
+  return totals, indexes
+end
+
 local HEADER = "Header"
 
 -- References: a citation as text and links.
@@ -210,10 +232,21 @@ end
 -- ranges are; `first` and `last` bound the run, `last` exclusive.
 
 -- `path` is what holds the run, nil for the message's own; `rules`, where
--- given, names each AVP its framing findings are about.
+-- given, names each AVP its framing findings are about, numbered among the
+-- run's AVPs of its identity (`instance`) once the run is read. A finding of
+-- an AVP is on its octets, from its header to the end of its padding or of
+-- what holds it.
 local function parse_avps(pdu, first, last, findings, path, rules)
   local avps = {}
   local at = first
+  -- Each identity's AVPs so far, and the findings to name once all are.
+  local totals, named = {}, {}
+  local name, identity, index
+  local function framing(found)
+    named[#named + 1] = { found = found, name = name, identity = identity,
+      index = index }
+    about(found, nil, identity)
+  end
   while at < last do
     if last - at < 8 then
       finding(findings, ERROR, "avp-truncated",
@@ -232,53 +265,62 @@ local function parse_avps(pdu, first, last, findings, path, rules)
         vendor = u32(pdu, at + 9)
       end
     end
-    local identity = vendor .. ":" .. code
+    identity = vendor .. ":" .. code
     local known = rules and rules.avps[identity]
-    local place = join(path, known and known.name or ("AVP " .. code))
+    name = known and known.name or ("AVP " .. code)
+    totals[identity] = (totals[identity] or 0) + 1
+    index = totals[identity]
     if length < header then
-      about(finding(findings, ERROR, "avp-length",
+      framing(finding(findings, ERROR, "avp-length",
         string.format("length %d, under its %d-octet header", length, header),
-        at, math.min(8, last - at), place), nil, identity)
+        at, math.min(8, last - at), path))
       break
     end
     if at + length > last then
-      about(finding(findings, ERROR, "avp-length",
+      framing(finding(findings, ERROR, "avp-length",
         string.format("length %d, past the end of what holds it", length),
-        at, last - at, place), nil, identity)
+        at, last - at, path))
       break
     end
     local padded = length + (4 - length % 4) % 4
+    -- `span` is the AVP's octets with its padding, as far as what holds it
+    -- goes, as Wireshark's own Diameter tree spans it: a finding's.
     local avp = {
       code = code,
       vendor = vendor,
       flags = flags,
       offset = at,
       length = length,
+      span = math.min(padded, last - at),
       data = at + header,
       size = length - header,
     }
     avps[#avps + 1] = avp
     if flags % 32 ~= 0 then
-      about(finding(findings, WARN, "avp-reserved-flags",
+      framing(finding(findings, WARN, "avp-reserved-flags",
         string.format("reserved flags set (0x%02x)", flags % 32),
-        at + 4, 1, place), nil, identity)
+        at, avp.span, path))
     end
     if at + padded > last then
       if padded ~= length then
-        about(finding(findings, ERROR, "avp-padding",
+        framing(finding(findings, ERROR, "avp-padding",
           "padding past the end of what holds it",
-          at, last - at, place), nil, identity)
+          at, avp.span, path))
       end
       break
     end
     for i = at + length, at + padded - 1 do
       if u8(pdu, i + 1) ~= 0 then
-        about(finding(findings, WARN, "avp-padding", "nonzero padding",
-          at + length, padded - length, place), nil, identity)
+        framing(finding(findings, WARN, "avp-padding", "nonzero padding",
+          at, avp.span, path))
         break
       end
     end
     at = at + padded
+  end
+  for _, each in ipairs(named) do
+    each.found.path = join(path, instance(each.name, each.index,
+      totals[each.identity]))
   end
   return avps
 end
@@ -334,16 +376,17 @@ local function valid_utf8(s, first, last)
 end
 
 -- RFC 6733 section 4.3.1: a DiameterIdentity is an FQDN or realm, in ASCII,
--- an IDN by its A-labels.
+-- an IDN by its A-labels. The second value is true where the one problem is
+-- a character no host name holds: the section says "FQDN" and never spells
+-- out the characters, DNS itself takes any octet in a label (RFC 2181
+-- section 11), and test tools name peers `cx_emulator`, so that alone is
+-- weaker than the rest, which are checked first.
 local function identity_problem(text)
   if text == "" then
     return "empty"
   end
   if #text > 255 then
     return "over 255 octets"
-  end
-  if text:find("[^%w%.%-]") then
-    return "a character no host name holds"
   end
   local body = text:gsub("%.$", "")
   for label in (body .. "."):gmatch("([^%.]*)%.") do
@@ -357,6 +400,9 @@ local function identity_problem(text)
       return "a label starting or ending in a hyphen"
     end
   end
+  if text:find("[^%w%.%-]") then
+    return "a character no host name holds", true
+  end
   return nil
 end
 
@@ -369,8 +415,8 @@ local function uri_problem(text)
     return "not aaa:// or aaas://"
   end
   local host, tail = rest:match("^([^:;]*)(.*)$")
-  local problem = identity_problem(host)
-  if problem then
+  local problem, weak = identity_problem(host)
+  if problem and not weak then
     return "host: " .. problem
   end
   local port, after = tail:match("^:(%d+)(.*)$")
@@ -395,6 +441,10 @@ local function uri_problem(text)
   end
   if tail:gsub(";[^=;]*=[^;]*", "") ~= "" then
     return "text after the host the syntax does not allow"
+  end
+  if problem then
+    -- The host's character alone, weaker (`identity_problem`).
+    return "host: " .. problem, true
   end
   return nil
 end
@@ -1290,8 +1340,8 @@ local function check_constraints(ctx, avp, reading, path, scoped)
           end
         end
         if problem then
-          local found = interpreted(ctx, cons, rule.k, problem, avp.data, avp.size,
-            path, reading.name)
+          local found = interpreted(ctx, cons, rule.k, problem, avp.offset,
+            avp.span, path, reading.name)
           found.detail = detail
           if rule.k == "element" then
             -- Beneath the line, the element and where its layout is read.
@@ -1335,12 +1385,13 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
     for _, cons in ipairs(list) do
       -- A member the body names, or one only its `* [ AVP ]` admits.
       local identity = identities[name] or cons.s
-      local instances = identity and held[identity] or {}
+      local subjects = identity and held[identity] or {}
       for _, rule in ipairs(cons.rules) do
         if rule.k == "absent" then
-          if instances[1] then
-            interpreted(ctx, cons, rule.k, "not allowed", instances[1].offset,
-              instances[1].length, join(path, name), name)
+          -- Of every instance alike: on the first, named without a number.
+          if subjects[1] then
+            interpreted(ctx, cons, rule.k, "not allowed", subjects[1].offset,
+              subjects[1].span, join(path, name), name)
           end
         elseif rule.q and not ctx.request then
           -- Reads the request, which is not at hand: unchecked, said once
@@ -1351,13 +1402,15 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
           -- that one alone (every Multiple-Services-Credit-Control of an
           -- initial request holds a Requested-Service-Unit), or none. A
           -- predicate no path of which starts there reads every instance
-          -- alike: the first stands for them, reported once.
-          local each = #instances > 0 and instances or { false }
+          -- alike: the first stands for them, reported once, on its octets
+          -- and named without a number, being of them all.
+          local each = #subjects > 0 and subjects or { false }
+          local alike = false
           if #each > 1 and rule.k ~= "values" and rule.k ~= "equals"
             and not binds(rule, identity) then
-            each = { each[1] }
+            each, alike = { each[1] }, true
           end
-          for _, subject in ipairs(each) do
+          for index, subject in ipairs(each) do
             local bound = held
             if subject then
               bound = {}
@@ -1371,7 +1424,8 @@ local function check_predicates(ctx, scoped, identities, avps, path, here, ancho
             local found
             if problem and subject then
               found = interpreted(ctx, cons, rule.k, problem, subject.offset,
-                subject.length, join(path, name), name)
+                subject.span, join(path, alike and name
+                  or instance(name, index, #subjects)), name)
             elseif problem then
               found = interpreted(ctx, cons, rule.k, problem, anchor[1], anchor[2],
                 here, name)
@@ -1400,14 +1454,18 @@ local function check_unique(ctx, grouped)
           if rule.k == "unique" then
             local key = tostring(reading) .. "\0" .. name
             seen[key] = seen[key] or {}
-            for _, member in ipairs(parse_avps(ctx.pdu, entry.avp.data,
-              entry.avp.data + entry.avp.size, {})) do
+            local members = parse_avps(ctx.pdu, entry.avp.data,
+              entry.avp.data + entry.avp.size, {})
+            local totals = instances(members)
+            for _, member in ipairs(members) do
               if member.vendor .. ":" .. member.code == rule.i then
                 local text = data_text(ctx.pdu, member)
                 if seen[key][text] then
+                  -- The first of its identity, which the rule reads.
                   interpreted(ctx, cons, "unique", string.format(
                     "same as in another %s beside it", reading.name),
-                    member.offset, member.length, join(entry.path, name), name)
+                    member.offset, member.span,
+                    join(entry.path, instance(name, 1, totals[rule.i])), name)
                 end
                 seen[key][text] = true
                 break
@@ -1487,20 +1545,20 @@ local function check_flags(ctx, avp, reading, path)
     if rule == "must" and not set then
       found = finding(ctx.findings, ERROR, "flag-must",
         string.format("%s bit clear, must be set", letter),
-        avp.offset + 4, 1, path, cite, reading.name)
+        avp.offset, avp.span, path, cite, reading.name)
     elseif rule == "must_not" and set then
       found = finding(ctx.findings, ERROR, "flag-must-not",
         string.format("%s bit set, must not be", letter),
-        avp.offset + 4, 1, path, cite, reading.name)
+        avp.offset, avp.span, path, cite, reading.name)
     elseif rule == "should_not" and set then
       found = finding(ctx.findings, WARN, "flag-should-not",
         string.format("%s bit set, should not be", letter),
-        avp.offset + 4, 1, path, cite, reading.name)
+        avp.offset, avp.span, path, cite, reading.name)
     elseif rule == nil and letter == "P" and set then
       -- RFC 6733 section 4.1: no end-to-end security is specified, "therefore,
       -- the P bit SHOULD be set to 0".
       about(finding(ctx.findings, WARN, "flag-p", "P bit set, should be 0",
-        avp.offset + 4, 1, path), reading)
+        avp.offset, avp.span, path), reading)
     end
     if found then
       found.source = source
@@ -1518,7 +1576,7 @@ local function check_data(ctx, avp, reading, path, depth)
     if avp.size ~= size then
       about(finding(findings, ERROR, "data-length",
         string.format("%d octets, %s is %d", avp.size, kind, size),
-        avp.offset, avp.length, path,
+        avp.offset, avp.span, path,
         -- Time and Enumerated are section 4.3.1's, the rest section 4.2's.
         ctx.rules.base and ctx.rules.base[(kind == "Time" or kind == "Enumerated")
           and "derived" or "basic"]), reading)
@@ -1530,7 +1588,7 @@ local function check_data(ctx, avp, reading, path, depth)
       if severity then
         finding(findings, severity, "enum-value",
           string.format("%d %s", value, problem),
-          avp.data, 4, path, reading.at, reading.name)
+          avp.offset, avp.span, path, reading.at, reading.name)
       end
     elseif kind == "Unsigned32" then
       local value = u32(pdu, avp.data + 1)
@@ -1541,11 +1599,12 @@ local function check_data(ctx, avp, reading, path, depth)
         if not names[value] then
           finding(findings, WARN, "result-code",
             string.format("%d is no code a document defines", value),
-            avp.data, 4, path, reading.at, reading.name)
+            avp.offset, avp.span, path, reading.at, reading.name)
         end
       elseif reading.name == "Experimental-Result-Code" then
         ctx.experimental_codes[#ctx.experimental_codes + 1] = {
-          value = value, offset = avp.data, path = path, cite = reading.at,
+          value = value, offset = avp.offset, length = avp.span, path = path,
+          cite = reading.at,
         }
       elseif ctx.rules.bits[identity] then
         local known = ctx.rules.bits[identity]
@@ -1560,7 +1619,8 @@ local function check_data(ctx, avp, reading, path, depth)
         if #unknown > 0 then
           finding(findings, NOTE, "bits",
             string.format("%s set, which no document names", bits_text(unknown)),
-            avp.data, 4, path, ctx.rules.bits_at[identity] or reading.at, reading.name)
+            avp.offset, avp.span, path, ctx.rules.bits_at[identity] or reading.at,
+            reading.name)
         end
       elseif ctx.rules.values and ctx.rules.values[identity] then
         -- A value of an integer AVP no table names: as a bit, a note, since
@@ -1568,7 +1628,7 @@ local function check_data(ctx, avp, reading, path, depth)
         if not ctx.rules.values[identity][value] then
           finding(findings, NOTE, "values",
             string.format("%d is no value a document names", value),
-            avp.data, 4, path, ctx.rules.values_at[identity] or reading.at,
+            avp.offset, avp.span, path, ctx.rules.values_at[identity] or reading.at,
             reading.name)
         end
       end
@@ -1580,31 +1640,33 @@ local function check_data(ctx, avp, reading, path, depth)
     if not ok then
       about(finding(findings, ERROR, "utf8",
         string.format("invalid UTF-8 at octet %d", at),
-        avp.data + at, 1, path), reading)
+        avp.offset, avp.span, path), reading)
     end
   elseif kind == "DiameterIdentity" then
-    local problem = identity_problem(data_text(pdu, avp))
+    -- A character no host name holds alone is a warning
+    -- (`identity_problem`).
+    local problem, weak = identity_problem(data_text(pdu, avp))
     if problem then
-      about(finding(findings, ERROR, "diameter-identity",
-        problem, avp.data, avp.size, path), reading)
+      about(finding(findings, weak and WARN or ERROR, "diameter-identity",
+        problem, avp.offset, avp.span, path), reading)
     end
   elseif kind == "DiameterURI" then
-    local problem = uri_problem(data_text(pdu, avp))
+    local problem, weak = uri_problem(data_text(pdu, avp))
     if problem then
-      about(finding(findings, ERROR, "diameter-uri", problem,
-        avp.data, avp.size, path), reading)
+      about(finding(findings, weak and WARN or ERROR, "diameter-uri", problem,
+        avp.offset, avp.span, path), reading)
     end
   elseif kind == "IPFilterRule" then
     local problem = filter_problem(data_text(pdu, avp))
     if problem then
       about(finding(findings, ERROR, "ip-filter-rule", problem,
-        avp.data, avp.size, path), reading)
+        avp.offset, avp.span, path), reading)
     end
   elseif kind == "Address" then
     if avp.size < 2 then
       about(finding(findings, ERROR, "address",
         "shorter than its 2-octet address family",
-        avp.offset, avp.length, path), reading)
+        avp.offset, avp.span, path), reading)
       return
     end
     local family = string.byte(pdu, avp.data + 1) * 256 + string.byte(pdu, avp.data + 2)
@@ -1613,7 +1675,7 @@ local function check_data(ctx, avp, reading, path, depth)
       about(finding(findings, ERROR, "address",
         string.format("IPv%d address of %d octets, not %d", family == 1 and 4 or 6,
           avp.size - 2, expected),
-        avp.data, avp.size, path), reading)
+        avp.offset, avp.span, path), reading)
     end
   elseif kind == "Grouped" then
     if depth >= MAX_DEPTH then
@@ -1627,7 +1689,7 @@ local function check_data(ctx, avp, reading, path, depth)
       if avp.size < 8 then
         finding(findings, ERROR, "avp-missing",
           "holds no AVP, 1* { AVP } requires one",
-          avp.offset, avp.length, path, reading.at, reading.name)
+          avp.offset, avp.span, path, reading.at, reading.name)
       end
       return
     end
@@ -1640,7 +1702,7 @@ local function check_data(ctx, avp, reading, path, depth)
       return
     end
     validate_body(ctx, reading.members, held, path, depth + 1, reading,
-      { avp.offset, avp.length })
+      { avp.offset, avp.span })
   end
 end
 
@@ -1700,6 +1762,12 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
   local held = {}
   local unlisted = 0
   local grouped = {}
+  -- Each AVP's path names it among the run's AVPs of its identity.
+  local totals, indexes = instances(avps)
+  local function place_of(avp, name)
+    return join(path, instance(name, indexes[avp],
+      totals[avp.vendor .. ":" .. avp.code]))
+  end
   for position, avp in ipairs(avps) do
     local identity = avp.vendor .. ":" .. avp.code
     local slot = by_identity[identity]
@@ -1723,13 +1791,13 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
       if not body.wildcard then
         finding(findings, ERROR, "avp-not-allowed",
           "not allowed, unlisted and no * [ AVP ]",
-          avp.offset, avp.length, join(path, name), cite, cite_name)
+          avp.offset, avp.span, place_of(avp, name), cite, cite_name)
       elseif ctx.prefs.wildcard_notes then
         finding(findings, NOTE, "avp-by-wildcard", "unlisted, * [ AVP ] admits it",
-          avp.offset, avp.length, join(path, name), cite, cite_name)
+          avp.offset, avp.span, place_of(avp, name), cite, cite_name)
       end
     end
-    local place = join(path, name)
+    local place = place_of(avp, name)
     if reading then
       check_flags(ctx, avp, reading, place)
       check_data(ctx, avp, reading, place, depth)
@@ -1740,10 +1808,10 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
     elseif has(avp.flags, AVP_M) then
       about(finding(findings, WARN, "unknown-mandatory",
         "no document defines it, M bit set (DIAMETER_AVP_UNSUPPORTED)",
-        avp.offset, avp.length, place), nil, identity)
+        avp.offset, avp.span, place), nil, identity)
     else
       finding(findings, NOTE, "unknown-avp", "no document defines it",
-        avp.offset, avp.length, place)
+        avp.offset, avp.span, place)
     end
   end
   -- Occurrences.
@@ -1798,7 +1866,7 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
       local extra = held[identity][bound.max + 1]
       finding(findings, ERROR, "avp-occurrences",
         string.format("occurs %s, at most %d", times(count), bound.max),
-        extra.offset, extra.length, join(path, member.name), cite, cite_name)
+        extra.offset, extra.span, place_of(extra, member.name), cite, cite_name)
     end
   end
   for _, member in ipairs(body) do
@@ -1827,7 +1895,7 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
         local avp = avps[at]
         finding(findings, ERROR, "avp-position",
           string.format("AVP %d, must be AVP %d", at, expected),
-          avp.offset, avp.length, join(path, member.name), cite, cite_name)
+          avp.offset, avp.span, place_of(avp, member.name), cite, cite_name)
       end
       expected = expected + 1
     end
@@ -1848,7 +1916,7 @@ validate_body = function(ctx, body, avps, path, depth, owner, anchor)
       local avp = avps[at]
       finding(findings, ERROR, "avp-position",
         string.format("AVP %d of %d, must be among the last", at, #avps),
-        avp.offset, avp.length, join(path, member.name), cite, cite_name)
+        avp.offset, avp.span, place_of(avp, member.name), cite, cite_name)
     end
     expected = expected + 1
   end
@@ -2134,7 +2202,7 @@ function M.validate(rules, pdu, prefs, asked)
   local best, best_ctx, best_score
   local runs = {}
   for _, form in ipairs(forms) do
-    local ctx = run(rules, prefs, pdu, avps, header_findings, form, { 5, 3 }, asked)
+    local ctx = run(rules, prefs, pdu, avps, header_findings, form, { 0, last }, asked)
     local errors, warnings, notes, interpreted = score(ctx.findings)
     runs[#runs + 1] = {
       form = form, ctx = ctx, errors = errors, warnings = warnings, notes = notes,
@@ -2169,7 +2237,7 @@ function M.validate(rules, pdu, prefs, asked)
     if not vendor_codes then
       finding(best_ctx.findings, NOTE, "experimental-result-code",
         string.format("%d is no code a document defines", each.value),
-        each.offset, 4, each.path, each.cite, "Experimental-Result-Code")
+        each.offset, each.length, each.path, each.cite, "Experimental-Result-Code")
     end
   end
   local result_code = best_ctx.result_code
