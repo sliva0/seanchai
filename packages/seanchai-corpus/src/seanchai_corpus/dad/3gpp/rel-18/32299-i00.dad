@@ -1409,6 +1409,17 @@ Service-Information                     OM
 AVP                                     OC
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-announcement-information-not-used)
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Request
+; Section: 6.4.2
+; Table: 6.4.2.1
+; Page: 72
+; Versions: 18.0.0..19.0.0
+"Not used in CCR."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Credit-Control-Answer
 ; Section: 6.4.3
@@ -1572,6 +1583,17 @@ Service-Information                   OC
 AVP                                   OC
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-g-s-u-pool-reference-sessions)
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Answer
+; Section: 6.4.3
+; Table: 6.4.3.1
+; Page: 78
+; Versions: 18.0.0..19.0.0
+"Only used in ECUR and SCUR."
+    excludes CC-Request-Type = EVENT_REQUEST and Multiple-Services-Credit-Control/G-S-U-Pool-Reference
+
+
 ; Type: Information Elements
 ; Command: Re-Auth-Request
 ; Section: 6.4.4
@@ -1664,6 +1686,30 @@ AVP                       OC
     text-only
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#acr-supported-features)
+; AVP: Supported-Features
+; Command: Accounting-Request
+; Section: 6.5.10.3
+; Page: 91
+; Versions: 18.0.0..19.0.0
+"Any request initiated by the client which makes use of a feature to construct the request, and requires the feature to be supported by the server, shall include the feature associated to the service-context in the Supported-Features AVP."
+"The client shall include in the request feature(s) and only feature(s) which are needed to construct the request."
+"In case multiple features are needed to construct the request, they shall all be included by the client."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-supported-features)
+; AVP: Supported-Features
+; Command: Credit-Control-Request
+; Section: 6.5.10.3
+; Page: 91
+; Versions: 18.0.0..19.0.0
+"Any request initiated by the client which makes use of a feature to construct the request, and requires the feature to be supported by the server, shall include the feature associated to the service-context in the Supported-Features AVP."
+"The client shall include in the request feature(s) and only feature(s) which are needed to construct the request."
+"In case multiple features are needed to construct the request, they shall all be included by the client."
+    text-only
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#supported-features-vendor)
 ; AVP: Supported-Features
 ; Section: 6.5.10.3
@@ -1727,8 +1773,9 @@ AVP                       OC
     text-only
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#acct-application-id-rf)
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#acr-acct-application-id)
 ; AVP: Acct-Application-Id
+; Command: Accounting-Request
 ; Section: 7.1.5
 ; Page: 97
 ; Versions: 18.0.0..19.0.0
@@ -1736,8 +1783,39 @@ AVP                       OC
     range 3
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#auth-application-id-ro)
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#aca-acct-application-id)
+; AVP: Acct-Application-Id
+; Command: Accounting-Answer
+; Section: 7.1.5
+; Page: 97
+; Versions: 18.0.0..19.0.0
+"The Acct-Application-Id AVP (AVP code 259) shall contain the value of 3 as defined in RFC 6733 [401] according TS 29.230 [206]."
+    range 3
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-auth-application-id)
 ; AVP: Auth-Application-Id
+; Command: Credit-Control-Request
+; Section: 7.1.6
+; Page: 97
+; Versions: 18.0.0..19.0.0
+"The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402] according TS 29.230 [206]."
+    range 4
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: Credit-Control-Answer
+; Section: 7.1.6
+; Page: 97
+; Versions: 18.0.0..19.0.0
+"The Auth-Application-Id AVP (AVP code 258) shall contain the value of 4 as defined in RFC 4006 [402] according TS 29.230 [206]."
+    range 4
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#rar-auth-application-id)
+; AVP: Auth-Application-Id
+; Command: Re-Auth-Request
 ; Section: 7.1.6
 ; Page: 97
 ; Versions: 18.0.0..19.0.0
@@ -1751,7 +1829,7 @@ AVP                       OC
 ; Page: 98
 ; Versions: 18.0.0..19.0.0
 "The Called-Station-Id AVP (AVP code 30) shall contain the Access Point Name (APN) the user is connected to."
-    encoding apn
+    encoding labels
 
 
 ; Type: Value Table
@@ -1831,6 +1909,19 @@ DIAMETER_USER_UNKNOWN                  = 5030
 DIAMETER_RATING_FAILED                 = 5031
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#aca-failed-avp-base-codes)
+; AVP: Failed-AVP
+; Command: Accounting-Answer
+; Section: 7.1.11
+; Page: 99
+; Versions: 18.0.0..19.0.0
+"The Result-Code AVP operates as described in RFC 6733 [401] and RFC 4006 [402]."
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-rating-failed-failed-avp)
 ; AVP: Failed-AVP
 ; Command: Credit-Control-Answer
@@ -1840,6 +1931,11 @@ DIAMETER_RATING_FAILED                 = 5031
 "This error code is used to inform the CTF that the OCF cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an AVP or an AVP value that is not recognized or supported in the rating."
 "The Failed-AVP AVP MUST be included and contain a copy of the entire AVP(s) that could not be processed successfully or an example of the missing AVP complete with the Vendor-Id if applicable."
     present-if Result-Code = DIAMETER_RATING_FAILED
+"The Result-Code AVP operates as described in RFC 6733 [401] and RFC 4006 [402]."
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#service-context-id-format)
@@ -1866,6 +1962,15 @@ Used-Service-Unit ::= < AVP header: 446 >
         [ CC-Service-Specific-Units ]
       * [ Event-Charging-TimeStamp ]
 ;;    * [ AVP ]                       ; strikethrough
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#user-name-nai)
+; AVP: User-Name
+; Section: 7.1.15
+; Page: 101
+; Versions: 18.0.0..19.0.0
+"The User-Name AVP (AVP code 1) contains the user name in the format of a NAI according to RFC 6733 [401]."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#vendor-specific-application-id-vendor)
@@ -2220,6 +2325,16 @@ Basic-Service-Code ::= < AVP header: 3411 10415 > ;; corrected: (TS32.299.py#ven
     members at-least-one Bearer-Service Teleservice
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#basic-service-code-one-service)
+; AVP: Bearer-Service
+; Within: Basic-Service-Code
+; Section: 7.2.29A
+; Page: 122
+; Versions: 18.0.0..19.0.0
+"Either a Bearer-Service AVP or a Teleservice AVP is included."
+    excludes Teleservice
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#bearer-capability-cap)
 ; AVP: Bearer-Capability
 ; Section: 7.2.29B
@@ -2513,6 +2628,8 @@ Envelope ::= < AVP header: 1266 10415 > ;; corrected: (TS32.299.py#vendor-envelo
 ; Page: 133
 ; Versions: 18.0.0..19.0.0
 "If an envelope has not been closed at the time of the usage report, then the Envelope-End-Time AVP shall be absent."
+    text-only
+"The client shall include the volume reports (the CC-xxxxx-Octets AVPs) or events (CC-Service-Specific-Units AVP) if these were requested in the corresponding Envelope-Reporting AVP."
     text-only
 "Multiple occurrences of this AVP shall be in chronological order, i.e. the first envelope is listed first in CCR."
     text-only
@@ -3240,7 +3357,7 @@ Offline-Charging ::= < AVP header: 1278 10415 > ;; corrected: (TS32.299.py#vendo
 ; Versions: 18.0.0..19.0.0
 "The Multiple-Services-Credit-Control AVPs, if present, shall contain the Rating-Group AVP to identify the category, optionally one of Quota-Consumption-Time AVP and Time-Quota-Mechanism AVP, and optionally the Envelope-Reporting AVP."
     members at-least-one Rating-Group
-    members only Rating-Group Quota-Consumption-Time Time-Quota-Mechanism Envelope-Reporting
+    excludes Multiple-Services-Credit-Control/Quota-Consumption-Time and Multiple-Services-Credit-Control/Time-Quota-Mechanism
 
 
 ; Type: Enumerated AVP
@@ -3347,6 +3464,8 @@ PC5-Radio-Technology ::= < Enumerated AVP header: 1300 10415 >
 ; Section: 7.2.137A
 ; Page: 159
 ; Versions: 18.0.0..19.0.0
+"The PDP-Address-Prefix-Length AVP (AVP code 2606) is of type Unsigned32 and contains the prefix length of an IPv6 typed PDP-Address AVP."
+    range 0..128
 "The omission of this AVP for an IPv6 typed IP address implicitly means prefix length of 64 bits, as in this case the 64 bit prefix length default shall be assumed."
     text-only
 
@@ -3766,6 +3885,16 @@ PS-Information ::= < AVP header: 874 10415 > ;; corrected: (TS32.299.py#vendor-p
         [ PSCell-Info ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-quota-consumption-time-time-quota)
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Answer
+; Section: 7.2.159
+; Page: 169
+; Versions: 18.0.0..19.0.0
+"This AVP may be included within the Multiple-Services-Credit-Control AVP when this AVP also contains a Granted-Service-Units AVP containing a CC-Time AVP (i.e. when the granted quota is a time quota)."
+    excludes Multiple-Services-Credit-Control/Quota-Consumption-Time and not Multiple-Services-Credit-Control/Granted-Service-Unit/CC-Time
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-quota-holding-time)
 ; AVP: Multiple-Services-Credit-Control
 ; Command: Credit-Control-Request
@@ -3776,6 +3905,15 @@ PS-Information ::= < AVP header: 874 10415 > ;; corrected: (TS32.299.py#vendor-p
     absent-if Multiple-Services-Credit-Control/Quota-Holding-Time
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#radio-frequency-arfcn)
+; AVP: Radio-Frequency
+; Section: 7.2.160A
+; Page: 169
+; Versions: 18.0.0..19.0.0
+"The format of the value is according to the ARFCN-ValueEUTRA-r9 ASN.1 data type described in TS 36.331 [241]."
+    encoding element TS36.331 6.3.4 "ARFCN-ValueEUTRA-r9"
+
+
 ; Type: Grouped AVP
 ; Name: Radio-Parameter-Set-Info
 ; Section: 7.2.160B
@@ -3783,6 +3921,15 @@ PS-Information ::= < AVP header: 874 10415 > ;; corrected: (TS32.299.py#vendor-p
 Radio-Parameter-Set-Info ::= < AVP header: 3463 10415 > ;; corrected: (TS32.299.py#vendor-radio-parameter-set-info)
         [ Radio-Parameter-Set-Values ]
         [ Change-Time ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#radio-parameter-set-values-preconfiguration)
+; AVP: Radio-Parameter-Set-Values
+; Section: 7.2.160C
+; Page: 170
+; Versions: 18.0.0..19.0.0
+"The format of the value is according to the SL-Preconfiguration-r12 ASN.1 data type described in TS 36.331 [241]."
+    encoding element TS36.331 9.3.2 "SL-Preconfiguration-r12"
 
 
 ; Type: Grouped AVP
@@ -4026,6 +4173,8 @@ Reporting-Reason ::= < Enumerated AVP header: 872 10415 >
     requires Used-Service-Unit
 "The values QHT, FINAL, VALIDITY_TIME, FORCED_REAUTHORISATION, RATING_CONDITION_CHANGE, UNUSED_QUOTA_TIMER apply for all quota types and are used directly in the Multiple-Services-Credit-Control AVP, whereas the values THRESHOLD, QUOTA_EXHAUSTED and OTHER_QUOTA_TYPE apply to one particular quota type and shall occur only in the Used-Service-Units AVP."
     exclude 0, 3, 5
+"The value POOL_EXHAUSTED apply to all quota types using the credit pool and occurs in the Used-Service-Units AVP. It may optionally occur in the Multiple-Services-Credit-Control AVP if all quota types use the same pool."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#used-service-unit-reporting-reason)
@@ -4046,6 +4195,7 @@ Reporting-Reason ::= < Enumerated AVP header: 872 10415 >
 ; Versions: 18.0.0..19.0.0
 "When the value RATING_CONDITION_CHANGE is used, the Trigger AVP shall also be included to indicate the specific events which caused the re-authorization request."
     present-if Reporting-Reason = RATING_CONDITION_CHANGE
+    excludes Reporting-Reason = RATING_CONDITION_CHANGE and not Trigger/Trigger-Type
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#requested-party-address-different)
@@ -4212,14 +4362,24 @@ Service-Information ::= < AVP header: 873 10415 > ;; corrected: (TS32.299.py#ven
         [ CPDT-Information ]
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#service-information-subscription-id-rf)
-; AVP: Subscription-Id
-; Within: Service-Information
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#ccr-service-information-subscription-id)
+; AVP: Service-Information
+; Command: Credit-Control-Request
 ; Section: 7.2.192
 ; Page: 181
 ; Versions: 18.0.0..19.0.0
 "The Subscription-Id AVP in Service-Information AVP is only used on the Rf interface."
-    text-only
+    excludes Service-Information/Subscription-Id
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-service-information-subscription-id)
+; AVP: Service-Information
+; Command: Credit-Control-Answer
+; Section: 7.2.192
+; Page: 181
+; Versions: 18.0.0..19.0.0
+"The Subscription-Id AVP in Service-Information AVP is only used on the Rf interface."
+    excludes Service-Information/Subscription-Id
 
 
 ; Type: Grouped AVP
@@ -4510,6 +4670,8 @@ Tariff-Information ::= < AVP header: 2060 10415 > ;; corrected: (TS32.299.py#ven
 ; Section: 7.2.226A
 ; Page: 190
 ; Versions: 18.0.0..19.0.0
+"The Time-Indicator AVP (AVP code 3911) is of type Unsigned32 and instructs the announcement to be connected at the specified time before granted quota is exhausted, which ranges from zero to a value smaller than the granted quota."
+    text-only
 "Absence of this field indicates that the announcement is to be played before the IMS session is allowed to continue."
     text-only
 
@@ -4521,6 +4683,26 @@ Tariff-Information ::= < AVP header: 2060 10415 > ;; corrected: (TS32.299.py#ven
 Time-Quota-Mechanism ::= < AVP header: 1270 10415 > ;; corrected: (TS32.299.py#vendor-time-quota-mechanism)
         { Time-Quota-Type }
         { Base-Time-Interval }
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#cca-time-quota-mechanism-time-quota)
+; AVP: Multiple-Services-Credit-Control
+; Command: Credit-Control-Answer
+; Section: 7.2.228
+; Page: 190
+; Versions: 18.0.0..19.0.0
+"The OCS may include this AVP in a Multiple-Services-Credit-Control AVP, when granting time quota."
+    excludes Multiple-Services-Credit-Control/Time-Quota-Mechanism and not Multiple-Services-Credit-Control/Granted-Service-Unit/CC-Time
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#time-quota-threshold-time-quota)
+; AVP: Time-Quota-Threshold
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.229
+; Page: 191
+; Versions: 18.0.0..19.0.0
+"This AVP may be included within the Multiple-Services-Credit-Control AVP when this AVP also contains a Granted-Service-Units AVP containing a CC-Time AVP (i.e. when the granted quota is a time quota)."
+    requires Granted-Service-Unit/CC-Time
 
 
 ; Type: Enumerated AVP
@@ -4882,6 +5064,16 @@ Unit-Cost ::= < AVP header: 2061 10415 > ;; corrected: (TS32.299.py#vendor-unit-
         [ Exponent ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#unit-quota-threshold-unit-quota)
+; AVP: Unit-Quota-Threshold
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.240
+; Page: 197
+; Versions: 18.0.0..19.0.0
+"This AVP may be included within the Multiple-Services-Credit-Control AVP when this AVP also contains a Granted-Service-Units AVP containing CC-Service-Specific-Units AVP (i.e. when the granted quota is service specific) or within Rate-Element AVP.."
+    requires Granted-Service-Unit/CC-Service-Specific-Units
+
+
 ; Type: Grouped AVP
 ; Name: User-CSG-Information
 ; Section: 7.2.240A
@@ -4980,6 +5172,16 @@ UWAN-User-Location-Info ::= < AVP header: 3918 10415 > ;; corrected: (TS32.299.p
         [ Logical-Access-ID ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#volume-quota-threshold-volume-quota)
+; AVP: Volume-Quota-Threshold
+; Within: Multiple-Services-Credit-Control
+; Section: 7.2.243
+; Page: 200
+; Versions: 18.0.0..19.0.0
+"This AVP may be included within the Multiple-Services-Credit-Control AVP when this AVP also contains a Granted-Service-Units AVP containing a CC-Total-Octets AVP, CC-Input-Octets AVP or CC-Output-Octets AVP (i.e. when the granted quota is a volume quota)."
+    requires Granted-Service-Unit/CC-Total-Octets or Granted-Service-Unit/CC-Input-Octets or Granted-Service-Unit/CC-Output-Octets
+
+
 ; Type: Grouped AVP
 ; Name: WLAN-Operator-Id
 ; Section: 7.2.251
@@ -5033,6 +5235,14 @@ PSCell-Info ::= < AVP header: 1324 10415 > ;; corrected: (TS32.299.py#vendor-psc
       * [ 3GPP-OC-Request-Type ]
         [ OC-Reduction-Percentage ]
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS32.299.dadx#oc-specific-reduction-members)
+; AVP: 3GPP-OC-Specific-Reduction
+; Section: B.2.3
+; Versions: 18.0.0..19.0.0
+"It details the for which Rating Group, type of requests or both the reduction, due to overload, should be applied."
+    members at-least-one 3GPP-OC-Rating-Group 3GPP-OC-Request-Type
 
 
 ; Type: Grouped AVP

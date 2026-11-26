@@ -809,6 +809,18 @@ DIAMETER_USER_UNKNOWN                  = 5030 ; 9.2
 DIAMETER_RATING_FAILED                 = 5031 ; 9.2
 
 
+; Type: Interpreted Constraints ;; interpreted: (RFC4006.dadx#cca-base-failed-avp)
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 9
+; Page: 79
+"The Credit-Control-Answer message includes the Result-Code AVP, which may indicate that an error was present in the Credit-Control-Request message."
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
 ; Type: Interpreted Constraints ;; interpreted: (RFC4006.dadx#cca-rating-failed-result-failed-avp)
 ; AVP: Failed-AVP
 ; Command: Credit-Control-Answer

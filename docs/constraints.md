@@ -376,13 +376,15 @@ TS 29.214's 6 name 6 entries, of which 5 check something:
 | Framed-IPv6-Prefix | RFC 3162 2.3 Framed-IPv6-Prefix | RFC 3162 (August 2001) 2.3 | as TS 29.212's | partial | as TS 29.212's |
 | Framed-IPv6-Prefix (the AF's) | TS 29.214 5.4.0 Framed-IPv6-Prefix | TS 29.214 V19.3.0 5.4.0; RFC 3162 (August 2001) 2.3 | 18 octets; octet 1 (Reserved) 00000000; octet 2 (Prefix-Length) 10000000 | full | the address takes any value |
 
-TS 32.299's 6 name 6 entries, of which 3 check something:
+TS 32.299's 8 name 8 entries, of which 3 check something:
 
 | AVP | Element | Read | Checked | Depth | Not checked |
 |---|---|---|---|---|---|
 | Bearer-Capability | TS 29.078 5.1 BearerCapability | TS 29.078 V19.0.0 5.1; TS 29.078 V19.0.0 5.5 | 2 to 11 octets | length | the User Service Information's fields are ETSI EN 300 356-1's, a document the corpus does not hold, and are not read |
 | Location-Estimate | TS 23.032 7 Geographical area description | TS 23.032 V19.0.0 7.2; TS 23.032 V19.0.0 7.3.1 | at least 7 octets | partial | the shape's own layout and length are not checked: the AVP may carry any of them; the type codes table 2a reserves are not refused, since the clause does not say they are not sent |
 | PDN-Connection-Charging-ID | TS 29.061 16.4.7.2 3GPP-Charging-Id | TS 29.061 V19.1.0 16.4.7.2 | a 32-bit charging identifier: every value of the Unsigned32 | full |  |
+| Radio-Frequency | TS 36.331 6.3.4 ARFCN-ValueEUTRA-r9 | TS 36.331 V19.4.0 6.3.4; TS 36.331 V19.4.0 8.1 | nothing | none | the clause gives an ASN.1 type, and clause 8.1's unaligned PER is the transfer syntax of RRC PDUs: neither it nor TS 32.299 clause 7.2.160A says by which rules the OctetString encodes the value |
+| Radio-Parameter-Set-Values | TS 36.331 9.3.2 SL-Preconfiguration-r12 | TS 36.331 V19.4.0 9.3.2; TS 36.331 V19.4.0 8.1 | nothing | none | the clause gives an ASN.1 type, which no shape of the registry decodes, and neither it nor TS 32.299 clause 7.2.160C says by which encoding rules the OctetString carries it |
 | SM-User-Data-Header | TS 23.040 9.2.3.24 User-Data-Header | TS 23.040 V19.0.0 9.2.3.24 | at least 1 octet | length | whether the AVP carries the Length of User Data Header octet before the information elements neither document says, so the lengths the header's fields give are not checked; an identifier the clause reserves is skipped by the receiver, not refused |
 | WLAN-Operator-Name | TS 23.003 19.8 TWAN Operator Name | TS 23.003 V19.8.0 19.8 | nothing | none | no shape of the registry reads a domain name's labels, their characters and how each begins and ends |
 | Nr-Cgi | TS 23.003 19.6A NCGI | TS 23.003 V19.8.0 19.6A | nothing | none | the clause gives the NCGI as a PLMN identity and 36 bits, and neither it nor TS 32.299 clause 7.2.254 says how a UTF8String spells them |
@@ -1228,39 +1230,43 @@ what an Rx message carries.
 
 TS 32.299 V19.0.0 is read completely for Rf and Ro: clause 6's procedure
 clauses for what they state of one message, clause 7.1's Diameter AVPs and
-every AVP clause of clause 7.2's 3GPP specific AVPs, 7.2.0A to 7.2.255.
-Clauses 7.3 to 7.5 only list other documents' AVPs. Release 18's copy,
-V18.0.0, prints every sentence read and holds all 84 blocks. The commands'
-information-element tables of clauses 6.2 and 6.4 give each member's
-category, OM, OC, M, O or `-` for an AVP 3GPP does not use, which the corpus
-already reads ([grammar.md](grammar.md#information-elements)), so no block
-restates them; their descriptions state no other condition one message
-shows. Rf's commands print once under 3 and Ro's once under 4.
+every AVP clause of clause 7.2's 3GPP specific AVPs, 7.2.0A to 7.2.255,
+and Annex B's overload control AVPs. Clauses 7.3 to 7.5 only list other
+documents' AVPs. Release 18's copy, V18.0.0, prints every sentence read and
+holds all 103 blocks. The commands' information-element tables of clauses
+6.2 and 6.4 give each member's category, OM, OC, M, O or `-` for an AVP
+3GPP does not use, which the corpus already reads
+([grammar.md](grammar.md#information-elements)), so no block restates
+them; two descriptions state more, read at their tables: the CCA's
+G-S-U-Pool-Reference "Only used in ECUR and SCUR", and the CCR's
+Announcement-Information "Not used in CCR", which its category OC
+contradicts. Rf's commands print once under 3 and Ro's once under 4.
 
 | | |
 |---|---|
-| clause 6's procedure clauses (6.1.1, 6.1.2, 6.3.3 to 6.3.5, 6.5.1.1, 6.5.3, 6.5.4, 6.5.10.3) | 14 blocks |
+| clause 6's procedure clauses and tables (6.1.1, 6.1.2, 6.3.3 to 6.3.5, 6.4.2, 6.4.3, 6.5.1.1, 6.5.3, 6.5.4, 6.5.10.3) | 18 blocks |
 | clause 7.1's AVP clauses (not its General and Void clauses) | 17 |
-| with something to declare | 8, in 10 blocks |
+| with something to declare | 9, in 15 blocks |
 | clause 7.2's AVP clauses, 7.2.0A to 7.2.255 (not Void) | 417 |
-| with something to declare | 50, in 60 blocks |
-| blocks | 84: 48 on an AVP wherever read, 15 within a grouped AVP, 21 within a command |
-| readings | 102 |
+| with something to declare | 57, in 69 blocks |
+| Annex B's overload control AVPs (B.2.1 to B.2.3) | 1 block |
+| blocks | 103: 50 on an AVP wherever read, 18 within a grouped AVP, 35 within a command |
+| readings | 126 |
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 4: `e164-tbcd` 3 (ISUP-Location-Number, MSC-Address, VLR-Number), `apn` (Called-Station-Id) |
-| `encoding element` | 6, naming 6 entries of the registry, 3 checked ([above](#elements)) |
+| `encoding`, a codec | 4: `e164-tbcd` 3 (ISUP-Location-Number, MSC-Address, VLR-Number), `labels` (Called-Station-Id) |
+| `encoding element` | 8, naming 8 entries of the registry, 3 checked ([above](#elements)) |
 | `length` | 1: SM-Status, 1 octet |
-| `range` | 3: Acct-Application-Id 3, Auth-Application-Id 4, Vendor-Specific-Application-Id's Vendor-Id 10415 |
+| `range` | 7: Acct-Application-Id 3 in ACR and ACA, Auth-Application-Id 4 in CCR, CCA and RAR, Vendor-Specific-Application-Id's Vendor-Id 10415, PDP-Address-Prefix-Length 0 to 128 |
 | `exclude` | 1: a Multiple-Services-Credit-Control's Reporting-Reason, none of the values one quota type's Used-Service-Unit carries |
-| `requires`, `present-if`, `absent-if`, `excludes` | 4, 5, 2, 3 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 7, 7, 2, 11 |
 | `absent` | 6: Reporting-Reason at the level of each command |
 | `values` | 11: an ACA's Accounting-Record-Type and a CCA's CC-Request-Type the request's, in clauses 6.1.1, 6.1.2 and 6.3.3 to 6.3.5's flows |
 | reading the request | 13: the 11 `values` rules, and the initial ACA's and CCA's Supported-Features with DIAMETER_ERROR_FEATURE_UNSUPPORTED |
 | `default` | 14 |
-| `members` | 4: `at-least-one` 3 (Address-Domain, Basic-Service-Code, Offline-Charging's Multiple-Services-Credit-Control's Rating-Group), `only` (that Multiple-Services-Credit-Control's members) |
-| `text-only` | 39, one of them the Supported-Features Vendor-Id |
+| `members` | 4, each `at-least-one`: Address-Domain, Basic-Service-Code, Offline-Charging's Multiple-Services-Credit-Control's Rating-Group, 3GPP-OC-Specific-Reduction's rating group or request type |
+| `text-only` | 45, one of them the Supported-Features Vendor-Id |
 
 Most checked rules are defaults ("If this AVP is not present, this means
 ...") and clause 7.2.175's Reporting-Reason: never at command level, sent
@@ -1282,13 +1288,43 @@ the request's Supported-Features, which the ACR's and CCR's ABNF leave to
 their `* [ AVP ]`, no rule reads, and an answer with
 DIAMETER_ERROR_FEATURE_UNSUPPORTED answers a request holding one.
 
+The rest are read where the document prints the AVPs they bind. Each
+Multiple-Services-Credit-Control of an Offline-Charging holds its
+Rating-Group and not both Quota-Consumption-Time and Time-Quota-Mechanism
+(clause 7.2.121), each instance read through paths from it; the clause lists
+what the AVP carries for offline control, not that its `* [ AVP ]` admits
+nothing else. A threshold is sent beside a Granted-Service-Unit of its unit
+(clauses 7.2.229, 7.2.240, 7.2.243), within Multiple-Services-Credit-Control,
+and a Quota-Consumption-Time or Time-Quota-Mechanism beside a time quota
+(7.2.159, 7.2.228) in a CCA's own Multiple-Services-Credit-Control, since
+Offline-Charging's sets the mechanism with no quota granted. A CCA answering
+an EVENT_REQUEST, IEC's, holds no G-S-U-Pool-Reference, ECUR's and SCUR's
+alone (table 6.4.3.1); a Trigger beside RATING_CONDITION_CHANGE names a
+Trigger-Type, an empty one resetting the triggers instead (6.5.1.2); a
+Basic-Service-Code holds one of Bearer-Service and Teleservice; the
+Service-Information of Ro's CCR and CCA holds no Subscription-Id, "only
+used on the Rf interface"; and Acct-Application-Id is 3 in the ACR and ACA,
+Auth-Application-Id 4 in the CCR, CCA and RAR. Clause 7.1.11 has the
+Result-Code operate as RFC 6733 and RFC 4006 describe it: the document's
+own blocks on the ACA's and CCA's Failed-AVP set aside RFC 6733's reading of
+every answer ([Precedence](#precedence)), so the ACA and the CCA read its
+seven codes again beside DIAMETER_RATING_FAILED, as RFC 4006's and RFC
+8506's CCA do. A CCR's Presence-Reporting-Area-Information holding both the
+identifier and the status no path binds, the PS-Information holding
+several.
+
 The text-only rules are conditions on the SIP signalling, the charging
 domain, the node's configuration or an earlier message (Called-Asserted-
 Identity "when the P-Asserted-Identity SIP header field is available",
 User-Equipment-Info's digits for PS or IMS charging, Refund-Information "if
 previously received in CCA for IEC", the client's default
-Quota-Holding-Time, the server's support of Supported-Features), texts and
-orders no kind reads (Service-Context-Id's form, the Envelopes' and
+Quota-Holding-Time, the server's support of Supported-Features, the
+features a request is constructed with, the Envelope's reports an earlier
+Envelope-Reporting asked for, POOL_EXHAUSTED in the
+Multiple-Services-Credit-Control "if all quota types use the same pool"),
+texts, orders and comparisons no kind reads (User-Name's NAI,
+Time-Indicator below the granted quota, Service-Context-Id's form, the
+Envelopes' and
 Transit-IOI-List's chronological order, Message-Body's Content-Type,
 Variable-Part-Value's digits by its Variable-Part-Type), what an absent AVP
 means where that is no value or no `default` holds alone
@@ -1297,11 +1333,14 @@ absent Quota-Consumption-Time, which within Offline-Charging's
 Multiple-Services-Credit-Control is the Offline-Charging AVP's own;
 Time-Indicator's), and NOTEs, which state no requirement (SDP-Media-
 Component's charging identifiers, Trigger-Type's values not used together).
-Authorised-QoS's and Subscriber-Role's "This AVP is not used", Service-
-Information's Subscription-Id "only used on the Rf interface" and
+Authorised-QoS's and Subscriber-Role's "This AVP is not used" and
 SM-Discharge-Time "only used in scenarios in which the delivery of the
-Delivery-Report ... is being charged" are text-only, as TS 29.272's "is not
-used in S6a/S6d" is.
+Delivery-Report ... is being charged" are text-only. The values for all
+quota types of clause 7.2.175 "are used directly" in the
+Multiple-Services-Credit-Control, which says what they mean, not that a
+Used-Service-Unit never carries one; UNI-PDU-CP-Only-Flag's default is the
+value 0 an absent AVP means, the clause's "when Control Plane CIoT EPS
+Optimization is enabled" qualifying both.
 
 The document is wrong in places the corpus reads around: clause 7.2.171Ab
 holds Related-Trigger to a Trigger-Type "indirect change condition" clause
@@ -1311,20 +1350,25 @@ at the end of value 73's description paragraph, which a correction inserts as
 Trigger-Type's value 74, and clause 7.2.207 prints SM-Message-Type's value 2
 "2. SM Service Request", which an input patch reads as the others are read;
 clause 7.2.46B's heading and text name CSG-Membership-Indication
-CSG--Indication; clause 7.2.35B types Civic-Address-Information
-OctetString where table 7.2.0.1 types it UTF8String; clause 6.5.1.3 names
+CSG--Indication; clause 7.2.138's PDP-Context-Type "shall only be present
+in the CCR[Initial]", which the CCR's block reads, where table 7.2.0.1 marks
+it for the ACR too, so no ACR's is read absent; table 6.4.2.1 puts
+Announcement-Information OC in the CCR beside "Not used in CCR.", which
+table 7.2.0.1, marking it for the CCA alone, agrees with, read `text-only`;
+clause 7.2.103's "application-sdp" is no media type, read `text-only`;
+clause 7.2.35B types Civic-Address-Information OctetString where table
+7.2.0.1 types it UTF8String; clause 6.5.1.3 names
 RATING_CONDITION_CHANGE RATING_CONDITION_ANGE, beside the sentences clause
 7.2.175 states and the file reads there; and clause 6.5.5 names
 DIAMETER_AUTHORIZATION_REJECTED DIAMETER-AUTHORIZATION-REJECTED. Left
-unread: "may" and "is" sentences (Quota-Consumption-Time "may be included
-within the Multiple-Services-Credit-Control AVP when", the thresholds'
-"may be included ... when", Traffic-Data-Volumes' 3GPP-Charging-Id "is
+unread: "is" sentences (Traffic-Data-Volumes' 3GPP-Charging-Id "is
 included when charging per IP-CAN session is active", Served-Party-IP-
 Address "only provided by the P-CSCF"); the sentences saying a value is
 "only applicable" (Trigger-Type's 24 and 62, the CCR table's 3GPP-RAT-Type);
 the Rating-Group's "unique Rating Group value" of each quota, which RFC 4006
 states; the result codes' descriptions of clause 7.1.11 but
-DIAMETER_RATING_FAILED's Failed-AVP, and the result codes clause 6's
+DIAMETER_RATING_FAILED's Failed-AVP and the Result-Code's operating as RFC
+6733 and RFC 4006 describe it, and the result codes clause 6's
 procedures answer with, which are what a node answers, not a condition on
 an AVP; and clause 6.3.7.1's Tariff-Change-Usage "not used directly within
 the Multiple-Services-Credit-Control AVP", which the command's struck member
@@ -2018,15 +2062,15 @@ has one edition, so no block names `; Versions:`.
 
 | | |
 |---|---|
-| sections 3 to 9.2 (the commands, the procedures, the AVPs, the result codes) | 41 blocks |
+| sections 3 to 9.2 (the commands, the procedures, the AVPs, the result codes) | 42 blocks |
 | section 10.1's table, each "0" cell of an AVP the command's body admits only through `* [ AVP ]` | 26 blocks |
-| blocks | 67: 48 within a command, 8 within a grouped AVP, 11 on an AVP wherever read |
-| readings | 73 |
+| blocks | 68: 49 within a command, 8 within a grouped AVP, 11 on an AVP wherever read |
+| readings | 74 |
 
 | Rules | |
 |---|---|
 | `range` | 1: the CCR's Auth-Application-Id 4 |
-| `present-if` | 8: the CCA's Failed-AVP with DIAMETER_RATING_FAILED (sections 4.1.3, 8.43, 9.2), the CCR's Service-Identifier for a PRICE_ENQUIRY, its Subscription-Id for a CHECK_BALANCE and its Requested-Action for an EVENT_REQUEST, Final-Unit-Indication's Redirect-Server for REDIRECT (8.34, 8.37) |
+| `present-if` | 9: the CCA's Failed-AVP with DIAMETER_RATING_FAILED (sections 4.1.3, 8.43, 9.2) and with RFC 6733's seven codes (9), the CCR's Service-Identifier for a PRICE_ENQUIRY, its Subscription-Id for a CHECK_BALANCE and its Requested-Action for an EVENT_REQUEST, Final-Unit-Indication's Redirect-Server for REDIRECT (8.34, 8.37) |
 | `absent-if` | 3: the CCR's Multiple-Services-Credit-Control without a Requested-Service-Unit in an INITIAL_REQUEST (5.2, 8.16), or holding a Tariff-Change-Usage |
 | `excludes` | 2: Final-Unit-Indication with TERMINATE holding nothing else, a G-S-U-Pool-Reference's unit type absent from its Granted-Service-Unit |
 | `values` | 3: the CCR's CC-Request-Type EVENT_REQUEST for a PRICE_ENQUIRY, a CHECK_BALANCE and a REFUND_ACCOUNT |
@@ -2046,6 +2090,11 @@ G-S-U-Pool-Reference names the unit type of a pool, and the
 Multiple-Services-Credit-Control's Granted-Service-Unit holds that type's
 units (8.16): TIME its CC-Time, MONEY its CC-Money, each octet type its
 count and SERVICE-SPECIFIC-UNITS its CC-Service-Specific-Units (8.32).
+The document's own blocks on the CCA's Failed-AVP set aside RFC 6733's
+reading of every answer ([Precedence](#precedence)), so the CCA reads its
+seven codes again, on section 9's "The Credit-Control-Answer message
+includes the Result-Code AVP, which may indicate that an error was present
+in the Credit-Control-Request message", beside DIAMETER_RATING_FAILED.
 
 The text-only rules are conditions on the session or an earlier message
 (the session's one Session-Id, the first UPDATE_REQUEST's CC-Request-Number
@@ -2091,10 +2140,10 @@ one edition, so no block names `; Versions:`.
 
 | | |
 |---|---|
-| sections 3 to 9.2 (the commands, the procedures, the AVPs, the result codes) | 67 blocks |
+| sections 3 to 9.2 (the commands, the procedures, the AVPs, the result codes) | 68 blocks |
 | section 10.1's table, each "0" cell of an AVP the command's body admits only through `* [ AVP ]` | 29 blocks |
-| blocks | 96: 51 within a command, 20 within a grouped AVP, 25 on an AVP wherever read |
-| readings | 103 |
+| blocks | 97: 52 within a command, 20 within a grouped AVP, 25 on an AVP wherever read |
+| readings | 104 |
 
 | Rules | |
 |---|---|
@@ -2102,7 +2151,7 @@ one edition, so no block names `; Versions:`.
 | `encoding element` | 4, naming 4 entries of the registry; 2 rules checked, 2 not ([above](#elements)) |
 | `length` | 1: User-Equipment-Info-EUI64, 8 octets |
 | `range` | 1: the CCR's Auth-Application-Id 4 |
-| `present-if` | 10: RFC 4006's eight, the CCR's Subscription-Id for a CHECK_BALANCE only where it holds no Subscription-Id-Extension, and QoS-Final-Unit-Indication's Redirect-Server-Extension for REDIRECT (8.64, 8.68) |
+| `present-if` | 11: RFC 4006's nine, the CCR's Subscription-Id for a CHECK_BALANCE only where it holds no Subscription-Id-Extension, and QoS-Final-Unit-Indication's Redirect-Server-Extension for REDIRECT (8.64, 8.68) |
 | `absent-if` | 2: the CCR's Multiple-Services-Credit-Control without a Requested-Service-Unit in an INITIAL_REQUEST (5.2, 8.16) |
 | `excludes` | 13: Final-Unit-Indication and QoS-Final-Unit-Indication with TERMINATE holding nothing else, a G-S-U-Pool-Reference's unit type absent from its Granted-Service-Unit, and the members of User-Equipment-Info-Extension (4), Subscription-Id-Extension (4) and Redirect-Server-Extension (2) two at a time |
 | `values` | 3: as RFC 4006's |

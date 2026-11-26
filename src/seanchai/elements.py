@@ -541,6 +541,7 @@ _S1AP = ("TS36.413", "19.2.0")
 _RANAP = ("TS25.413", "19.0.0")
 _BSSGP = ("TS48.018", "19.0.0")
 _EPS_NAS = ("TS24.301", "19.8.0")
+_RRC = ("TS36.331", "19.4.0")
 
 
 def _network_name(clause: str, attribute: str, field: str) -> Element:
@@ -2220,6 +2221,57 @@ REGISTRY: tuple[Element, ...] = (
         "the clause gives the NCGI as a PLMN identity and 36 bits, and"
         " neither it nor TS 32.299 clause 7.2.254 says how a UTF8String"
         " spells them",
+    ),
+    Element(
+        "TS36.331",
+        "6.3.4",
+        "ARFCN-ValueEUTRA-r9",
+        "an E-UTRA carrier frequency's ARFCN, 0 to maxEARFCN2 (262143)",
+        (
+            _source(
+                _RRC,
+                "6.3.4",
+                "'ARFCN-ValueEUTRA-r9 ::= INTEGER (0..maxEARFCN2)'",
+            ),
+            _source(
+                _RRC,
+                "8.1",
+                "'Transfer syntax for RRC PDUs is derived from their ASN.1"
+                " definitions by use of Packed Encoding Rules, unaligned'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the clause gives an ASN.1 type, and clause 8.1's unaligned PER is"
+        " the transfer syntax of RRC PDUs: neither it nor TS 32.299 clause"
+        " 7.2.160A says by which rules the OctetString encodes the value",
+    ),
+    Element(
+        "TS36.331",
+        "9.3.2",
+        "SL-Preconfiguration-r12",
+        "a UE's sidelink pre-configured parameters: the general, the"
+        " synchronisation and the communication pools' parameters",
+        (
+            _source(
+                _RRC,
+                "9.3.2",
+                "'SL-Preconfiguration-r12 ::= SEQUENCE {', its"
+                " preconfigGeneral-r12, preconfigSync-r12 and"
+                " preconfigComm-r12 and their extensions",
+            ),
+            _source(
+                _RRC,
+                "8.1",
+                "'Transfer syntax for RRC PDUs is derived from their ASN.1"
+                " definitions by use of Packed Encoding Rules, unaligned'",
+            ),
+        ),
+        (),
+        Depth.NONE,
+        "the clause gives an ASN.1 type, which no shape of the registry"
+        " decodes, and neither it nor TS 32.299 clause 7.2.160C says by"
+        " which encoding rules the OctetString carries it",
     ),
     Element(
         "TS23.040",

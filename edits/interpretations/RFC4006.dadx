@@ -430,6 +430,23 @@
     text-only
 
 
+;; The document's own blocks on the CCA's Failed-AVP set aside RFC 6733's
+;; reading of every answer (section 7.1.5), so the CCA reads its codes
+;; again here: an error in the request reported by one of the base
+;; protocol's seven permanent failures whose section has the answer carry a
+;; Failed-AVP.
+; Type: Interpreted Constraints
+; Id: cca-base-failed-avp
+; AVP: Failed-AVP
+; Command: Credit-Control-Answer
+; Section: 9
+"The Credit-Control-Answer message includes the Result-Code AVP, which may indicate that an error was present in the Credit-Control-Request message."
+    present-if Result-Code in DIAMETER_AVP_UNSUPPORTED,
+        DIAMETER_INVALID_AVP_VALUE, DIAMETER_CONTRADICTING_AVPS,
+        DIAMETER_AVP_NOT_ALLOWED, DIAMETER_AVP_OCCURS_TOO_MANY_TIMES,
+        DIAMETER_INVALID_AVP_LENGTH, DIAMETER_INVALID_AVP_BIT_COMBO
+
+
 ;; As section 4.1.3's.
 ; Type: Interpreted Constraints
 ; Id: cca-rating-failed-result-failed-avp
