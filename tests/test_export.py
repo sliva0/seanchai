@@ -424,9 +424,12 @@ def test_a_document_carries_its_sections_targets_and_corrections(exported):
     }
 
     s6a = exported.docs["29272-j60"]["lines"]
-    (avp_line,) = [line for line in s6a if _text([line]).startswith("; AVP: ULR-Flags")]
-    (avp,) = _tokens([avp_line], "ULR-Flags")
-    assert avp["target"] == {"document": "29272-j60", "section": "7.3.7"}
+    # The value table's line, and the interpreted blocks' on the AVP.
+    avp_lines = [line for line in s6a if _text([line]).startswith("; AVP: ULR-Flags")]
+    assert avp_lines
+    for avp_line in avp_lines:
+        (avp,) = _tokens([avp_line], "ULR-Flags")
+        assert avp["target"] == {"document": "29272-j60", "section": "7.3.7"}
     cx = exported.docs["29229-j10"]["lines"]
     row = next(
         line

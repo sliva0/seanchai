@@ -30,7 +30,7 @@ from the printed facts, so a consumer can weigh it:
   checked against. An RFC has one edition and no version, and its blocks
   name none. A reading is carried to another release's copy only once
   its sentences are found there, and is otherwise left out of that copy: of
-  TS 29.272's 157, Release 18's copy holds 152
+  TS 29.272's 350, Release 19's copy holds 345 and Release 18's 339
   ([below](#the-interpretations-file)).
 - The model's `Constraint`, the dictionary's and the export's say
   `interpreted`; the Wireshark plugin reports a breach as a note, whatever
@@ -189,7 +189,7 @@ name. A layout no clause states is not here.
 | `plmn-domain` | `mnc<MNC>.mcc<MCC>.3gppnetwork.org`, MNC 2 or 3 digits, MCC 3, in any case | TS 29.272 clause 7.3.105 |
 | `epc-plmn-domain` | `epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org` | TS 29.272 clause 7.3.43 |
 | `ip-address` | an Address of family 1 (IPv4, 4 octets) or 2 (IPv6, 16) | RFC 6733 clause 4.3.1, as TS 29.272 clauses 7.3.98 and 7.3.109 restrict it |
-| `time-zone` | a sign and decimal digits, the offset from UTC in 15 minutes: `+8` | TS 29.272 clause 7.3.163 |
+| `time-zone` | a sign and decimal digits, the offset from UTC in 15 minutes: `+8`, a zero offset `+0`, never `-0` | TS 29.272 clause 7.3.163 |
 | `mac-address` | a 6-octet MAC address as text, each octet two upper-case hexadecimal digits, joined by dashes: `00-10-A4-23-19-C0` | TS 29.273 clauses 5.2.3.23 and 5.2.3.30 |
 | `ip-filter` | an IPFilterRule as TS 29.212 restricts it: `permit`, `in` or `out`, a protocol number or `ip`, `from` a source and `to` a destination, each `any`, `assigned` or an IPv4 or IPv6 number with an optional mask width, then optional ports and port ranges; no options, no `!` | RFC 6733 clause 4.3.1, as TS 29.212 clause 5.3.34 restricts it |
 | `ip-filter-out` | an `ip-filter` of the direction `out`: `permit out 17 from 192.0.2.10/32 5060 to assigned` | TS 29.212 clauses 5.3.13, 5.3.54 and 5.4.2 |
@@ -245,10 +245,14 @@ E-UTRAN-CGI to TS 29.118 clause 9.4.3a and on to TS 29.274's ECGI field. The
 editions are Release 19's latest of each document the interpreted documents
 cite non-specifically, as their references clauses mean; 3GPP2 publishes
 A.S0022-0 v2.0 as its newest. Release 18's copies are held to the same
-entries, though their references mean Release 18's editions, which were not
-read: where an element differs between the releases (a trace bitmap of TS
-32.422 with fewer octets), a Release 18 sender draws a note it does not
-deserve. Each says how deep its check goes, its `depth`:
+entries, though their references mean Release 18's editions, which were
+mostly not read: where an element differs between the releases, a Release
+18 sender would draw a note it does not deserve. TS 32.422's last Release
+18 edition, V18.7.0, was read against V19.7.0 for the trace entries: its
+Triggering Events, List of NE Types and List of Interfaces print the same
+octets and bits, and of clause 5.10's elements only List of Measurements
+differs, V19.7.0 numbering M10 in a bit V18.7.0 leaves spare, which the
+entry does not check. Each says how deep its check goes, its `depth`:
 
 - `full`: everything the document lets a sender get wrong is checked; an
   entry whose every value is defined checks nothing and says so (TS 24.008's
@@ -278,7 +282,7 @@ The linter notes an element the registry has no entry for as
 `constraint-element-unknown`: another document's interpretations may name
 one before the registry learns it, and nothing checks it meanwhile.
 
-TS 29.272's 43 `encoding element` rules name 40 entries, of which 34 check
+TS 29.272's 45 `encoding element` rules name 42 entries, of which 36 check
 something:
 
 | AVP | Element | Read | Checked | Depth | Not checked |
@@ -296,6 +300,7 @@ something:
 | Trace-Event-List | TS 32.422 5.1 Triggering Events | TS 32.422 V19.7.0 5.1 | 17 octets | length | the spare bits in each network element's bitmap are not checked: several of the bitmaps print fewer cells than bits, so which bits a spare cell spans is not certain |
 | OMC-Id | TS 29.002 17.7.8 AddressString | TS 29.002 V19.1.0 17.7.2; TS 29.002 V19.1.0 17.7.8 | 1 to 20 octets; octet 1 bit 8 (extension, 1 for no extension) 1; octets 2 on TBCD digits (0-9, *, #, a, b, c), '1111' filling only the last octet's bits 8-5 | full | the nature of address and numbering plan values the type marks reserved are not refused, since it does not say they are not sent |
 | PDP-Type | TS 29.002 17.7.1 PDP-Type | TS 29.002 V19.1.0 17.7.1; TS 29.060 V19.0.0 7.7.27 | 2 octets; octet 1 bits 8-5 (spare) 1111; octet 1 bit 4 to octet 2 bit 1 (PDP type organisation and number) PPP (0x001), Non-IP (0x002), IPv4 (0x121) or IPv6 (0x157) | full |  |
+| Ext-PDP-Type | TS 29.002 17.7.1 Ext-PDP-Type | TS 29.002 V19.1.0 17.7.1; TS 29.060 V19.0.0 7.7.27 | 2 octets; octet 1 bits 8-5 (spare) 1111; octet 1 bit 4 to octet 2 bit 1 (PDP type organisation and number) IPv4v6 (0x18D) | full |  |
 | QoS-Subscribed | TS 29.002 17.7.1 QoS-Subscribed | TS 29.002 V19.1.0 17.7.1; TS 24.008 V19.5.0 10.5.6.5 | 3 to 18 octets | length | the octets' fields are not checked: TS 24.008 has the receiver map a reserved value to another rather than refuse it, and its spare bits are ignored by the receiving side (clause 10.5) |
 | CSG-Id | TS 23.003 4.7 CSG-ID | TS 23.003 V19.8.0 4.7 | nothing | none | the document fixes only the identity's 27 bits; where they sit in the Unsigned32 AVP is TS 29.272's own sentence, read as a bits rule beside it |
 | SS-Code | TS 29.002 17.7.5 SS-Code | TS 29.002 V19.1.0 17.7.5 | 1 octet; octet 1 (SS-Code) a code clause 17.7.5 defines | full |  |
@@ -310,6 +315,7 @@ something:
 | Service-Area-Identity | TS 29.002 17.7.8 CellGlobalIdOrServiceAreaIdFixedLength | TS 29.002 V19.1.0 17.7.8 | 7 octets; a PLMN identity in octets 1 to 3 | full | the location area code and the cell identity or service area code take any value |
 | Geographical-Information | TS 29.002 17.7.1 GeographicalInformation | TS 29.002 V19.1.0 17.7.1; TS 23.032 V19.0.0 7.3.2; TS 23.032 V19.0.0 7.2 | 8 octets; octet 1 bits 8-5 (type of shape) 0001; octet 1 bits 4-1 (spare) 0000; octet 8 bit 8 (spare) 0 | full | the latitude, longitude and uncertainty code take any value |
 | Geodetic-Information | TS 29.002 17.7.1 GeodeticInformation | TS 29.002 V19.1.0 17.7.1; ITU-T Q.763 (12/1999) 3.88 | 10 octets; octet 1 bits 8-5 (spare) 0000; octet 2 bits 7-1 (type of shape) 0000001; octet 9 bit 8 (spare) 0; octet 10 bit 8 (spare) 0; octet 10 bits 7-1 (confidence) 0 to 100 | full | the extension bit's value for a parameter of one octet of shape is not stated; the LPRI's spare code 11 is one for future use, not refused |
+| Age-Of-Location-Information | TS 29.002 17.7.8 AgeOfLocationInformation | TS 29.002 V19.1.0 17.7.8 | an integer 0 to 32767 | full |  |
 | List-Of-Measurements | TS 32.422 5.10.3 List of Measurements | TS 32.422 V19.7.0 5.10.3 | octet 2 bit 8 (spare) 0; octets 3 to 4 (spare) all 0 | partial | only the bits spare in every RAT's table are checked: the AVP does not say which RAT its bits are read for, and octet 2's other spare bits are measurements in another RAT |
 | Reporting-Trigger | TS 32.422 5.10.4 Reporting Trigger | TS 32.422 V19.7.0 5.10.4 | nothing | none | the document defines one octet, TS 29.272 an Unsigned32 whose most significant bit is bit 8 of its first octet, so which of the four octets holds the bitmap is said by neither |
 | Event-Threshold-RSRP | TS 32.422 5.10.7 Event Threshold for Event A2 | TS 32.422 V19.7.0 5.10.7 | an integer 0 to 127 | partial | an LTE threshold's narrower range (RSRP 0-97, RSRQ 0-34) is not checked: the AVP does not say which RAT it is for |
@@ -587,8 +593,12 @@ the document's corrections:
   document's copies newest first, so that going back widens a block one
   release at a time. A copy of a release the corpus holds only for
   citations (TS 29.212's Release 11) is offered nothing unless the run is
-  given `--offer-cited`. Release 18's copy holds 152 of TS 29.272's 157;
-  the five it does not read sentences Release 19 added.
+  given `--offer-cited`. Release 18's copy holds 339 of TS 29.272's 350:
+  six it does not read sentences Release 19 added, and five read a bit
+  table Release 19 extends, a block for each release's table (`bits only`
+  of ULR-Flags, MPS-Priority, Subscription-Data-Flags,
+  Supported-Monitoring-Events and AIR-Flags), which merging keeps apart,
+  as no clause takes two blocks on one AVP and scope.
 - `corrections.json` records each block by its citation, kind `interpret`,
   with its clause and quotes
   ([corrections.md](corrections.md#the-corrections-record)).
@@ -639,51 +649,91 @@ file may hold them, with no source to hold their quotes to.
 
 ## TS 29.272
 
-TS 29.272 V19.6.0 is read completely: every AVP clause of clause 7.3 and every
-C row of its information-element tables.
+TS 29.272 V19.6.0 is read completely: every AVP clause of clause 7.3, every
+row of its information-element tables stating a condition, C, O or M, the
+procedure clauses for what they state of one message, clause 7.1.4's
+sessions, clause 7.2.2's Vendor-Specific-Application-Id and clause 7.4's
+result codes.
 
 | | |
 |---|---|
 | AVP clauses (clause 7.3, not its General and Void clauses) | 247 |
-| with something to declare | 99, in 122 blocks |
-| with nothing to declare | 148 |
-| information-element C rows | 45, of which 35 state a condition, 17 of them typed |
-| blocks | 157: 87 on an AVP wherever read, 33 within a grouped AVP, 37 within a command |
-| readings | 176 |
+| with something to declare | 124, in 151 blocks |
+| with nothing to declare | 123 |
+| information-element rows | 73 blocks: the 45 C rows, of which 35 state a condition, and the M and O rows stating one: the IMSI's format in 12 requests, the 3GPP Vendor-Id of 12 answers' Experimental-Result, Terminal-Information's members in ULR and ECR, the Active-APN's of an explicit APN, ULR's SF-Provisional-Indication, ULA's and AIA's Error-Diagnostic, DSR's External-Identifier, RSR's Subscription-Data and Subscription-Data-Deletion, NOR's Context-Identifier |
+| procedure clauses (5.2.1.1.3, 5.2.2.1.2, 5.2.2.1.3, 5.2.3.1.2, 5.2.3.1.3, 5A.2.2.1.2, 6.2.1.2) | 11 blocks |
+| session handling (7.1.4) | 54 blocks: Auth-Session-State NO_STATE_MAINTAINED, no Authorization-Lifetime or Session-Timeout, in each of S6a's 16 and S13's 2 commands |
+| Vendor-Specific-Application-Id (7.2.2) | 28 blocks, `text-only`, one per command |
+| result codes (7.4.3, 7.4.4) | 28 blocks, a permanent and a transient one per answer |
+| blocks | 350, Release 19's copy holding 345: 109 on an AVP wherever read, 43 within a grouped AVP, 193 within a command |
+| readings | 382 |
 
 | Rules | |
 |---|---|
-| `encoding`, a codec | 20: `e164-tbcd` 6, `plmn-id` 3, `digits` 3, `ip-address` 2, `plmn-id-prefix`, `labels`, `apn`, `plmn-domain`, `epc-plmn-domain`, `time-zone` |
-| `encoding element` | 43, naming 40 entries of the registry; 37 rules checked, 6 not ([above](#elements)) |
-| `length` | 8: 6 in octets, 2 in digits |
-| `range` | 7 |
-| `exclude` | 4 |
-| `requires`, `present-if`, `absent-if`, `excludes` | 17, 9, 2, 2 |
-| `default` | 9 |
-| `bits` | 10: `at-most-one` 3 (DSR-Flags), `at-least-one` (Preferred-Data-Mode), `clear` 4 (Reachability-Type, eDRX-Cycle-Length-Value, Paging-Time-Window-Length, CSG-Id), `set` (Reachability-Type), `only` (DSR-Flags on S7a) |
-| `members` | 3: `at-least-one` 2 (AESE-Communication-Pattern, Monitoring-Event-Configuration), `only` (Terminal-Information in NOR) |
+| `encoding`, a codec | 33: `digits` 15 (12 of them the IMSI), `e164-tbcd` 6, `plmn-id` 3, `ip-address` 3, `plmn-id-prefix`, `labels`, `apn`, `plmn-domain`, `epc-plmn-domain`, `time-zone` |
+| `encoding element` | 45, naming 42 entries of the registry; 39 rules checked, 6 not ([above](#elements)) |
+| `length` | 24: 10 in octets, 14 in digits |
+| `range` | 27: Auth-Session-State in 18 commands, Extended-Max-Requested-BW-UL and -DL, and 7 of the AVP clauses |
+| `exclude` | 34: Result-Code in each of 14 answers twice, none of clause 7.4's codes no IETF document the corpus holds numbers, and 6 of the AVP clauses and rows |
+| `requires`, `present-if`, `absent-if`, `excludes` | 41, 13, 31, 14 |
+| `default` | 10 |
+| `bits` | 31: `only` 20 (19 flags tables' "Bits not defined in this table shall be cleared", five of them a block per release, and DSR-Flags on S7a), `clear` 5 (Supported-Monitoring-Events' S6t-only bits over S6a among them), `at-most-one` 3 (DSR-Flags), `at-least-one` 2 (Preferred-Data-Mode, and PDP-Type, whose bit 1 or 8 leaves out the element's PPP), `set` (Reachability-Type) |
+| `members` | 8: `at-least-one` 5 (AESE-Communication-Pattern, Monitoring-Event-Configuration, EPS-Subscribed-QoS-Profile and AMBR in an APN-Configuration of a profile, IMEI in ECR's Terminal-Information), `only` 3 (Terminal-Information in ULR, NOR and ECR) |
 | `unique` | 2: Context-Identifier and Service-Selection in APN-Configuration |
-| `values` | 2: Reachability-Information in Monitoring-Event-Report, Maximum-Number-of-Reports for a last known location |
-| reading the request | 6: the IDA's EPS-User-State, EPS-Location-Information and Local-Time-Zone where the IDR's IDR-Flags asks for them, its Monitoring-Event-Config-Status beside the IDR's Monitoring-Event-Configuration, and the ULA's and UVA's subscription data unless the request skips it |
-| `text-only` | 45 |
+| `values` | 5: Reachability-Information in Monitoring-Event-Report, Maximum-Number-of-Reports for a last known location, Error-Diagnostic's values by the experimental code in ULA and AIA |
+| `absent` | 37: Authorization-Lifetime and Session-Timeout in 18 commands, MIP6-Home-Link-Prefix in S6a's MIP6-Agent-Info |
+| reading the request | 8: the IDA's EPS-User-State and EPS-Location-Information where the IDR's IDR-Flags asks for them, its Monitoring-Event-Config-Status beside the IDR's Monitoring-Event-Configuration, no success for an IDR asking the current location alone, the ULA's and UVA's subscription data unless the request skips it, and an AIA's no vectors and no success where both of the AIR's requested-info AVPs hold Re-Synchronization-Info |
+| `text-only` | 83 |
 
 The text-only rules are mostly conditions on the node, the interface, an
 earlier message or a feature (an information element's "shall be present if
-the MME supports SMS in MME"), what an absent AVP means where that is no
-value or differs between commands (MDT-User-Consent's in ULA and IDR), and
-conditions on an OctetString's value (PDP-Type's, whose octets the clauses
-do not spell out). A row read as an answer's rule on its request is held to
-a success's answer, `Result-Code = DIAMETER_SUCCESS`, where the row says
+the MME supports SMS in MME", the IDA's Local-Time-Zone, which clause
+5.2.2.1.2 has the MME or SGSN provide "if supported"), what an absent AVP
+means where that is no value or differs between commands (MDT-User-Consent's
+in ULA and IDR), conditions on an OctetString's value (PDP-Type's Non-IP,
+two octets no condition compares), and clause 7.2.2's
+Vendor-Specific-Application-Id, which the sentence forbids the sending node
+and the NOTE has every command format print for intermediate agents not
+complying with RFC 6733, so a message captured past such an agent may hold
+it rightly. A row read as an answer's rule on its request is held to a
+success's answer, `Result-Code = DIAMETER_SUCCESS`, where the row says
 nothing of an error's: an IDA reporting one carries no EPS-User-State
-though the IDR asked for it. The rest a single message could show but no
-kind says: a text value (Specific-APN-Info only for the wild card APN `*`),
-a mapping between two bit tables (PLMN-RAT-Usage-Control's bits against
-Access-Restriction-Data's), the address type of Ext-PDP-Address against
-PDP-Address's, and MIP6-Home-Link-Prefix "not used in S6a/S6d", which a
-`; Within:` scope would hold to every interface reading MIP6-Agent-Info as
-TS 29.272 does, SWx's APN-Configuration among them.
-Access-Restriction-Data's "Bits 11 and 12 are only used when bit 4 is not
-set" says what they mean, not that they are clear.
+though the IDR asked for it. Where a procedure answers with a result code
+an earlier error may pre-empt (DIAMETER_UNABLE_TO_COMPLY for an IDR asking
+the current location alone, clause 5.2.2.1.2), the rule says no success,
+not which code. The rest a single message could show but no kind says: a
+text value (Specific-APN-Info only for the wild card APN `*`, the default
+APN not the wild card), a reference between two members (the profile's
+Context-Identifier naming its default APN-Configuration), a count (an
+Item-Number in each of more than one vector, clause 5.2.3.1.3), a mapping
+between two bit tables (PLMN-RAT-Usage-Control's bits against
+Access-Restriction-Data's), and the address type of Ext-PDP-Address against
+PDP-Address's. Access-Restriction-Data's "Bits 11 and 12 are only used when
+bit 4 is not set" says what they mean, not that they are clear.
+
+A ULR's own flags say its sender: S6a/S6d-Indicator set is an MME's, clear
+an SGSN's on S6d, and Node-Type-Indicator clear a single node, so clause
+7.3.7's "An SGSN shall not set this bit" and "A standalone MME shall not
+set this bit" are read on ULR-Flags itself. An Active-APN without
+Specific-APN-Info is an explicitly subscribed APN's, which table
+5.2.1.1.1/1 has carry Service-Selection, MIP6-Agent-Info and
+Visited-Network-Identifier. MIP6-Home-Link-Prefix "not used in S6a/S6d" is
+read within MIP6-Agent-Info for S6a's application alone (`; Application-ID:
+16777251`), so SWx's MIP6-Agent-Info, which TS 29.273 reads as TS 29.272
+does, keeps its prefix; User-State's RESERVED (5), "should not be used by
+MME or SGSN over S6a/S6d", likewise within MME-User-State and
+SGSN-User-State.
+
+Three sentences disagree with the document. UVA-Flags' table copies
+UVR-Flags' note, "cleared by the sending MME or SGSN and discarded by the
+receiving CSS", though the CSS sends the UVA: the sentence binds no sender
+of the AVP and is text-only. Clause 5A.2.2.1.2 answers an S7a/S7d IDR
+holding no CSG-Subscription-Data with DIAMETER_ERROR_SUBS_DATA_ABSENT,
+where that IDR carries VPLMN-CSG-Subscription-Data, at least one, and the
+document defines no such code: text-only. Clause 7.3.41's NOTE gives
+Max-Requested-Bandwidth-UL and -DL a range from 1, where clause 7.3.2 lets
+one of the UE-AMBR's two be 0: the NOTE's range is read of the extended
+bandwidths alone.
 
 ## TS 29.329
 

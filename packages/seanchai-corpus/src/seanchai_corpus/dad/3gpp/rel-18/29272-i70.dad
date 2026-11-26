@@ -1081,6 +1081,133 @@ Error-Diagnostic                           Error-Diagnostic                  O
     text-only
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-user-name-imsi)
+; AVP: User-Name
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/2
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-terminal-information)
+; AVP: Terminal-Information
+; Command: Update-Location-Request
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface."
+    members only IMEI Software-Version
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#active-apn-explicit-service-selection)
+; AVP: Service-Selection
+; Within: Active-APN
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated"
+"For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN"
+    present-if not Specific-APN-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#active-apn-explicit-mip6-agent-info)
+; AVP: MIP6-Agent-Info
+; Within: Active-APN
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated"
+"For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN"
+    present-if not Specific-APN-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#active-apn-explicit-visited-network-identifier)
+; AVP: Visited-Network-Identifier
+; Within: Active-APN
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/1
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated"
+"For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN"
+    present-if not Specific-APN-Info
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-error-diagnostic)
+; AVP: Error-Diagnostic
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.1
+; Table: 5.2.1.1.1/2
+; Page: 18
+; Versions: 18.7.0..19.6.0
+"If the Experimental Result indicates \"Unknown EPS Subscription\", Error Diagnostic may be present to indicate whether or not GPRS subscription data are subscribed (i.e. whether or not Network Access Mode stored in the HSS indicates that only circuit service is allowed)."
+"If the Experimental Result indicates \"Roaming Not Allowed\", and the Update Location is rejected due to ODB, Error Diagnostic may be present to indicate the specific type of ODB."
+    requires Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED
+    values 0, 1 if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+    values 2, 3, 4 if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_ROAMING_NOT_ALLOWED
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-subscription-data-contents)
+; AVP: Subscription-Data
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.3
+; Page: 26
+; Versions: 18.7.0..19.6.0
+"Subscriber-Status AVP shall be present in the Subscription-Data AVP when sent within a ULA."
+    requires Subscription-Data/Subscriber-Status
+"If the value \"OPERATOR_DETERMINED_BARRING\" is sent, the Operator-Determined-Barring AVP or HPLMN-ODB AVP shall also be present in the Subscription-Data AVP, or vice versa."
+    requires not Subscription-Data/Subscriber-Status = OPERATOR_DETERMINED_BARRING or Subscription-Data/Operator-Determined-Barring or Subscription-Data/HPLMN-ODB
+    requires not Subscription-Data/Operator-Determined-Barring or Subscription-Data/Subscriber-Status = OPERATOR_DETERMINED_BARRING
+    requires not Subscription-Data/HPLMN-ODB or Subscription-Data/Subscriber-Status = OPERATOR_DETERMINED_BARRING
+"The AMBR AVP shall be present in the Subscription-Data AVP when the APN-Configuration-Profile AVP is sent within a ULA (as part of the Subscription-Data AVP)"
+    requires not Subscription-Data/APN-Configuration-Profile or Subscription-Data/AMBR
+"When the APN-Configuration-Profile AVP is present in the Subscription-Data AVP sent within a ULA, the AVP shall contain at least the default APN Configuration and a Context-Identifier AVP that identifies the per subscriber's default APN configuration."
+"The default APN Configuration shall not contain the Wildcard APN (see TS 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN."
+    text-only
+"If the Update Location Request includes an equivalent PLMN list, the HSS shall return the CSG list (if any) for each equivalent PLMN to the MME with the subscription data, and Visited-PLMN-Id AVP shall be present in the CSG-Subscription-Data AVP to indicate the corresponding PLMN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-apn-configuration-qos-and-ambr)
+; AVP: APN-Configuration
+; Within: APN-Configuration-Profile
+; Section: 5.2.1.1.3
+; Page: 26
+; Versions: 18.7.0..19.6.0
+"The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the APN-Configuration AVP when the APN-Configuration AVP is sent in the APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is sent within a ULA (as part of the Subscription-Data AVP)."
+    members at-least-one EPS-Subscribed-QoS-Profile
+    members at-least-one AMBR
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-separation-indication)
+; AVP: ULA-Flags
+; Command: Update-Location-Answer
+; Section: 5.2.1.1.3
+; Page: 26
+; Versions: 18.7.0..19.6.0
+"If a Result Code of DIAMETER_SUCCESS is returned, the HSS shall set the Separation Indication in the response."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Cancel-Location-Request
 ; Section: 5.2.1.2.1
@@ -1101,6 +1228,18 @@ IMSI                                       User-Name            M
 ; Columns: Name                            AVP                               Cat
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
 "Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#clr-user-name-imsi)
+; AVP: User-Name
+; Command: Cancel-Location-Request
+; Section: 5.2.1.2.1
+; Table: 5.2.1.2.1/1
+; Page: 30
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
 
 
 ; Type: Information Elements
@@ -1135,6 +1274,40 @@ IMSI                                       User-Name                  M
 ; Versions: 18.7.0..19.6.0
 "It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS."
     requires Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-user-name-imsi)
+; AVP: User-Name
+; Command: Purge-UE-Request
+; Section: 5.2.1.3.1
+; Table: 5.2.1.3.1/1
+; Page: 32
+; Versions: 18.7.0..19.6.0
+"This information element shall contain user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Purge-UE-Answer
+; Section: 5.2.1.3.1
+; Table: 5.2.1.3.1/2
+; Page: 32
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-eps-location-information)
+; AVP: EPS-Location-Information
+; Command: Purge-UE-Request
+; Section: 5.2.1.3.1
+; Table: 5.2.1.3.1/1
+; Page: 32
+; Versions: 18.7.0..19.6.0
+"This Information Element shall contain the last known EPS-Location Information of the purged UE. Shall be present if available."
+    text-only
 
 
 ; Type: Information Elements
@@ -1241,7 +1414,7 @@ IMSI                                       User-Name            M
 ; Page: 33
 ; Versions: 18.7.0..19.6.0
 "It shall be present if the Local Time Zone was requested within IDR."
-    present-if request/IDR-Flags bit "Local Time Zone Request" and Result-Code = DIAMETER_SUCCESS
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-monitoring-event-report)
@@ -1266,6 +1439,65 @@ IMSI                                       User-Name            M
 ; Versions: 18.7.0..19.6.0
 "This Information Element shall be present if Monitoring event configuration is included in IDR."
     present-if request/Subscription-Data/Monitoring-Event-Configuration and Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-user-name-imsi)
+; AVP: User-Name
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/1
+; Page: 33
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.1
+; Table: 5.2.2.1.1/2
+; Page: 33
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-current-location-alone)
+; AVP: Result-Code
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.1.2
+; Page: 37
+; Versions: 18.7.0..19.6.0
+"When receiving the IDR-Flags with only the \"Current Location Request\" bit set (i.e. the \"EPS Location Information Request\" bit is not set), the MME or SGSN or combined MME/SGSN shall set the Result-Code to DIAMETER_UNABLE_TO_COMPLY."
+    excludes Result-Code = DIAMETER_SUCCESS and request/IDR-Flags bit "Current Location Request" and not request/IDR-Flags bit "EPS Location Information Request"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-subscription-data-odb)
+; AVP: Subscription-Data
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.1.3
+; Page: 40
+; Versions: 18.7.0..19.6.0
+"If Subscriber-Status AVP is present and set to OPERATOR_DETERMINED_BARRING, the Operator-Determined-Barring AVP or HPLMN-ODB AVP shall also be present in the Subscription-Data AVP."
+    requires not Subscription-Data/Subscriber-Status = OPERATOR_DETERMINED_BARRING or Subscription-Data/Operator-Determined-Barring or Subscription-Data/HPLMN-ODB
+"The default APN Configuration shall not contain the Wildcard APN (see TS 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-apn-configuration-qos-and-ambr)
+; AVP: APN-Configuration
+; Within: APN-Configuration-Profile
+; Section: 5.2.2.1.3
+; Page: 40
+; Versions: 18.7.0..19.6.0
+"The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the APN-Configuration AVP when the APN-Configuration AVP is sent in the APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is sent within a IDR (as part of the Subscription-Data AVP)."
+    text-only
 
 
 ; Type: Information Elements
@@ -1375,6 +1607,43 @@ IMSI                                       User-Name              M
     requires DSR-Flags bit eDRX-Cycle-Length-Withdrawal
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-user-name-imsi)
+; AVP: User-Name
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 42
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/2
+; Page: 42
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-external-identifier)
+; AVP: External-Identifier
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 5.2.2.2.1
+; Table: 5.2.2.2.1/1
+; Page: 42
+; Versions: 18.7.0..19.6.0
+"This IE shall be absent if the \"External-Identifier-Withdrawal\" bit is not set in the DSR-Flags."
+    requires DSR-Flags bit External-Identifier-Withdrawal
+
+
 ; Type: Information Elements
 ; Command: Authentication-Information-Request
 ; Section: 5.2.3.1.1
@@ -1413,6 +1682,76 @@ Error-Diagnostic                           Error-Diagnostic                  O
     text-only
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-user-name-imsi)
+; AVP: User-Name
+; Command: Authentication-Information-Request
+; Section: 5.2.3.1.1
+; Table: 5.2.3.1.1/1
+; Page: 46
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Authentication-Information-Answer
+; Section: 5.2.3.1.1
+; Table: 5.2.3.1.1/2
+; Page: 46
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-error-diagnostic)
+; AVP: Error-Diagnostic
+; Command: Authentication-Information-Answer
+; Section: 5.2.3.1.1
+; Table: 5.2.3.1.1/2
+; Page: 46
+; Versions: 18.7.0..19.6.0
+"If the Experimental Result indicated \"Unknown EPS Subscription\", Error Diagnostic may be present to indicate whether or not GPRS subscription data are subscribed (i.e. whether or not Network Access Mode stored in the HSS indicates that only CS service is allowed)."
+    requires Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+    values 0, 1 if Experimental-Result/Experimental-Result-Code = DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-requested-authentication-info-exclusive)
+; AVP: Requested-EUTRAN-Authentication-Info
+; Command: Authentication-Information-Request
+; Section: 5.2.3.1.2
+; Page: 48
+; Versions: 18.7.0..19.6.0
+"Re-Synchronization Information shall not be present in both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP."
+    excludes Requested-EUTRAN-Authentication-Info/Re-Synchronization-Info and Requested-UTRAN-GERAN-Authentication-Info/Re-Synchronization-Info
+"The Immediate-Response-Preferred AVP shall not be present in both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP."
+    excludes Requested-EUTRAN-Authentication-Info/Immediate-Response-Preferred and Requested-UTRAN-GERAN-Authentication-Info/Immediate-Response-Preferred
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-authentication-info-resynchronization)
+; AVP: Authentication-Info
+; Command: Authentication-Information-Answer
+; Section: 5.2.3.1.3
+; Page: 48
+; Versions: 18.7.0..19.6.0
+"If both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP are in the request, and both of them include the Re-Synchronization-Info AVP, the HSS shall not check the AUTS parameter and return the result code of DIAMETER_UNABLE_TO_COMPLY."
+"Any authentication vectors shall not be sent by the HSS to the requesting node in the response."
+    absent-if request/Requested-EUTRAN-Authentication-Info/Re-Synchronization-Info and request/Requested-UTRAN-GERAN-Authentication-Info/Re-Synchronization-Info
+"If more than one EPS or UTRAN or GERAN Vector is to be included within one Authentication-Info AVP, the Item-Number AVP shall be present within each Vector."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-resynchronization-twice)
+; AVP: Result-Code
+; Command: Authentication-Information-Answer
+; Section: 5.2.3.1.3
+; Page: 48
+; Versions: 18.7.0..19.6.0
+"If both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP are in the request, and both of them include the Re-Synchronization-Info AVP, the HSS shall not check the AUTS parameter and return the result code of DIAMETER_UNABLE_TO_COMPLY."
+    excludes Result-Code = DIAMETER_SUCCESS and request/Requested-EUTRAN-Authentication-Info/Re-Synchronization-Info and request/Requested-UTRAN-GERAN-Authentication-Info/Re-Synchronization-Info
+
+
 ; Type: Information Elements
 ; Command: Reset-Request
 ; Application-ID: 16777251 ;; corrected: (TS29.272.py#elements-application-5-2-4-1-1-1)
@@ -1436,6 +1775,44 @@ Error-Diagnostic                           Error-Diagnostic                  O
 ; Columns: Name                            AVP                               Cat
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
 "Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 5.2.4.1.1
+; Table: 5.2.4.1.1/2
+; Page: 50
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsr-subscription-data)
+; AVP: Subscription-Data
+; Command: Reset-Request
+; Application-ID: 16777251
+; Section: 5.2.4.1.1
+; Table: 5.2.4.1.1/1
+; Page: 50
+; Versions: 18.7.0..19.6.0
+"Shall be absent if Subscription-Data-Deletion AVP is present. Shall be absent if Reset-ID AVP is absent"
+    excludes Subscription-Data-Deletion
+    requires Reset-ID
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsr-subscription-data-deletion)
+; AVP: Subscription-Data-Deletion
+; Command: Reset-Request
+; Application-ID: 16777251
+; Section: 5.2.4.1.1
+; Table: 5.2.4.1.1/1
+; Page: 50
+; Versions: 18.7.0..19.6.0
+"Shall be absent if Subscription-Data AVP is present. Shall be absent if Reset-ID AVP is absent"
+    excludes Subscription-Data
+    requires Reset-ID
 
 
 ; Type: Information Elements
@@ -1490,6 +1867,8 @@ IMSI                                                                User-Name   
 ; Versions: 18.7.0..19.6.0
 "It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled."
     text-only
+"For establishment of emergency PDN connections, this IE shall contain the identity of the PDN-GW used to establish those PDN connections."
+    present-if Emergency-Services bit Emergency-Indication
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-visited-network-identifier)
@@ -1568,6 +1947,8 @@ IMSI                                                                User-Name   
 ; Page: 53
 ; Versions: 18.7.0..19.6.0
 "This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF."
+"This information element shall also be present if any of the monitoring events configurations received in ULA failed and shall only contain the monitoring event configuration status of those events whose detection could not be started at the MME/SGSN."
+"This information element shall also be present if the MME or SGSN determines that a Monitoring Event Configuration for a UE is to be deleted in the HSS (i.e. SCEF responds to a Monitoring Event Report with DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN)."
     text-only
 
 
@@ -1580,6 +1961,40 @@ IMSI                                                                User-Name   
 ; Versions: 18.7.0..19.6.0
 "The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection"
     text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-user-name-imsi)
+; AVP: User-Name
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 53
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Notify-Answer
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/2
+; Page: 53
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-context-identifier)
+; AVP: Context-Identifier
+; Command: Notify-Request
+; Section: 5.2.5.1.1
+; Table: 5.2.5.1.1/1
+; Page: 53
+; Versions: 18.7.0..19.6.0
+"For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero."
+    exclude 0
 
 
 ; Type: Information Elements
@@ -1629,6 +2044,40 @@ MSISDN                                     MSISDN               C
     present-if Result-Code = DIAMETER_SUCCESS and not request/UVR-Flags bit "Skip Subscriber Data" and not UVA-Flags bit "Temporary Empty VPLMN CSG Subscription Data"
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uvr-user-name-imsi)
+; AVP: User-Name
+; Command: Update-VCSG-Location-Request
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/1
+; Page: 60
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uva-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Update-VCSG-Location-Answer
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/2
+; Page: 60
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uvr-msisdn)
+; AVP: MSISDN
+; Command: Update-VCSG-Location-Request
+; Section: 5A.2.1.1.1
+; Table: 5A.2.1.1.1/1
+; Page: 60
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user MSISDN, formatted according to TS 29.329 [25]. It shall be present if available."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Cancel-VCSG-Location-Request
 ; Section: 5A.2.1.2.1
@@ -1648,6 +2097,18 @@ IMSI                                       User-Name            M
 ; Columns: Name                            AVP                               Cat
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
 "Result (See 7.4)"                         Result-Code/Experimental-Result   M
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cvr-user-name-imsi)
+; AVP: User-Name
+; Command: Cancel-VCSG-Location-Request
+; Section: 5A.2.1.2.1
+; Table: 5A.2.1.2.1/1
+; Page: 62
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
 
 
 ; Type: Information Elements
@@ -1673,6 +2134,42 @@ IMSI                                        User-Name                     M
 "Result (See 7.4)"                         Result-Code/Experimental-Result   M
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-idr-user-name-imsi)
+; AVP: User-Name
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777308
+; Section: 5A.2.2.1.1
+; Table: 5A.2.2.1.1/1
+; Page: 63
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-ida-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 5A.2.2.1.1
+; Table: 5A.2.2.1.1/2
+; Page: 63
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor Id in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-ida-subs-data-absent)
+; AVP: Experimental-Result
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 5A.2.2.1.2
+; Page: 64
+; Versions: 18.7.0..19.6.0
+"If the request does not contain any CSG-Subscription-Data AVP, Experimental-Result shall be set to DIAMETER_ERROR_SUBS_DATA_ABSENT."
+    text-only
+
+
 ; Type: Information Elements
 ; Command: Delete-Subscriber-Data-Request
 ; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-2-2-1-1)
@@ -1696,6 +2193,31 @@ IMSI                                       User-Name            M
 "Result (See 7.4)"                         Result-Code/Experimental-Result   M
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-dsr-user-name-imsi)
+; AVP: User-Name
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777308
+; Section: 5A.2.2.2.1
+; Table: 5A.2.2.2.1/1
+; Page: 65
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-dsa-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 5A.2.2.2.1
+; Table: 5A.2.2.2.1/2
+; Page: 65
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
 ; Type: Information Elements
 ; Command: Reset-Request
 ; Application-ID: 16777308 ;; corrected: (TS29.272.py#elements-application-5a-2-3-1-1-1)
@@ -1715,6 +2237,18 @@ IMSI                                       User-Name            M
 ; Columns: Name                            AVP                               Cat
 "Result (See 7.4)"                         Result-Code/Experimental-Result   M
 "Supported Features (See TS 29.229 [9])"   Supported-Features                O
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-rsa-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: Reset-Answer
+; Application-ID: 16777308
+; Section: 5A.2.3.1.1
+; Table: 5A.2.3.1.1/2
+; Page: 66
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
 
 
 ; Type: Information Elements
@@ -1746,6 +2280,928 @@ IMSI                                 User-Name              O
 ; Versions: 18.7.0..19.6.0
 "It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS."
     present-if Result-Code = DIAMETER_SUCCESS
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-user-name-imsi)
+; AVP: User-Name
+; Command: ME-Identity-Check-Request
+; Section: 6.2.1.1
+; Table: 6.2.1.1/1
+; Page: 68
+; Versions: 18.7.0..19.6.0
+"This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2."
+    encoding digits
+    length 6..15 digits
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-experimental-result-vendor)
+; AVP: Experimental-Result
+; Command: ME-Identity-Check-Answer
+; Section: 6.2.1.1
+; Table: 6.2.1.1/2
+; Page: 68
+; Versions: 18.7.0..19.6.0
+"This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
+    requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-terminal-information)
+; AVP: Terminal-Information
+; Command: ME-Identity-Check-Request
+; Section: 6.2.1.1
+; Table: 6.2.1.1/1
+; Page: 68
+; Versions: 18.7.0..19.6.0
+"Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S13/S13' interface."
+    members only IMEI Software-Version
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-terminal-information-imei)
+; AVP: Terminal-Information
+; Command: ME-Identity-Check-Request
+; Section: 6.2.1.2
+; Page: 69
+; Versions: 18.7.0..19.6.0
+"Terminal-Information, when sent by the MME/SGSN to the EIR, shall contain the IMEI AVP, and it may contain also the Software-Version AVP."
+    members at-least-one IMEI
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Update-Location-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Update-Location-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Update-Location-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Update-Location-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Update-Location-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Update-Location-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#clr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Cancel-Location-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#clr-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Cancel-Location-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#clr-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Cancel-Location-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cla-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Cancel-Location-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cla-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Cancel-Location-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cla-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Cancel-Location-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Purge-UE-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Purge-UE-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Purge-UE-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Purge-UE-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Purge-UE-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Purge-UE-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Authentication-Information-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Authentication-Information-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Authentication-Information-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Authentication-Information-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Authentication-Information-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Authentication-Information-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Reset-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsr-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Reset-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsr-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Reset-Request
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Notify-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Notify-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Notify-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-auth-session-state)
+; AVP: Auth-Session-State
+; Command: Notify-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: Notify-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-no-session-timeout)
+; AVP: Session-Timeout
+; Command: Notify-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-auth-session-state)
+; AVP: Auth-Session-State
+; Command: ME-Identity-Check-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: ME-Identity-Check-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-no-session-timeout)
+; AVP: Session-Timeout
+; Command: ME-Identity-Check-Request
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-auth-session-state)
+; AVP: Auth-Session-State
+; Command: ME-Identity-Check-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61]."
+    range 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-no-authorization-lifetime)
+; AVP: Authorization-Lifetime
+; Command: ME-Identity-Check-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-no-session-timeout)
+; AVP: Session-Timeout
+; Command: ME-Identity-Check-Answer
+; Section: 7.1.4
+; Page: 70
+; Versions: 18.7.0..19.6.0
+"Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses."
+    absent
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Update-Location-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Update-Location-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#clr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Cancel-Location-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cla-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Cancel-Location-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Purge-UE-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Purge-UE-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Authentication-Information-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Authentication-Information-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Reset-Request
+; Application-ID: 16777251
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#nor-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Notify-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Notify-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uvr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Update-VCSG-Location-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uva-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Update-VCSG-Location-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cvr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Cancel-VCSG-Location-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cva-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Cancel-VCSG-Location-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-idr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777308
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-ida-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-dsr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Delete-Subscriber-Data-Request
+; Application-ID: 16777308
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-dsa-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-rsr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Reset-Request
+; Application-ID: 16777308
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-rsa-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: Reset-Answer
+; Application-ID: 16777308
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ecr-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: ME-Identity-Check-Request
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-no-vendor-specific-application-id)
+; AVP: Vendor-Specific-Application-Id
+; Command: ME-Identity-Check-Answer
+; Section: 7.2.2
+; Page: 73
+; Versions: 18.7.0..19.6.0
+"The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification."
+"If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -1876,6 +3332,31 @@ Dual-Registration-5G-Indicator               = 8
 "PDN Context Sync Up With UDM not requested" = 11
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-flags-undefined-bits-release-18)
+; AVP: ULR-Flags
+; Section: 7.3.7
+; Table: 7.3.7/1
+; Page: 99
+; Versions: 18.7.0
+"NOTE1: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS."
+    bits only 0 1 2 3 4 5 6 7 8 9 10 11
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ulr-flags-sender-bits)
+; AVP: ULR-Flags
+; Command: Update-Location-Request
+; Section: 7.3.7
+; Table: 7.3.7/1
+; Page: 99
+; Versions: 18.7.0..19.6.0
+"An SGSN shall not set this bit when sending ULR."
+    excludes ULR-Flags bit Single-Registration-Indication and not ULR-Flags bit "S6a/S6d-Indicator"
+"A standalone MME shall not set this bit when sending a ULR."
+    excludes ULR-Flags bit GPRS-Subscription-Data-Indicator and ULR-Flags bit "S6a/S6d-Indicator" and not ULR-Flags bit Node-Type-Indicator
+"An SGSN shall not set this bit when sending ULR over S6d interface."
+    excludes ULR-Flags bit Dual-Registration-5G-Indicator and not ULR-Flags bit "S6a/S6d-Indicator"
+
+
 ; Type: Value Table
 ; AVP: ULA-Flags
 ; Kind: bits
@@ -1884,6 +3365,16 @@ Dual-Registration-5G-Indicator               = 8
 ; Page: 102
 "Separation Indication"  = 0
 "MME Registered for SMS" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-flags-undefined-bits)
+; AVP: ULA-Flags
+; Section: 7.3.8
+; Table: 7.3.8/1
+; Page: 102
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0 1
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#visited-plmn-id-layout)
@@ -2000,6 +3491,15 @@ Requested-UTRAN-GERAN-Authentication-Info ::= < AVP header: 1409 10415 >
         [ Immediate-Response-Preferred ]
         [ Re-Synchronization-Info ] ;; corrected: (TS29.272.py#re-synchronization-info-utran-geran-case)
       * [ AVP ]
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#re-synchronization-info-octets)
+; AVP: Re-Synchronization-Info
+; Section: 7.3.15
+; Page: 117
+; Versions: 18.7.0..19.6.0
+"It shall contain the concatenation of RAND and AUTS."
+    length 30 octets
 
 
 ; Type: Grouped AVP
@@ -2159,6 +3659,16 @@ Service-Gap-Time-Withdrawal                      = 31
 ; Table: 7.3.26/1
 ; Page: 123
 "Network Node area restricted" = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-flags-undefined-bits)
+; AVP: DSA-Flags
+; Section: 7.3.26
+; Table: 7.3.26/1
+; Page: 123
+; Versions: 18.7.0..19.6.0
+"Note: Bits not defined in this table shall be cleared by the sending SGSN and discarded by the receiving HSS."
+    bits only 0
 
 
 ; Type: Enumerated AVP
@@ -2364,6 +3874,11 @@ APN-Configuration ::= < AVP header: 1430 10415 >
 ; Versions: 18.7.0..19.6.0
 "These AVPs shall be present if static IP address allocation is used for the UE"
     text-only
+"and they shall contain either of:"
+"an IPv4 address, or"
+"an IPv6 address/prefix, or"
+"both, an IPv4 address and an IPv6 address/prefix."
+    encoding ip-address
 "For the IPv6 prefix, the lower 64 bits of the address shall be set to zero."
     text-only
 
@@ -2450,6 +3965,15 @@ VPLMN-Dynamic-Address-Allowed ::= < Enumerated AVP header: 1432 10415 >
         ALLOWED    = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#vplmn-dynamic-address-allowed-default)
+; AVP: VPLMN-Dynamic-Address-Allowed
+; Section: 7.3.38
+; Page: 128
+; Versions: 18.7.0..19.6.0
+"If this AVP is not present, this means that the UE is not allowed to use PDN GWs in the domain of the VPLMN."
+    default NOTALLOWED
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#stn-sr-e164)
 ; AVP: STN-SR
 ; Section: 7.3.39
@@ -2511,6 +4035,8 @@ AMBR ::= < AVP header: 1435 10415 >
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent."
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295"
     requires Max-Requested-Bandwidth-UL = 4294967295
+"NOTE: The value applicable for Max-Requested-Bandwidth-UL (or DL, respectively) is between 1 and 4294967295 bits per second, and the value applicable for Extended-Max-Requested-BW-UL (or -DL, respectively) is between 4294968 and 4294967295 kilobits per second."
+    range 4294968..4294967295
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ambr-extended-max-requested-bw-dl)
@@ -2522,6 +4048,8 @@ AMBR ::= < AVP header: 1435 10415 >
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent."
 "When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295"
     requires Max-Requested-Bandwidth-DL = 4294967295
+"NOTE: The value applicable for Max-Requested-Bandwidth-UL (or DL, respectively) is between 1 and 4294967295 bits per second, and the value applicable for Extended-Max-Requested-BW-UL (or -DL, respectively) is between 4294968 and 4294967295 kilobits per second."
+    range 4294968..4294967295
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mip-home-agent-host-destination-host)
@@ -2578,11 +4106,12 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mip6-agent-info-home-link-prefix)
 ; AVP: MIP6-Home-Link-Prefix
 ; Within: MIP6-Agent-Info
+; Application-ID: 16777251
 ; Section: 7.3.45
 ; Page: 130
 ; Versions: 18.7.0..19.6.0
 "The AVP MIP6-Home-Link-Prefix is not used in S6a/S6d, but it is included here to reflect the complete IETF definition of the grouped AVP."
-    text-only
+    absent
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rat-frequency-selection-priority-id-range)
@@ -2603,6 +4132,16 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 "Network Node area restricted" = 0
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-flags-undefined-bits)
+; AVP: IDA-Flags
+; Section: 7.3.47
+; Table: 7.3.47/1
+; Page: 131
+; Versions: 18.7.0..19.6.0
+"Note: Bits not defined in this table shall be cleared by the sending SGSN and discarded by the receiving HSS."
+    bits only 0
+
+
 ; Type: Value Table
 ; AVP: PUA-Flags
 ; Kind: bits
@@ -2611,6 +4150,16 @@ MIP6-Agent-Info ::= < AVP header: 486 >
 ; Page: 131
 "Freeze M-TMSI" = 0
 "Freeze P-TMSI" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-flags-undefined-bits)
+; AVP: PUA-Flags
+; Section: 7.3.48
+; Table: 7.3.48/1
+; Page: 131
+; Versions: 18.7.0..19.6.0
+"Note: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0 1
 
 
 ; Type: Value Table
@@ -2693,6 +4242,35 @@ Equipment-Status ::= < Enumerated AVP header: 1445 10415 >
 ; Versions: 18.7.0..19.6.0
 "This AVP shall contain the K_ASME. See TS 33.401 [5]."
     encoding element TS33.401 "K_ASME"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#utran-vector-confidentiality-key-octets)
+; AVP: Confidentiality-Key
+; Within: UTRAN-Vector
+; Section: 7.3.57
+; Page: 133
+; Versions: 18.7.0..19.6.0
+"The Confidentiality-Key is of type OctetString, and shall contain the Confidentiality Key (CK)."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#utran-vector-integrity-key-octets)
+; AVP: Integrity-Key
+; Within: UTRAN-Vector
+; Section: 7.3.58
+; Page: 133
+; Versions: 18.7.0..19.6.0
+"The Integrity-Key is of type OctetString, and shall contain the Integrity Key (IK)."
+    length 16 octets
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#kc-octets)
+; AVP: Kc
+; Section: 7.3.59
+; Page: 133
+; Versions: 18.7.0..19.6.0
+"The Kc AVP is of type OctetString, and shall contain the Ciphering Key (Kc)."
+    length 8 octets
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#sres-element)
@@ -2883,7 +4461,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 "Octets are coded according to TS 29.002 [24]."
     encoding element TS29.002 17.7.1 "PDP-Type"
 "The allowed values are one of IPv4 encoded as HEX (21) or IPv6 encoded as HEX (57) or Non-IP encoded as HEX (02)."
-    text-only
+    bits at-least-one 1 8
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ext-pdp-type-value)
@@ -2892,7 +4470,7 @@ PDP-Context ::= < AVP header: 1469 10415 >
 ; Page: 137
 ; Versions: 18.7.0..19.6.0
 "Octets are coded according to TS 29.002 [24] and TS 29.060 [39] and shall contain the value of IPv4v6."
-    text-only
+    encoding element TS29.002 17.7.1 "Ext-PDP-Type"
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#qos-subscribed-element)
@@ -3165,6 +4743,30 @@ Call-Barring-Info ::= < AVP header: 1488 10415 >
 "P-CSCF Restoration Request"       = 8
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-flags-undefined-bits)
+; AVP: IDR-Flags
+; Section: 7.3.103
+; Table: 7.3.103/1
+; Page: 141
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0 1 2 3 4 5 6 7 8
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#idr-flags-location-request-bits)
+; AVP: IDR-Flags
+; Command: Insert-Subscriber-Data-Request
+; Application-ID: 16777251
+; Section: 7.3.103
+; Table: 7.3.103/1
+; Page: 141
+; Versions: 18.7.0..19.6.0
+"This bit when set shall indicate to the MME or the SGSN that the HSS requests the MME or SGSN to provide the most current location information by paging the UE if the UE is in idle mode. This bit is used only in combination with the\"EPS Location Information Request\" bit."
+    excludes IDR-Flags bit "Current Location Request" and not IDR-Flags bit "EPS Location Information Request"
+"This bit when set shall indicate to the MME or the SGSN that the HSS requests the MME or SGSN to provide the RAT Type that corresponds to the requested EPS Location Information. This bit is used only in combination with the\"EPS Location Information Request\" bit."
+    excludes IDR-Flags bit "RAT-Type Requested" and not IDR-Flags bit "EPS Location Information Request"
+
+
 ; Type: Enumerated AVP
 ; Name: ICS-Indicator
 ; Section: 7.3.104
@@ -3262,8 +4864,21 @@ User-State ::= < Enumerated AVP header: 1499 10415 >
         RESERVED                           = 5
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#user-state-reserved)
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mme-user-state-reserved)
 ; AVP: User-State
+; Within: MME-User-State
+; Application-ID: 16777251
+; Section: 7.3.114
+; Page: 144
+; Versions: 18.7.0..19.6.0
+"This value should not be used by MME or SGSN over S6a/S6d."
+    exclude 5
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#sgsn-user-state-reserved)
+; AVP: User-State
+; Within: SGSN-User-State
+; Application-ID: 16777251
 ; Section: 7.3.114
 ; Page: 144
 ; Versions: 18.7.0..19.6.0
@@ -3385,6 +5000,15 @@ Current-Location-Retrieved ::= < Enumerated AVP header: 1610 10415 >
         ACTIVE-LOCATION-RETRIEVAL = 0
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#age-of-location-information-element)
+; AVP: Age-Of-Location-Information
+; Section: 7.3.126
+; Page: 147
+; Versions: 18.7.0..19.6.0
+"The Age-Of-Location-Information AVP is of type Unsigned32 and shall contain the the elapsed time in minutes since the last network contact of the user equipment. For details, see TS 29.002 [24]."
+    encoding element TS29.002 17.7.8 "AgeOfLocationInformation"
+
+
 ; Type: Grouped AVP
 ; Name: Active-APN
 ; Section: 7.3.127
@@ -3416,7 +5040,10 @@ Error-Diagnostic ::= < Enumerated AVP header: 1614 10415 >
 ; Page: 147
 ; Versions: 18.7.0..19.6.0
 "This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user."
+"This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is not GPRS Subscription Data for the user."
 "This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30)."
+"This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"Roamer Access HPLMN-AP Barred\" (see clause 7.3.30)."
+"This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"Roamer Access to VPLMN-AP Barred\" (see clause 7.3.30)."
     text-only
 
 
@@ -3437,6 +5064,16 @@ UE-SRVCC-Capability ::= < Enumerated AVP header: 1615 10415 >
 ; Page: 148
 MPS-CS-Priority  = 0
 MPS-EPS-Priority = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mps-priority-undefined-bits-release-18)
+; AVP: MPS-Priority
+; Section: 7.3.131
+; Table: 7.3.131/1
+; Page: 148
+; Versions: 18.7.0
+"Note: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0 1
 
 
 ; Type: Enumerated AVP
@@ -3634,6 +5271,16 @@ MDT-User-Consent ::= < Enumerated AVP header: 1634 10415 >
 "UE Purged in SGSN" = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pur-flags-undefined-bits)
+; AVP: PUR-Flags
+; Section: 7.3.149
+; Table: 7.3.149/1
+; Page: 151
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS."
+    bits only 0 1
+
+
 ; Type: Enumerated AVP
 ; Name: Subscribed-VSRVCC
 ; Section: 7.3.150
@@ -3671,6 +5318,16 @@ Equivalent-PLMN-List ::= < AVP header: 1637 10415 >
 Reattach-Required   = 1
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#clr-flags-undefined-bits)
+; AVP: CLR-Flags
+; Section: 7.3.152
+; Table: 7.3.152/1
+; Page: 152
+; Versions: 18.7.0..19.6.0
+"NOTE 2: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0 1
+
+
 ; Type: Value Table
 ; AVP: UVR-Flags
 ; Kind: bits
@@ -3680,6 +5337,16 @@ Reattach-Required   = 1
 "Skip Subscriber Data" = 0
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uvr-flags-undefined-bits)
+; AVP: UVR-Flags
+; Section: 7.3.153
+; Table: 7.3.154/1
+; Page: 152
+; Versions: 18.7.0..19.6.0
+"Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving CSS."
+    bits only 0
+
+
 ; Type: Value Table
 ; AVP: UVA-Flags
 ; Kind: bits
@@ -3687,6 +5354,16 @@ Reattach-Required   = 1
 ; Table: 7.3.156/1
 ; Page: 152
 "Temporary Empty VPLMN CSG Subscription Data" = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uva-flags-undefined-bits)
+; AVP: UVA-Flags
+; Section: 7.3.154
+; Table: 7.3.156/1
+; Page: 152
+; Versions: 18.7.0..19.6.0
+"Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving CSS."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -3746,7 +5423,8 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
 ; Page: 154
 ; Versions: 18.7.0..19.6.0
 "When the MME/SGSN includes the SMS-Register-Request AVP in ULR in order to modify its registration status for SMS, the MME/SGSN shall not set the \"Skip Subscriber Data\" flag within the ULR-Flags AVP."
-    excludes ULR-Flags bit "Skip Subscriber Data"
+    excludes ULR-Flags bit "Skip Subscriber Data" and SMS-Register-Request in SMS_REGISTRATION_REQUIRED,
+        SMS_REGISTRATION_NOT_PREFERRED
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#time-zone-format)
@@ -3756,6 +5434,7 @@ SMS-Register-Request ::= < Enumerated AVP header: 1648 10415 >
 ; Versions: 18.7.0..19.6.0
 "The contents of the Time-Zone AVP shall be formatted as a character string with the following format:"
 "Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC."
+"It shall be expressed as positive (i.e. with the leading plus sign [+]) if the local time is ahead of or equal to UTC of day and as negative (i.e. with the leading minus sign [-]) if it is behind UTC of day."
     encoding time-zone
 
 
@@ -3780,6 +5459,16 @@ SMS-In-SGSN-Allowed-Indication                       = 1
 "User Plane Integrity Protection"                    = 2
 PDN-Connection-Restricted                            = 3
 "Acknowledgement-Of-Downlink-NAS-Data PDUs disabled" = 4
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#subscription-data-flags-undefined-bits-release-18)
+; AVP: Subscription-Data-Flags
+; Section: 7.3.165
+; Table: 7.3.165/1
+; Page: 154
+; Versions: 18.7.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
+    bits only 0 1 2 3 4
 
 
 ; Type: Enumerated AVP
@@ -3909,6 +5598,16 @@ WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py#wl
 "WLAN offloadability for E-UTRAN" = 0
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#wlan-offloadability-eutran-undefined-bits)
+; AVP: WLAN-offloadability-EUTRAN
+; Section: 7.3.182
+; Table: 7.3.182/1
+; Page: 157
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0
+
+
 ; Type: Value Table
 ; AVP: WLAN-offloadability-UTRAN
 ; Kind: bits
@@ -3916,6 +5615,16 @@ WLAN-offloadability ::= < AVP header: 1667 10415 > ;; corrected: (TS29.272.py#wl
 ; Table: 7.3.183/1
 ; Page: 157
 "WLAN offloadability for UTRAN" = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#wlan-offloadability-utran-undefined-bits)
+; AVP: WLAN-offloadability-UTRAN
+; Section: 7.3.183
+; Table: 7.3.183/1
+; Page: 157
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.."
+    bits only 0
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#mdt-allowed-plmn-id-layout)
@@ -4072,6 +5781,8 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 ; Versions: 18.7.0..19.6.0
 "When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present"
     members at-least-one SCEF-Realm
+"and its value shall be obtained by the HSS from the Origin-Realm AVP of the Configuration-Information-Request command conveying the corresponding monitoring event configuration over the S6t interface from the SCEF to the HSS."
+    text-only
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#monitoring-event-configuration-monitoring-type)
@@ -4090,10 +5801,11 @@ Monitoring-Event-Configuration ::= < AVP header: 3122 10415 >
 ; Section: 7.3.195
 ; Page: 160
 ; Versions: 18.7.0..19.6.0
+"The Monitoring-Type AVP shall only be taken into account in combination with SCEF-Reference-ID/SCEF-Reference-ID-Ext AVP"
 "Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6)."
-    absent-if Monitoring-Type = 6
+    absent-if Monitoring-Type = 6 and SCEF-Reference-ID or Monitoring-Type = 6 and SCEF-Reference-ID-Ext
 "Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1)."
-    values 0, 1 if Monitoring-Type = 2 and Location-Information-Configuration/MONTE-Location-Type = 1
+    values 0, 1 if Monitoring-Type = 2 and Location-Information-Configuration/MONTE-Location-Type = 1 and SCEF-Reference-ID or Monitoring-Type = 2 and Location-Information-Configuration/MONTE-Location-Type = 1 and SCEF-Reference-ID-Ext
 
 
 ; Type: Grouped AVP
@@ -4122,6 +5834,7 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
 ; Page: 161
 ; Versions: 18.7.0..19.6.0
 "For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)"
+    present-if Monitoring-Type = 1
     values 1 if Monitoring-Type = 1
 
 
@@ -4131,8 +5844,11 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
 ; Section: 7.3.196
 ; Page: 161
 ; Versions: 18.7.0..19.6.0
-"each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\"."
+"For S6a/S6d interface, when the Monitoring-Type AVP takes the value PDN_CONNECTIVITY_STATUS (10), the PDN-Connectivity-Status-Report AVP(s) shall contain the list of active PDNs, for the given APN provided in the monitoring event configuration, or for all APNs if no APN was provided;"
     text-only
+"For S6a/S6d interface, when the Monitoring-Type AVP takes the value PDN_CONNECTIVITY_STATUS (10),"
+"each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\"."
+    excludes Monitoring-Type = 10 and not PDN-Connectivity-Status-Report/PDN-Connectivity-Status-Type = CREATED
 
 
 ; Type: Grouped AVP
@@ -4182,6 +5898,28 @@ Roaming-status                                    = 5
 "PDN Connectivity Status"                         = 8
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#supported-monitoring-events-undefined-bits-release-18)
+; AVP: Supported-Monitoring-Events
+; Section: 7.3.200
+; Table: 7.3.200-1
+; Page: 163
+; Versions: 18.7.0
+"NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command."
+    bits only 0 1 2 3 4 5 6 7 8
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#supported-monitoring-events-s6t-only)
+; AVP: Supported-Monitoring-Events
+; Within: Supported-Services
+; Application-ID: 16777251
+; Section: 7.3.200
+; Table: 7.3.200-1
+; Page: 163
+; Versions: 18.7.0..19.6.0
+"only used on S6t interface"
+    bits clear 0 5
+
+
 ; Type: Value Table
 ; AVP: AIR-Flags
 ; Kind: bits
@@ -4189,6 +5927,16 @@ Roaming-status                                    = 5
 ; Table: 7.3.201/1
 ; Page: 163
 "Send UE Usage Type" = 0
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#air-flags-undefined-bits-release-18)
+; AVP: AIR-Flags
+; Section: 7.3.201
+; Table: 7.3.201/1
+; Page: 163
+; Versions: 18.7.0
+"NOTE: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS."
+    bits only 0
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ue-usage-type-range)
@@ -4266,6 +6014,8 @@ Subscription-Data-Deletion ::= < AVP header: 1685 10415 >
 ; Table: 7.3.209/1
 ; Page: 165
 ; Versions: 18.7.0..19.6.0
+"NOTE 1: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME."
+    bits only 0 1
 "NOTE 2: At least one of the bits 0 and 1 shall be set to 1."
     bits at-least-one 0 1
 
@@ -4297,6 +6047,16 @@ V2X-Subscription-Data ::= < AVP header: 1688 10415 >
 ; Page: 166
 "Allow V2X communication over PC5 as Vehicle UE"    = 0
 "Allow V2X communication over PC5 as Pedestrian UE" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#v2x-permission-undefined-bits)
+; AVP: V2X-Permission
+; Section: 7.3.213
+; Table: 7.3.x2-1
+; Page: 166
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the HSS and discarded by the MME."
+    bits only 0 1
 
 
 ; Type: Value Table
@@ -4440,6 +6200,16 @@ AERIAL_UE_NOT_ALLOWED = 1
 "Positioning SIB Type 2-27"  = 44
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#broadcast-location-assistance-data-types-undefined-bits)
+; AVP: Broadcast-Location-Assistance-Data-Types
+; Section: 7.3.225
+; Table: 7.3.225-1
+; Page: 168
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN."
+    bits only 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44
+
+
 ; Type: Grouped AVP
 ; Name: Paging-Time-Window
 ; Section: 7.3.226
@@ -4489,6 +6259,16 @@ eDRX-Related-RAT ::= < AVP header: 1705 10415 >
 ; Page: 172
 Reserved          = 0
 "5GC not allowed" = 1
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#core-network-restrictions-undefined-bits)
+; AVP: Core-Network-Restrictions
+; Section: 7.3.230
+; Table: 7.3.230-1
+; Page: 172
+; Versions: 18.7.0..19.6.0
+"NOTE: Bits not defined in this table shall be cleared by the HSS and discarded by the MME."
+    bits only 0 1
 
 
 ; Type: Enumerated AVP
@@ -4575,6 +6355,8 @@ PC5-QoS-Flow ::= < AVP header: 1712 10415 >
 ; Versions: 18.7.0..19.6.0
 "See TS 23.501 [69] for allowed values."
     encoding element TS23.501 "5QI"
+"If the 5QI is used in PC5 QoS parameter, it shall contain PQI, PQI is a special 5QI (see clause 5.4.2.1 of TS 23.287 [68])."
+    text-only
 
 
 ; Type: Grouped AVP
@@ -4675,3 +6457,379 @@ DIAMETER_ERROR_EQUIPMENT_UNKNOWN          = 5422 ; 7.4.3.5
 DIAMETER_ERROR_UNKNOWN_SERVING_NODE       = 5423 ; 7.4.3.6
 DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE  = 4181 ; 7.4.4.1
 DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT = 4182 ; 7.4.4.2
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Update-Location-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cla-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Cancel-Location-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Purge-UE-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Authentication-Information-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Notify-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uva-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Update-VCSG-Location-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cva-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Cancel-VCSG-Location-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-ida-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-dsa-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-rsa-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: Reset-Answer
+; Application-ID: 16777308
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-result-code-absent-with-permanent-failure)
+; AVP: Result-Code
+; Command: ME-Identity-Check-Answer
+; Section: 7.4.3
+; Page: 176
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_ERROR_USER_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION, DIAMETER_ERROR_RAT_NOT_ALLOWED,
+        DIAMETER_ERROR_ROAMING_NOT_ALLOWED, DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+        DIAMETER_ERROR_UNKNOWN_SERVING_NODE
+    exclude 5420, 5421, 5422, 5423
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ula-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Update-Location-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cla-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Cancel-Location-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#pua-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Purge-UE-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#ida-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#dsa-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777251
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#aia-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Authentication-Information-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#rsa-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Reset-Answer
+; Application-ID: 16777251
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#noa-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Notify-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#uva-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Update-VCSG-Location-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#cva-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Cancel-VCSG-Location-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-ida-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Insert-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-dsa-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Delete-Subscriber-Data-Answer
+; Application-ID: 16777308
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#s7a-rsa-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: Reset-Answer
+; Application-ID: 16777308
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.272.dadx#eca-result-code-absent-with-transient-failure)
+; AVP: Result-Code
+; Command: ME-Identity-Check-Answer
+; Section: 7.4.4
+; Page: 177
+; Versions: 18.7.0..19.6.0
+"When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent."
+    absent-if Experimental-Result/Vendor-Id = 10415 and Experimental-Result/Experimental-Result-Code in DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE,
+        DIAMETER_ERROR_CAMEL_SUBSCRIPTION_PRESENT
+    exclude 4181, 4182

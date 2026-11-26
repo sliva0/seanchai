@@ -459,11 +459,17 @@ conditions met and the rule kept, and a negative one breaking it.
 Values are valid for their type and for every constraint read of the AVP: a
 codec's layout (a PLMN identity is MCC 123, MNC 45), an element's, a length, a
 range, bits, a predicate's siblings, the members a grouped AVP must or may not
-hold, a required grouped AVP's own members a predicate of its command names
-through a path, present or holding the number it asks (TS 29.336's CIR, its
-User-Identifier holding an External-Identifier or an MSISDN and not both, TS
-29.154's BTR, its Vendor-Specific-Application-Id holding Nt's
-Auth-Application-Id and so no Acct-Application-Id), a distinct value of a
+hold, a grouped AVP's own members a predicate of its command names through a
+path, present, holding the number or name it asks or another than it forbids
+(TS 29.336's CIR, its User-Identifier holding an External-Identifier or an
+MSISDN and not both, TS 29.154's BTR, its Vendor-Specific-Application-Id
+holding Nt's Auth-Application-Id and so no Acct-Application-Id, TS 29.272's
+ULA, its Subscription-Data's Subscriber-Status OPERATOR_DETERMINED_BARRING
+beside its Operator-Determined-Barring and its AMBR's two bandwidths not
+both 0), of two optional AVPs a predicate keeps apart the one fewer other
+AVPs' rules read left out (a maximal ULA keeps its Result-Code, which the
+subscription data's rules read, and leaves out the Experimental-Result whose
+code would set it aside, TS 29.272 clause 7.4.3), a distinct value of a
 `unique` member in each repeated grouped AVP. An AVP a predicate wants
 present that only `* [ AVP ]` admits is built as the predicate's reading
 reads it, which the plugin holds it to (TS 32.299's CCA, its

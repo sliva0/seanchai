@@ -920,6 +920,44 @@ REGISTRY: tuple[Element, ...] = (
     Element(
         "TS29.002",
         "17.7.1",
+        "Ext-PDP-Type",
+        "the PDP type organisation and number of a dual-stack PDP context",
+        (
+            _source(
+                _MAP,
+                "17.7.1",
+                "Ext-PDP-Type ::= OCTET STRING (SIZE (2)): 'Octets are coded,"
+                " similarly to PDP-Type, according to TS 3GPP TS 29.060' and"
+                " 'Only the value IPv4v6 is allowed for this parameter'",
+            ),
+            _source(
+                _GTPV1,
+                "7.7.27",
+                "figure 35, octets 4 and 5: spare '1111', PDP type"
+                " organisation, PDP type number; IETF (1) IPv4v6 8DH, 'There is"
+                " no IANA defined PDP type for IPv4v6'",
+            ),
+        ),
+        (
+            Octets(2, 2),
+            Field("spare", 1, 8, 5, _codes(0b1111)),
+            Field(
+                "PDP type organisation and number",
+                1,
+                4,
+                1,
+                _codes(0x18D),
+                last=2,
+                meaning="IPv4v6 (0x18D)",
+            ),
+        ),
+        Depth.FULL,
+        None,
+        example=b"\xf1\x8d",
+    ),
+    Element(
+        "TS29.002",
+        "17.7.1",
         "QoS-Subscribed",
         "QoS-Subscribed and its extensions concatenated: TS 24.008's Quality"
         " of Service octets 3 to 5, then Ext-QoS-Subscribed (an"
@@ -1008,6 +1046,24 @@ REGISTRY: tuple[Element, ...] = (
         (Integer(0, 127),),
         Depth.FULL,
         "a standard type the clause has not yet named is reserved for one, not refused",
+    ),
+    Element(
+        "TS29.002",
+        "17.7.8",
+        "AgeOfLocationInformation",
+        "the minutes since the mobile station's last contact with the network",
+        (
+            _source(
+                _MAP,
+                "17.7.8",
+                "AgeOfLocationInformation ::= INTEGER (0..32767), '32767'"
+                " indicating the location information is at least 32767"
+                " minutes old",
+            ),
+        ),
+        (Integer(0, 32767),),
+        Depth.FULL,
+        None,
     ),
     Element(
         "TS29.002",

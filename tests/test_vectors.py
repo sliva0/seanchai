@@ -58,7 +58,16 @@ def test_every_command_gets_valid_and_negative_vectors_in_a_fixed_order(s6a, bui
             (v.abbreviation, v.is_request) for v in s6a.vectors if v.kind == kind
         } == commands
     negative = [v for v in s6a.vectors if v.kind == "negative"]
-    assert all(len(v.expected) == 1 and v.breaks is not None for v in negative)
+    # One finding each, but a Result-Code holding one of TS 29.272's own
+    # codes (clause 7.4.3), which no Result-Code table names either.
+    assert all(
+        v.breaks is not None
+        and (
+            len(v.expected) == 1
+            or [e.rule for e in v.expected] == ["constraint-exclude", "result-code"]
+        )
+        for v in negative
+    )
     assert all(
         not v.expected and v.breaks is None for v in s6a.vectors if v.kind != "negative"
     )

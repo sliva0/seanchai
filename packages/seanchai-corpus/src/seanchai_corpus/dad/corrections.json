@@ -7758,7 +7758,7 @@
     },
     "TS29.272.dadx#5qi-element": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.238: 'See TS 23.501 [69] for allowed values.'"
+     "reason": "interpreted from clause 7.3.238: 'See TS 23.501 [69] for allowed values.'; 'If the 5QI is used in PC5 QoS parameter, it shall contain PQI, PQI is a special 5QI (see clause 5.4.2.1 of TS 23.287 [68]).'"
     },
     "TS29.272.dadx#a-msisdn-e164": {
      "kind": "interpret",
@@ -7768,13 +7768,97 @@
      "kind": "interpret",
      "reason": "interpreted from table 7.3.31/1: 'NOTE 2: Bits 11 and 12 are only used when bit 4 is not set.'"
     },
+    "TS29.272.dadx#active-apn-explicit-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated'; 'For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN'"
+    },
+    "TS29.272.dadx#active-apn-explicit-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated'; 'For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN'"
+    },
+    "TS29.272.dadx#active-apn-explicit-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated'; 'For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN'"
+    },
     "TS29.272.dadx#aese-communication-pattern-reference-ids": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
     },
+    "TS29.272.dadx#age-of-location-information-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.126: 'The Age-Of-Location-Information AVP is of type Unsigned32 and shall contain the the elapsed time in minutes since the last network contact of the user equipment. For details, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#aia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#aia-authentication-info-resynchronization": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.1.3: 'If both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP are in the request, and both of them include the Re-Synchronization-Info AVP, the HSS shall not check the AUTS parameter and return the result code of DIAMETER_UNABLE_TO_COMPLY.'; 'Any authentication vectors shall not be sent by the HSS to the requesting node in the response.'; 'If more than one EPS or UTRAN or GERAN Vector is to be included within one Authentication-Info AVP, the Item-Number AVP shall be present within each Vector.'"
+    },
+    "TS29.272.dadx#aia-error-diagnostic": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/2: 'If the Experimental Result indicated \"Unknown EPS Subscription\", Error Diagnostic may be present to indicate whether or not GPRS subscription data are subscribed (i.e. whether or not Network Access Mode stored in the HSS indicates that only CS service is allowed).'"
+    },
+    "TS29.272.dadx#aia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#aia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#aia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#aia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#aia-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#aia-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#aia-resynchronization-twice": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.1.3: 'If both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP are in the request, and both of them include the Re-Synchronization-Info AVP, the HSS shall not check the AUTS parameter and return the result code of DIAMETER_UNABLE_TO_COMPLY.'"
+    },
     "TS29.272.dadx#aia-ue-usage-type": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
+    },
+    "TS29.272.dadx#air-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#air-flags-undefined-bits-release-18": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.201/1: 'NOTE: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS.'"
+    },
+    "TS29.272.dadx#air-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#air-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#air-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#air-requested-authentication-info-exclusive": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.1.2: 'Re-Synchronization Information shall not be present in both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP.'; 'The Immediate-Response-Preferred AVP shall not be present in both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP.'"
+    },
+    "TS29.272.dadx#air-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#allocation-retention-priority-pre-emption-capability-default": {
      "kind": "interpret",
@@ -7786,11 +7870,11 @@
     },
     "TS29.272.dadx#ambr-extended-max-requested-bw-dl": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'; 'NOTE: The value applicable for Max-Requested-Bandwidth-UL (or DL, respectively) is between 1 and 4294967295 bits per second, and the value applicable for Extended-Max-Requested-BW-UL (or -DL, respectively) is between 4294968 and 4294967295 kilobits per second.'"
     },
     "TS29.272.dadx#ambr-extended-max-requested-bw-ul": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'; 'NOTE: The value applicable for Max-Requested-Bandwidth-UL (or DL, respectively) is between 1 and 4294967295 bits per second, and the value applicable for Extended-Max-Requested-BW-UL (or -DL, respectively) is between 4294968 and 4294967295 kilobits per second.'"
     },
     "TS29.272.dadx#apn-configuration-context-identifier": {
      "kind": "interpret",
@@ -7826,7 +7910,7 @@
     },
     "TS29.272.dadx#apn-configuration-served-party-ip-address": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
+     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'and they shall contain either of:'; 'an IPv4 address, or'; 'an IPv6 address/prefix, or'; 'both, an IPv4 address and an IPv6 address/prefix.'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
     },
     "TS29.272.dadx#apn-configuration-service-selection": {
      "kind": "interpret",
@@ -7844,6 +7928,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.55: 'This AVP shall contain the AUTN. See TS 33.401 [5].'"
     },
+    "TS29.272.dadx#broadcast-location-assistance-data-types-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.225-1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
     "TS29.272.dadx#carrier-frequency-range": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.221: 'it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62]).'"
@@ -7852,13 +7940,65 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.119: 'Octets are coded as described in TS 29.002 [24].'"
     },
+    "TS29.272.dadx#cla-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#cla-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#cla-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#cla-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#cla-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#cla-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
     "TS29.272.dadx#client-identity-e164": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.91: 'The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
+    "TS29.272.dadx#clr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#clr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.152/1: 'NOTE 2: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#clr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#clr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#clr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#clr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
     "TS29.272.dadx#collection-period-m7-nr-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.249: 'The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes.'"
+    },
+    "TS29.272.dadx#core-network-restrictions-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.230-1: 'NOTE: Bits not defined in this table shall be cleared by the HSS and discarded by the MME.'"
     },
     "TS29.272.dadx#coupled-node-diameter-id-element": {
      "kind": "interpret",
@@ -7868,9 +8008,65 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.79: 'Values are coded according to TS 23.003 [3].'; 'Unused bits (least significant) shall be padded with zeros.'"
     },
+    "TS29.272.dadx#cva-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#cva-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#cva-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#cvr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#cvr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
     "TS29.272.dadx#dl-buffering-suggested-packet-count-range": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.188: '\"Extended DL Data Buffering NOT REQUESTED\" 0'; '\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1'; '\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0'"
+    },
+    "TS29.272.dadx#dsa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#dsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#dsa-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.26/1: 'Note: Bits not defined in this table shall be cleared by the sending SGSN and discarded by the receiving HSS.'"
+    },
+    "TS29.272.dadx#dsa-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsa-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#dsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#dsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#dsr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
     },
     "TS29.272.dadx#dsr-context-identifier": {
      "kind": "interpret",
@@ -7880,6 +8076,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted.'"
     },
+    "TS29.272.dadx#dsr-external-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This IE shall be absent if the \"External-Identifier-Withdrawal\" bit is not set in the DSR-Flags.'"
+    },
     "TS29.272.dadx#dsr-flags-exclusive-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
@@ -7887,6 +8087,18 @@
     "TS29.272.dadx#dsr-flags-s7a-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
+    },
+    "TS29.272.dadx#dsr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#dsr-scef-id": {
      "kind": "interpret",
@@ -7904,13 +8116,73 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted.'"
     },
+    "TS29.272.dadx#dsr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
     "TS29.272.dadx#e-utran-cell-global-identity-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.117: 'Octets are coded as described in TS 29.002 [24].'"
     },
+    "TS29.272.dadx#eca-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
     "TS29.272.dadx#eca-equipment-status": {
      "kind": "interpret",
      "reason": "interpreted from table 6.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#eca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#eca-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#eca-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#eca-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#eca-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#eca-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ecr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ecr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ecr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ecr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#ecr-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S13/S13' interface.'"
+    },
+    "TS29.272.dadx#ecr-terminal-information-imei": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.1.2: 'Terminal-Information, when sent by the MME/SGSN to the EIR, shall contain the IMEI AVP, and it may contain also the Software-Version AVP.'"
+    },
+    "TS29.272.dadx#ecr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#edrx-cycle-length-value-octet": {
      "kind": "interpret",
@@ -7922,7 +8194,7 @@
     },
     "TS29.272.dadx#error-diagnostic-values": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'"
+     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is not GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"Roamer Access HPLMN-AP Barred\" (see clause 7.3.30).'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"Roamer Access to VPLMN-AP Barred\" (see clause 7.3.30).'"
     },
     "TS29.272.dadx#ethernet-pdn-type-indicator-default": {
      "kind": "interpret",
@@ -7976,6 +8248,14 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.190: 'IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so.'"
     },
+    "TS29.272.dadx#ida-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ida-current-location-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2.1.2: 'When receiving the IDR-Flags with only the \"Current Location Request\" bit set (i.e. the \"EPS Location Information Request\" bit is not set), the MME or SGSN or combined MME/SGSN shall set the Result-Code to DIAMETER_UNABLE_TO_COMPLY.'"
+    },
     "TS29.272.dadx#ida-eps-location-information": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS location information was requested within IDR.'"
@@ -7983,6 +8263,14 @@
     "TS29.272.dadx#ida-eps-user-state": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS user state was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#ida-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.47/1: 'Note: Bits not defined in this table shall be cleared by the sending SGSN and discarded by the receiving HSS.'"
     },
     "TS29.272.dadx#ida-ims-voice-over-ps-sessions-supported": {
      "kind": "interpret",
@@ -8004,9 +8292,65 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported.'"
     },
+    "TS29.272.dadx#ida-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ida-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ida-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
     "TS29.272.dadx#ida-rat-type": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#ida-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ida-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#idr-apn-configuration-qos-and-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2.1.3: 'The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the APN-Configuration AVP when the APN-Configuration AVP is sent in the APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is sent within a IDR (as part of the Subscription-Data AVP).'"
+    },
+    "TS29.272.dadx#idr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#idr-flags-location-request-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.103/1: 'This bit when set shall indicate to the MME or the SGSN that the HSS requests the MME or SGSN to provide the most current location information by paging the UE if the UE is in idle mode. This bit is used only in combination with the\"EPS Location Information Request\" bit.'; 'This bit when set shall indicate to the MME or the SGSN that the HSS requests the MME or SGSN to provide the RAT Type that corresponds to the requested EPS Location Information. This bit is used only in combination with the\"EPS Location Information Request\" bit.'"
+    },
+    "TS29.272.dadx#idr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.103/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#idr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#idr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#idr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#idr-subscription-data-odb": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2.1.3: 'If Subscriber-Status AVP is present and set to OPERATOR_DETERMINED_BARRING, the Operator-Determined-Barring AVP or HPLMN-ODB AVP shall also be present in the Subscription-Data AVP.'; 'The default APN Configuration shall not contain the Wildcard APN (see TS 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN.'"
+    },
+    "TS29.272.dadx#idr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#imei-digits": {
      "kind": "interpret",
@@ -8019,6 +8363,10 @@
     "TS29.272.dadx#kasme-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.56: 'This AVP shall contain the K_ASME. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#kc-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.59: 'The Kc AVP is of type OctetString, and shall contain the Ciphering Key (Kc).'"
     },
     "TS29.272.dadx#list-of-measurements-element": {
      "kind": "interpret",
@@ -8064,9 +8412,13 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.159: 'This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
+    "TS29.272.dadx#mme-user-state-reserved": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
+    },
     "TS29.272.dadx#monitoring-event-configuration-maximum-number-of-reports": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
+     "reason": "interpreted from clause 7.3.195: 'The Monitoring-Type AVP shall only be taken into account in combination with SCEF-Reference-ID/SCEF-Reference-ID-Ext AVP'; 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
     },
     "TS29.272.dadx#monitoring-event-configuration-monitoring-type": {
      "kind": "interpret",
@@ -8074,15 +8426,47 @@
     },
     "TS29.272.dadx#monitoring-event-configuration-scef-realm": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'"
+     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'; 'and its value shall be obtained by the HSS from the Origin-Realm AVP of the Configuration-Information-Request command conveying the corresponding monitoring event configuration over the S6t interface from the SCEF to the HSS.'"
     },
     "TS29.272.dadx#monitoring-event-report-pdn-connectivity": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
+     "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value PDN_CONNECTIVITY_STATUS (10), the PDN-Connectivity-Status-Report AVP(s) shall contain the list of active PDNs, for the given APN provided in the monitoring event configuration, or for all APNs if no APN was provided;'; 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value PDN_CONNECTIVITY_STATUS (10),'; 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
     },
     "TS29.272.dadx#monitoring-event-report-reachability-information": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value UE_REACHABILITY (1), the Reachability-Information AVP shall take the value REACHABLE_FOR_DATA (1)'"
+    },
+    "TS29.272.dadx#mps-priority-undefined-bits-release-18": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.131/1: 'Note: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#noa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#noa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#noa-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#noa-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#noa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#noa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#noa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
     },
     "TS29.272.dadx#non-ip-data-delivery-mechanism-default": {
      "kind": "interpret",
@@ -8096,6 +8480,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages.'"
     },
+    "TS29.272.dadx#nor-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#nor-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero.'"
+    },
     "TS29.272.dadx#nor-emergency-services": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.5.1.1/1: 'The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection'"
@@ -8106,11 +8498,23 @@
     },
     "TS29.272.dadx#nor-mip6-agent-info": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'"
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'; 'For establishment of emergency PDN connections, this IE shall contain the identity of the PDN-GW used to establish those PDN connections.'"
     },
     "TS29.272.dadx#nor-monitoring-event-config-status": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'"
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'; 'This information element shall also be present if any of the monitoring events configurations received in ULA failed and shall only contain the monitoring event configuration status of those events whose detection could not be started at the MME/SGSN.'; 'This information element shall also be present if the MME or SGSN determines that a Monitoring Event Configuration for a UE is to be deleted in the HSS (i.e. SCEF responds to a Monitoring Event Report with DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN).'"
+    },
+    "TS29.272.dadx#nor-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#nor-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#nor-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#nor-nor-flags": {
      "kind": "interpret",
@@ -8127,6 +8531,10 @@
     "TS29.272.dadx#nor-ue-srvcc-capability": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.5.1.1/1: 'If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request.'"
+    },
+    "TS29.272.dadx#nor-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#nor-visited-network-identifier": {
      "kind": "interpret",
@@ -8174,11 +8582,71 @@
     },
     "TS29.272.dadx#preferred-data-mode-bits": {
      "kind": "interpret",
-     "reason": "interpreted from table 7.3.209/1: 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
+     "reason": "interpreted from table 7.3.209/1: 'NOTE 1: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME.'; 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
+    },
+    "TS29.272.dadx#pua-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#pua-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#pua-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.48/1: 'Note: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#pua-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pua-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pua-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#pua-pua-flags": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.3.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#pua-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#pua-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#pur-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#pur-eps-location-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/1: 'This Information Element shall contain the last known EPS-Location Information of the purged UE. Shall be present if available.'"
+    },
+    "TS29.272.dadx#pur-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.149/1: 'NOTE: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS.'"
+    },
+    "TS29.272.dadx#pur-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pur-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pur-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#pur-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/1: 'This information element shall contain user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#qos-subscribed-element": {
      "kind": "interpret",
@@ -8195,6 +8663,10 @@
     "TS29.272.dadx#rds-indicator-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.222: 'The default value when this AVP is not present is DISABLED (0).'"
+    },
+    "TS29.272.dadx#re-synchronization-info-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.15: 'It shall contain the concatenation of RAND and AUTS.'"
     },
     "TS29.272.dadx#regional-subscription-zone-code-element": {
      "kind": "interpret",
@@ -8216,6 +8688,130 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.120: 'Octets are coded as described in TS 29.002 [24].'"
     },
+    "TS29.272.dadx#rsa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#rsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.4.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#rsa-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsa-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#rsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#rsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#rsr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#rsr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#rsr-subscription-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.4.1.1/1: 'Shall be absent if Subscription-Data-Deletion AVP is present. Shall be absent if Reset-ID AVP is absent'"
+    },
+    "TS29.272.dadx#rsr-subscription-data-deletion": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.4.1.1/1: 'Shall be absent if Subscription-Data AVP is present. Shall be absent if Reset-ID AVP is absent'"
+    },
+    "TS29.272.dadx#s7a-dsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.2.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#s7a-dsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-dsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-dsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-dsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-dsr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
+    "TS29.272.dadx#s7a-ida-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor Id in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#s7a-ida-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-ida-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-ida-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-ida-subs-data-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5A.2.2.1.2: 'If the request does not contain any CSG-Subscription-Data AVP, Experimental-Result shall be set to DIAMETER_ERROR_SUBS_DATA_ABSENT.'"
+    },
+    "TS29.272.dadx#s7a-idr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-idr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
+    "TS29.272.dadx#s7a-rsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.3.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#s7a-rsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-rsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-rsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-rsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
     "TS29.272.dadx#service-area-identity-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.122: 'Octets are coded as described in TS 29.002 [24].'"
@@ -8235,6 +8831,10 @@
     "TS29.272.dadx#sgsn-number-e164": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#sgsn-user-state-reserved": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
     },
     "TS29.272.dadx#sms-register-request-skip-subscriber-data": {
      "kind": "interpret",
@@ -8268,9 +8868,21 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.2: 'Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\".'"
     },
+    "TS29.272.dadx#subscription-data-flags-undefined-bits-release-18": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.165/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.272.dadx#supported-monitoring-events-s6t-only": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.200-1: 'only used on S6t interface'"
+    },
+    "TS29.272.dadx#supported-monitoring-events-undefined-bits-release-18": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.200-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
     "TS29.272.dadx#time-zone-format": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'"
+     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'; 'It shall be expressed as positive (i.e. with the leading plus sign [+]) if the local time is ahead of or equal to UTC of day and as negative (i.e. with the leading minus sign [-]) if it is behind UTC of day.'"
     },
     "TS29.272.dadx#trace-collection-entity-ip": {
      "kind": "interpret",
@@ -8308,17 +8920,89 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.202: 'The allowed values of UE-Usage-Type shall be in the range of 0 to 255.'"
     },
+    "TS29.272.dadx#ula-apn-configuration-qos-and-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.1.3: 'The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the APN-Configuration AVP when the APN-Configuration AVP is sent in the APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is sent within a ULA (as part of the Subscription-Data AVP).'"
+    },
+    "TS29.272.dadx#ula-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ula-error-diagnostic": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'If the Experimental Result indicates \"Unknown EPS Subscription\", Error Diagnostic may be present to indicate whether or not GPRS subscription data are subscribed (i.e. whether or not Network Access Mode stored in the HSS indicates that only circuit service is allowed).'; 'If the Experimental Result indicates \"Roaming Not Allowed\", and the Update Location is rejected due to ODB, Error Diagnostic may be present to indicate the specific type of ODB.'"
+    },
+    "TS29.272.dadx#ula-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#ula-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.8/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#ula-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ula-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ula-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#ula-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ula-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ula-separation-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.1.3: 'If a Result Code of DIAMETER_SUCCESS is returned, the HSS shall set the Separation Indication in the response.'"
+    },
     "TS29.272.dadx#ula-subscription-data": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request.'"
+    },
+    "TS29.272.dadx#ula-subscription-data-contents": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.1.3: 'Subscriber-Status AVP shall be present in the Subscription-Data AVP when sent within a ULA.'; 'If the value \"OPERATOR_DETERMINED_BARRING\" is sent, the Operator-Determined-Barring AVP or HPLMN-ODB AVP shall also be present in the Subscription-Data AVP, or vice versa.'; 'The AMBR AVP shall be present in the Subscription-Data AVP when the APN-Configuration-Profile AVP is sent within a ULA (as part of the Subscription-Data AVP)'; 'When the APN-Configuration-Profile AVP is present in the Subscription-Data AVP sent within a ULA, the AVP shall contain at least the default APN Configuration and a Context-Identifier AVP that identifies the per subscriber's default APN configuration.'; 'The default APN Configuration shall not contain the Wildcard APN (see TS 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN.'; 'If the Update Location Request includes an equivalent PLMN list, the HSS shall return the CSG list (if any) for each equivalent PLMN to the MME with the subscription data, and Visited-PLMN-Id AVP shall be present in the CSG-Subscription-Data AVP to indicate the corresponding PLMN.'"
     },
     "TS29.272.dadx#ula-ula-flags": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
     },
+    "TS29.272.dadx#ulr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ulr-flags-sender-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.7/1: 'An SGSN shall not set this bit when sending ULR.'; 'A standalone MME shall not set this bit when sending a ULR.'; 'An SGSN shall not set this bit when sending ULR over S6d interface.'"
+    },
+    "TS29.272.dadx#ulr-flags-undefined-bits-release-18": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.7/1: 'NOTE1: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS.'"
+    },
     "TS29.272.dadx#ulr-mme-number-for-mt-sms": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME.'"
+    },
+    "TS29.272.dadx#ulr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ulr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ulr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#ulr-sgsn-number": {
      "kind": "interpret",
@@ -8328,25 +9012,77 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and requests to be registered for SMS.'; 'It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS.'"
     },
+    "TS29.272.dadx#ulr-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface.'"
+    },
     "TS29.272.dadx#ulr-ue-srvcc-capability": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/1: 'shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN.'"
+    },
+    "TS29.272.dadx#ulr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#user-id-digits": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.50: 'It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string.'"
     },
-    "TS29.272.dadx#user-state-reserved": {
+    "TS29.272.dadx#utran-vector-confidentiality-key-octets": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
+     "reason": "interpreted from clause 7.3.57: 'The Confidentiality-Key is of type OctetString, and shall contain the Confidentiality Key (CK).'"
+    },
+    "TS29.272.dadx#utran-vector-integrity-key-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.58: 'The Integrity-Key is of type OctetString, and shall contain the Integrity Key (IK).'"
+    },
+    "TS29.272.dadx#uva-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#uva-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.156/1: 'Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving CSS.'"
+    },
+    "TS29.272.dadx#uva-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#uva-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#uva-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
     },
     "TS29.272.dadx#uva-vplmn-csg-subscription-data": {
      "kind": "interpret",
      "reason": "interpreted from table 5A.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set.'"
     },
+    "TS29.272.dadx#uvr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.154/1: 'Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving CSS.'"
+    },
+    "TS29.272.dadx#uvr-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/1: 'This information element shall contain the user MSISDN, formatted according to TS 29.329 [25]. It shall be present if available.'"
+    },
+    "TS29.272.dadx#uvr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
     "TS29.272.dadx#uvr-sgsn-number": {
      "kind": "interpret",
      "reason": "interpreted from table 5A.2.1.1.1/1: 'It shall be present when the message is sent on the S7d interface.'"
+    },
+    "TS29.272.dadx#uvr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
+    "TS29.272.dadx#v2x-permission-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.x2-1: 'NOTE: Bits not defined in this table shall be cleared by the HSS and discarded by the MME.'"
     },
     "TS29.272.dadx#visited-network-identifier-domain": {
      "kind": "interpret",
@@ -8355,6 +9091,18 @@
     "TS29.272.dadx#visited-plmn-id-layout": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.9: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.9-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#vplmn-dynamic-address-allowed-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.38: 'If this AVP is not present, this means that the UE is not allowed to use PDN GWs in the domain of the VPLMN.'"
+    },
+    "TS29.272.dadx#wlan-offloadability-eutran-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.182/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#wlan-offloadability-utran-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.183/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN..'"
     },
     "TS29.272.dadx#xres-element": {
      "kind": "interpret",
@@ -8500,7 +9248,7 @@
      "targets": [
       [
        "sections",
-       295
+       448
       ]
      ]
     },
@@ -8512,7 +9260,7 @@
      "targets": [
       [
        "sections",
-       299
+       452
       ]
      ]
     },
@@ -8536,7 +9284,7 @@
      "targets": [
       [
        "sections",
-       302
+       455
       ]
      ]
     },
@@ -8618,7 +9366,7 @@
     },
     "TS29.272.dadx#5qi-element": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.238: 'See TS 23.501 [69] for allowed values.'"
+     "reason": "interpreted from clause 7.3.238: 'See TS 23.501 [69] for allowed values.'; 'If the 5QI is used in PC5 QoS parameter, it shall contain PQI, PQI is a special 5QI (see clause 5.4.2.1 of TS 23.287 [68]).'"
     },
     "TS29.272.dadx#a-msisdn-e164": {
      "kind": "interpret",
@@ -8628,6 +9376,18 @@
      "kind": "interpret",
      "reason": "interpreted from table 7.3.31/1: 'NOTE 2: Bits 11 and 12 are only used when bit 4 is not set.'"
     },
+    "TS29.272.dadx#active-apn-explicit-mip6-agent-info": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated'; 'For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN'"
+    },
+    "TS29.272.dadx#active-apn-explicit-service-selection": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated'; 'For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN'"
+    },
+    "TS29.272.dadx#active-apn-explicit-visited-network-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'For the case of explicitly subscribed APNs, the following information shall be present: - Context-Identifier: context id of subscribed APN in use - Service-Selection: name of subscribed APN in use - MIP6-Agent-Info: including PDN GW identity in use for subscribed APN - Visited-Network-Identifier: identifies the PLMN where the PDN GW was allocated'; 'For the case of the Wildcard APN, the following information shall be present: - Context-Identifier: context id of the Wildcard APN - Specific-APN-Info: list of APN-in use and related PDN GW identity when the subscribed APN is the wildcard APN'"
+    },
     "TS29.272.dadx#aese-communication-pattern-extended-ids": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.193: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
@@ -8636,9 +9396,81 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.193: 'At least one reference ID (either in SCEF-Reference-ID or in SCEF-Reference-ID-Ext) or a reference ID for deletion (either in SCEF-Reference-ID-for-Deletion or in SCEF-Reference-ID-for-Deletion-Ext) shall be present.'"
     },
+    "TS29.272.dadx#age-of-location-information-element": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.126: 'The Age-Of-Location-Information AVP is of type Unsigned32 and shall contain the the elapsed time in minutes since the last network contact of the user equipment. For details, see TS 29.002 [24].'"
+    },
+    "TS29.272.dadx#aia-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#aia-authentication-info-resynchronization": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.1.3: 'If both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP are in the request, and both of them include the Re-Synchronization-Info AVP, the HSS shall not check the AUTS parameter and return the result code of DIAMETER_UNABLE_TO_COMPLY.'; 'Any authentication vectors shall not be sent by the HSS to the requesting node in the response.'; 'If more than one EPS or UTRAN or GERAN Vector is to be included within one Authentication-Info AVP, the Item-Number AVP shall be present within each Vector.'"
+    },
+    "TS29.272.dadx#aia-error-diagnostic": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/2: 'If the Experimental Result indicated \"Unknown EPS Subscription\", Error Diagnostic may be present to indicate whether or not GPRS subscription data are subscribed (i.e. whether or not Network Access Mode stored in the HSS indicates that only CS service is allowed).'"
+    },
+    "TS29.272.dadx#aia-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#aia-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#aia-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#aia-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#aia-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#aia-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#aia-resynchronization-twice": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.1.3: 'If both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP are in the request, and both of them include the Re-Synchronization-Info AVP, the HSS shall not check the AUTS parameter and return the result code of DIAMETER_UNABLE_TO_COMPLY.'"
+    },
     "TS29.272.dadx#aia-ue-usage-type": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.3.1.1/2: 'This IE shall be present if the HSS supports the Dedicated Core Networks feature, and the \"Send UE Usage Type\" flag was set in the AIR-Flags AVP in the AIR command, and this information is available in the user subscription.'"
+    },
+    "TS29.272.dadx#air-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#air-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.201/1: 'NOTE: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS.'"
+    },
+    "TS29.272.dadx#air-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#air-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#air-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#air-requested-authentication-info-exclusive": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.3.1.2: 'Re-Synchronization Information shall not be present in both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP.'; 'The Immediate-Response-Preferred AVP shall not be present in both the Requested-EUTRAN-Authentication-Info AVP and the Requested-UTRAN-GERAN-Authentication-Info AVP.'"
+    },
+    "TS29.272.dadx#air-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.3.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#allocation-retention-priority-pre-emption-capability-default": {
      "kind": "interpret",
@@ -8650,11 +9482,11 @@
     },
     "TS29.272.dadx#ambr-extended-max-requested-bw-dl": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'; 'NOTE: The value applicable for Max-Requested-Bandwidth-UL (or DL, respectively) is between 1 and 4294967295 bits per second, and the value applicable for Extended-Max-Requested-BW-UL (or -DL, respectively) is between 4294968 and 4294967295 kilobits per second.'"
     },
     "TS29.272.dadx#ambr-extended-max-requested-bw-ul": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'"
+     "reason": "interpreted from clause 7.3.41: 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is lower than 4294967296 bits per second, the Max-Requested-Bandwidth-UL (or -DL, respectively) AVP shall be present, and set to the requested bandwidth value in bits per second, and the Extended-Max-Requested-BW-UL (or -DL, respectively) AVP shall be absent.'; 'When the maximum bandwidth value to be set for UL (or DL, respectively) traffic is higher than 4294967295 bits per second, the Max-Requested-Bandwidth-UL (or DL, respectively) AVP shall be present, and set to its upper limit 4294967295'; 'NOTE: The value applicable for Max-Requested-Bandwidth-UL (or DL, respectively) is between 1 and 4294967295 bits per second, and the value applicable for Extended-Max-Requested-BW-UL (or -DL, respectively) is between 4294968 and 4294967295 kilobits per second.'"
     },
     "TS29.272.dadx#apn-configuration-context-identifier": {
      "kind": "interpret",
@@ -8690,7 +9522,7 @@
     },
     "TS29.272.dadx#apn-configuration-served-party-ip-address": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
+     "reason": "interpreted from clause 7.3.35: 'These AVPs shall be present if static IP address allocation is used for the UE'; 'and they shall contain either of:'; 'an IPv4 address, or'; 'an IPv6 address/prefix, or'; 'both, an IPv4 address and an IPv6 address/prefix.'; 'For the IPv6 prefix, the lower 64 bits of the address shall be set to zero.'"
     },
     "TS29.272.dadx#apn-configuration-service-selection": {
      "kind": "interpret",
@@ -8708,6 +9540,10 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.55: 'This AVP shall contain the AUTN. See TS 33.401 [5].'"
     },
+    "TS29.272.dadx#broadcast-location-assistance-data-types-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.225-1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
     "TS29.272.dadx#carrier-frequency-range": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.221: 'it shall contain the Carrier Frequency value, in the range of 0..262143 (see TS 36.331 [62]).'"
@@ -8716,13 +9552,65 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.119: 'Octets are coded as described in TS 29.002 [24].'"
     },
+    "TS29.272.dadx#cla-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#cla-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#cla-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#cla-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#cla-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#cla-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
     "TS29.272.dadx#client-identity-e164": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.91: 'The Client-Identity AVP is of type OctetString and it shall contain the ISDN number of the external client in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
+    "TS29.272.dadx#clr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#clr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.152/1: 'NOTE 2: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#clr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#clr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#clr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#clr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
     "TS29.272.dadx#collection-period-m7-nr-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.249: 'The possible values are those defined in TS 32.422 [23] for Collection period M7 in NR in units of minutes.'"
+    },
+    "TS29.272.dadx#core-network-restrictions-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.230-1: 'NOTE: Bits not defined in this table shall be cleared by the HSS and discarded by the MME.'"
     },
     "TS29.272.dadx#coupled-node-diameter-id-element": {
      "kind": "interpret",
@@ -8732,9 +9620,65 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.79: 'Values are coded according to TS 23.003 [3].'; 'Unused bits (least significant) shall be padded with zeros.'"
     },
+    "TS29.272.dadx#cva-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#cva-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#cva-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#cvr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#cvr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
     "TS29.272.dadx#dl-buffering-suggested-packet-count-range": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.188: '\"Extended DL Data Buffering NOT REQUESTED\" 0'; '\"Extended DL Data Buffering REQUESTED, without a suggested number of packets\" -1'; '\"Extended DL Data Buffering REQUESTED, with a suggested number of packets\" > 0'"
+    },
+    "TS29.272.dadx#dsa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#dsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#dsa-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.26/1: 'Note: Bits not defined in this table shall be cleared by the sending SGSN and discarded by the receiving HSS.'"
+    },
+    "TS29.272.dadx#dsa-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsa-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#dsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#dsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#dsr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
     },
     "TS29.272.dadx#dsr-context-identifier": {
      "kind": "interpret",
@@ -8744,6 +9688,10 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"eDRX-Cycle-Length-Withdrawal\" bit is set in the DSR-Flags and the corresponding eDRX Cycle Lengths are to be deleted.'"
     },
+    "TS29.272.dadx#dsr-external-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This IE shall be absent if the \"External-Identifier-Withdrawal\" bit is not set in the DSR-Flags.'"
+    },
     "TS29.272.dadx#dsr-flags-exclusive-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 7.3.25/1: 'Note 1: If the Complete APN Configuration Profile Withdrawal bit is set, this bit should not be set.'; 'Note 2: If the Complete PDP context list Withdrawal bit is set, this bit should not be set.'; 'Note 4: Bits 3 and 6 are excluding alternatives and shall not both be set.'"
@@ -8751,6 +9699,18 @@
     "TS29.272.dadx#dsr-flags-s7a-bits": {
      "kind": "interpret",
      "reason": "interpreted from table 7.3.25/1: 'Note 5: When this AVP is transferred over the S7a/S7d interface, only the bit 9 (CSG Deleted) is meaningful, other bits shall be cleared.'"
+    },
+    "TS29.272.dadx#dsr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#dsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#dsr-scef-id": {
      "kind": "interpret",
@@ -8768,13 +9728,73 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.2.1/1: 'This element shall be present only if the \"SMS Withdrawal\" bit is set in the DSR-Flags and the SMS related teleservice codes are to be deleted.'"
     },
+    "TS29.272.dadx#dsr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
     "TS29.272.dadx#e-utran-cell-global-identity-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.117: 'Octets are coded as described in TS 29.002 [24].'"
     },
+    "TS29.272.dadx#eca-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
     "TS29.272.dadx#eca-equipment-status": {
      "kind": "interpret",
      "reason": "interpreted from table 6.2.1.1/2: 'It shall be present if the result of the ME Identity Check is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#eca-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#eca-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#eca-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#eca-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#eca-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#eca-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ecr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ecr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ecr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ecr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#ecr-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S13/S13' interface.'"
+    },
+    "TS29.272.dadx#ecr-terminal-information-imei": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 6.2.1.2: 'Terminal-Information, when sent by the MME/SGSN to the EIR, shall contain the IMEI AVP, and it may contain also the Software-Version AVP.'"
+    },
+    "TS29.272.dadx#ecr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 6.2.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#edrx-cycle-length-value-octet": {
      "kind": "interpret",
@@ -8786,7 +9806,7 @@
     },
     "TS29.272.dadx#error-diagnostic-values": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'"
+     "reason": "interpreted from clause 7.3.128: 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION and there is not GPRS Subscription Data for the user.'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"All Packet Oriented Services Barred\" (see clause 7.3.30).'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"Roamer Access HPLMN-AP Barred\" (see clause 7.3.30).'; 'This value shall be used when Experimental-Error is DIAMETER_ERROR_ROAMING_NOT_ALLOWED and the Operator Determined Barring indicates \"Roamer Access to VPLMN-AP Barred\" (see clause 7.3.30).'"
     },
     "TS29.272.dadx#ethernet-pdn-type-indicator-default": {
      "kind": "interpret",
@@ -8840,6 +9860,14 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.190: 'IMSI-Group-IDs with a Group-Service-Id in this range shall not be sent outside the HPLMN unless roaming agreements allow so.'"
     },
+    "TS29.272.dadx#ida-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ida-current-location-alone": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2.1.2: 'When receiving the IDR-Flags with only the \"Current Location Request\" bit set (i.e. the \"EPS Location Information Request\" bit is not set), the MME or SGSN or combined MME/SGSN shall set the Result-Code to DIAMETER_UNABLE_TO_COMPLY.'"
+    },
     "TS29.272.dadx#ida-eps-location-information": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS location information was requested within IDR.'"
@@ -8847,6 +9875,14 @@
     "TS29.272.dadx#ida-eps-user-state": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if EPS user state was requested within IDR.'"
+    },
+    "TS29.272.dadx#ida-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#ida-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.47/1: 'Note: Bits not defined in this table shall be cleared by the sending SGSN and discarded by the receiving HSS.'"
     },
     "TS29.272.dadx#ida-ims-voice-over-ps-sessions-supported": {
      "kind": "interpret",
@@ -8868,9 +9904,65 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'It shall be present if Monitoring event configuration is included within IDR and any of the requested Monitoring events are available to be reported.'"
     },
+    "TS29.272.dadx#ida-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ida-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ida-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
     "TS29.272.dadx#ida-rat-type": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.2.1.1/2: 'If the UE is in detached state, this information element shall not be included in the response.'"
+    },
+    "TS29.272.dadx#ida-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ida-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#idr-apn-configuration-qos-and-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2.1.3: 'The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the APN-Configuration AVP when the APN-Configuration AVP is sent in the APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is sent within a IDR (as part of the Subscription-Data AVP).'"
+    },
+    "TS29.272.dadx#idr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#idr-flags-location-request-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.103/1: 'This bit when set shall indicate to the MME or the SGSN that the HSS requests the MME or SGSN to provide the most current location information by paging the UE if the UE is in idle mode. This bit is used only in combination with the\"EPS Location Information Request\" bit.'; 'This bit when set shall indicate to the MME or the SGSN that the HSS requests the MME or SGSN to provide the RAT Type that corresponds to the requested EPS Location Information. This bit is used only in combination with the\"EPS Location Information Request\" bit.'"
+    },
+    "TS29.272.dadx#idr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.103/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#idr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#idr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#idr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#idr-subscription-data-odb": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.2.1.3: 'If Subscriber-Status AVP is present and set to OPERATOR_DETERMINED_BARRING, the Operator-Determined-Barring AVP or HPLMN-ODB AVP shall also be present in the Subscription-Data AVP.'; 'The default APN Configuration shall not contain the Wildcard APN (see TS 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN.'"
+    },
+    "TS29.272.dadx#idr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.2.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#imei-digits": {
      "kind": "interpret",
@@ -8883,6 +9975,10 @@
     "TS29.272.dadx#kasme-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.56: 'This AVP shall contain the K_ASME. See TS 33.401 [5].'"
+    },
+    "TS29.272.dadx#kc-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.59: 'The Kc AVP is of type OctetString, and shall contain the Ciphering Key (Kc).'"
     },
     "TS29.272.dadx#list-of-measurements-element": {
      "kind": "interpret",
@@ -8928,13 +10024,17 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.159: 'This AVP contains an international number with the format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
     },
+    "TS29.272.dadx#mme-user-state-reserved": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
+    },
     "TS29.272.dadx#monitoring-event-configuration-extended-ids": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.195: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext and SCEF-Reference-ID-for-Deletion-Ext AVPs shall be used instead of SCEF-Reference-ID and SCEF-Reference-ID-for-Deletion respectively.'"
     },
     "TS29.272.dadx#monitoring-event-configuration-maximum-number-of-reports": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
+     "reason": "interpreted from clause 7.3.195: 'The Monitoring-Type AVP shall only be taken into account in combination with SCEF-Reference-ID/SCEF-Reference-ID-Ext AVP'; 'Maximum-Number-of-Reports shall not be present over S6a/S6d interfaces if Monitoring-Type is AVAILABILITY_AFTER_DDN_FAILURE (6).'; 'Maximum-Number-of-Reports shall not be greater than one over S6a/S6d interfaces if Monitoring-Type is LOCATION_REPORTING (2) and MONTE-Location-Type is LAST_KNOWN_LOCATION (1).'"
     },
     "TS29.272.dadx#monitoring-event-configuration-monitoring-type": {
      "kind": "interpret",
@@ -8942,11 +10042,11 @@
     },
     "TS29.272.dadx#monitoring-event-configuration-scef-realm": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'"
+     "reason": "interpreted from clause 7.3.195: 'When the Monitoring-Event-Configuration AVP is used over the S6a/S6d interfaces, the SCEF-Realm AVP shall be present'; 'and its value shall be obtained by the HSS from the Origin-Realm AVP of the Configuration-Information-Request command conveying the corresponding monitoring event configuration over the S6t interface from the SCEF to the HSS.'"
     },
     "TS29.272.dadx#monitoring-event-report-pdn-connectivity": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.196: 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
+     "reason": "interpreted from clause 7.3.196: 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value PDN_CONNECTIVITY_STATUS (10), the PDN-Connectivity-Status-Report AVP(s) shall contain the list of active PDNs, for the given APN provided in the monitoring event configuration, or for all APNs if no APN was provided;'; 'For S6a/S6d interface, when the Monitoring-Type AVP takes the value PDN_CONNECTIVITY_STATUS (10),'; 'each PDN-Connectivity-Status-Report shall have the PDN-Connectivity-Status-Type set to value \"CREATED (0)\".'"
     },
     "TS29.272.dadx#monitoring-event-report-reachability-information": {
      "kind": "interpret",
@@ -8955,6 +10055,38 @@
     "TS29.272.dadx#monitoring-event-report-scef-reference-id": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.196: 'When the \"Extended Reference IDs\" feature is supported and used by the HSS and supported by the MME/SGSN, the SCEF-Reference-ID-Ext AVP shall be used instead of SCEF-Reference-ID; in such case, the required AVP \"SCEF-Reference-ID\" shall be included in the grouped AVP by the sender, but its content shall be discarded by the receiver.'"
+    },
+    "TS29.272.dadx#mps-priority-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.131/1: 'Note: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#noa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#noa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#noa-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#noa-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#noa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#noa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#noa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
     },
     "TS29.272.dadx#non-ip-data-delivery-mechanism-default": {
      "kind": "interpret",
@@ -8968,6 +10100,14 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present when notifying the HSS about the presence of the UE or the UE has memory capacity available to receive one or more short messages.'"
     },
+    "TS29.272.dadx#nor-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#nor-context-identifier": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'For the compatibility with the MAP protocol as defined in the TS 29.002 [24], this parameter shall not have a value of zero.'"
+    },
     "TS29.272.dadx#nor-emergency-services": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.5.1.1/1: 'The MME shall include this information element, and set the Emergency-Indication flag, to notify the HSS that a new PDN-GW has been selected for the establishment of an emergency PDN connection'"
@@ -8978,11 +10118,23 @@
     },
     "TS29.272.dadx#nor-mip6-agent-info": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'"
+     "reason": "interpreted from table 5.2.5.1.1/1: 'It shall be present if a new PDN-GW has been selected and the subscriber is allowed handover to non 3GPP access or 5GS interworking without N26 interface enabled.'; 'For establishment of emergency PDN connections, this IE shall contain the identity of the PDN-GW used to establish those PDN connections.'"
     },
     "TS29.272.dadx#nor-monitoring-event-config-status": {
      "kind": "interpret",
-     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'"
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall be present if the MME/SGSN sends the Notify Request after receiving the Configuration-Information-Answer from the IWK-SCEF.'; 'This information element shall also be present if any of the monitoring events configurations received in ULA failed and shall only contain the monitoring event configuration status of those events whose detection could not be started at the MME/SGSN.'; 'This information element shall also be present if the MME or SGSN determines that a Monitoring Event Configuration for a UE is to be deleted in the HSS (i.e. SCEF responds to a Monitoring Event Report with DIAMETER_ERROR_SCEF_REFERENCE_ID_UNKNOWN).'"
+    },
+    "TS29.272.dadx#nor-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#nor-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#nor-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#nor-nor-flags": {
      "kind": "interpret",
@@ -8999,6 +10151,10 @@
     "TS29.272.dadx#nor-ue-srvcc-capability": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.5.1.1/1: 'If the MME/SGSN supports SRVCC and the UE SRVCC Capability has changed, the MME or SGSN shall include the new UE SRVCC Capability in the request.'"
+    },
+    "TS29.272.dadx#nor-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.5.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#nor-visited-network-identifier": {
      "kind": "interpret",
@@ -9050,11 +10206,71 @@
     },
     "TS29.272.dadx#preferred-data-mode-bits": {
      "kind": "interpret",
-     "reason": "interpreted from table 7.3.209/1: 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
+     "reason": "interpreted from table 7.3.209/1: 'NOTE 1: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME.'; 'NOTE 2: At least one of the bits 0 and 1 shall be set to 1.'"
+    },
+    "TS29.272.dadx#pua-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#pua-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#pua-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.48/1: 'Note: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#pua-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pua-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pua-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
     },
     "TS29.272.dadx#pua-pua-flags": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.3.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
+    },
+    "TS29.272.dadx#pua-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#pua-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#pur-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#pur-eps-location-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/1: 'This Information Element shall contain the last known EPS-Location Information of the purged UE. Shall be present if available.'"
+    },
+    "TS29.272.dadx#pur-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.149/1: 'NOTE: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS.'"
+    },
+    "TS29.272.dadx#pur-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pur-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#pur-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#pur-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.3.1/1: 'This information element shall contain user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#qos-subscribed-element": {
      "kind": "interpret",
@@ -9071,6 +10287,10 @@
     "TS29.272.dadx#rds-indicator-default": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.222: 'The default value when this AVP is not present is DISABLED (0).'"
+    },
+    "TS29.272.dadx#re-synchronization-info-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.15: 'It shall contain the concatenation of RAND and AUTS.'"
     },
     "TS29.272.dadx#regional-subscription-zone-code-element": {
      "kind": "interpret",
@@ -9092,6 +10312,130 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.120: 'Octets are coded as described in TS 29.002 [24].'"
     },
+    "TS29.272.dadx#rsa-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#rsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.4.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#rsa-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsa-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#rsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#rsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#rsr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#rsr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#rsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#rsr-subscription-data": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.4.1.1/1: 'Shall be absent if Subscription-Data-Deletion AVP is present. Shall be absent if Reset-ID AVP is absent'"
+    },
+    "TS29.272.dadx#rsr-subscription-data-deletion": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.4.1.1/1: 'Shall be absent if Subscription-Data AVP is present. Shall be absent if Reset-ID AVP is absent'"
+    },
+    "TS29.272.dadx#s7a-dsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.2.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#s7a-dsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-dsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-dsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-dsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-dsr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.2.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
+    "TS29.272.dadx#s7a-ida-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor Id in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#s7a-ida-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-ida-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-ida-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-ida-subs-data-absent": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5A.2.2.1.2: 'If the request does not contain any CSG-Subscription-Data AVP, Experimental-Result shall be set to DIAMETER_ERROR_SUBS_DATA_ABSENT.'"
+    },
+    "TS29.272.dadx#s7a-idr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-idr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.2.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
+    "TS29.272.dadx#s7a-rsa-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.3.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#s7a-rsa-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#s7a-rsa-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-rsa-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#s7a-rsr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
     "TS29.272.dadx#service-area-identity-element": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.122: 'Octets are coded as described in TS 29.002 [24].'"
@@ -9111,6 +10455,10 @@
     "TS29.272.dadx#sgsn-number-e164": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.102: 'This AVP contains an SGSN-Number in international number format as described in ITU-T Rec E.164 [41] and shall be encoded as a TBCD-string.'; 'This AVP shall not include leading indicators for the nature of address and the numbering plan; it shall contain only the TBCD-encoded digits of the address.'"
+    },
+    "TS29.272.dadx#sgsn-user-state-reserved": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
     },
     "TS29.272.dadx#sms-register-request-absence": {
      "kind": "interpret",
@@ -9148,9 +10496,21 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.2: 'Max-Requested-Bandwidth-UL and Max-Requested-Bandwidth-DL within this AVP shall not both be set to \"0\".'"
     },
+    "TS29.272.dadx#subscription-data-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.165/1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
+    "TS29.272.dadx#supported-monitoring-events-s6t-only": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.200-1: 'only used on S6t interface'"
+    },
+    "TS29.272.dadx#supported-monitoring-events-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.200-1: 'NOTE: Bits not defined in this table shall be cleared by the sender and discarded by the receiver of the command.'"
+    },
     "TS29.272.dadx#time-zone-format": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'"
+     "reason": "interpreted from clause 7.3.163: 'The contents of the Time-Zone AVP shall be formatted as a character string with the following format:'; 'Basic format: ±n, with \"n\" being the number of units of 15 minutes from UTC.'; 'It shall be expressed as positive (i.e. with the leading plus sign [+]) if the local time is ahead of or equal to UTC of day and as negative (i.e. with the leading minus sign [-]) if it is behind UTC of day.'"
     },
     "TS29.272.dadx#trace-collection-entity-ip": {
      "kind": "interpret",
@@ -9188,17 +10548,93 @@
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.202: 'The allowed values of UE-Usage-Type shall be in the range of 0 to 255.'"
     },
+    "TS29.272.dadx#ula-apn-configuration-qos-and-ambr": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.1.3: 'The EPS-Subscribed-QoS-Profile AVP and the AMBR AVP shall be present in the APN-Configuration AVP when the APN-Configuration AVP is sent in the APN-Configuration-Profile AVP and when the APN-Configuration-Profile AVP is sent within a ULA (as part of the Subscription-Data AVP).'"
+    },
+    "TS29.272.dadx#ula-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ula-error-diagnostic": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'If the Experimental Result indicates \"Unknown EPS Subscription\", Error Diagnostic may be present to indicate whether or not GPRS subscription data are subscribed (i.e. whether or not Network Access Mode stored in the HSS indicates that only circuit service is allowed).'; 'If the Experimental Result indicates \"Roaming Not Allowed\", and the Update Location is rejected due to ODB, Error Diagnostic may be present to indicate the specific type of ODB.'"
+    },
+    "TS29.272.dadx#ula-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#ula-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.8/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#ula-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ula-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ula-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#ula-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ula-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#ula-separation-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.1.3: 'If a Result Code of DIAMETER_SUCCESS is returned, the HSS shall set the Separation Indication in the response.'"
+    },
     "TS29.272.dadx#ula-subscription-data": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request.'"
+    },
+    "TS29.272.dadx#ula-subscription-data-contents": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 5.2.1.1.3: 'Subscriber-Status AVP shall be present in the Subscription-Data AVP when sent within a ULA.'; 'If the value \"OPERATOR_DETERMINED_BARRING\" is sent, the Operator-Determined-Barring AVP or HPLMN-ODB AVP shall also be present in the Subscription-Data AVP, or vice versa.'; 'The AMBR AVP shall be present in the Subscription-Data AVP when the APN-Configuration-Profile AVP is sent within a ULA (as part of the Subscription-Data AVP)'; 'When the APN-Configuration-Profile AVP is present in the Subscription-Data AVP sent within a ULA, the AVP shall contain at least the default APN Configuration and a Context-Identifier AVP that identifies the per subscriber's default APN configuration.'; 'The default APN Configuration shall not contain the Wildcard APN (see TS 23.003 [3], clause 9.2); the default APN shall always contain an explicit APN.'; 'If the Update Location Request includes an equivalent PLMN list, the HSS shall return the CSG list (if any) for each equivalent PLMN to the MME with the subscription data, and Visited-PLMN-Id AVP shall be present in the CSG-Subscription-Data AVP to indicate the corresponding PLMN.'"
     },
     "TS29.272.dadx#ula-ula-flags": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/2: 'It shall be present only when the Result-Code AVP is DIAMETER_SUCCESS.'"
     },
+    "TS29.272.dadx#ulr-auth-session-state": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'The client (server) shall include in its requests (responses) the Auth-Session-State AVP set to the value NO_STATE_MAINTAINED (1), as described in IETF RFC 6733 [61].'"
+    },
+    "TS29.272.dadx#ulr-flags-sender-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.7/1: 'An SGSN shall not set this bit when sending ULR.'; 'A standalone MME shall not set this bit when sending a ULR.'; 'An SGSN shall not set this bit when sending ULR over S6d interface.'"
+    },
+    "TS29.272.dadx#ulr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.7/1: 'NOTE1: Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving HSS.'"
+    },
     "TS29.272.dadx#ulr-mme-number-for-mt-sms": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and wishes to provide SMS in MME.'"
+    },
+    "TS29.272.dadx#ulr-no-authorization-lifetime": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ulr-no-session-timeout": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.1.4: 'Neither the Authorization-Lifetime AVP nor the Session-Timeout AVP shall be present in requests or responses.'"
+    },
+    "TS29.272.dadx#ulr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#ulr-sf-provisional-indication": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'This information element may only be included if the SF-ULR-Timestamp is present.'"
     },
     "TS29.272.dadx#ulr-sgsn-number": {
      "kind": "interpret",
@@ -9208,25 +10644,77 @@
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/1: 'It shall be present when the MME supports SMS in MME and requests to be registered for SMS.'; 'It shall be present when the SGSN supports \"SMS in SGSN\" as defined in clause 5.3.18 in 23.060 [12], and requests to be registered for SMS.'"
     },
+    "TS29.272.dadx#ulr-terminal-information": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'Within this Information Element, only the IMEI and the Software-Version AVPs shall be used on the S6a/S6d interface.'"
+    },
     "TS29.272.dadx#ulr-ue-srvcc-capability": {
      "kind": "interpret",
      "reason": "interpreted from table 5.2.1.1.1/1: 'shall be present if the MME or the SGSN supports SRVCC and this information is available to the MME or the SGSN.'"
+    },
+    "TS29.272.dadx#ulr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5.2.1.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
     },
     "TS29.272.dadx#user-id-digits": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.50: 'It shall contain the leading digits of an IMSI (i.e. MCC, MNC, leading digits of MSIN, see TS 23.003 [3], clause 2.2) formatted as a character string.'"
     },
-    "TS29.272.dadx#user-state-reserved": {
+    "TS29.272.dadx#utran-vector-confidentiality-key-octets": {
      "kind": "interpret",
-     "reason": "interpreted from clause 7.3.114: 'This value should not be used by MME or SGSN over S6a/S6d.'"
+     "reason": "interpreted from clause 7.3.57: 'The Confidentiality-Key is of type OctetString, and shall contain the Confidentiality Key (CK).'"
+    },
+    "TS29.272.dadx#utran-vector-integrity-key-octets": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.58: 'The Integrity-Key is of type OctetString, and shall contain the Integrity Key (IK).'"
+    },
+    "TS29.272.dadx#uva-experimental-result-vendor": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/2: 'This is a grouped AVP which shall contain the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP.'"
+    },
+    "TS29.272.dadx#uva-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.156/1: 'Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving CSS.'"
+    },
+    "TS29.272.dadx#uva-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
+    "TS29.272.dadx#uva-result-code-absent-with-permanent-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.3: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
+    },
+    "TS29.272.dadx#uva-result-code-absent-with-transient-failure": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.4.4: 'When one of the result codes defined here is included in a response, it shall be inside an Experimental-Result AVP and the Result-Code AVP shall be absent.'"
     },
     "TS29.272.dadx#uva-vplmn-csg-subscription-data": {
      "kind": "interpret",
      "reason": "interpreted from table 5A.2.1.1.1/2: 'It shall be present if success is reported, unless an explicit \"skip subscriber data\" indication was present in the request or the Temporary Empty VPLMN CSG Subscription Data flag is set.'"
     },
+    "TS29.272.dadx#uvr-flags-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.154/1: 'Bits not defined in this table shall be cleared by the sending MME or SGSN and discarded by the receiving CSS.'"
+    },
+    "TS29.272.dadx#uvr-msisdn": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/1: 'This information element shall contain the user MSISDN, formatted according to TS 29.329 [25]. It shall be present if available.'"
+    },
+    "TS29.272.dadx#uvr-no-vendor-specific-application-id": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.2.2: 'The Vendor-Specific-Application-Id AVP shall not be included in any command sent by Diameter nodes supporting applications defined in this specification.'; 'If the Vendor-Specific-Application-Id AVP is received in any of the commands defined in this specification, it shall be ignored by the receiving node.'"
+    },
     "TS29.272.dadx#uvr-sgsn-number": {
      "kind": "interpret",
      "reason": "interpreted from table 5A.2.1.1.1/1: 'It shall be present when the message is sent on the S7d interface.'"
+    },
+    "TS29.272.dadx#uvr-user-name-imsi": {
+     "kind": "interpret",
+     "reason": "interpreted from table 5A.2.1.1.1/1: 'This information element shall contain the user IMSI, formatted according to TS 23.003 [3], clause 2.2.'"
+    },
+    "TS29.272.dadx#v2x-permission-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.x2-1: 'NOTE: Bits not defined in this table shall be cleared by the HSS and discarded by the MME.'"
     },
     "TS29.272.dadx#visited-network-identifier-domain": {
      "kind": "interpret",
@@ -9235,6 +10723,18 @@
     "TS29.272.dadx#visited-plmn-id-layout": {
      "kind": "interpret",
      "reason": "interpreted from clause 7.3.9: 'This AVP shall contain the concatenation of MCC and MNC.'; 'The content of this AVP shall be encoded as an octet string according to table 7.3.9-1.'; 'If MNC is 2 digits long, bits 5 to 8 of octet 2 are coded as \"1111\".'"
+    },
+    "TS29.272.dadx#vplmn-dynamic-address-allowed-default": {
+     "kind": "interpret",
+     "reason": "interpreted from clause 7.3.38: 'If this AVP is not present, this means that the UE is not allowed to use PDN GWs in the domain of the VPLMN.'"
+    },
+    "TS29.272.dadx#wlan-offloadability-eutran-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.182/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN.'"
+    },
+    "TS29.272.dadx#wlan-offloadability-utran-undefined-bits": {
+     "kind": "interpret",
+     "reason": "interpreted from table 7.3.183/1: 'NOTE: Bits not defined in this table shall be cleared by the sending HSS and discarded by the receiving MME or SGSN..'"
     },
     "TS29.272.dadx#xres-element": {
      "kind": "interpret",
@@ -9416,7 +10916,7 @@
      "targets": [
       [
        "sections",
-       297
+       451
       ]
      ]
     },
@@ -9428,7 +10928,7 @@
      "targets": [
       [
        "sections",
-       302
+       456
       ]
      ]
     },
@@ -9460,7 +10960,7 @@
      "targets": [
       [
        "sections",
-       306
+       460
       ]
      ]
     },

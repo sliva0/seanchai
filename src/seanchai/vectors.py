@@ -1033,6 +1033,19 @@ class _Builder:
         """The predicates of `scope` that `nodes` break: name, kind,
         constraint. One reading the request is held to `request`, and with
         none is not evaluated, as the plugin leaves it."""
+        return [
+            (name, kind, each)
+            for name, kind, each, _ in self.broken_rules(scope, nodes, request)
+        ]
+
+    def broken_rules(
+        self,
+        scope: _Scope,
+        nodes: Sequence[_Avp],
+        request: Sequence[_Avp] | None = None,
+    ) -> list[tuple[str, str, dictionary.Constraint, dictionary.Rule]]:
+        """`broken`, each with the rule broken: a block may hold several of a
+        kind (TS 29.272's ULA's Subscription-Data, clause 5.2.1.1.3)."""
         found = []
         for name, each, rule in self.predicates(scope):
             if _reads_request(rule) and request is None:
@@ -1040,7 +1053,7 @@ class _Builder:
             instances = [n for n in nodes if n.avp.name == name]
             if rule.kind == "absent":
                 if instances:
-                    found.append((name, rule.kind, each))
+                    found.append((name, rule.kind, each, rule))
                 continue
             # Each instance in turn, a path starting at the AVP's name
             # reading that one alone, as the plugin reads it.
@@ -1054,8 +1067,29 @@ class _Builder:
                 )
                 for instance in (instances or [None])
             ):
-                found.append((name, rule.kind, each))
+                found.append((name, rule.kind, each, rule))
         return found
+
+    def breaking(
+        self,
+        nodes: Sequence[_Avp],
+        name: str,
+        rule: dictionary.Rule,
+        request: Sequence[_Avp] | None,
+    ) -> bool:
+        """Whether `nodes` still break `rule` on the AVP `name`, of any
+        instance: a mend for another rule of the pass may have kept it."""
+        instances = [n for n in nodes if n.avp.name == name]
+        return any(
+            self.breaks(
+                [n for n in nodes if n.avp.name != name or n is instance],
+                name,
+                rule,
+                request,
+                instance is not None,
+            )
+            for instance in (instances or [None])
+        )
 
     def breaks(
         self,
@@ -1118,16 +1152,10 @@ class _Builder:
         siblings: they go instead."""
         optional = {m.name for m in scope.members if m.min_occurs == 0}
         for _ in range(8):
-            broken = self.broken(scope, nodes, request)
+            broken = self.broken_rules(scope, nodes, request)
             if not broken:
                 return
-            for name, kind, each in broken:
-                rule = next(
-                    rule
-                    for reading in each.readings
-                    for rule in reading.rules
-                    if rule.kind == kind
-                )
+            for name, kind, each, rule in broken:
                 if kind == "equals":
                     assert rule.reference is not None
                     other = self.reached(nodes, rule.reference, request)
@@ -1174,16 +1202,71 @@ class _Builder:
                         and not c.negated
                     }
                     if not forbidden:
+                        if self.mend_inside(nodes, name, kind, rule, request):
+                            continue
                         raise _Unbuildable(
                             f"{name} is wanted and a predicate forbids it"
                         )
                     nodes[:] = [n for n in nodes if n.avp.name not in forbidden]
+                elif kind in ("absent-if", "excludes") and (
+                    other := self.lesser(scope, nodes, name, rule, request, keep)
+                ):
+                    nodes[:] = [n for n in nodes if n.avp.name != other]
                 elif name in optional:
-                    nodes[:] = [n for n in nodes if n.avp.name != name]
+                    if kind != "requires" or not (
+                        self.mend_inside(nodes, name, kind, rule, request)
+                        or not self.breaking(nodes, name, rule, request)
+                    ):
+                        nodes[:] = [n for n in nodes if n.avp.name != name]
                 elif not self.mend_inside(nodes, name, kind, rule, request):
                     raise _Unbuildable(f"{name} is required and a predicate forbids it")
         if self.broken(scope, nodes, request):
             raise _Unbuildable("the predicates cannot all hold")
+
+    def lesser(
+        self,
+        scope: _Scope,
+        nodes: Sequence[_Avp],
+        name: str,
+        rule: dictionary.Rule,
+        request: Sequence[_Avp] | None,
+        keep: frozenset[str],
+    ) -> str | None:
+        """The optional sibling to drop, rather than the optional AVP `name`,
+        where an `absent-if` or `excludes` holds through it: one fewer of the
+        scope's predicates read than `name`. A maximal answer keeps its
+        Result-Code, which most rules read, beside an Experimental-Result
+        whose code would set it aside (TS 29.272 clause 7.4.3). A sibling's
+        readers are the other AVPs whose rules test it."""
+        optional = {m.name for m in scope.members if m.min_occurs == 0}
+        if name not in optional:
+            return None
+        readers: dict[str, set[str]] = {}
+        for subject, _, predicate in self.predicates(scope):
+            for c in _terms(predicate):
+                if c.root is None and c.path[0] != subject:
+                    readers.setdefault(c.path[0], set()).add(subject)
+
+        def read(other: str) -> int:
+            return len(readers.get(other, set()) - {name, other})
+
+        for conjunction in rule.conditions:
+            if not all(
+                self.condition(nodes, c, request) != c.negated for c in conjunction
+            ):
+                continue
+            for c in conjunction:
+                other = c.path[0]
+                if (
+                    c.root is None
+                    and not c.negated
+                    and other != name
+                    and other in optional
+                    and other not in keep
+                    and read(other) < read(name)
+                ):
+                    return other
+        return None
 
     def mend_inside(
         self,
@@ -1236,17 +1319,32 @@ class _Builder:
                 and not condition.negated
             )
 
+        def number(condition: dictionary.Condition) -> int | None:
+            # The number a member of the AVP itself is to hold, by a path from
+            # it: a number, or a name its values give it.
+            if (
+                condition.root is not None
+                or len(condition.path) != 2
+                or condition.path[0] != name
+                or condition.value is None
+                or isinstance(condition.value, dictionary.Reference)
+                or condition.bit is not None
+                or condition.values
+                or condition.negated
+            ):
+                return None
+            if isinstance(condition.value, int):
+                return condition.value
+            member = next(
+                (m for m in inner.members if m.name == condition.path[1]), None
+            )
+            if member is None or member.avp is None:
+                return None
+            return self.values.number(self.avps[member.avp], condition.value)
+
         def numbered(condition: dictionary.Condition) -> bool:
             # A member of the AVP itself holding a number, by a path from it.
-            return (
-                condition.root is None
-                and len(condition.path) == 2
-                and condition.path[0] == name
-                and isinstance(condition.value, int)
-                and condition.bit is None
-                and not condition.values
-                and not condition.negated
-            )
+            return number(condition) is not None
 
         if kind == "requires":
             for conjunction in rule.conditions:
@@ -1277,8 +1375,8 @@ class _Builder:
                         definition = self.avps[member.avp]
                         child = self.avp(definition, inner, member, False, ())
                         held.children.append(child)
-                    if isinstance(c.value, int):
-                        child.payload = _integer(child.avp.data_type, c.value)
+                    if (wanted_number := number(c)) is not None:
+                        child.payload = _integer(child.avp.data_type, wanted_number)
                 wanted_names = frozenset(c.path[1] for c in wanted)
                 self.satisfy(inner, held.children, False, keep=wanted_names)
                 return True
@@ -1298,6 +1396,19 @@ class _Builder:
                             if child.avp.name != c.path[1]
                         ]
                         return True
+                    # A member holding the number the alternative wants takes
+                    # the next one: an AMBR's two bandwidths, not both 0 (TS
+                    # 29.272 clause 7.3.2).
+                    if (wanted_number := number(c)) is not None:
+                        child = next(
+                            (n for n in held.children if n.avp.name == c.path[1]),
+                            None,
+                        )
+                        if child is not None and child.avp.data_type in _FIXED:
+                            child.payload = _integer(
+                                child.avp.data_type, wanted_number + 1
+                            )
+                            return True
             return False
         return False
 

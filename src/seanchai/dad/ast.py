@@ -1451,7 +1451,7 @@ class Codec(enum.StrEnum):
     - `ip-address`: an Address of family IPv4 (1) or IPv6 (2) (RFC 6733
       clause 4.3.1), the clause allowing no other (TS 29.272 clause 7.3.98).
     - `time-zone`: the offset from UTC in units of 15 minutes, a sign and
-      decimal digits, `+8` (TS 29.272 clause 7.3.163).
+      decimal digits, `+8`, a zero offset `+` (TS 29.272 clause 7.3.163).
     - `mac-address`: a 6-octet MAC address as text, each octet two
       upper-case hexadecimal digits, separated by dashes,
       `00-10-A4-23-19-C0` (TS 29.273 clauses 5.2.3.23 and 5.2.3.30).
