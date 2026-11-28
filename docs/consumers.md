@@ -449,6 +449,13 @@ breaks nothing of; so is one whose breaking value breaks a predicate on a
 path to it too. A value rule of a member is broken at that member's own
 place, another AVP of its reading and value elsewhere left as it is (TS
 29.273's PDN-Type in TWAN-Connectivity-Parameters beside APN-Configuration's).
+A condition naming a value of an integer AVP's `values` table holds as that
+table numbers it, as the plugin reads it (TS 29.128's CMR, its
+Connection-Action CONNECTION_ESTABLISHMENT, an Unsigned32's 0).
+A `values` rule on a Result-Code is broken by another code a document
+numbers, so that its negative draws no warning of an unnamed code beside it
+(TS 29.128's TDA, its Result-Code DIAMETER_SUCCESS beside TDA-Flags'
+Acknowledged Delivery bit).
 A rule on each instance of a repeated grouped AVP is broken beside a valid
 copy of the instance, unless the copy would hold a member a `unique` rule
 keeps apart from it (TS 29.272's Context-Identifier in each APN-Configuration).

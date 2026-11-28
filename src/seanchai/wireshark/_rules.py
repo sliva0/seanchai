@@ -474,7 +474,8 @@ def _avp(
 class _Names:
     """The numbers a condition's value and bit names stand for: an
     Enumerated reading's values, the result codes and bits the value tables
-    give a name or a reading."""
+    give a name or a reading, and an integer AVP's values its `values`
+    tables name (TS 29.336's Monitoring-Type, an Unsigned32)."""
 
     def __init__(self, built: dictionary.Dictionary) -> None:
         self.built = built
@@ -483,6 +484,8 @@ class _Names:
         self.elements: dict[elements.Element, int] = {}
         self.codes: dict[str, dict[str, int]] = defaultdict(dict)
         self.bits: dict[str, dict[str, int]] = defaultdict(dict)
+        # By identity, vendor and code, as the tables name the AVP.
+        self.named: dict[str, dict[str, int]] = defaultdict(dict)
         for table in built.value_tables:
             if table.kind.value == "result-codes":
                 for row in table.rows:
@@ -491,6 +494,12 @@ class _Names:
                 for identifier in table.avp_ids:
                     for row in table.rows:
                         self.bits[identifier].setdefault(row.name, row.value)
+            elif table.kind.value == "values":
+                for identifier in table.avp_ids:
+                    for row in table.rows:
+                        self.named[identifier.partition("@")[0]].setdefault(
+                            row.name, row.value
+                        )
 
     def value(self, avp: str | None, name: str, value: int | str) -> int | None:
         if isinstance(value, int):
@@ -500,6 +509,14 @@ class _Names:
             for each in reading.values:
                 if each.kind == "value" and each.name == value:
                     return each.value
+            if (
+                reading.data_type is not ast.DataType.ENUMERATED
+                and (
+                    found := self.named.get(reading.id.partition("@")[0], {}).get(value)
+                )
+                is not None
+            ):
+                return found
         return self.codes.get(name, {}).get(value)
 
     def bit(self, avp: str | None, which: int | str) -> int | None:

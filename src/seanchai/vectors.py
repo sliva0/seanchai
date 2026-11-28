@@ -348,6 +348,9 @@ class _Values:
         self.bits: dict[str, set[int]] = {}
         # An integer AVP's values a `values` table names, by identity.
         self.named: dict[str, set[int]] = {}
+        # And by the name a `values` table gives each, as the plugin reads a
+        # condition naming one (TS 29.336's Monitoring-Type, an Unsigned32).
+        self.value_names: dict[str, dict[str, int]] = {}
         self.bit_names: dict[str, dict[str, int]] = {}
         self.codes: dict[str, int] = {}
         # Each vendor's result codes, in the order the tables give them.
@@ -364,9 +367,13 @@ class _Values:
                     )
             elif table.kind is ast.ValueKind.VALUES:
                 for identifier in table.avp_ids:
-                    self.named.setdefault(identifier.partition("@")[0], set()).update(
+                    identity = identifier.partition("@")[0]
+                    self.named.setdefault(identity, set()).update(
                         row.value for row in table.rows
                     )
+                    names = self.value_names.setdefault(identity, {})
+                    for row in table.rows:
+                        names.setdefault(row.name, row.value)
             elif table.kind is ast.ValueKind.RESULT_CODES:
                 for row in table.rows:
                     self.codes.setdefault(row.name, row.value)
@@ -378,6 +385,12 @@ class _Values:
         for each in avp.values:
             if each.kind == "value" and each.name == value:
                 return each.value
+        if (
+            avp.data_type is not ast.DataType.ENUMERATED
+            and (found := self.value_names.get(_identity(avp), {}).get(value))
+            is not None
+        ):
+            return found
         return self.codes.get(value)
 
     def bit(self, avp: dictionary.Avp, bit: int | str | None) -> int | None:
@@ -2447,8 +2460,13 @@ class _Negatives:
             v.value
             for v in subject.avp.values
             if v.kind == "value" and v.value is not None
-        ] or [0, 1, 2]
-        for value in candidates:
+        ]
+        if subject.avp.name == "Result-Code":
+            # Another code a document numbers, so that the plugin warns of
+            # no unnamed one beside (TS 29.128's TDA, its Result-Code
+            # DIAMETER_SUCCESS beside the Acknowledged Delivery bit).
+            candidates += sorted(self.builder.values.vendor_codes.get(0, ()))
+        for value in candidates or [0, 1, 2]:
             if value in rule.values:
                 continue
             payload = _integer(subject.avp.data_type, value)

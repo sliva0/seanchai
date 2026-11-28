@@ -352,6 +352,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 "Monitoring Event Report Status"                Monitoring-Event-Report-Status    O
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#rir-user-identifier-identity)
+; AVP: User-Identifier
+; Command: Reporting-Information-Request
+; Section: 5.2.1
+; Table: 5.2.1-1
+; Page: 12
+; Versions: 18.0.0..19.2.0
+"If present, this information element shall contain the identity of the UE. This is a grouped AVP containing the MSISDN or the External-Identifier."
+    requires User-Identifier/MSISDN or User-Identifier/External-Identifier
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#rir-monitoring-event-report)
 ; AVP: Monitoring-Event-Report
 ; Command: Reporting-Information-Request
@@ -372,6 +383,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Versions: 18.0.0..19.2.0
 "Experimental-Result AVP shall be used for T6a/b errors. This is a grouped AVP, which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#ria-result)
+; AVP: Result-Code
+; Command: Reporting-Information-Answer
+; Section: 5.2.1
+; Table: 5.2.1-2
+; Page: 12
+; Versions: 18.0.0..19.2.0
+"Result of the request. Result-Code AVP shall be used for errors defined in the Diameter Base Protocol."
+    present-if not Experimental-Result
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#rir-monitoring-event-report-identities)
@@ -432,14 +454,36 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
     present-if Monitoring-Type = COMMUNICATION_FAILURE
 
 
-; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#pdn-connectivity-status-report-event)
-; AVP: PDN-Connectivity-Status-Report
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#idle-status-indication-event)
+; AVP: Idle-Status-Indication
 ; Within: Monitoring-Event-Report
+; Section: 5.2.2.6
+; Page: 15
+; Versions: 18.0.0..19.2.0
+"The following AVPs shall be present within the Monitoring-Event-Report AVP when the Idle Status Indication event is reported:"
+"- Monitoring-Type set to UE_REACHABILITY_AND_IDLE_STATUS_INDICATION (8) or to AVAILABILITY_AFTER_DDN_FAILURE_AND_IDLE_STATUS_INDICATION (9), depending on the Monitoring-Type of the corresponding event configuration."
+    requires Monitoring-Type in UE_REACHABILITY_AND_IDLE_STATUS_INDICATION,
+        AVAILABILITY_AFTER_DDN_FAILURE_AND_IDLE_STATUS_INDICATION
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#pdn-connectivity-status-report-event)
+; AVP: Monitoring-Event-Report
+; Command: Reporting-Information-Request
 ; Section: 5.2.2.7
 ; Page: 15
 ; Versions: 18.0.0..19.2.0
 "- Monitoring-Type set to PDN_CONNECTIVITY_STATUS (8)"
 "- PDN-Connectivity-Status-Report"
+    excludes Monitoring-Event-Report/Monitoring-Type = PDN_CONNECTIVITY_STATUS and not Monitoring-Event-Report/PDN-Connectivity-Status-Report
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#ria-monitoring-event-report-status)
+; AVP: Monitoring-Event-Report-Status
+; Command: Reporting-Information-Answer
+; Section: 5.2.3
+; Page: 15
+; Versions: 18.0.0..19.2.0
+"In that case, if the HSS had included multiple Monitoring Event Reports in the RIR command, the SCEF shall include in the Reporting Information Answer command a list of Monitoring-Event-Report-Status AVPs where the status of multiple monitoring event reports is detailed."
     text-only
 
 
@@ -487,6 +531,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
     requires Experimental-Result/Vendor-Id = 10415
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cia-result)
+; AVP: Result-Code
+; Command: Configuration-Information-Answer
+; Section: 5.3.1
+; Table: 5.3.1-2
+; Page: 15
+; Versions: 18.0.0..19.2.0
+"Result of the request. Result-Code AVP shall be used for errors defined in the Diameter Base Protocol."
+    present-if not Experimental-Result
+
+
 ; Type: Information Elements
 ; Command: Configuration-Information-Request
 ; Section: 5.4.1
@@ -508,6 +563,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 "Result (See 6.3)"                                                               Result-Code/Experimental-Result   M
 "Supported Features (See 3GPP TS 29.229 [7])"                                    Supported-Features                O
 "Monitoring Event-Configuration Status (see 3GPP TS 29.336 [5] clause 8.4.24)"   Monitoring-Event-Config-Status    O
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cir-user-identifier-identity)
+; AVP: User-Identifier
+; Command: Configuration-Information-Request
+; Section: 5.4.1
+; Table: 5.4.1-1
+; Page: 17
+; Versions: 18.0.0..19.2.0
+"If present in the subscription data received from the HSS, this information element shall contain the External-Identifier or the MSISDN."
+    requires User-Identifier/External-Identifier or User-Identifier/MSISDN
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cia-5-4-1-experimental-result-vendor)
@@ -588,6 +654,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
     requires Experimental-Result/Vendor-Id = 10415
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#oda-result)
+; AVP: Result-Code
+; Command: MO-Data-Answer
+; Section: 5.5.1
+; Table: 5.5.1-2
+; Page: 19
+; Versions: 18.0.0..19.2.0
+"Result of the request. Result-Code AVP shall be used for errors defined in the Diameter Base Protocol."
+    present-if not Experimental-Result
+
+
 ; Type: Information Elements
 ; Command: MT-Data-Request
 ; Section: 5.6.1
@@ -647,6 +724,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
     requires Experimental-Result/Vendor-Id = 10415
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-result)
+; AVP: Result-Code
+; Command: MT-Data-Answer
+; Section: 5.6.1
+; Table: 5.6.1-2
+; Page: 21
+; Versions: 18.0.0..19.2.0
+"This information element shall contain the Result of the request. The Result-Code AVP shall be used to indicate success or errors as defined in the Diameter Base Protocol."
+    present-if not Experimental-Result
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-requested-retransmission-time)
 ; AVP: Requested-Retransmission-Time
 ; Command: MT-Data-Answer
@@ -656,6 +744,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Versions: 18.0.0..19.2.0
 "The Requested Retransmission Time shall not exceed the Maximum Retransmission Time received from the SCEF."
     text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tda-acknowledged-delivery-success)
+; AVP: Result-Code
+; Command: MT-Data-Answer
+; Section: 5.6.3
+; Page: 22
+; Versions: 18.0.0..19.2.0
+"- if it is successful, return a Result code set to DIAMETER_SUCCESS to the SCEF or IWK-SCEF; in addition, if the successful delivery was acknowledged by the eNodeB, the MME/SGSN shall set the \"Success Acknowledged Delivery\" bit within the TDA-Flags AVP."
+    present-if TDA-Flags bit 0
+    values 2001 if TDA-Flags bit 0
 
 
 ; Type: Information Elements
@@ -779,6 +878,17 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
 ; Versions: 18.0.0..19.2.0
 "Experimental-Result AVP shall be used for T6a/b errors. This is a grouped AVP, which contains the 3GPP Vendor ID in the Vendor-Id AVP, and the error code in the Experimental-Result-Code AVP."
     requires Experimental-Result/Vendor-Id = 10415
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-result)
+; AVP: Result-Code
+; Command: Connection-Management-Answer
+; Section: 5.7.1
+; Table: 5.7.1-2
+; Page: 23
+; Versions: 18.0.0..19.2.0
+"Result of the request. Result-Code AVP shall be used for errors defined in the Diameter Base Protocol."
+    present-if not Experimental-Result
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cma-pdn-connection-charging-id)
@@ -1169,6 +1279,59 @@ SCEF-Reference-ID-for-Deletion-Ext    TS29.336
     absent
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#rir-destination-host)
+; AVP: Destination-Host
+; Command: Reporting-Information-Request
+; Section: 6.1.6.1
+; Page: 30
+; Versions: 18.0.0..19.2.0
+"The MME/SGSN shall use the SCEF-ID and the SCEF realm previously received over S6a/b for a monitoring event configuration as the Destination-Host AVP and the Destination-Realm AVP in the Reporting-Information-Request for the monitoring event reports sent over the T6a/T6b or T6ai/bi interface."
+"The IWK-SCEF behaves as a Diameter Proxy agent according to IETF RFC 6733 [32] for the Reporting-Information-Request received from the MME/SGSN over the T6ai/bi interface and shall forward these requests to the SCEF over the T7 interface by keeping unchanged the Destination Realm and Destination Host AVPs."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cir-destination-host)
+; AVP: Destination-Host
+; Command: Configuration-Information-Request
+; Section: 6.1.6.1
+; Page: 30
+; Versions: 18.0.0..19.2.0
+"The MME/SGSN shall use the pre-configured IWK-SCEF identify and the pre-configured IWK-SCEF realm as the Destination-Host AVP and the Destination Realm AVP in the Configuration-Information-Request for the monitoring event configuration sent over the T6ai/bi interface."
+"For monitoring events directly configured at the MME/SGSN by the SCEF, if the SCEF knows the address/name of the MME/SGSN, both the Destination-Realm AVP and the Destination-Host AVP shall be present in the request."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#odr-destination-host)
+; AVP: Destination-Host
+; Command: MO-Data-Request
+; Section: 6.1.6.2
+; Page: 30
+; Versions: 18.0.0..19.2.0
+"The MME or SGSN shall use the SCEF-ID and the SCEF realm that it received in the subscribed APN associated to the T6a/b connection at its establishment as the Destination-Host AVP and the Destination realm AVP in the Non-IP data related request commands sent over the T6a/b and T6ai/bi interfaces."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#tdr-destination-host)
+; AVP: Destination-Host
+; Command: MT-Data-Request
+; Section: 6.1.6.2
+; Page: 30
+; Versions: 18.0.0..19.2.0
+"The SCEF obtains the Destination-Host AVP and the Destination-Realm AVP to use in the Non-IP data related requests towards an MME or SGSN from the Origin-Host AVP and the Origin-Realm AVP received in previous Non-IP Data related requests from the MME or SGSN."
+    text-only
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#cmr-destination-host)
+; AVP: Destination-Host
+; Command: Connection-Management-Request
+; Section: 6.1.6.2
+; Page: 30
+; Versions: 18.0.0..19.2.0
+"The MME or SGSN shall use the SCEF-ID and the SCEF realm that it received in the subscribed APN associated to the T6a/b connection at its establishment as the Destination-Host AVP and the Destination realm AVP in the Non-IP data related request commands sent over the T6a/b and T6ai/bi interfaces."
+"The SCEF obtains the Destination-Host AVP and the Destination-Realm AVP to use in the Non-IP data related requests towards an MME or SGSN from the Origin-Host AVP and the Origin-Realm AVP received in previous Non-IP Data related requests from the MME or SGSN."
+    text-only
+
+
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#rir-supported-features-vendor)
 ; AVP: Supported-Features
 ; Command: Reporting-Information-Request
@@ -1556,6 +1719,16 @@ Monitoring-Event-Report ::= < AVP header: 3123 10415 >
       * [ AVP ]
 
 
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#monitoring-event-report-extended-reference-ids-release-18)
+; AVP: SCEF-Reference-ID-Ext
+; Within: Monitoring-Event-Report
+; Section: 6.4.3
+; Page: 43
+; Versions: 18.0.0
+"When the \"Extended Reference IDs\" feature is supported by the SCEF and MME/SGSN, the SCEF-Reference-ID-Ext AVP shall be used insted of SCEF-Reference-ID; in such case, the required AVP \"SCEF-Reference-ID\" shall be included in the grouped AVP by the sender, but its content shall be discarded by the receiver."
+    text-only
+
+
 ; Type: Grouped AVP
 ; Name: Communication-Failure-Information
 ; Section: 6.4.4
@@ -1590,6 +1763,18 @@ MISCELLANEOUS       = 4
 "It shall contain a non-transparent copy of the S1AP cause code as specified clause 9.2.1.3 of"
 "TS 36.413 [13]."
     encoding element TS36.413 9.2.1.3 "Cause"
+
+
+; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#s1ap-cause-type)
+; AVP: S1AP-Cause
+; Within: Communication-Failure-Information
+; Section: 6.4.6
+; Page: 45
+; Versions: 18.0.0..19.2.0
+"The RAN cause sub-category of the S1AP-Cause as specified in"
+"TS 36.413 [13] shall be encoded in the Cause-Type AVP as specified in clause 6.4.5 above."
+    requires Cause-Type in RADIO_NETWORK_LAYER, TRANSPORT_LAYER, NAS, PROTOCOL,
+        MISCELLANEOUS
 
 
 ; Type: Interpreted Constraints ;; interpreted: (TS29.128.dadx#ranap-cause-coding)

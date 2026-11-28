@@ -1027,6 +1027,53 @@ def test_a_rule_on_each_instance_is_broken_beside_one_keeping_it(built):
     assert sorted("SCEF-ID" in each for each in held) == [False, True]
 
 
+def test_a_condition_naming_an_integer_avps_value_is_its_tables_number(built):
+    """TS 29.128 clause 5.7.1: a CMR establishing a connection, its
+    Connection-Action CONNECTION_ESTABLISHMENT, an Unsigned32 clause 6.4.18
+    names the values of, carries its Service-Selection. The name is the
+    values table's 0, so the negative holds that and no Service-Selection,
+    and clause 5.2.2.7's PDN_CONNECTIVITY_STATUS is TS 29.336's 10."""
+    t6a = _vectors(built, 16777346)
+    (vector,) = [
+        vector
+        for vector in t6a.vectors
+        if vector.id
+        == "16777346/CMR/negative/constraint-present-if/Service-Selection/5.7.1"
+    ]
+    fields = {node.name: node.data for node in vector.tree}
+    assert fields["Connection-Action"] == f"{0:08x}"
+    assert "Service-Selection" not in fields
+    (report,) = [
+        vector
+        for vector in t6a.vectors
+        if vector.id
+        == "16777346/RIR/negative/constraint-excludes/Monitoring-Event-Report/5.2.2.7"
+    ]
+    types = [
+        child.data
+        for node in report.tree
+        if node.name == "Monitoring-Event-Report"
+        and not any(c.name == "PDN-Connectivity-Status-Report" for c in node.children)
+        for child in node.children
+        if child.name == "Monitoring-Type"
+    ]
+    assert types == [f"{10:08x}"]
+
+
+def test_a_values_rule_on_a_result_code_is_broken_by_a_numbered_code(built):
+    """TS 29.128 clause 5.6.3: a TDA with TDA-Flags' Acknowledged Delivery
+    bit answers DIAMETER_SUCCESS. Its negative holds another code a document
+    numbers, so that the plugin warns of no unnamed one beside."""
+    (vector,) = [
+        vector
+        for vector in _vectors(built, 16777346).vectors
+        if vector.id == "16777346/TDA/negative/constraint-values/Result-Code/5.6.3"
+    ]
+    (code,) = [node.data for node in vector.tree if node.name == "Result-Code"]
+    assert code is not None and int(code, 16) not in (0, 2001)
+    assert [e.rule for e in vector.expected] == ["constraint-values"]
+
+
 def test_the_base_protocols_rules_on_every_answer_hold_in_each(built):
     """RFC 6733 section 6.2's echo of the request's Session-Id and Proxy-Info
     holds in every answer: S6a's valid answers carry the request's, and

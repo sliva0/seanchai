@@ -116,7 +116,10 @@ Wireshark's own dictionary and decoding play no part. Section numbers are RFC
   a member two grouped AVPs beside each other hold with one value
   (`constraint-unique`). An element the registry has no entry for or checks
   nothing of is not checked, `text-only` not at all, and a rule naming a value
-  or bit no table numbers is left out.
+  or bit no table numbers is left out. A name is an Enumerated reading's
+  value, a result code, a bit of a bits table or a value an integer AVP's
+  `values` table names (TS 29.336's Monitoring-Type, an Unsigned32 whose
+  PDN_CONNECTIVITY_STATUS is 10).
 - An answer's rules on the request it answers
   ([constraints.md](constraints.md#the-block)), against that request where
   the capture holds it ([Requests](#requests)).

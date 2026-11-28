@@ -1530,9 +1530,11 @@ TS 29.128 V19.2.0 is read completely for T6a/T6b, T6ai/T6bi and T7: the
 information-element tables of clause 5's procedures (5.2.1 to 5.8.1), with
 the procedure clauses for what they state of one message, clause 6.1's
 common aspects, clause 6.2.2's commands, clause 6.3's result codes and
-every AVP clause of clause 6.4. Release 18's copy, V18.0.0, holds 104 of the
-105 blocks: it prints no clause 5.2.2.8, whose store and forward satellite
-event Release 19 added. Each command prints once under
+every AVP clause of clause 6.4. Of the 123 blocks, V19.2.0 holds 122 and
+Release 18's copy, V18.0.0, 121: Release 18 prints no clause 5.2.2.8, whose
+store and forward satellite event Release 19 added, and its clause 6.4.3
+names no use of the Extended Reference IDs feature by the MME, read in a
+block of its own. Each command prints once under
 16777346, for every interface, so a table describing one direction of a
 command (the MME's or SGSN's Connection-Management-Request of clause 5.7.1,
 the SCEF's of 5.8.1) describes the one print: a rule is read only where it
@@ -1541,14 +1543,14 @@ holds of both, as an establishment's AVPs, which the SCEF never requests.
 | | |
 |---|---|
 | AVP clauses (clause 6.4, not its General clause) | 45 |
-| with something to declare | 15, in 16 blocks |
-| with nothing to declare | 30 |
+| with something to declare | 16, in 19 blocks |
+| with nothing to declare | 29 |
 | information-element C rows | 18, of which 15 state a condition |
-| the tables' blocks (clauses 5.2.1 to 5.8.1), M rows and each answer's Result among them | 26 |
-| procedure clauses (5.2.2.0 to 5.2.2.8, 5.7.2) | 8 blocks |
-| clause 6.1.4's sessions, 6.1.9's Supported-Features, 6.2.2's commands, 6.3.3's result codes | 30, 10, 10, 5 blocks |
-| blocks | 105: 84 within a command, 8 within a grouped AVP, 13 on an AVP wherever read |
-| readings | 105 |
+| the tables' blocks (clauses 5.2.1 to 5.8.1), M rows and each answer's Result among them | 33 |
+| procedure clauses (5.2.2.0 to 5.2.2.8, 5.2.3, 5.6.3, 5.7.2) | 11 blocks |
+| clause 6.1.4's sessions, 6.1.6's routing, 6.1.9's Supported-Features, 6.2.2's commands, 6.3.3's result codes | 30, 5, 10, 10, 5 blocks |
+| blocks | 123 in the file, V19.2.0 holding 122 and V18.0.0 121: 100 within a command, 10 within a grouped AVP, 13 on an AVP wherever read |
+| readings | 123 |
 
 | Rules | |
 |---|---|
@@ -1556,12 +1558,12 @@ holds of both, as an establishment's AVPs, which the SCEF never requests.
 | `encoding element` | 10, naming 10 entries of the registry; 5 rules checked, 5 not ([above](#elements)) |
 | `range` | 10: Auth-Session-State NO_STATE_MAINTAINED in each of the 10 commands |
 | `exclude` | 7: Uplink-Rate-Limit and Downlink-Rate-Limit 1 to 9, each answer's Result-Code none of the codes clause 6.3.3 lists but 5001 |
-| `requires`, `present-if`, `absent-if` | 12, 8, 5 |
+| `requires`, `present-if`, `absent-if`, `excludes` | 16, 14, 5, 2 |
 | `absent` | 20: Authorization-Lifetime and Session-Timeout in each of the 10 commands |
 | reading the request | 1: the CMA's PDN-Connection-Charging-ID answering an establishment with DIAMETER_SUCCESS |
-| `values` | 1: a reachability report's Reachability-Information REACHABLE_FOR_DATA |
+| `values` | 2: a reachability report's Reachability-Information REACHABLE_FOR_DATA, the TDA's Result-Code DIAMETER_SUCCESS beside the Acknowledged Delivery bit |
 | `bits` | 2, each `only`: CMR-Flags, TDA-Flags |
-| `text-only` | 35, 10 of them Vendor-Specific-Application-Id's in each command and 10 the Supported-Features Vendor-Id |
+| `text-only` | 41, 10 of them Vendor-Specific-Application-Id's in each command and 10 the Supported-Features Vendor-Id |
 
 Clause 6.1.4's session handling and clause 6.2.2's Vendor-Specific-
 Application-Id are read in each of the ten commands as TS 29.338's clauses
@@ -1575,9 +1577,22 @@ Unsigned32, whose values clause 8.4.7 names, so a location report
 failure's (COMMUNICATION_FAILURE) its Communication-Failure-Information, and
 a reachability report (UE_REACHABILITY, or UE_REACHABILITY_AND_IDLE_STATUS_
 INDICATION without an Idle-Status-Indication, its NOTE says)
-Reachability-Information REACHABLE_FOR_DATA, written 1 in a `values` rule.
-Connection-Action is an Unsigned32 too, clause 6.4.18 naming
-CONNECTION_ESTABLISHMENT.
+Reachability-Information REACHABLE_FOR_DATA, written 1 in a `values` rule,
+and an Idle-Status-Indication is one of the two idle status events'. An
+RIR's report of PDN_CONNECTIVITY_STATUS holds its
+PDN-Connectivity-Status-Report and one of SAT_SF_OPERATION_INFO its
+SAT-SF-Operation-Info, read on each Monitoring-Event-Report of the RIR, its
+paths reading that report, as TS 29.336 reads S6t's: the configuration
+answer's immediate report of a UE with no PDN connection carries none (TS
+29.336 clause 8.4.77). Connection-Action is an Unsigned32 too, clause 6.4.18
+naming CONNECTION_ESTABLISHMENT. Each answer's Result row is a Result-Code
+where the answer holds no Experimental-Result, the body printing both
+optional, as TS 29.338's are; a TDA with TDA-Flags' Acknowledged Delivery
+bit (bit 0) answers a successful delivery, DIAMETER_SUCCESS (clause 5.6.3).
+The RIR's User-Identifier holds the MSISDN or the External-Identifier, and
+so does the MME's CIR's (table 5.4.1-1), the SCEF's naming none; an
+S1AP-Cause has its category, one of clause 6.4.5's five, in a Cause-Type
+beside it (clause 6.4.6).
 
 The text-only rules are mostly conditions on the node, a feature, the
 subscription or what a node needs to send ("if present in the subscription
@@ -1587,7 +1602,13 @@ information from the UE", "If an immediate report is available", "When the
 Control is configured"), a request's purpose its own AVP's presence already
 tells (Non-IP-Data "shall be present when the request conveys Non-IP
 data"), and two times compared (the TDA's Requested-Retransmission-Time
-within the request's Maximum-Retransmission-Time). The CMR's RAT-Type and
+within the request's Maximum-Retransmission-Time). Clause 6.1.6's
+Destination-Host, the SCEF-ID an earlier S6a/b exchange or the subscribed
+APN gave, a host the SCEF knows or one an earlier request's Origin-Host
+named, and kept by the IWK-SCEF as a proxy, is text-only in the RIR, CIR,
+ODR, TDR and CMR; so is clause 5.2.3's list of statuses an RIA holds for an
+RIR of several reports, no kind counting the request's reports, and the
+SCEF leaving out the successful ones. The CMR's RAT-Type and
 Visited-PLMN-Id "shall be present if the request is for a T6a/b connection
 establishment or for a T6a/b connection update" are read of an
 establishment alone: an update is the SCEF's request too (clause 5.8.1),
@@ -1597,21 +1618,22 @@ The document is wrong in places the corpus reads around: clauses 5.2.2.7
 and 5.2.2.8 number PDN_CONNECTIVITY_STATUS 8 and SAT_SF_OPERATION_INFO 9,
 the values clause 5.2.2.2 and 5.2.2.6 give UE_REACHABILITY_AND_IDLE_STATUS_
 INDICATION and AVAILABILITY_AFTER_DDN_FAILURE_AND_IDLE_STATUS_INDICATION,
-where TS 29.336 clause 8.4.7 numbers them 10 and 11, so the two events'
-AVPs are read `text-only`; clause 6.4.3's text names an
-SCEF-Reference-ID-Ext its Monitoring-Event-Report body does not print, nor
-admit through a `* [ AVP ]`; table 5.8.1-1 has the SCEF's
+where TS 29.336 clause 8.4.7, which defines Monitoring-Type, numbers them
+10 and 11, so the two events' rules read the names; table 5.8.1-1 has the
+SCEF's
 Connection-Action indicate "a T6a/b connection update" where clauses 5.8.1
 and 5.8.3 have it request a release too; and clause 6.4.35's text runs
 into Annex A's heading, "Annex A (normative): Diameter overload control
 mechanism". Left unread: the C and O rows saying only what an AVP holds when
 present and the "may" rows (the TDA's Requested-Retransmission-Time "may be
 present if" the answer reports DIAMETER_ERROR_USER_TEMPORARILY_UNREACHABLE);
-clause 6.1.7's Capabilities-Exchange AVPs, RFC 6733's commands'; the
-routing clause 6.1.6; the procedures' result codes, which are what a node
-answers with; Cause-Type's and the other Unsigned32 AVPs' value lists,
-which the clauses do not say are all a sender may send; and Annex A's
-overload control and Annex B's DRMP.
+clause 6.1.7's Capabilities-Exchange AVPs, RFC 6733's commands'; clauses
+6.1.3's accounting and 6.1.4's re-authorization and session termination
+requests, commands this application does not print, which the Wireshark
+plugin notes as unknown under its id; the procedures' result codes, which
+are what a node answers with; the other Unsigned32 AVPs' value lists, which
+the clauses do not say are all a sender may send; and Annex A's overload
+control and Annex B's DRMP.
 
 ## TS 29.336
 
